@@ -9074,4 +9074,9 @@ simple_triggers = [
   [
     (call_script, "script_sod_npc_invest_in_centers"),
   ]),
+# [ src/triggers/ST03_daily/entry_0154.py:L1-L6 ] 24
+(24,
+  [
+    (call_script, "script_sod_normalize_all_center_populations"),
+  ]),
 ]

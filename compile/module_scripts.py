@@ -7823,6 +7823,9 @@ def _build_validate_construction_choice_ops():
 # --- ZY_helper_scripts/sod_find_investment_target.py preamble ---
 # COST: O(centers)
 
+# --- ZY_helper_scripts/sod_normalize_center_population.py preamble ---
+# COST: O(1)
+
 # --- ZY_helper_scripts/sod_npc_invest_in_centers.py preamble ---
 # COST: O(lords * centers)
 
@@ -42648,6 +42651,50 @@ scripts = [
     (assign, reg0, ":best_center"),
     (assign, reg1, ":best_score"),
   ]),
+# [ src/scripts/ZY_helper_scripts/sod_normalize_center_population.py:L3-L38 ] sod_normalize_center_population
+("sod_normalize_center_population",
+  [
+    (store_script_param, ":center_no", 1),
+    (assign, reg0, 0),
+    (try_begin),
+      (gt, ":center_no", 0),
+      (party_get_slot, ":population", ":center_no", slot_center_sod_local_population),
+      (le, ":population", 0),
+      (assign, ":recovery_floor", 0),
+      (try_begin),
+        (is_between, ":center_no", villages_begin, villages_end),
+        (assign, ":recovery_floor", village_pop_min),
+      (else_try),
+        (is_between, ":center_no", towns_begin, towns_end),
+        (assign, ":recovery_floor", town_pop_min),
+      (try_end),
+      (gt, ":recovery_floor", 0),
+      (party_set_slot, ":center_no", slot_center_sod_local_population, ":recovery_floor"),
+      (party_set_slot, ":center_no", slot_town_wealth, 0),
+      (party_get_slot, ":local_prosperity", ":center_no", slot_center_sod_local_prosperity),
+      (val_min, ":local_prosperity", 5),
+      (party_set_slot, ":center_no", slot_center_sod_local_prosperity, ":local_prosperity"),
+      (try_begin),
+        (neg|is_between, ":center_no", castles_begin, castles_end),
+        (call_script, "script_change_center_prosperity", ":center_no", -10),
+      (try_end),
+      (call_script, "script_change_center_health", ":center_no", -15),
+      (try_begin),
+        (is_between, ":center_no", villages_begin, villages_end),
+        (party_get_slot, ":cattle", ":center_no", slot_village_number_of_cattle),
+        (val_min, ":cattle", 2),
+        (party_set_slot, ":center_no", slot_village_number_of_cattle, ":cattle"),
+      (try_end),
+      (assign, reg0, 1),
+    (try_end),
+  ]),
+# [ src/scripts/ZY_helper_scripts/sod_normalize_center_population.py:L39-L44 ] sod_normalize_all_center_populations
+("sod_normalize_all_center_populations",
+  [
+    (try_for_range, ":center_no", centers_begin, centers_end),
+      (call_script, "script_sod_normalize_center_population", ":center_no"),
+    (try_end),
+  ]),
 # [ src/scripts/ZY_helper_scripts/sod_npc_invest_in_centers.py:L3-L48 ] sod_npc_invest_in_centers
 ("sod_npc_invest_in_centers",
   [
@@ -48537,6 +48584,15 @@ scripts = [
                 (party_get_slot, ":prosperity", ":center_no", slot_center_sod_local_prosperity),
                 (party_get_slot, ":town_prosperity", ":center_no", slot_town_prosperity),
                 (party_get_slot, ":wealth", ":center_no", slot_town_wealth),
+                (try_begin),
+                    (le, ":population", 0),
+                    (call_script, "script_sod_normalize_center_population", ":center_no"),
+                    (party_get_slot, ":population", ":center_no", slot_center_sod_local_population),
+                    (party_get_slot, ":health", ":center_no", slot_center_sod_local_health),
+                    (party_get_slot, ":prosperity", ":center_no", slot_center_sod_local_prosperity),
+                    (party_get_slot, ":town_prosperity", ":center_no", slot_town_prosperity),
+                    (party_get_slot, ":wealth", ":center_no", slot_town_wealth),
+                (try_end),
                 (assign, ":population_change", 0),
                 (try_begin),
                     (gt, ":health", 0),
