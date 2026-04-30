@@ -267,6 +267,27 @@ SCRIPTS = [
       (val_min, ":accumulated_tariffs", 2000000),
       (party_set_slot, ":center_no", slot_center_accumulated_tariffs, ":accumulated_tariffs"),
 
+      # Trade also improves immediate market liquidity; shortages and net exports dampen it.
+      (party_get_slot, ":center_wealth", ":center_no", slot_town_wealth),
+      (val_max, ":center_wealth", 0),
+      (assign, ":market_liquidity", ":total_change"),
+      (val_div, ":market_liquidity", 4),
+      (val_add, ":market_liquidity", ":import_pressure"),
+      (val_add, ":market_liquidity", ":abundance_score"),
+      (val_sub, ":market_liquidity", ":scarcity_score"),
+      (val_sub, ":market_liquidity", ":export_pressure"),
+      (try_begin),
+        (ge, ":food_store", ":food_good_threshold"),
+        (val_add, ":market_liquidity", 3),
+      (else_try),
+        (lt, ":food_store", ":food_low_threshold"),
+        (val_sub, ":market_liquidity", 3),
+      (try_end),
+      (val_clamp, ":market_liquidity", -25, 300),
+      (val_add, ":center_wealth", ":market_liquidity"),
+      (val_clamp, ":center_wealth", 0, 2000000),
+      (party_set_slot, ":center_no", slot_town_wealth, ":center_wealth"),
+
       # debug
       (try_begin),
         (eq, "$g_sod_debug", 1),
