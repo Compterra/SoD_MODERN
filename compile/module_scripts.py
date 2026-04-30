@@ -42502,7 +42502,7 @@ scripts = [
      (assign, "$sod_mission_19", ":state"),
    (try_end),
  ]),
-# [ src/scripts/ZY_helper_scripts/sod_threat_board_accept_contract.py:L3-L65 ] sod_threat_board_accept_contract
+# [ src/scripts/ZY_helper_scripts/sod_threat_board_accept_contract.py:L3-L75 ] sod_threat_board_accept_contract
 ("sod_threat_board_accept_contract",
  [
    (store_script_param_1, ":offer_index"),
@@ -42559,11 +42559,21 @@ scripts = [
      (quest_set_slot, "qst_regional_threat_contract", slot_quest_sod_threat_deadline_day, ":deadline_day"),
      (quest_set_slot, "qst_regional_threat_contract", slot_quest_sod_threat_ready_to_claim, 0),
      (quest_set_slot, "qst_regional_threat_contract", slot_quest_sod_threat_reward_xp, ":reward_xp"),
-     (call_script, "script_start_quest", "qst_regional_threat_contract", "trp_player"),
-
      (str_store_party_name, s1, ":target_party"),
      (str_store_party_name, s2, ":sponsor_center"),
-     (display_message, "@Threat board contract accepted near {s2}. Track down {s1}.", 0xD6B15E),
+     (assign, reg(1), ":reward_gold"),
+     (assign, reg(2), ":reward_xp"),
+     (assign, reg(3), ":deadline_day"),
+     (str_store_string, s5, "@Contract sponsor: {s2}. Marked target: {s1}."),
+     (str_store_string, s6, "@Reward posted: {reg1} denars, {reg2} XP, and local relation on completion."),
+     (str_store_string, s7, "@Deadline day: {reg3}. Defeat the marked party before this date, then return to a regional board."),
+
+     (call_script, "script_start_quest", "qst_regional_threat_contract", "trp_player"),
+     (add_quest_note_from_sreg, "qst_regional_threat_contract", 2, s5, 1),
+     (add_quest_note_from_sreg, "qst_regional_threat_contract", 3, s6, 0),
+     (add_quest_note_from_sreg, "qst_regional_threat_contract", 4, s7, 0),
+
+     (display_message, "@Threat board contract accepted near {s2}. Track down {s1}; details were added to your quest notes.", 0xD6B15E),
    (try_end),
  ]),
 # [ src/scripts/ZY_helper_scripts/sod_threat_board_apply_regional_pressure.py:L3-L24 ] sod_threat_board_apply_regional_pressure
@@ -43006,7 +43016,7 @@ scripts = [
    (assign, "$g_sod_threat_board_context_center", 0),
    (assign, "$g_sod_threat_board_return_menu", 0),
  ]),
-# [ src/scripts/ZY_helper_scripts/sod_threat_board_note_party_defeated.py:L3-L14 ] sod_threat_board_note_party_defeated
+# [ src/scripts/ZY_helper_scripts/sod_threat_board_note_party_defeated.py:L3-L17 ] sod_threat_board_note_party_defeated
 ("sod_threat_board_note_party_defeated",
  [
    (store_script_param_1, ":party_no"),
@@ -43015,6 +43025,9 @@ scripts = [
      (check_quest_active, "qst_regional_threat_contract"),
      (quest_slot_eq, "qst_regional_threat_contract", slot_quest_sod_threat_target_party, ":party_no"),
      (quest_set_slot, "qst_regional_threat_contract", slot_quest_sod_threat_ready_to_claim, 1),
+     (str_store_party_name, s5, ":party_no"),
+     (str_store_string, s6, "@Marked target defeated: {s5}. Return to any regional board to claim the posted reward."),
+     (add_quest_note_from_sreg, "qst_regional_threat_contract", 5, s6, 1),
      (call_script, "script_succeed_quest", "qst_regional_threat_contract"),
      (display_message, "@The marked threat has been broken. Return to any regional board to claim the reward.", 0x66CC66),
    (try_end),

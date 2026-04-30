@@ -21,6 +21,7 @@ def main() -> int:
     accept = read("src/scripts/ZY_helper_scripts/sod_threat_board_accept_contract.py")
     active = read("src/scripts/ZY_helper_scripts/sod_threat_board_describe_active_contract.py")
     complete = read("src/scripts/ZY_helper_scripts/sod_threat_board_complete_contract.py")
+    defeated = read("src/scripts/ZY_helper_scripts/sod_threat_board_note_party_defeated.py")
 
     assert_contains(reward, "sod_threat_board_calculate_reward")
     assert_contains(reward, "store_sub, \":urgency\", 12, \":deadline_days\"")
@@ -31,9 +32,13 @@ def main() -> int:
     assert_contains(describe, "script_sod_threat_board_calculate_reward")
     assert_contains(describe, "{reg4} XP")
     assert_contains(accept, "script_sod_threat_board_calculate_reward")
+    assert_contains(accept, "Contract sponsor: {s2}. Marked target: {s1}.")
+    assert_contains(accept, "add_quest_note_from_sreg, \"qst_regional_threat_contract\", 4")
     assert_contains(active, "slot_quest_sod_threat_reward_xp")
     assert_contains(active, "{reg6} XP")
     assert_contains(complete, "{reg2} XP")
+    assert_contains(defeated, "Marked target defeated: {s5}.")
+    assert_contains(defeated, "add_quest_note_from_sreg, \"qst_regional_threat_contract\", 5")
 
     print("[threat_board_rewards] OK")
     return 0

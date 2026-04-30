@@ -56,11 +56,21 @@ SCRIPTS = [
      (quest_set_slot, "qst_regional_threat_contract", slot_quest_sod_threat_deadline_day, ":deadline_day"),
      (quest_set_slot, "qst_regional_threat_contract", slot_quest_sod_threat_ready_to_claim, 0),
      (quest_set_slot, "qst_regional_threat_contract", slot_quest_sod_threat_reward_xp, ":reward_xp"),
-     (call_script, "script_start_quest", "qst_regional_threat_contract", "trp_player"),
-
      (str_store_party_name, s1, ":target_party"),
      (str_store_party_name, s2, ":sponsor_center"),
-     (display_message, "@Threat board contract accepted near {s2}. Track down {s1}.", 0xD6B15E),
+     (assign, reg(1), ":reward_gold"),
+     (assign, reg(2), ":reward_xp"),
+     (assign, reg(3), ":deadline_day"),
+     (str_store_string, s5, "@Contract sponsor: {s2}. Marked target: {s1}."),
+     (str_store_string, s6, "@Reward posted: {reg1} denars, {reg2} XP, and local relation on completion."),
+     (str_store_string, s7, "@Deadline day: {reg3}. Defeat the marked party before this date, then return to a regional board."),
+
+     (call_script, "script_start_quest", "qst_regional_threat_contract", "trp_player"),
+     (add_quest_note_from_sreg, "qst_regional_threat_contract", 2, s5, 1),
+     (add_quest_note_from_sreg, "qst_regional_threat_contract", 3, s6, 0),
+     (add_quest_note_from_sreg, "qst_regional_threat_contract", 4, s7, 0),
+
+     (display_message, "@Threat board contract accepted near {s2}. Track down {s1}; details were added to your quest notes.", 0xD6B15E),
    (try_end),
  ]),
 ]
