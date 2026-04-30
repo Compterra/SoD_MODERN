@@ -51,9 +51,19 @@ SCRIPTS = [
 
         #SOD Population Management: troops come from pops â€” cap pool by population surplus (above village minimum)
         (party_get_slot, ":population", ":center_no", slot_center_sod_local_population),
-        (val_sub, ":population", village_pop_min),
-        (val_max, ":population", 0),
-        (val_min, ":upper_limit", ":population"),
+        (store_sub, ":population_surplus", ":population", village_pop_min),
+        (val_max, ":population_surplus", 0),
+        (try_begin),
+          (lt, ":population_surplus", 80),
+          (val_div, ":upper_limit", 2),
+        (else_try),
+          (ge, ":population_surplus", 450),
+          (val_add, ":upper_limit", 3),
+        (else_try),
+          (ge, ":population_surplus", 250),
+          (val_add, ":upper_limit", 1),
+        (try_end),
+        (val_min, ":upper_limit", ":population_surplus"),
         (val_max, ":upper_limit", 0),
 
         (store_random_in_range, ":amount", 0, ":upper_limit"),

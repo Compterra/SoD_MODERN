@@ -18,6 +18,7 @@ def assert_contains(raw: str, needle: str) -> None:
 def main() -> int:
     population = read("src/scripts/ZZ_common_array_processing/update_center_population_supply.py")
     volunteers = read("src/scripts/ZD_centers/update_volunteer_troops_in_village.py")
+    npc_volunteers = read("src/scripts/ZD_centers/update_npc_volunteer_troops_in_village.py")
     recruit_cond = read("src/scripts/ZD_centers/cf_village_recruit_volunteers_cond.py")
     raid_attack = read("src/menus/village/village_raid_attack.py")
 
@@ -34,6 +35,12 @@ def main() -> int:
 
     assert_contains(volunteers, "slot_center_sod_local_population")
     assert_contains(volunteers, "village_pop_min")
+    assert_contains(volunteers, "\":population_surplus\"")
+    assert_contains(volunteers, "lt, \":population_surplus\", 80")
+    assert_contains(volunteers, "ge, \":population_surplus\", 450")
+    assert_contains(npc_volunteers, "slot_center_sod_local_population")
+    assert_contains(npc_volunteers, "\":population_surplus\"")
+    assert_contains(npc_volunteers, "slot_center_npc_volunteer_troop_amount")
     assert_contains(recruit_cond, "slot_center_sod_local_population")
     assert_contains(recruit_cond, "slot_center_volunteer_troop_amount")
     assert_contains(raid_attack, "slot_center_sod_local_population")
