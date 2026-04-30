@@ -42511,7 +42511,7 @@ scripts = [
    (str_store_item_name, s59, ":item_no"),
    (display_message, "@{s59} gains provenance. {s60}", 0x66CC66),
  ]),
-# [ src/scripts/ZY_helper_scripts/sod_consume_center_trade_goods.py:L3-L156 ] sod_consume_center_trade_goods
+# [ src/scripts/ZY_helper_scripts/sod_consume_center_trade_goods.py:L3-L184 ] sod_consume_center_trade_goods
 ("sod_consume_center_trade_goods",
   [
     (store_script_param, ":center_no", 1),
@@ -42572,6 +42572,7 @@ scripts = [
     (assign, ":food_shortage", 0),
     (assign, ":goods_consumed", 0),
     (assign, ":goods_shortage", 0),
+    (assign, ":consumption_value", 0),
     (try_for_range, ":cur_good", trade_goods_begin, trade_goods_end),
       (assign, ":demand", 0),
       (try_begin),
@@ -42624,6 +42625,14 @@ scripts = [
           (troop_remove_item, ":merchant_troop", ":cur_good"),
         (try_end),
         (try_begin),
+          (gt, ":consume_count", 0),
+          (store_item_value, ":item_value", ":cur_good"),
+          (store_mul, ":line_value", ":item_value", ":consume_count"),
+          # Civilian buying power mostly circulates locally instead of becoming pure profit.
+          (val_div, ":line_value", 2),
+          (val_add, ":consumption_value", ":line_value"),
+        (try_end),
+        (try_begin),
           (this_or_next|is_between, ":cur_good", food_begin, food_end),
           (this_or_next|eq, ":cur_good", "itm_grain"),
           (eq, ":cur_good", "itm_flour"),
@@ -42638,6 +42647,24 @@ scripts = [
       (try_end),
     (try_end),
 
+    (try_begin),
+      (gt, ":consumption_value", 0),
+      (val_clamp, ":consumption_value", 0, 2500),
+      (party_get_slot, ":center_wealth", ":center_no", slot_town_wealth),
+      (val_max, ":center_wealth", 0),
+      (val_add, ":center_wealth", ":consumption_value"),
+      (val_min, ":center_wealth", 2000000),
+      (party_set_slot, ":center_no", slot_town_wealth, ":center_wealth"),
+    (try_end),
+    (try_begin),
+      (store_add, ":total_shortage", ":food_shortage", ":goods_shortage"),
+      (gt, ":total_shortage", 0),
+      (store_mul, ":shortage_cost", ":total_shortage", 25),
+      (party_get_slot, ":center_wealth", ":center_no", slot_town_wealth),
+      (val_sub, ":center_wealth", ":shortage_cost"),
+      (val_max, ":center_wealth", 0),
+      (party_set_slot, ":center_no", slot_town_wealth, ":center_wealth"),
+    (try_end),
     (try_begin),
       (gt, ":food_consumed", 0),
       (val_add, ":food_store", ":food_consumed"),
@@ -42665,8 +42692,9 @@ scripts = [
     (assign, reg1, ":food_shortage"),
     (assign, reg2, ":goods_consumed"),
     (assign, reg3, ":goods_shortage"),
+    (assign, reg4, ":consumption_value"),
   ]),
-# [ src/scripts/ZY_helper_scripts/sod_consume_center_trade_goods.py:L157-L164 ] sod_consume_all_center_trade_goods
+# [ src/scripts/ZY_helper_scripts/sod_consume_center_trade_goods.py:L185-L192 ] sod_consume_all_center_trade_goods
 ("sod_consume_all_center_trade_goods",
   [
     (try_for_range, ":center_no", centers_begin, centers_end),
