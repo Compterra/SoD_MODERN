@@ -31,6 +31,8 @@ SCRIPTS = [
        (call_script, "script_change_troop_renown", "trp_player", ":tier"),
      (try_end),
 
+     (call_script, "script_sod_threat_board_apply_economy_effect", ":threat_type", ":sponsor_center", 1),
+
      (try_begin),
        (eq, ":threat_type", sod_threat_type_rogue_company),
        (gt, ":sponsor_faction", 0),
@@ -38,18 +40,13 @@ SCRIPTS = [
      (else_try),
        (eq, ":threat_type", sod_threat_type_relic_thieves),
        (call_script, "script_sod_artifact_generate_set_reward", "trp_bandit", 1, artifact_family_bounty_outlaw),
-     (else_try),
-       (eq, ":threat_type", sod_threat_type_cattle_raiders),
-       (party_get_slot, ":cattle", ":sponsor_center", slot_village_number_of_cattle),
-       (val_add, ":cattle", 5),
-       (party_set_slot, ":sponsor_center", slot_village_number_of_cattle, ":cattle"),
      (try_end),
 
      (str_store_party_name, s1, ":sponsor_center"),
     (assign, reg(1), ":reward_gold"),
     (assign, reg(2), ":reward_xp"),
     (assign, reg(3), ":reward_relation"),
-     (display_message, "@The regional board at {s1} pays {reg1} denars, {reg2} XP, and +{reg3} relation.", 0x66CC66),
+     (display_message, "@The regional board at {s1} pays {reg1} denars, {reg2} XP, and +{reg3} relation. Local markets and households recover.", 0x66CC66),
      (call_script, "script_end_quest", "qst_regional_threat_contract"),
      (call_script, "script_sod_threat_board_init_registry"),
    (try_end),

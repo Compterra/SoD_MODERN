@@ -7829,6 +7829,9 @@ def _build_validate_construction_choice_ops():
 # --- ZY_helper_scripts/sod_threat_board_accept_contract.py preamble ---
 # COST: medium
 
+# --- ZY_helper_scripts/sod_threat_board_apply_economy_effect.py preamble ---
+# COST: low
+
 # --- ZY_helper_scripts/sod_threat_board_apply_regional_pressure.py preamble ---
 # COST: low
 
@@ -42576,18 +42579,117 @@ scripts = [
      (display_message, "@Threat board contract accepted near {s2}. Track down {s1}; details were added to your quest notes.", 0xD6B15E),
    (try_end),
  ]),
-# [ src/scripts/ZY_helper_scripts/sod_threat_board_apply_regional_pressure.py:L3-L24 ] sod_threat_board_apply_regional_pressure
+# [ src/scripts/ZY_helper_scripts/sod_threat_board_apply_economy_effect.py:L3-L102 ] sod_threat_board_apply_economy_effect
+("sod_threat_board_apply_economy_effect",
+ [
+   (store_script_param_1, ":threat_type"),
+   (store_script_param_2, ":sponsor_center"),
+   (store_script_param, ":outcome", 3), # 1 = completed, -1 = failed/expired
+
+   (assign, ":prosperity_delta", 1),
+   (assign, ":local_prosperity_delta", 1),
+   (assign, ":health_delta", 0),
+   (assign, ":population_delta", 3),
+   (assign, ":wealth_delta", 250),
+   (assign, ":cattle_delta", 0),
+
+   (try_begin),
+     (eq, ":threat_type", sod_threat_type_cattle_raiders),
+     (assign, ":prosperity_delta", 1),
+     (assign, ":local_prosperity_delta", 1),
+     (assign, ":health_delta", 1),
+     (assign, ":population_delta", 5),
+     (assign, ":wealth_delta", 150),
+     (assign, ":cattle_delta", 5),
+   (else_try),
+     (eq, ":threat_type", sod_threat_type_pirates),
+     (assign, ":prosperity_delta", 2),
+     (assign, ":local_prosperity_delta", 2),
+     (assign, ":population_delta", 2),
+     (assign, ":wealth_delta", 450),
+   (else_try),
+     (eq, ":threat_type", sod_threat_type_deserters),
+     (assign, ":prosperity_delta", 1),
+     (assign, ":local_prosperity_delta", 1),
+     (assign, ":health_delta", 1),
+     (assign, ":population_delta", 3),
+     (assign, ":wealth_delta", 300),
+   (else_try),
+     (eq, ":threat_type", sod_threat_type_relic_thieves),
+     (assign, ":prosperity_delta", 1),
+     (assign, ":local_prosperity_delta", 1),
+     (assign, ":health_delta", 1),
+     (assign, ":population_delta", 2),
+     (assign, ":wealth_delta", 250),
+   (else_try),
+     (eq, ":threat_type", sod_threat_type_rogue_company),
+     (assign, ":prosperity_delta", 2),
+     (assign, ":local_prosperity_delta", 2),
+     (assign, ":population_delta", 2),
+     (assign, ":wealth_delta", 500),
+   (else_try),
+     (eq, ":threat_type", sod_threat_type_faction_problem),
+     (assign, ":prosperity_delta", 2),
+     (assign, ":local_prosperity_delta", 2),
+     (assign, ":health_delta", 1),
+     (assign, ":population_delta", 4),
+     (assign, ":wealth_delta", 400),
+   (try_end),
+
+   (try_begin),
+     (lt, ":outcome", 0),
+     (val_mul, ":prosperity_delta", -2),
+     (val_mul, ":local_prosperity_delta", -2),
+     (val_mul, ":health_delta", -1),
+     (val_mul, ":population_delta", -2),
+     (val_mul, ":wealth_delta", -2),
+     (try_begin),
+       (eq, ":threat_type", sod_threat_type_cattle_raiders),
+       (assign, ":cattle_delta", -8),
+     (try_end),
+   (try_end),
+
+   (call_script, "script_change_center_prosperity", ":sponsor_center", ":prosperity_delta"),
+   (call_script, "script_change_center_health", ":sponsor_center", ":health_delta"),
+
+   (party_get_slot, ":local_prosperity", ":sponsor_center", slot_center_sod_local_prosperity),
+   (val_add, ":local_prosperity", ":local_prosperity_delta"),
+   (val_clamp, ":local_prosperity", 0, 101),
+   (party_set_slot, ":sponsor_center", slot_center_sod_local_prosperity, ":local_prosperity"),
+
+   (party_get_slot, ":population", ":sponsor_center", slot_center_sod_local_population),
+   (val_add, ":population", ":population_delta"),
+   (val_max, ":population", 0),
+   (party_set_slot, ":sponsor_center", slot_center_sod_local_population, ":population"),
+
+   (party_get_slot, ":wealth", ":sponsor_center", slot_town_wealth),
+   (val_add, ":wealth", ":wealth_delta"),
+   (party_set_slot, ":sponsor_center", slot_town_wealth, ":wealth"),
+
+   (try_begin),
+     (neq, ":cattle_delta", 0),
+     (party_get_slot, ":cattle", ":sponsor_center", slot_village_number_of_cattle),
+     (val_add, ":cattle", ":cattle_delta"),
+     (val_max, ":cattle", 0),
+     (party_set_slot, ":sponsor_center", slot_village_number_of_cattle, ":cattle"),
+   (try_end),
+
+    (assign, reg(0), ":prosperity_delta"),
+    (assign, reg(1), ":health_delta"),
+    (assign, reg(2), ":population_delta"),
+    (assign, reg(3), ":wealth_delta"),
+    (assign, reg(4), ":cattle_delta"),
+ ]),
+# [ src/scripts/ZY_helper_scripts/sod_threat_board_apply_regional_pressure.py:L3-L22 ] sod_threat_board_apply_regional_pressure
 ("sod_threat_board_apply_regional_pressure",
  [
    (store_script_param_1, ":threat_type"),
    (store_script_param_2, ":sponsor_center"),
 
+   (call_script, "script_sod_threat_board_apply_economy_effect", ":threat_type", ":sponsor_center", -1),
+
    (try_begin),
      (eq, ":threat_type", sod_threat_type_cattle_raiders),
-     (party_get_slot, ":cattle", ":sponsor_center", slot_village_number_of_cattle),
-     (val_sub, ":cattle", 8),
-     (val_max, ":cattle", 0),
-     (party_set_slot, ":sponsor_center", slot_village_number_of_cattle, ":cattle"),
      (call_script, "script_change_player_relation_with_center", ":sponsor_center", -2),
    (else_try),
      (eq, ":threat_type", sod_threat_type_rogue_company),
@@ -42651,7 +42753,7 @@ scripts = [
     (assign, reg(2), ":urgency_gold"),
     (assign, reg(3), ":urgency_xp"),
  ]),
-# [ src/scripts/ZY_helper_scripts/sod_threat_board_complete_contract.py:L3-L56 ] sod_threat_board_complete_contract
+# [ src/scripts/ZY_helper_scripts/sod_threat_board_complete_contract.py:L3-L53 ] sod_threat_board_complete_contract
 ("sod_threat_board_complete_contract",
  [
    (assign, ":can_complete", 0),
@@ -42683,6 +42785,8 @@ scripts = [
        (call_script, "script_change_troop_renown", "trp_player", ":tier"),
      (try_end),
 
+     (call_script, "script_sod_threat_board_apply_economy_effect", ":threat_type", ":sponsor_center", 1),
+
      (try_begin),
        (eq, ":threat_type", sod_threat_type_rogue_company),
        (gt, ":sponsor_faction", 0),
@@ -42690,18 +42794,13 @@ scripts = [
      (else_try),
        (eq, ":threat_type", sod_threat_type_relic_thieves),
        (call_script, "script_sod_artifact_generate_set_reward", "trp_bandit", 1, artifact_family_bounty_outlaw),
-     (else_try),
-       (eq, ":threat_type", sod_threat_type_cattle_raiders),
-       (party_get_slot, ":cattle", ":sponsor_center", slot_village_number_of_cattle),
-       (val_add, ":cattle", 5),
-       (party_set_slot, ":sponsor_center", slot_village_number_of_cattle, ":cattle"),
      (try_end),
 
      (str_store_party_name, s1, ":sponsor_center"),
     (assign, reg(1), ":reward_gold"),
     (assign, reg(2), ":reward_xp"),
     (assign, reg(3), ":reward_relation"),
-     (display_message, "@The regional board at {s1} pays {reg1} denars, {reg2} XP, and +{reg3} relation.", 0x66CC66),
+     (display_message, "@The regional board at {s1} pays {reg1} denars, {reg2} XP, and +{reg3} relation. Local markets and households recover.", 0x66CC66),
      (call_script, "script_end_quest", "qst_regional_threat_contract"),
      (call_script, "script_sod_threat_board_init_registry"),
    (try_end),
