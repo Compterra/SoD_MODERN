@@ -25,6 +25,7 @@ def main() -> int:
     economy = read("src/scripts/ZY_helper_scripts/sod_threat_board_apply_economy_effect.py")
     pressure = read("src/scripts/ZY_helper_scripts/sod_threat_board_apply_regional_pressure.py")
     stakes = read("src/scripts/ZY_helper_scripts/sod_threat_board_describe_center_stakes.py")
+    generate = read("src/scripts/ZY_helper_scripts/sod_threat_board_generate_offers.py")
     board_menu = read("src/menus/camp/regional_threat_board.py")
 
     assert_contains(reward, "sod_threat_board_calculate_reward")
@@ -62,6 +63,16 @@ def main() -> int:
     assert_contains(active, "script_sod_threat_board_describe_center_stakes")
     assert_contains(board_menu, "script_sod_threat_board_describe_center_stakes")
     assert_contains(board_menu, "Outcomes affect the local economy and population.")
+    assert_contains(generate, "slot_center_sod_local_population")
+    assert_contains(generate, "slot_center_sod_local_health")
+    assert_contains(generate, "slot_town_prosperity")
+    assert_contains(generate, "slot_center_sod_local_prosperity")
+    assert_contains(generate, "slot_town_wealth")
+    assert_contains(generate, "slot_village_number_of_cattle")
+    assert_contains(generate, "sod_threat_archetype_cattle_raiders")
+    assert_contains(generate, "sod_threat_archetype_river_pirates")
+    assert_contains(generate, "sod_threat_archetype_army_deserters")
+    assert_contains(generate, "sod_threat_archetype_invader_scouts")
 
     print("[threat_board_rewards] OK")
     return 0

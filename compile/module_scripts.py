@@ -42986,7 +42986,7 @@ scripts = [
    (call_script, "script_sod_threat_board_init_registry"),
    (display_message, "@A regional threat-board contract has expired. The sponsor loses confidence.", 0xFFCC66),
  ]),
-# [ src/scripts/ZY_helper_scripts/sod_threat_board_generate_offers.py:L3-L42 ] sod_threat_board_generate_offers
+# [ src/scripts/ZY_helper_scripts/sod_threat_board_generate_offers.py:L3-L79 ] sod_threat_board_generate_offers
 ("sod_threat_board_generate_offers",
  [
    (store_script_param_1, ":center_no"),
@@ -43021,6 +43021,43 @@ scripts = [
    (else_try),
      (party_slot_eq, ":center_no", slot_party_type, spt_castle),
      (assign, ":offer_2", sod_threat_archetype_army_deserters),
+   (try_end),
+
+   (party_get_slot, ":population", ":center_no", slot_center_sod_local_population),
+   (party_get_slot, ":health", ":center_no", slot_center_sod_local_health),
+   (party_get_slot, ":prosperity", ":center_no", slot_town_prosperity),
+   (party_get_slot, ":local_prosperity", ":center_no", slot_center_sod_local_prosperity),
+   (party_get_slot, ":wealth", ":center_no", slot_town_wealth),
+
+   (try_begin),
+     (party_slot_eq, ":center_no", slot_party_type, spt_village),
+     (party_get_slot, ":cattle", ":center_no", slot_village_number_of_cattle),
+     (try_begin),
+       (lt, ":cattle", 12),
+       (assign, ":offer_1", sod_threat_archetype_cattle_raiders),
+     (else_try),
+       (lt, ":population", 180),
+       (assign, ":offer_1", sod_threat_archetype_herd_rustlers),
+     (try_end),
+   (try_end),
+
+   (try_begin),
+     (lt, ":prosperity", 30),
+     (assign, ":offer_2", sod_threat_archetype_river_pirates),
+   (else_try),
+     (lt, ":local_prosperity", 25),
+     (assign, ":offer_2", sod_threat_archetype_coastal_smugglers),
+   (else_try),
+     (lt, ":wealth", 1000),
+     (assign, ":offer_2", sod_threat_archetype_rogue_company),
+   (try_end),
+
+   (try_begin),
+     (lt, ":health", 35),
+     (assign, ":offer_3", sod_threat_archetype_army_deserters),
+   (else_try),
+     (lt, ":population", 220),
+     (assign, ":offer_3", sod_threat_archetype_invader_scouts),
    (try_end),
 
    (quest_set_slot, "qst_regional_threat_contract", slot_quest_sod_threat_offer_1, ":offer_1"),
