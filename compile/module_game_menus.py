@@ -16679,7 +16679,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("village_raid_leave", [], "Leave this village alone.", [(change_screen_return)]),
     ],
   ),
-# [ src/menus/village/village_raid_attack.py:L1-L62 ] village_start_attack
+# [ src/menus/village/village_raid_attack.py:L1-L69 ] village_start_attack
 (
     "village_start_attack", mnf_disable_all_keys,
     "Some of the angry villagers grab their tools and prepare to resist you. It looks like you'll have a fight on your hands if you continue.",
@@ -16690,9 +16690,16 @@ or spirit exist and so condemn the priests of false religions and other magician
        (assign, ":player_party_size", reg(0)),
        (call_script, "script_party_count_members_with_full_health", "$current_town"),
        (assign, ":villagers_party_size", reg(0)),
+       (party_get_slot, ":village_population", "$current_town", slot_center_sod_local_population),
+       (store_sub, ":population_surplus", ":village_population", village_pop_min),
+       (val_max, ":population_surplus", 0),
+       (store_div, ":population_resistance", ":population_surplus", 80),
+       (val_min, ":population_resistance", 35),
+       (val_add, ":villagers_party_size", ":population_resistance"),
+       (store_add, ":overawe_threshold", ":villagers_party_size", 25),
 
        (try_begin),
-         (gt, ":player_party_size", 25),
+         (gt, ":player_party_size", ":overawe_threshold"),
          (jump_to_menu, "mnu_village_loot_no_resist"),
        (else_try),
          (this_or_next|eq, ":villagers_party_size", 0),
