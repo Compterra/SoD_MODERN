@@ -1,0 +1,20 @@
+DIALOGS = [
+[trp_sod_strategy_advisor, "sa_select_noble", [
+		(try_begin),
+			(eq, "$g_sod_sa_talk_subject", 21),
+			(str_store_string, s1, "@The Antarian Nobles are elite infantry warriors.  They are heavily armed and highly skilled.  Only the most proficient archer can land a blow through their shields.  The ranks of the nobles are defined as Noble, Guard, and Honor Guard.  I have witnessed a handful of Honor Guards possessed thru faith to become some of the strongest warriors in the land."),
+		(else_try),
+			(eq, "$g_sod_sa_talk_subject", 22),
+			(str_store_string, s1, "@The Marinarians Nobles are elite ranged infantry crossbowmen.  In a pinch, they do not make bad melee soldiers either.  They are moderately armored and highly skilled and increase in rank from Mercenary, Landsknecht, and Condottieri.  I have witnessed a handful of Condottieris possessed thru religious fervor to become some of the most deadly crossbowmen in the land."),
+		(else_try),
+			(eq, "$g_sod_sa_talk_subject", 23),
+			(str_store_string, s1, "@The Adenian Nobles fight on horseback.  The strength of these troops is amazing and unsurpassed.  The ranks of the nobles are defined as Squire, Knight, and Magnate.  I have witnessed Magnates overcome with faith to become some of the strongest mounts in the land. "),
+		(else_try),
+			(eq, "$g_sod_sa_talk_subject", 24),
+			(str_store_string, s1, "@The Villianese Nobles are elite ranged infantry archers.  They are moderately armored and highly skilled and increase in rank from Noble, Chief, to High Chief.  I have witnessed a High Chiefs overcome thru religious zeal to become some of the most deadly ranged infantry in the land."),
+		(else_try),
+			(eq, "$g_sod_sa_talk_subject", 25),
+			(str_store_string, s1, "@The Zerrikanian nobility comes from all walks of life and backgrounds.  While the majority are of noble birth consisting of second and third sons that will never inherit their families land, some of the cruelest come from a slavery background and decided a life of fighting provides better than their former life.  They increase in rank from Boyar Son's, to Boyars, to Dvors.  Dvors are typically not of noble lineage but rather the elite bodyguards of Boyars.  After loyal service to the Sultan, a wealthy Boyar is allowed to tend to his family's business while his bodyguard fills the ranks.  The most feared cavalry archers in the land come from a Zerrikanian Dvor filled with the spirit of this faith.  "),
+		(try_end),
+	], "{s1}", "sa_select_3", []],
+]

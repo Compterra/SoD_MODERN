@@ -1,0 +1,58 @@
+# COST: trivial
+SCRIPTS = [
+("merc_describe_guild_progression",
+ [
+   (store_script_param_1, ":guild_faction"),
+
+   (store_relation, ":rel", ":guild_faction", "fac_player_faction"),
+   (call_script, "script_merc_get_elite_relation_requirement", ":guild_faction"),
+   (assign, ":elite_req", reg0),
+
+   (str_store_string, s64, "@Promotion locked."),
+   (str_store_string, s65, "@No pact."),
+
+   (try_begin),
+     (ge, ":rel", 40),
+     (str_store_string, s64, "@Trusted favor available."),
+   (else_try),
+     (ge, ":rel", 30),
+     (str_store_string, s64, "@Special service available."),
+   (else_try),
+     (ge, ":rel", ":elite_req"),
+     (str_store_string, s64, "@Elite access available."),
+   (else_try),
+     (ge, ":rel", 10),
+     (str_store_string, s64, "@Promotion access available."),
+   (try_end),
+
+   (try_begin),
+     (faction_slot_eq, "fac_player_faction", slot_faction_merc_pact, ":guild_faction"),
+     (str_store_string, s65, "@Active pact."),
+   (else_try),
+     (troop_slot_ge, "trp_player", slot_troop_mercenaries, 1),
+     (troop_get_slot, ":player_company", "trp_player", slot_troop_mercenaries),
+     (party_is_active, ":player_company"),
+     (party_slot_eq, ":player_company", slot_party_orginal_faction, ":guild_faction"),
+     (str_store_string, s65, "@Active company."),
+   (try_end),
+
+   (call_script, "script_merc_get_guild_quest_tier", ":guild_faction"),
+   (try_begin),
+     (eq, reg0, 4),
+     (str_store_string, s66, "@Quest tier: elite work."),
+   (else_try),
+     (eq, reg0, 3),
+     (str_store_string, s66, "@Quest tier: advanced work."),
+   (else_try),
+     (eq, reg0, 2),
+     (str_store_string, s66, "@Quest tier: contract work."),
+   (else_try),
+     (eq, reg0, 1),
+     (str_store_string, s66, "@Quest tier: basic work."),
+   (else_try),
+     (str_store_string, s66, "@Quest tier: courier work only."),
+   (try_end),
+
+   (assign, reg0, ":elite_req"),
+ ]),
+]

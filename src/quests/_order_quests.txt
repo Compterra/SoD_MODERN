@@ -1,0 +1,14 @@
+# Ordered quest fragments for build/build_quests.py
+# Keep quest group boundaries stable because src/constants/module_constants.py
+# and script_get_random_quest depend on specific begin/end quest ids.
+
+0001_prison_break_chain.py
+0002_mercenary_guild_quests.py
+0003_lord_quests.py
+0004_enemy_lord_quests.py
+0005_army_quests.py
+0006_lady_quests.py
+0007_mayor_quests.py
+0008_village_elder_quests.py
+0009_story_and_meta_quests.py
+0010_sample_campaign_quests.py

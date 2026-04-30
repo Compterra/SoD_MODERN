@@ -1,0 +1,21 @@
+DIALOGS = [
+[anyone, "start", [(eq, "$talk_context", tc_tavern_talk),
+                     (eq, "$g_talk_troop", "trp_farmer_from_bandit_village"),
+                     (neg|check_quest_active, "qst_eliminate_bandits_infesting_village"),
+                     (neg|check_quest_active, "qst_deal_with_bandits_at_lords_village"),
+                     (assign, ":end_cond", villages_end),
+                     (try_for_range, ":cur_village", villages_begin, ":end_cond"),
+                       (party_slot_eq, ":cur_village", slot_village_bound_center, "$g_encountered_party"),
+                       (party_slot_ge, ":cur_village", slot_village_infested_by_bandits, 1),
+                       (str_store_party_name, s1, ":cur_village"),
+                       (quest_set_slot, "qst_eliminate_bandits_infesting_village", slot_quest_target_center, ":cur_village"),
+                       (quest_set_slot, "qst_eliminate_bandits_infesting_village", slot_quest_current_state, 0),
+                       (party_get_slot, ":village_elder", ":cur_village", slot_town_elder),
+                       (quest_set_slot, "qst_eliminate_bandits_infesting_village", slot_quest_giver_troop, ":village_elder"),
+                       (quest_set_slot, "qst_eliminate_bandits_infesting_village", slot_quest_giver_center, ":cur_village"),
+                       (assign, ":end_cond", 0),
+                     (try_end),
+                     ],
+   "{My lord/Madam}, you look like a {man/lady} of the sword and someone who could help us.\
+ Will you hear my plea?", "farmer_from_bandit_village_1", []],
+]

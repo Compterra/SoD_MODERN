@@ -1,0 +1,20 @@
+SCRIPTS = [
+("get_troop_custom_banner_num_positionings",
+        [
+          (store_script_param, ":troop_no", 1),
+          (troop_get_slot, ":num_charges", ":troop_no", slot_troop_custom_banner_num_charges),
+          (try_begin),
+            (eq, ":num_charges", 1),
+            (assign, ":num_positionings", 2),
+          (else_try),
+            (eq, ":num_charges", 2),
+            (assign, ":num_positionings", 4),
+          (else_try),
+            (eq, ":num_charges", 3),
+            (assign, ":num_positionings", 6),
+          (else_try),
+            (assign, ":num_positionings", 2),
+          (try_end),
+          (assign, reg0, ":num_positionings"),
+      ]),
+]

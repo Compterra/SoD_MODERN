@@ -1,0 +1,82 @@
+DIALOGS = [
+[trp_sod_chancellor, "chancellor_population",
+    [
+      (assign, "$g_sod_global_population", 0),
+      (assign, ":villages", 0),
+      (assign, ":towns", 0),
+      (assign, ":castles", 0),
+      (assign, ":parishioners", 0),
+
+      (try_for_range, ":center", centers_begin, centers_end),
+
+        # only include our kingdom
+        (store_faction_of_party, ":faction", ":center"),
+        (this_or_next|eq, ":faction", "fac_player_supporters_faction"),
+        (eq, ":faction", "fac_player_faction"),
+
+        # center count & population
+        (try_begin),
+          (party_slot_eq, ":center", slot_party_type, spt_village),
+          (val_add, ":villages", 1),
+          (party_get_slot, ":center_population", ":center", slot_center_sod_local_population),
+          (val_add, "$g_sod_global_population", ":center_population"),
+        (else_try),
+          (party_slot_eq, ":center", slot_party_type, spt_town),
+          (val_add, ":towns", 1),
+          (party_get_slot, ":center_population", ":center", slot_center_sod_local_population),
+          (val_add, "$g_sod_global_population", ":center_population"),
+        (else_try),
+          (party_slot_eq, ":center", slot_party_type, spt_castle),
+          (val_add, ":castles", 1),
+        (try_end),
+
+        # faith
+        (try_begin),
+          # villages and towns (never castles)
+          (neg|party_slot_eq, ":center", slot_party_type, spt_castle),
+          # treat local faith as a % of the total population that has this religion (note: negative is simply zero)
+          (party_get_slot, ":faith", ":center", slot_center_sod_local_faith),
+          (val_clamp, ":faith", 0, 101),
+          (store_mul, reg0, ":center_population", ":faith"),
+          (val_div, reg0, 100),
+          (val_add, ":parishioners", reg0),
+        (try_end),
+
+      (try_end),
+
+      # get the strings we need
+      (try_begin),
+        (assign, reg1, ":towns"),
+        (eq, reg1, 0),
+        (str_store_string, s1, "@no towns"),
+      (else_try),
+        (store_sub, reg0, reg1, 1),
+        (str_store_string, s1, "@{reg0?{reg1} towns:one town}"),
+      (try_end),
+      (try_begin),
+        (assign, reg2, ":castles"),
+        (eq, reg2, 0),
+        (str_store_string, s2, "@no castles"),
+      (else_try),
+        (store_sub, reg0, reg2, 1),
+        (str_store_string, s2, "@{reg0?{reg2} castles:one castle}"),
+      (try_end),
+      (try_begin),
+        (assign, reg3, ":villages"),
+        (eq, reg3, 0),
+        (str_store_string, s3, "@no villages"),
+      (else_try),
+        (store_sub, reg0, reg3, 1),
+        (str_store_string, s3, "@{reg0?{reg3} villages:one village}"),
+      (try_end),
+      (str_store_string, s4, "@{s1}, {s2}, and {s3}"),
+
+      # and registers
+      (assign, reg3, ":villages"),
+      (assign, reg4, "$g_sod_global_population"),
+      (assign, reg1, ":parishioners"),
+      (store_add, reg0, "str_sod_faith_believer_0", "$g_sod_faith"),
+      (str_store_string, s1, reg0),
+    ],
+    "Our kingdom has {s4}, containting a total population of {reg4} taxpayers, of which {s1}.", "chancellor_talk", []],
+]

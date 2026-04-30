@@ -1,0 +1,3 @@
+DIALOGS = [
+[anyone, "cpsq_racist_14", [], "Which ends up with a few calculating elitists leading masses of morons as they please. And, if there's but only a sparkle of opposition between those elitists; it can lead to all-out civil war, where not political groups, but the minortities themselves take sides - and thus end the fragile peace between themselves, if there was any to begin with. This is how the Sultanate of Zerrikania crumbled to a shadow of its former self: they had too many foreign slaves, who, upon earning freedom in return of decades of servitude, eventually became increasingly powerful minorities. ", "cpsq_racist_15", [] ],
+]

@@ -1,0 +1,20 @@
+DIALOGS = [
+[anyone, "centurion_avoid_battle", [(eq, "$g_sod_centurion_avoid_battle_agree", 1), 
+	
+	(try_begin),
+		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
+		(str_store_string, s0, "@I know, but... no, you're right. The civilian populace shouldn't be endangered. They will have more than enough trouble coming to them even without us. Very well, I'll let you have it your way {playername}, but remember, we can't keep up this chase for long."),
+	(else_try),
+		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_respectful),
+		(str_store_string, s0, "@): I... see. Truth to be told, I don't wish to fight you either. You are the last heir of a once great family of respected rulers; I would rather not have my hands stained by your blood. I'll try to ask my superiors to get others to deal with you. For now, my sword remains in its scabbard."),
+	(else_try),
+		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
+		(str_store_string, s0, "@Hmm... very well, I'll give you the time you need to escort the local civilian populace to safety. But don't delay too long, I wish to put an end to this conflict as soon as possible."),
+	(else_try),
+		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_nihilistic),
+		(str_store_string, s0, "@Trust me, I don't feel like it either. Eh... you know what ? Screw it. I'll just tell the others you ran so fast as if the seven-headed warhounds of Marsus were chasing after you. Hm, that sounded poetic... wait, you're still here ? Get lost already ! Boo !"),
+	(else_try),
+		(str_store_string, s0, "@I'm starting to worry I let you too close to myself. Very well, for this once I'll let you go; but next time we are nigh certain to come to blows. Now go from here."),
+	(try_end),
+	], "{s0}", "close_window", []],
+]

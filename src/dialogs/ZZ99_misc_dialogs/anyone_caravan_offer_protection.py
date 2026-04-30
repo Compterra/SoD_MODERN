@@ -1,0 +1,16 @@
+DIALOGS = [
+[anyone, "caravan_offer_protection", [],
+   "These roads are dangerous indeed. One can never have enough protection.", "caravan_offer_protection_2",
+   [(get_party_ai_object, ":caravan_destination", "$g_encountered_party"),
+    (store_distance_to_party_from_party, "$caravan_distance_to_target", ":caravan_destination", "$g_encountered_party"),
+    (assign, "$caravan_escort_offer", "$caravan_distance_to_target"),
+    (val_sub, "$caravan_escort_offer", 10),
+    (call_script, "script_party_calculate_strength", "p_main_party", 0),
+    (assign, ":player_strength", reg0),
+    (val_min, ":player_strength", 200),
+    (val_add, ":player_strength", 20),
+    (val_mul, "$caravan_escort_offer", ":player_strength"),
+    (val_div, "$caravan_escort_offer", 50),
+    (val_max, "$caravan_escort_offer", 5),
+    ]],
+]

@@ -1,0 +1,21 @@
+SCRIPTS = [
+("sod_quest_runtime_daily_update",
+    [
+      (store_current_day, ":cur_day"),
+      (try_for_range, ":quest_no", all_quests_begin, all_quests_end),
+        (check_quest_active, ":quest_no"),
+        (quest_set_slot, ":quest_no", slot_quest_sod_runtime_state, sod_quest_state_active),
+        (try_begin),
+          (quest_slot_ge, ":quest_no", slot_quest_expiration_days, 1),
+          (quest_get_slot, ":expiration_days", ":quest_no", slot_quest_expiration_days),
+          (quest_get_slot, ":start_day", ":quest_no", slot_quest_sod_runtime_last_day),
+          (store_sub, ":elapsed", ":cur_day", ":start_day"),
+          (ge, ":elapsed", ":expiration_days"),
+          (call_script, "script_sod_quest_runtime_abort", ":quest_no", 2),
+        (try_end),
+        (quest_set_slot, ":quest_no", slot_quest_sod_runtime_last_event, sod_quest_event_time_passed),
+      (try_end),
+      (call_script, "script_sod_quest_dispatch_active_event", sod_quest_event_time_passed, -1, -1, -1),
+      (call_script, "script_sod_quest_chain_resume_due"),
+  ]),
+]

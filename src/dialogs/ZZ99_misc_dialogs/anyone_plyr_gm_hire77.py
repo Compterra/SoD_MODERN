@@ -1,0 +1,26 @@
+DIALOGS = [
+[anyone|plyr, "gm_hire77", [
+   (str_clear, s3),
+   (assign, ":proportions_change", 0),
+   (try_begin),
+	(this_or_next|eq, "$g_talk_troop", black_army_guild_master),
+	(eq, "$g_talk_troop", black_army_rep),
+	(str_store_string, s3, "@Yes, I want melee infantry."),
+	(assign, ":proportions_change", 1),
+   (else_try),
+	(this_or_next|eq, "$g_talk_troop", conquistadors_guild_master),
+	(eq, "$g_talk_troop", conquistadors_rep),
+	(str_store_string, s3, "@Yes, I want melee units."),
+	(assign, ":proportions_change", 1),
+   (else_try),
+    (this_or_next|eq, "$g_talk_troop", jotnar_clan_guild_master),
+	(this_or_next|eq, "$g_talk_troop", jotnar_clan_rep),
+	(this_or_next|eq, "$g_talk_troop", serpent_host_guild_master),
+	(eq, "$g_talk_troop", serpent_host_rep),
+	(str_store_string, s3, "@Yes, I want cavalry."),
+	(assign, ":proportions_change", 1),
+   (try_end),
+   (eq, ":proportions_change", 1),
+   ],"{s3}", "gm_hire8", [
+   (assign, "$temp_proportion", 24),]],
+]

@@ -1,0 +1,31 @@
+# COST: trivial
+SCRIPTS = [
+("merc_get_guild_price_factor",
+ [
+   (store_script_param_1, ":guild_faction"),
+
+   (assign, reg0, 100),
+   (try_begin),
+     (eq, ":guild_faction", "fac_sod_merc_guild1"),
+     (assign, reg0, 118),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild2"),
+     (assign, reg0, 108),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild3"),
+     (assign, reg0, 110),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild4"),
+     (assign, reg0, 94),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild5"),
+     (assign, reg0, 116),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild6"),
+     (assign, reg0, 88),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild7"),
+     (assign, reg0, 92),
+   (try_end),
+ ]),
+]

@@ -1,0 +1,25 @@
+# COST: trivial
+SCRIPTS = [
+("ponavosa_duel_is_commander",
+ [
+   (store_script_param_1, ":troop_no"),
+   (assign, reg0, 0),
+   (try_begin),
+     (eq, ":troop_no", "trp_player"),
+     (assign, reg0, 1),
+   (else_try),
+     (troop_is_hero, ":troop_no"),
+     (assign, reg0, 1),
+   (else_try),
+     (is_between, ":troop_no", kingdom_heroes_begin, kingdom_heroes_end),
+     (assign, reg0, 1),
+   (else_try),
+     (troop_slot_eq, ":troop_no", slot_troop_occupation, slto_mercenary_lord),
+     (assign, reg0, 1),
+   (else_try),
+     (store_character_level, ":level", ":troop_no"),
+     (ge, ":level", 28),
+     (assign, reg0, 1),
+   (try_end),
+ ]),
+]

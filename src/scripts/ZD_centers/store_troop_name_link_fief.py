@@ -1,0 +1,28 @@
+SCRIPTS = [
+("store_troop_name_link_fief",
+	[
+		(store_script_param_1, ":string"),
+		(store_script_param_2, ":troop"),
+
+	(try_begin),
+		(troop_get_slot, ":title", ":troop", slot_troop_title),
+		(gt, ":title", 0),
+		(str_store_troop_name_link, s37, ":troop"),
+		(str_store_string, s27, ":title"),
+		(call_script, "script_get_best_fief_name_of_troop", s17, ":troop"),
+		(try_begin),
+			(eq, ":troop", "trp_player"),
+			(eq, "$g_sod_king", 1),
+			(str_store_string, ":string", "@{s37} {s27}{s17}"),
+		(else_try),
+			(store_troop_faction, ":faction", ":troop"),
+			(faction_slot_eq, ":faction", slot_faction_leader, ":troop"),
+			(str_store_string, ":string", "@{s37} {s27}{s17}"),
+		(else_try),
+			(str_store_string, ":string", "@{s27} {s37}{s17}"),
+		(try_end),
+	(else_try),
+		(str_store_troop_name, ":string", ":troop"),
+	(try_end),
+	]),
+]

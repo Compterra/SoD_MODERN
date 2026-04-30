@@ -1,0 +1,16 @@
+SCRIPTS = [
+("get_name_from_dna_to_s50",
+        [(store_script_param, ":dna", 1),
+          (store_sub, ":num_names", names_end, names_begin),
+          (store_sub, ":num_surnames", surnames_end, surnames_begin),
+          (assign, ":selected_name", ":dna"),
+          (val_mod, ":selected_name", ":num_names"),
+          (assign, ":selected_surname", ":dna"),
+          (val_div, ":selected_surname", ":num_names"),
+          (val_mod, ":selected_surname", ":num_surnames"),
+          (val_add, ":selected_name", names_begin),
+          (val_add, ":selected_surname", surnames_begin),
+          (str_store_string, s50, ":selected_name"),
+          (str_store_string, s50, ":selected_surname"),
+      ]),
+]

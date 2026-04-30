@@ -1,0 +1,3 @@
+DIALOGS = [
+[anyone, "cp_liberator_11", [], "Am I now ? I believe what I see, and I see ravaged villages, ruined castles and desecrated shrines. Wherever I go, it is your name that is whispered by anger throughout entire Calradia for bringing war to the land and persecuting religions outside your own. The people don't forget the pain inflicted upon them, and if someone offers them a justified revenge, they don't lie to their liberators. The Imperial Legion will set things right. We will free Calradia from its corrupt monarchs, including you, city by city, village by village, household by household, until the very memory of your malice finally vanishes. All that will be remembered is that in the emperor's sacred name, I had destroyed you !", "cp_liberator_12", [] ],
+]

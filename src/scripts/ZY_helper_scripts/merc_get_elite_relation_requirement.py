@@ -1,0 +1,31 @@
+# COST: trivial
+SCRIPTS = [
+("merc_get_elite_relation_requirement",
+ [
+   (store_script_param_1, ":guild_faction"),
+
+   (assign, reg0, 40),
+   (try_begin),
+     (eq, ":guild_faction", "fac_sod_merc_guild1"),
+     (assign, reg0, 55),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild2"),
+     (assign, reg0, 45),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild3"),
+     (assign, reg0, 50),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild4"),
+     (assign, reg0, 35),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild5"),
+     (assign, reg0, 55),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild6"),
+     (assign, reg0, 10),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild7"),
+     (assign, reg0, 30),
+   (try_end),
+ ]),
+]

@@ -1,0 +1,23 @@
+DIALOGS = [
+[anyone,"start", [
+					(store_relation, ":rel", "fac_player_faction", "$g_talk_troop_faction"),
+					(talk_info_set_relation_bar, ":rel"),(eq,"$g_talk_troop", black_army_guild_master),(store_troop_faction, "$g_talk_troop_faction", "$g_talk_troop"),
+  (try_begin),
+    (eq, "$g_sod_country", cb_antares),
+	(str_store_string, s1, "@Empire of Antares"),
+  (else_try),
+    (eq, "$g_sod_country", cb_marina),
+	(str_store_string, s1, "@Republic of Marina"),
+  (else_try),
+    (eq, "$g_sod_country", cb_aden),
+	(str_store_string, s1, "@Kingdom of Aden"),
+  (else_try),
+    (eq, "$g_sod_country", cb_villian),
+	(str_store_string, s1, "@Duchy of Villian"),
+  (else_try),
+    (eq, "$g_sod_country", cb_zerrikan),
+	(str_store_string, s1, "@Zerrikanian Sultanate"),
+  (try_end),
+  ],
+   "Hmpf. So it is you, the last righful heir of {s1}. Suprised, princeling ? I may have just one eye but I can see right through you. But don't expect my sympathy just because we are from the same patch of Earth. Now, state your business.", "gm_talk",[]],
+]

@@ -1,0 +1,31 @@
+# COST: trivial
+SCRIPTS = [
+("merc_describe_guild_favor",
+ [
+   (store_script_param_1, ":guild_faction"),
+
+   (str_store_string, s54, "@a modest reserve draft"),
+   (try_begin),
+     (eq, ":guild_faction", "fac_sod_merc_guild1"),
+     (str_store_string, s54, "@a veteran drill cadre"),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild2"),
+     (str_store_string, s54, "@a disciplined reinforcement draft"),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild3"),
+     (str_store_string, s54, "@a war-paint blessing and elite escort"),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild4"),
+     (str_store_string, s54, "@a fast clan muster"),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild5"),
+     (str_store_string, s54, "@a mounted strike detachment"),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild6"),
+     (str_store_string, s54, "@a wave of cheap replacements"),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild7"),
+     (str_store_string, s54, "@a frontier warband call-up"),
+   (try_end),
+ ]),
+]

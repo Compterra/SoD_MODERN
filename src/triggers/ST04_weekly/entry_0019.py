@@ -1,0 +1,55 @@
+SIMPLE_TRIGGERS = [
+(24 * 7,
+   [
+    (try_for_range, ":center_no", towns_begin, towns_end),
+      (party_get_slot, ":center_population", ":center_no", slot_center_sod_local_population),
+      (party_get_slot, ":prosperity", ":center_no", slot_town_prosperity),
+      (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
+
+      (val_max, ":center_population", town_pop_min),
+
+      # Base food demand follows population, then shifts modestly with local conditions.
+      (assign, ":consumption_mod", 100),
+      (try_begin),
+        (ge, ":prosperity", 70),
+        (val_add, ":consumption_mod", 15),
+      (else_try),
+        (lt, ":prosperity", 40),
+        (val_sub, ":consumption_mod", 10),
+      (try_end),
+      (try_begin),
+        (ge, ":center_health", 70),
+        (val_add, ":consumption_mod", 10),
+      (else_try),
+        (lt, ":center_health", 40),
+        (val_sub, ":consumption_mod", 10),
+      (try_end),
+
+      (store_div, ":consumption", ":center_population", sod_town_consumption_pop_divisor),
+      (val_mul, ":consumption", ":consumption_mod"),
+      (val_div, ":consumption", 100),
+      (val_max, ":consumption", 1),
+      (store_mul, ":consumption", -1),
+      (call_script, "script_center_change_trade_good_production", ":center_no", "itm_grain", ":consumption", 0),
+      (call_script, "script_center_change_trade_good_production", ":center_no", "itm_flour", ":consumption", 0),
+
+      # Secondary goods depend more on prosperity than on mere survival demand.
+      (assign, ":consumption_extra_mod", ":consumption_mod"),
+      (try_begin),
+        (ge, ":prosperity", 80),
+        (val_add, ":consumption_extra_mod", 10),
+      (else_try),
+        (lt, ":prosperity", 35),
+        (val_sub, ":consumption_extra_mod", 10),
+      (try_end),
+
+      (store_div, ":consumption_extra", ":center_population", sod_town_consumption_extra_pop_divisor),
+      (val_mul, ":consumption_extra", ":consumption_extra_mod"),
+      (val_div, ":consumption_extra", 100),
+      (val_max, ":consumption_extra", 1),
+      (store_mul, ":consumption_extra", -1),
+      (call_script, "script_center_change_trade_good_production", ":center_no", "itm_cattle_meat", ":consumption_extra", 0),
+      (call_script, "script_center_change_trade_good_production", ":center_no", "itm_ale", ":consumption_extra", 0),
+    (try_end),
+   ]),
+]

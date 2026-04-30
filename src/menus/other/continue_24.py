@@ -1,0 +1,25 @@
+MENUS = [
+(
+    "village_black_army_result", mnf_scale_picture,
+    "{s9}",
+    "none",
+    [(try_begin),
+       (eq, "$g_battle_result", 1),
+       (jump_to_menu, "mnu_ba_village_infestation_removed"),
+     (else_try),
+       (str_store_string, s9, "@Try as you might, you could not defeat the enemy."),
+       (set_background_mesh, "mesh_pic_looted_village"),
+     (try_end),
+    ],
+    [
+      ("continue", [], "Continue...",
+       [(party_set_slot, "$g_encountered_party", slot_village_infested_by_bandits, 0),
+        (call_script, "script_village_set_state", "$current_town", svs_looted),
+        (party_set_slot, "$current_town", slot_village_raid_progress, 0),
+        (party_set_slot, "$current_town", slot_village_recover_progress, 0),
+          (call_script, "script_fail_quest", "qst_black_army_aid_warband"),
+          (call_script, "script_change_player_relation_with_center", "$g_encountered_party", -3),
+        (jump_to_menu, "mnu_village"), ]),
+    ],
+  ),
+]

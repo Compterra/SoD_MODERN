@@ -1,0 +1,26 @@
+SCRIPTS = [
+("change_banners_and_chest",
+    [(party_get_slot, ":cur_leader", "$g_encountered_party", slot_town_lord),
+      (try_begin),
+		# custom_banner_begin
+		(eq, ":cur_leader", "trp_player"),
+		(eq, "$g_custom_banner", 1),
+        (troop_get_slot, ":flag_spr", ":cur_leader", slot_troop_custom_banner_flag_type),
+        (ge, ":flag_spr", 0),
+        (val_add, ":flag_spr", custom_banner_flag_scene_props_begin),
+        (replace_scene_props, banner_scene_props_begin, ":flag_spr"),
+      (else_try),
+        (ge, ":cur_leader", 0),
+        #normal_banner_begin
+		(troop_get_slot, ":troop_banner_object", ":cur_leader", slot_troop_banner_scene_prop),
+		(gt, ":troop_banner_object", 0),
+		(replace_scene_props, banner_scene_props_begin, ":troop_banner_object"),
+      (else_try),
+            (replace_scene_props, banner_scene_props_begin, "spr_empty"),
+      (try_end),
+      (try_begin),
+        (neq, ":cur_leader", "trp_player"),
+        (replace_scene_props, "spr_player_chest", "spr_locked_player_chest"),
+      (try_end),
+  ]),
+]

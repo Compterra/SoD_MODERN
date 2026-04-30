@@ -1,0 +1,20 @@
+SIMPLE_TRIGGERS = [
+(24,
+   [
+     (troop_get_inventory_capacity, ":inv_size", "trp_player"),
+     (try_for_range, ":i_slot", 0, ":inv_size"),
+       (troop_get_inventory_slot, ":item_id", "trp_player", ":i_slot"),
+       (eq, ":item_id", "itm_cattle_meat"),
+       (troop_get_inventory_slot_modifier, ":modifier", "trp_player", ":i_slot"),
+       (try_begin),
+         (ge, ":modifier", imod_fresh),
+         (lt, ":modifier", imod_rotten),
+         (val_add, ":modifier", 1),
+         (troop_set_inventory_slot_modifier, "trp_player", ":i_slot", ":modifier"),
+       (else_try),
+         (lt, ":modifier", imod_fresh),
+         (troop_set_inventory_slot_modifier, "trp_player", ":i_slot", imod_fresh),
+       (try_end),
+     (try_end),
+    ]),
+]

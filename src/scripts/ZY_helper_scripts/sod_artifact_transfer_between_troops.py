@@ -1,0 +1,35 @@
+# COST: medium
+SCRIPTS = [
+("sod_artifact_transfer_between_troops",
+ [
+   (store_script_param_1, ":loser"),
+   (store_script_param_2, ":captor"),
+   (store_script_param, ":source_slot", 3),
+   (store_script_param, ":target_slot", 4),
+   (store_script_param, ":item_no", 5),
+   (store_script_param, ":item_modifier", 6),
+
+   (troop_set_inventory_slot, ":loser", ":source_slot", -1),
+   (troop_set_inventory_slot_modifier, ":loser", ":source_slot", 0),
+   (troop_set_inventory_slot, ":captor", ":target_slot", ":item_no"),
+   (troop_set_inventory_slot_modifier, ":captor", ":target_slot", ":item_modifier"),
+   (item_set_slot, ":item_no", slot_item_artifact_current_owner, ":captor"),
+   (item_set_slot, ":item_no", slot_item_artifact_last_modifier, ":item_modifier"),
+
+   (str_store_item_name, s59, ":item_no"),
+   (try_begin),
+     (eq, ":captor", "trp_player"),
+     (str_store_troop_name, s60, ":loser"),
+     (display_message, "@You recover {s59} from {s60}.", 0xD6B15E),
+   (else_try),
+     (eq, ":loser", "trp_player"),
+     (str_store_troop_name, s60, ":captor"),
+     (display_message, "@{s60} seizes {s59} from your fallen baggage.", 0xFFCC66),
+   (else_try),
+     (eq, "$g_sod_hide_messages", 0),
+     (str_store_troop_name, s60, ":captor"),
+     (str_store_troop_name, s61, ":loser"),
+     (display_log_message, "@{s60} captures {s59} from {s61}.", 0xD6B15E),
+   (try_end),
+ ]),
+]

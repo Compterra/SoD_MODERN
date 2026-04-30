@@ -1,0 +1,3 @@
+DIALOGS = [
+[anyone, "cpsq_capitalist_5", [], "No king can govern with an empty treaury, {playername} ! In fact, the kings don't even own their countries at all; it is the guildhouses, the trade alliances, the merchants who control things. Without them, no kingdom can function, and this places them into a powerful position. After all, who looks after trading at the marketplaces and set the prices ? Who give loans to nobles and kings in need ? Who buy and sell, and thus exploit, the riches of the land ? Who arrange the delivery of goods from town to town, from village to village ?", "cpsq_capitalist_6", [] ],
+]

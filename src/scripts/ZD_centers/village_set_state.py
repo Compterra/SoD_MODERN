@@ -1,0 +1,34 @@
+SCRIPTS = [
+("village_set_state",
+    [
+      (store_script_param_1, ":village_no"),
+      (store_script_param_2, ":new_state"),
+      #      (party_get_slot, ":old_state", ":village_no", slot_village_state),
+      (try_begin),
+        (eq, ":new_state", 0),
+        (party_set_extra_text, ":village_no", "str_empty_string"),
+        (party_set_slot, ":village_no", slot_village_raided_by, -1),
+      (else_try),
+        (eq, ":new_state", svs_being_raided),
+        (party_set_extra_text, ":village_no", "@(Being Raided)"),
+      (else_try),
+        (eq, ":new_state", svs_looted),
+        (party_set_extra_text, ":village_no", "@(Looted)"),
+        (party_set_slot, ":village_no", slot_village_raided_by, -1),
+        (call_script, "script_change_center_prosperity", ":village_no", -30),
+		    #SOD ADDS POPULATION DECREASE DUE TO RAIDS TWAN454
+            (party_get_slot, ":center_population", ":village_no", slot_center_sod_local_population),
+			(store_div, ":max", ":center_population", 2),
+			(store_random_in_range, ":rand", 20, ":max"),
+            (val_sub, ":center_population", ":rand"),
+            #MORDACHAI - don't allow the population to go below minimum village size!
+            (val_max, ":center_population", village_pop_min),
+            (party_set_slot, ":village_no", slot_center_sod_local_population, ":center_population"),
+            #SOD END
+      (else_try),
+        (eq, ":new_state", svs_under_siege),
+        (party_set_extra_text, ":village_no", "@(Under Siege)"),
+      (try_end),
+      (party_set_slot, ":village_no", slot_village_state, ":new_state"),
+  ]),
+]

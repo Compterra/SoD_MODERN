@@ -1,0 +1,57 @@
+SCRIPTS = [
+("cf_reinforce_party",
+    [
+      (store_script_param_1, ":party_no"),
+
+      (store_faction_of_party, ":party_faction", ":party_no"),
+      (store_faction_of_party, ":fac", ":party_no"),
+      (party_get_slot, ":party_type", ":party_no", slot_party_type),
+
+      #Rebellion changes begin:
+      (try_begin),
+        (eq, ":party_type", spt_kingdom_hero_party),
+        (party_stack_get_troop_id, ":leader", ":party_no", 0),
+        (troop_get_slot, ":party_faction",  ":leader", slot_troop_original_faction),
+      (try_end),
+      (faction_get_slot, ":party_template_a", ":party_faction", slot_faction_reinforcements_a),
+      (faction_get_slot, ":party_template_b", ":party_faction", slot_faction_reinforcements_b),
+      (faction_get_slot, ":party_template_c", ":party_faction", slot_faction_reinforcements_c),
+
+      (assign, ":party_template", 0),
+      (store_random_in_range, ":rand", 0, 100),
+      (try_begin),
+        (this_or_next|eq, ":party_type", spt_town),
+        (eq, ":party_type", spt_castle),  #CASTLE OR TOWN
+        (try_begin),
+          (lt, ":rand", 65),
+          (assign, ":party_template", ":party_template_a"),
+        (else_try),
+          (assign, ":party_template", ":party_template_b"),
+        (try_end),
+      (else_try),
+        (eq, ":party_type", spt_kingdom_hero_party),
+        (try_begin),
+          (lt, ":rand", 50),
+          (assign, ":party_template", ":party_template_a"),
+        (else_try),
+          (lt, ":rand", 75),
+          (assign, ":party_template", ":party_template_b"),
+        (else_try),
+          (assign, ":party_template", ":party_template_c"),
+        (try_end),
+      (else_try),
+      (try_end),
+
+      (try_begin),
+        (gt, ":party_template", 0),
+        (party_add_template, ":party_no", ":party_template"),
+      (try_end),
+	  
+	  (try_begin),
+		(faction_get_slot, ":guild", ":fac", slot_faction_merc_pact),
+		(gt, ":guild", 0),
+		(faction_get_slot, ":guild_party_template", ":guild", slot_faction_reinforcements_a),
+        (party_add_template, ":party_no", ":guild_party_template"),
+	  (try_end),
+  ]),
+]

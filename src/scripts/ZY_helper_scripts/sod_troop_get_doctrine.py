@@ -1,0 +1,41 @@
+# COST: O(1)
+SCRIPTS = [
+("sod_troop_get_doctrine",
+  [
+    (store_script_param, ":troop_no", 1),
+
+    (assign, ":role", sod_doctrine_role_unknown),
+    (assign, ":tier", sod_elite_tier_common),
+    (assign, ":facility", sod_doctrine_facility_none),
+    (assign, ":flags", 0),
+    (assign, ":cost_mult", 100),
+    (assign, ":culture", 0),
+    (assign, ":faction", 0),
+    (assign, ":special_req", sod_special_req_none),
+
+    (try_begin),
+      (is_between, ":troop_no", 0, "trp_last_troop"),
+      (troop_get_slot, ":role", ":troop_no", slot_troop_sod_doctrine_role),
+      (troop_get_slot, ":tier", ":troop_no", slot_troop_sod_doctrine_tier),
+      (troop_get_slot, ":facility", ":troop_no", slot_troop_sod_doctrine_facility),
+      (troop_get_slot, ":flags", ":troop_no", slot_troop_sod_doctrine_flags),
+      (troop_get_slot, ":cost_mult", ":troop_no", slot_troop_sod_doctrine_cost_mult),
+      (troop_get_slot, ":culture", ":troop_no", slot_troop_sod_doctrine_culture),
+      (troop_get_slot, ":faction", ":troop_no", slot_troop_sod_doctrine_faction),
+      (troop_get_slot, ":special_req", ":troop_no", slot_troop_sod_doctrine_special_req),
+      (try_begin),
+        (le, ":cost_mult", 0),
+        (assign, ":cost_mult", 100),
+      (try_end),
+    (try_end),
+
+    (assign, reg0, ":role"),
+    (assign, reg1, ":tier"),
+    (assign, reg2, ":facility"),
+    (assign, reg3, ":flags"),
+    (assign, reg4, ":cost_mult"),
+    (assign, reg5, ":culture"),
+    (assign, reg6, ":faction"),
+    (assign, reg7, ":special_req"),
+  ]),
+]

@@ -1,0 +1,3 @@
+DIALOGS = [
+[anyone, "cpsq_racist_13", [], "Nevertheless, they still put up a strong resistance once they realised the size of the threat - although to late. Now then, in multi-cultural societies, where one or more minorities are strongly present, mixed with the majority of the native populace, infighting is very likely both in short and long terms. Even if they manage to make peace - which is a quite temporary state, I assure you - it leads to stagnation, since the level of education, health care, information processing and other facilities must be dropped lower to meet with the cultural needs of every ethnic group. ", "cpsq_racist_14", [] ],
+]

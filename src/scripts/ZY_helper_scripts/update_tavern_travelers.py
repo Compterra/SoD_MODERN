@@ -1,0 +1,21 @@
+SCRIPTS = [
+("update_tavern_travelers",
+      [(try_for_range, ":town_no", towns_begin, towns_end),
+          (party_set_slot, ":town_no", slot_center_tavern_traveler, 0),
+        (try_end),
+
+        (try_for_range, ":troop_no", tavern_travelers_begin, tavern_travelers_end),
+          (store_random_in_range, ":town_no", towns_begin, towns_end),
+          (party_set_slot, ":town_no", slot_center_tavern_traveler, ":troop_no"),
+          (assign, ":end_cond", 15),
+          (try_for_range, ":unused", 0, ":end_cond"),
+            (store_random_in_range, ":info_faction", kingdoms_begin, kingdoms_end),
+            (faction_slot_eq, ":info_faction", slot_faction_state, sfs_active),
+            (neq, ":info_faction", "$players_kingdom"),
+            (neq, ":info_faction", "fac_player_supporters_faction"),
+            (party_set_slot, ":town_no", slot_center_traveler_info_faction, ":info_faction"),
+            (assign, ":end_cond", 0),
+          (try_end),
+        (try_end),
+    ]),
+]

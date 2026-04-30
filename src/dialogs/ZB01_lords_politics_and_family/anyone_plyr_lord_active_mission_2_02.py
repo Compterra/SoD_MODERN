@@ -1,0 +1,24 @@
+DIALOGS = [
+[anyone|plyr, "lord_active_mission_2",
+   [
+     (neg|troop_slot_ge, "$g_talk_troop", slot_troop_prisoner_of_party, 0),
+     (store_partner_quest, ":lords_quest"),
+     (eq, ":lords_quest", "qst_capture_enemy_hero"),
+     (assign, ":has_prisoner", 0),
+     (quest_get_slot, ":quest_target_faction", "qst_capture_enemy_hero", slot_quest_target_faction),
+     (party_get_num_prisoner_stacks, ":num_stacks", "p_main_party"),
+     (try_for_range, ":i_stack", 0, ":num_stacks"),
+       (party_prisoner_stack_get_troop_id, ":stack_troop", "p_main_party", ":i_stack"),
+       (troop_is_hero, ":stack_troop"),
+       (store_troop_faction, ":stack_faction", ":stack_troop"),
+       (eq, ":quest_target_faction", ":stack_faction"),
+       (troop_slot_eq, ":stack_troop", slot_troop_occupation, slto_kingdom_hero),
+       (assign, ":has_prisoner", 1),
+       (quest_set_slot, "qst_capture_enemy_hero", slot_quest_target_troop, ":stack_troop"),
+     (try_end),
+     (eq, ":has_prisoner", 1),
+     (str_store_faction_name, s13, ":quest_target_faction")
+     ],
+   "Oh, indeed. I've captured a lord from {s13} for you.", "capture_enemy_hero_thank",
+   []],
+]

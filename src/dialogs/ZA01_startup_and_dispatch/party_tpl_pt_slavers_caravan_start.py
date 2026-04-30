@@ -1,0 +1,26 @@
+DIALOGS = [
+[party_tpl|pt_slavers_caravan, "start", [(quest_get_slot, ":quest_target_center", "qst_slavers_escort_merchant_caravan", slot_quest_target_center),
+                                           (store_distance_to_party_from_party, ":dist", ":quest_target_center", "$g_encountered_party"),
+                                           (lt, ":dist", 4),
+                                           ],
+   "Well, we have almost reached {s21}. We can cover the rest of the way ourselves.\
+ Here's your pay... {reg14} denars.\
+ Thanks for escorting us. Good luck.", "close_window", [(quest_get_slot, ":quest_target_party", "qst_slavers_escort_merchant_caravan", slot_quest_target_party),
+                                                       (quest_get_slot, ":quest_target_center", "qst_slavers_escort_merchant_caravan", slot_quest_target_center),
+                                                       (quest_get_slot, ":quest_giver_troop", "qst_slavers_escort_merchant_caravan", slot_quest_giver_troop),
+                                                       (quest_get_slot, ":quest_gold_reward", "qst_slavers_escort_merchant_caravan", slot_quest_gold_reward),
+                                                       (str_store_party_name, s21, ":quest_target_center"),
+                                                       (call_script, "script_change_player_relation_with_troop", ":quest_giver_troop", 3),
+                                                       (call_script, "script_end_quest", "qst_slavers_escort_merchant_caravan"),
+                                                       (quest_set_slot, "qst_slavers_escort_merchant_caravan", slot_quest_current_state, 2),
+                                                       (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),
+                                                       (assign, ":xp_reward", ":quest_gold_reward"),
+                                                       (val_mul, ":xp_reward", 5),
+                                                       (val_add, ":xp_reward", 100),
+                                                       (add_xp_as_reward, ":xp_reward"),
+                                                       (call_script, "script_change_troop_renown", "trp_player", 2),
+                                                       (assign, reg14, ":quest_gold_reward"),
+                                                       (assign, "$g_leave_encounter", 1),
+													   (remove_party, ":quest_target_party"), 
+                                                       ]],
+]

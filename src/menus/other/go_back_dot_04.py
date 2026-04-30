@@ -1,0 +1,33 @@
+MENUS = [
+(
+    "price_and_production", 0,
+    "Productions are:^{s1}^^Price factors are:^{s2}",
+    "none",
+    [(str_store_string, s1, "@ "),
+     (str_store_string, s2, "@ "),
+     (try_for_range, ":cur_good", trade_goods_begin, trade_goods_end),
+       (store_sub, ":cur_good_slot", ":cur_good", trade_goods_begin),
+       (val_add, ":cur_good_slot", slot_town_trade_good_productions_begin),
+       (store_sub, ":cur_good_price_slot", ":cur_good", trade_goods_begin),
+       (val_add, ":cur_good_price_slot", slot_town_trade_good_prices_begin),
+       (party_get_slot, ":production", "$g_encountered_party", ":cur_good_slot"),
+       (party_get_slot, ":price", "$g_encountered_party", ":cur_good_price_slot"),
+       (str_store_item_name, s3, ":cur_good"),
+       (assign, reg1, ":production"),
+       (str_store_string, s1, "@^{s3} = {reg1}{s1}"),
+       (assign, reg1, ":price"),
+       (str_store_string, s2, "@^{s3} = {reg1}{s2}"),
+     (try_end),
+     ],
+    [
+      ("go_back_dot", [], "Go back.",
+       [(try_begin),
+          (party_slot_eq, "$g_encountered_party", slot_party_type, spt_village),
+          (jump_to_menu, "mnu_village"),
+        (else_try),
+          (jump_to_menu, "mnu_town"),
+        (try_end),
+        ]),
+    ]
+  ),
+]

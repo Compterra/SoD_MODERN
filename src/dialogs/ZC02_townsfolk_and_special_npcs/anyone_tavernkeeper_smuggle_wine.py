@@ -1,0 +1,18 @@
+DIALOGS = [
+[anyone, "tavernkeeper_smuggle_wine", [],
+   "At last! My stock was almost depleted. I had paid the cost of the wine in advance. Here, take these {reg5} denars. That should cover your pay.",
+   "close_window",
+   [(quest_get_slot, ":quest_target_amount", "qst_slavers_deliver_wine", slot_quest_target_amount),
+    (quest_get_slot, ":quest_gold_reward", "qst_slavers_deliver_wine", slot_quest_gold_reward),
+    (troop_remove_items, "trp_player", "itm_wine", ":quest_target_amount"),
+    (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),
+    (assign, ":xp_reward", ":quest_gold_reward"),
+    (val_mul, ":xp_reward", 4),
+    (add_xp_as_reward, ":xp_reward"),
+    (assign, reg5, ":quest_gold_reward"),
+    (call_script, "script_change_player_relation_with_center", "$current_town", 1),
+	(call_script, "script_change_player_relation_with_faction", "fac_sod_merc_guild6", 1),
+    (call_script, "script_succeed_quest", "qst_slavers_deliver_wine"),
+    (call_script, "script_end_quest", "qst_slavers_deliver_wine"),
+    ]],
+]

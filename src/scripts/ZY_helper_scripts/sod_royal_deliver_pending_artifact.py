@@ -1,0 +1,27 @@
+# COST: low
+SCRIPTS = [
+("sod_royal_deliver_pending_artifact",
+ [
+   (assign, ":has_space", 0),
+   (try_begin),
+     (gt, "$sod_royal_artifact", 0),
+     (troop_get_inventory_capacity, ":inv_cap", "trp_player"),
+     (try_for_range, ":slot", 0, ":inv_cap"),
+       (eq, ":has_space", 0),
+       (troop_get_inventory_slot, ":item", "trp_player", ":slot"),
+       (eq, ":item", -1),
+       (assign, ":has_space", 1),
+     (try_end),
+     (try_begin),
+       (eq, ":has_space", 1),
+       (str_store_item_name, s15, "$sod_royal_artifact"),
+       (troop_add_item, "trp_player", "$sod_royal_artifact", 0),
+       (assign, "$sod_royal_artifact", 0),
+       (display_message, "@The treasurer releases {s15} into your keeping.", 0x66CC66),
+     (else_try),
+       (str_store_item_name, s15, "$sod_royal_artifact"),
+       (display_message, "@Your inventory is full. The treasurer keeps {s15} secured in the royal vault until you make room.", 0xFFCC66),
+     (try_end),
+   (try_end),
+ ]),
+]

@@ -1,0 +1,17 @@
+DIALOGS = [
+[anyone|plyr, "village_farmer_talk", [], "We'll see how poor you are after I take what you've got!", "close_window",
+   [(party_get_slot, ":home_center", "$g_encountered_party", slot_party_home_center),
+    (party_get_slot, ":market_town", ":home_center", slot_village_market_town),
+    (party_get_slot, ":village_owner", ":home_center", slot_town_lord),
+    (call_script, "script_change_player_relation_with_center", ":home_center", -4),
+    (call_script, "script_change_player_relation_with_center", ":market_town", -2),
+    (call_script, "script_change_player_relation_with_troop", ":village_owner", -2),
+    (store_relation, ":rel", "$g_encountered_party_faction", "fac_player_supporters_faction"),
+    (try_begin),
+      (gt, ":rel", 0),
+      (val_sub, ":rel", 5),
+    (try_end),
+    (val_sub, ":rel", 3),
+    (call_script, "script_set_player_relation_with_faction", "$g_encountered_party_faction", ":rel"),
+    ]],
+]

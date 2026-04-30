@@ -1,0 +1,138 @@
+SCRIPTS = [
+("calculate_faction_power",
+
+   [  (store_script_param_1, ":faction_no"),
+      (assign, ":power", 0), 
+      (assign, ":economic_strength", 0),
+
+      (try_for_range, ":center_no", centers_begin, centers_end),
+        (store_faction_of_party, ":center_faction", ":center_no"),
+        (eq, ":center_faction", ":faction_no"),
+        (try_begin),
+          (party_slot_eq, ":center_no", slot_party_type, spt_castle),
+		  (val_add, ":power", 1000),                              # value of one castle = 2000 or 3000 if need a belfry to be sieged (+ bound village) + garrison str     
+          (assign, ":economic_value", 0),
+          (assign, ":fortification_bonus", 1000), 
+          (party_get_slot, ":str", ":center_no", slot_party_cached_strength),
+        (else_try),                                            # town
+          (party_slot_eq, ":center_no", slot_party_type, spt_town),
+          (party_get_slot, ":str", ":center_no", slot_party_cached_strength),
+          (assign, ":fortification_bonus", 1200), 
+          (assign, ":economic_value", 150),
+          (call_script, "script_get_center_relative_value", ":center_no"), # town value 8000-15000 for economy (+ bound villages) - 20% if besieged ; + 800 or 1600 for fortification  + garrison str
+          (val_mul, ":economic_value", reg0),
+          (val_max, ":economic_value", 8000),			
+          (val_add, ":economic_strength", ":economic_value"),
+        (else_try),
+          (assign, ":fortification_bonus", 0),         # village
+          (assign, ":str", 0),
+          (assign, ":economic_value", 25),
+			  (try_begin),
+				  (neg|party_slot_eq, ":center_no", slot_village_state, svs_looted),  
+				  (call_script, "script_get_center_relative_value", ":center_no"), # village economic value 1000-2500 (only 300 if looted)
+				  (val_mul, ":economic_value", reg0),
+				  (val_max, ":economic_value", 1000),
+				  (else_try),
+				  (assign, ":economic_value", 300),
+			  (try_end),
+          (assign, ":village_militia", 0),
+          (try_begin),
+            (neg|party_slot_eq, ":center_no", slot_village_state, svs_looted),
+            (neg|party_slot_eq, ":center_no", slot_village_state, svs_deserted),
+            (party_get_slot, ":village_militia", ":center_no", slot_center_npc_volunteer_troop_amount),
+            (val_max, ":village_militia", 0),
+            (store_mul, ":village_defense", ":village_militia", 20),
+            (val_add, ":power", ":village_defense"),
+          (try_end),
+        (try_end),		
+        (try_begin),
+			(party_slot_eq, ":center_no", slot_center_siege_with_belfry, 1),
+			(val_mul, ":fortification_bonus", 2),
+        (try_end),
+        (try_begin),
+			(party_slot_ge, ":center_no", slot_center_is_besieged_by, 0),
+			(val_div, ":str", 4),
+			(val_mul, ":str", 3),
+			(val_div, ":economic_value", 5),
+			(val_mul, ":economic_value", 4),
+        (try_end),
+        (val_add, ":power", ":str"),
+        (val_add, ":power", ":fortification_bonus"),
+        (val_add, ":economic_strength", ":economic_value"),
+   (try_end),
+	  
+	  (assign, ":lords_wealth", 0),
+  (try_for_range, ":lord_no", kingdom_heroes_begin, kingdom_heroes_end),
+	  (store_troop_faction, ":lord_fac", ":lord_no"),
+	  (eq, ":lord_fac", ":faction_no"),
+	  (neg|troop_slot_ge, ":lord_no", slot_troop_prisoner_of_party, 0),
+	  (val_add, ":power", 500),
+      (troop_get_slot, ":party_no", ":lord_no", slot_troop_leaded_party),
+			  (try_begin),
+				 (gt, ":party_no", 0),
+				 (party_is_active, ":party_no"),
+				 (party_get_slot, ":str", ":party_no", slot_party_cached_strength),
+				 (val_add, ":power", ":str"),
+			 (try_end),
+     (troop_get_slot, ":wealth", ":lord_no", slot_troop_wealth),
+	 (val_div, ":wealth", 50),
+     (val_add, ":lords_wealth", ":wealth"),	 
+     (try_end),
+	 
+	 (val_min, ":lords_wealth", 10000),    # over 500,000 denars total it's assumed all lords have all they may ever need
+	 (val_add, ":power", ":lords_wealth"), # included in power and not economic strength as there is no way to steal this money
+	 
+	  (call_script, "script_faction_get_number_of_armies", ":faction_no"),
+      (assign, ":num_armies", reg0),
+      (assign, ":total_num_armies", 0),
+      (assign, ":num_active_factions", 1),
+      
+      (try_for_range, ":faction2_no", kingdoms_begin, kingdoms_end),         # bonus for greater number of lords armies than average of other nations
+      (faction_slot_eq, ":faction2_no", slot_faction_state, sfs_active),     
+	  (neq, ":faction2_no", ":faction_no"),
+      (call_script, "script_faction_get_number_of_armies", ":faction2_no"),
+      (val_add, ":num_active_factions", 1), 
+      (val_add, ":total_num_armies", reg0), 
+      (try_end),
+
+      (store_div, ":average_armies_number", ":total_num_armies", ":num_active_factions"),
+      (store_sub, ":num_armies_bonus", ":num_armies", ":average_armies_number"),
+	  (val_max, ":num_armies_bonus", 0),
+      (val_mul, ":num_armies_bonus", 1000),
+	 
+	  (try_for_parties, ":party_no"),                       # count kingdom mercenariess and caravans
+	  (store_faction_of_party, ":party_fac", ":party_no"),
+	  (eq, ":party_fac", ":faction_no"),
+		  (try_begin),
+		  (this_or_next|party_slot_eq, ":party_no", slot_party_type, spt_ai_mercenaries),
+		  (party_slot_eq, ":party_no", slot_party_type, spt_player_mercenaries),
+		  (party_get_slot, ":str", ":party_no", slot_party_cached_strength),
+		  (val_add, ":power", ":str"),	   
+		  (else_try),
+		  (party_slot_eq, ":party_no", slot_party_type, spt_kingdom_caravan),
+		  (party_get_slot, ":str", ":party_no", slot_party_cached_strength),
+		  (val_div, ":str", 4),
+		  (val_add, ":power", ":str"),
+		  (val_add, ":economic_strength", 2000), 
+		  (try_end),
+	  (try_end),
+
+ 
+      (val_add, ":power", ":num_armies_bonus"),
+      (val_add, ":power", ":economic_strength"),
+	  
+	  (val_div, ":power", 100),
+	  (val_div, ":economic_strength", 100), # no need to store big numbers
+
+      (faction_set_slot, ":faction_no", slot_faction_current_power, ":power"),
+      (faction_set_slot, ":faction_no", slot_faction_economic_strength, ":economic_strength"),
+	  (assign, reg0, ":power"), # for init
+	  (assign, reg1, ":economic_strength"),
+   
+       (try_begin), 
+       (eq, "$g_sod_debug", 1),
+	   (str_store_faction_name, s3, ":faction_no"),
+	   (display_log_message, "@{s3} has an economic strength of {reg1}.", debug_color),
+	   (try_end),
+       ]),
+]

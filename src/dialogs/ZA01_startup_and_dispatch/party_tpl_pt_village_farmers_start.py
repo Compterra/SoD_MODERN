@@ -1,0 +1,17 @@
+DIALOGS = [
+[party_tpl|pt_village_farmers, "start", [(eq, "$talk_context", tc_party_encounter),
+                                          (agent_play_sound, "$g_talk_agent", "snd_encounter_farmers"),
+  ],
+   " My {lord/lady}, we're only poor farmers from the village of {s11}. {reg1?We are taking our products to the market at {s12}.:We are returning from the market at {s12} back to our village.}", "village_farmer_talk",
+   [(party_get_slot, ":target_center", "$g_encountered_party", slot_party_ai_object),
+    (party_get_slot, ":home_center", "$g_encountered_party", slot_party_home_center),
+    (party_get_slot, ":market_town", ":home_center", slot_village_market_town),
+    (str_store_party_name, s11, ":home_center"),
+    (str_store_party_name, s12, ":market_town"),
+    (assign, reg1, 1),
+    (try_begin),
+      (party_slot_eq, ":target_center", slot_party_type, spt_village),
+      (assign, reg1, 0),
+    (try_end),
+    ]],
+]

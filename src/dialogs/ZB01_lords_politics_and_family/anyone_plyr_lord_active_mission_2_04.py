@@ -1,0 +1,18 @@
+DIALOGS = [
+[anyone|plyr, "lord_active_mission_2", [(neg|troop_slot_ge, "$g_talk_troop", slot_troop_prisoner_of_party, 0),
+                                         (store_partner_quest, ":lords_quest"),
+                                         (eq, ":lords_quest", "qst_collect_taxes"),
+                                         (check_quest_succeeded, "qst_collect_taxes"),
+                                         (eq, "$qst_collect_taxes_halve_taxes", 0),
+                                         (quest_get_slot, ":quest_gold_reward", "qst_collect_taxes", slot_quest_gold_reward),
+                                         (store_mul, ":required_gold", ":quest_gold_reward", 8),
+                                         (val_div, ":required_gold", 10),
+                                         (store_troop_gold, ":gold", "trp_player"),
+                                         (ge, ":gold", ":required_gold"),
+                                         (assign, reg19, ":quest_gold_reward"),
+                                         (quest_get_slot, ":quest_target_center", "qst_collect_taxes", slot_quest_target_center),
+                                         (str_store_party_name, s3, ":quest_target_center"),
+                                         ],
+   "Here are all the taxes from {s3}. It comes up to {reg19} denars.", "lord_collect_taxes_success",
+   []],
+]

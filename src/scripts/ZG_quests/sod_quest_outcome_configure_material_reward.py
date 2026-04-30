@@ -1,0 +1,21 @@
+SCRIPTS = [
+("sod_quest_outcome_configure_material_reward",
+    [
+      (store_script_param, ":quest_no", 1),
+      (store_script_param, ":item_no", 2),
+      (store_script_param, ":item_modifier", 3),
+      (store_script_param, ":troop_no", 4),
+      (store_script_param, ":troop_amount", 5),
+      (store_script_param, ":prisoner_no", 6),
+      (store_script_param, ":prisoner_amount", 7),
+      (quest_set_slot, ":quest_no", slot_quest_sod_reward_item, ":item_no"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_reward_item_modifier, ":item_modifier"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_reward_troop, ":troop_no"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_reward_troop_amount, ":troop_amount"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_reward_prisoner, ":prisoner_no"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_reward_prisoner_amount, ":prisoner_amount"),
+      (quest_get_slot, ":flags", ":quest_no", slot_quest_sod_outcome_flags),
+      (val_or, ":flags", sod_quest_outcome_flag_reward_configured),
+      (quest_set_slot, ":quest_no", slot_quest_sod_outcome_flags, ":flags"),
+  ]),
+]

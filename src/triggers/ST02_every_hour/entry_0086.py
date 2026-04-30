@@ -1,0 +1,59 @@
+SIMPLE_TRIGGERS = [
+(1,
+   [
+        #Resolve one issue each hour
+        (try_begin),
+            ### Here do NPC that is quitting
+            (gt, "$npc_is_quitting", 0),
+            (try_begin),
+                (main_party_has_troop, "$npc_is_quitting"),
+                (neq, "$g_player_is_captive", 1),
+
+                (start_map_conversation, "$npc_is_quitting"),
+            (else_try),
+                (assign, "$npc_is_quitting", 0),
+            (try_end),
+
+        (else_try),
+            #### Grievance
+            (gt, "$npc_with_grievance", 0),
+            (eq, "$disable_npc_complaints", 0),
+            (try_begin),
+                (main_party_has_troop, "$npc_with_grievance"),
+                (neq, "$g_player_is_captive", 1),
+
+                (assign, "$npc_map_talk_context", slot_troop_morality_state),
+                (start_map_conversation, "$npc_with_grievance"),
+            (else_try),
+                (assign, "$npc_with_grievance", 0),
+            (try_end),
+        (else_try),
+            (gt, "$npc_with_personality_clash", 0),
+            (eq, "$disable_npc_complaints", 0),
+            (troop_get_slot, ":object", "$npc_with_personality_clash", slot_troop_personalityclash_object),
+            (try_begin),
+                (main_party_has_troop, "$npc_with_personality_clash"),
+                (main_party_has_troop, ":object"),
+                (neq, "$g_player_is_captive", 1),
+                (assign, "$npc_map_talk_context", slot_troop_personalityclash_state),
+                (start_map_conversation, "$npc_with_personality_clash"),
+            (else_try),
+                (assign, "$npc_with_personality_clash", 0),
+            (try_end),
+        (else_try), ###check for regional background
+            (eq, "$disable_local_histories", 0),
+            (try_for_range, ":npc", companions_begin, companions_end),
+                (main_party_has_troop, ":npc"),
+                (troop_slot_eq, ":npc", slot_troop_home_speech_delivered, 0),
+                #(eq, "$npc_map_talk_context", 0),
+                (troop_get_slot, ":home", ":npc", slot_troop_home),
+                (gt, ":home", 0),
+                (store_distance_to_party_from_party, ":distance", ":home", "p_main_party"),
+                (lt, ":distance", 7),
+                (assign, "$npc_map_talk_context", slot_troop_home),
+                (start_map_conversation, ":npc"),
+            (try_end),
+        (try_end),
+
+]),
+]

@@ -1,0 +1,4 @@
+DIALOGS = [
+[anyone, "gm_sp", [
+   ],"The Spear Throwers descendants came from a once powerful cannibalistic tribe.  Instead of revenge, the Elephant God spared their lives in return for peace and to give up their cannibalistic ways.  We are now brothers, but they honor their ancestors by painting their bodies in yellow and passing down their warrior ways. Now they function to cover their melee-fighting brethren from a distance with their throwing spears.  While this may seem primitive to you, know this: both the crafting and usage of their weapons were perfected throughout decades.  Not even the mightiest shields can withstands more than a few hits from them.  And unlike most ranged fighters, they can protect themselves in close combat.  Those who prove exceptional skill both in throwing and melee become Penetrators, training the Tribesmen in times of peace.", "gm_pretalk", []],
+]

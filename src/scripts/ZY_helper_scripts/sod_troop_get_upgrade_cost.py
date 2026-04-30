@@ -1,0 +1,73 @@
+# COST: O(1)
+SCRIPTS = [
+("sod_troop_get_upgrade_cost",
+  [
+    (store_script_param, ":upgrade", 1),
+    (store_script_param, ":center", 2),
+
+    (store_character_level, ":upgrade_cost", ":upgrade"),
+
+    (try_begin),
+      (troop_is_mounted, ":upgrade"),
+      (val_mul, ":upgrade_cost", 3),
+      (val_div, ":upgrade_cost", 2),
+    (try_end),
+
+    (call_script, "script_sod_troop_get_doctrine", ":upgrade"),
+    (assign, ":cost_mult", reg4),
+    (val_mul, ":upgrade_cost", ":cost_mult"),
+    (val_div, ":upgrade_cost", 100),
+
+    (try_begin),
+      (gt, ":center", 0),
+      (store_troop_faction, ":trp_fac", ":upgrade"),
+      (neq, ":trp_fac", "fac_player_supporters_faction"),
+      (val_mul, ":upgrade_cost", 3),
+      (val_div, ":upgrade_cost", 2),
+    (try_end),
+
+    (try_begin),
+      (gt, ":center", 0),
+      (store_faction_of_party, ":fac", ":center"),
+      (try_begin),
+        (eq, ":fac", "fac_player_supporters_faction"),
+        (party_slot_eq, ":center", slot_center_has_blacksmith, 1),
+        (val_div, ":upgrade_cost", 2),
+      (else_try),
+        (neq, ":fac", "fac_player_supporters_faction"),
+        (val_mul, ":upgrade_cost", 3),
+        (val_div, ":upgrade_cost", 2),
+      (try_end),
+    (try_end),
+
+    (try_begin),
+      (gt, ":center", 0),
+      (store_faction_of_party, ":fac", ":center"),
+      (eq, ":fac", "fac_player_supporters_faction"),
+      (gt, "$g_sod_doctrine_inspiration", 0),
+      (call_script, "script_sod_troop_get_elite_tier", ":upgrade"),
+      (lt, reg0, sod_elite_tier_faith),
+      (val_mul, ":upgrade_cost", 90),
+      (val_div, ":upgrade_cost", 100),
+    (try_end),
+
+    (try_begin),
+      (gt, ":center", 0),
+      (store_faction_of_party, ":fac", ":center"),
+      (eq, ":fac", "fac_player_supporters_faction"),
+      (call_script, "script_sod_artifact_get_doctrine_discount", ":upgrade"),
+      (gt, reg0, 0),
+      (store_sub, ":discount_factor", 100, reg0),
+      (val_mul, ":upgrade_cost", ":discount_factor"),
+      (val_div, ":upgrade_cost", 100),
+    (try_end),
+
+    (try_begin),
+      (is_between, ":upgrade", "trp_farmer", "trp_mercenaries_end"),
+      (assign, ":upgrade_cost", 0),
+    (try_end),
+
+    (val_max, ":upgrade_cost", 0),
+    (assign, reg0, ":upgrade_cost"),
+  ]),
+]

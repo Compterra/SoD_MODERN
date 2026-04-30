@@ -1,0 +1,3 @@
+DIALOGS = [
+[anyone, "cp_liberator_9", [], "Stop pretending your dumbness and innocence ! Your acting skills are remarkable, but you won't deceive me. I recall each and every crime your family committed both against us and their own subjects ! Your defeat and retribution by the hands of the Imperial Legion back in the old {s31} was well-deserved; you'll fare no better here. The emperor demands your capture or destruction; I am most eager to please him by fulfilling this request ! ...but not just yet. Not yet. It would be improper to slay you where you stand right after we made such nice introductions.", "cp_liberator_10", [] ],
+]

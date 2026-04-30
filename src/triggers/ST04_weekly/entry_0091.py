@@ -1,0 +1,102 @@
+SIMPLE_TRIGGERS = [
+(24 * 7,
+  [
+    (try_begin),
+      (eq, "$g_sod_hide_messages", -2),
+      (set_show_messages, 0),
+    (try_end),
+	(assign, ":stop", 0),
+	(try_begin),
+		(lt, "$g_sod_clergy_happines", -95),
+		(assign, ":stop", 1),
+		(display_message, "@The clergy have turned against you; your religious houses fall silent until relations with the Temple improve.", dark_red),
+	(try_end),
+	(eq, ":stop", 0),
+    (assign, ":count", 0),
+    (try_for_range, ":center_no", centers_begin, centers_end),
+
+      # never castles - they don't track local faith at all (no tax base, no faith base)
+      (neg|party_slot_eq, ":center_no", slot_party_type, spt_castle),
+
+      # ensure that this center is currently owned by the player's faction
+      (store_faction_of_party, ":center_faction", ":center_no"),
+      (this_or_next|eq, ":center_faction", "fac_player_supporters_faction"),
+      (eq, ":center_faction", "fac_player_faction"),
+
+      # and that this center has a monastery
+      (party_slot_eq, ":center_no", slot_center_has_monastery, 1),
+
+      # keep track of count
+      (val_add, ":count", 1),
+
+      # increase the local & global faith
+      (party_get_slot, ":faith", ":center_no", slot_center_sod_local_faith),
+      (val_add, ":faith", "$g_sod_building_monastery_local_faith"),
+      (val_clamp, ":faith", -100, 201),
+      (party_set_slot, ":center_no", slot_center_sod_local_faith, ":faith"),
+      (val_add, "$g_sod_global_faith", "$g_sod_building_monastery_global_faith"),
+      (val_clamp, "$g_sod_global_faith", -2000, 2001),
+
+      # Monasteries should also provide care, charity, and steadier local confidence.
+      (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
+      (party_get_slot, ":center_prosperity", ":center_no", slot_town_prosperity),
+      (party_get_slot, ":food_store", ":center_no", slot_party_food_store),
+      (call_script, "script_center_get_food_store_limit", ":center_no"),
+      (assign, ":food_store_limit", reg0),
+      (try_begin),
+        (lt, ":center_health", 65),
+        (call_script, "script_change_center_health", ":center_no", 1),
+      (try_end),
+      (try_begin),
+        (ge, ":faith", 40),
+        (lt, ":center_prosperity", 70),
+        (store_random_in_range, ":monastery_prosperity_roll", 0, 100),
+        (lt, ":monastery_prosperity_roll", 30),
+        (call_script, "script_change_center_prosperity", ":center_no", 1),
+      (try_end),
+      (try_begin),
+        (gt, ":food_store_limit", 0),
+        (store_mul, ":monastery_stable_supply_threshold", ":food_store_limit", 3),
+        (val_div, ":monastery_stable_supply_threshold", 5),
+        (ge, ":food_store", ":monastery_stable_supply_threshold"),
+        (ge, ":center_health", 60),
+        (ge, ":faith", 50),
+        (lt, ":center_prosperity", 78),
+        (store_random_in_range, ":monastery_relief_roll", 0, 100),
+        (lt, ":monastery_relief_roll", 25),
+        (call_script, "script_change_center_prosperity", ":center_no", 1),
+      (try_end),
+      (try_begin),
+        (party_get_slot, ":cur_relation", ":center_no", slot_center_player_relation),
+        (lt, ":cur_relation", 25),
+        (store_random_in_range, ":monastery_relation_roll", 0, 100),
+        (lt, ":monastery_relation_roll", 25),
+        (val_add, ":cur_relation", 1),
+        (party_set_slot, ":center_no", slot_center_player_relation, ":cur_relation"),
+      (try_end),
+
+      # inform player of progress
+      (try_begin),
+        (eq, "$g_sod_hide_messages", 0),
+        (str_store_party_name_link, s1, ":center_no"),
+        (store_add, reg0, "str_sod_monastery_improve_0", "$g_sod_faith"),
+        (str_store_string, s1, reg0),
+        (display_message, "@{s1}", dark_green),
+      (try_end),
+    (try_end),
+
+    # inform player of progress
+    (try_begin),
+      (eq, "$g_sod_hide_messages", -1),
+      (ge, ":count", 1),
+      (store_add, reg0, "str_sod_monastery_summary_0", "$g_sod_faith"),
+      (str_store_string, s1, reg0),
+      (display_message, "@{s1}", dark_green),
+    (try_end),
+
+    (try_begin),
+      (eq, "$g_sod_hide_messages", -2),
+      (set_show_messages, 1),
+    (try_end),
+  ]),
+]

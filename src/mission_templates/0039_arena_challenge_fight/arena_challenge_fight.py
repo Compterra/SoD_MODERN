@@ -1,0 +1,31 @@
+MISSION_TEMPLATES = [
+(
+    "arena_challenge_fight", mtf_arena_fight|mtf_commit_casualties, -1,
+    "You enter a melee fight in the arena.",
+    [
+      (56, mtef_visitor_source|mtef_team_0, 0, aif_start_alarmed, 1, []),
+      (58, mtef_visitor_source|mtef_team_2, 0, aif_start_alarmed, 1, []),
+    ],
+    [
+      common_inventory_not_available,
+      (ti_tab_pressed, 0, 0, [(display_message, "@Cannot leave now.", red)], []),
+      (ti_before_mission_start, 0, 0, [], [(call_script, "script_change_banners_and_chest")]),
+
+      (0, 0, ti_once, [],
+       [
+         (call_script, "script_music_set_situation_with_culture", mtf_sit_arena),
+         ]),
+
+      (1, 4, ti_once, [(this_or_next|main_hero_fallen), (num_active_teams_le, 1)],
+       [
+           (try_begin),
+             (main_hero_fallen),
+             (call_script, "script_fail_quest", "qst_duel_for_lady"),
+           (else_try),
+             (call_script, "script_succeed_quest", "qst_duel_for_lady"),
+           (try_end),
+           (finish_mission),
+           ]),
+    ],
+  ),
+]

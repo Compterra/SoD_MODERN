@@ -1,0 +1,20 @@
+SCRIPTS = [
+("sod_quest_chain_reset",
+    [
+      (store_script_param, ":quest_no", 1),
+      (quest_get_slot, ":flags", ":quest_no", slot_quest_sod_chain_flags),
+      (store_and, ":resettable", ":flags", sod_quest_chain_flag_resettable),
+      (try_begin),
+        (gt, ":resettable", 0),
+        (quest_set_slot, ":quest_no", slot_quest_sod_chain_branch, sod_quest_chain_branch_none),
+        (quest_set_slot, ":quest_no", slot_quest_sod_chain_choice, 0),
+        (quest_set_slot, ":quest_no", slot_quest_sod_chain_lock_state, sod_quest_chain_lock_none),
+        (quest_set_slot, ":quest_no", slot_quest_sod_chain_resume_day, 0),
+        (quest_set_slot, ":quest_no", slot_quest_sod_chain_ending, 0),
+        (quest_set_slot, ":quest_no", slot_quest_sod_chain_next_quest, -1),
+        (quest_set_slot, ":quest_no", slot_quest_sod_runtime_state, sod_quest_state_inactive),
+        (quest_set_slot, ":quest_no", slot_quest_sod_runtime_progress, 0),
+        (quest_set_slot, ":quest_no", slot_quest_sod_journal_stage_progress, 0),
+      (try_end),
+  ]),
+]

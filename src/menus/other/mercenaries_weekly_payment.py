@@ -1,0 +1,52 @@
+MENUS = [
+("mercenaries_weekly_payment",mnf_disable_all_keys,
+  "Your mercenaries, {s1}, demand their weekly payment to maintain the pact.^^This week's payment: {reg1} denars^Earlier debts: {reg2} denars^Total: {reg3} denars^^Pact status: {s59}",
+  "none",[
+  (try_begin),
+	(gt, "$g_sod_merc_weekly_paiment_paid_in_a_row", 0),
+	(assign, ":discount", "$g_sod_merc_weekly_paiment_paid_in_a_row"),
+	(val_mul, ":discount", 5),
+	(store_sub, ":end_price", 100, ":discount"),
+	(val_max, ":end_price", 50),
+  (else_try),
+	(assign,":end_price", 100),
+  (try_end),
+  (assign, reg1, "$g_mercenary_guild_weekly_payment"),
+  (faction_get_slot, "$g_mercs_to_be_paid", "fac_player_faction", slot_faction_merc_pact),
+  (str_store_faction_name, s1, "$g_mercs_to_be_paid"),
+  (call_script, "script_merc_describe_pact_status", "$g_mercs_to_be_paid"),
+  (val_mul, reg1, ":end_price"),
+  (val_div, reg1, 100),
+  
+  (faction_get_slot, reg2, "$g_mercs_to_be_paid", player_debt_to_faction),
+  (store_add, reg3, reg1, reg2),
+  ],
+    [
+      ("pay",[
+	  (store_troop_gold, ":gold", "trp_player"),
+	  (ge, ":gold", reg3),
+	  ],"Pay them.",[
+	  (troop_remove_gold, "trp_player", reg3),
+	  (val_add, "$g_sod_merc_weekly_paiment_paid_in_a_row", 1),
+	  (assign, "$g_sod_merc_weekly_paiment_not_paid_in_a_row", 0),
+	  (faction_set_slot, "$g_mercs_to_be_paid", player_debt_to_faction, 0),
+	  (change_screen_return),
+	   ]),
+      ("cant_pay",[
+	  (store_troop_gold, ":gold", "trp_player"),
+	  (lt, ":gold", reg3),
+	  ],"You cannot cover the full debt right now.",[
+	  (display_message, "@You need {reg3} denars to settle this mercenary payment in full.", red),
+	  ]),
+      ("no_pay",[],"Don't pay them.",[
+	  (val_add, "$g_sod_merc_weekly_paiment_not_paid_in_a_row", 1),
+	  (assign, "$g_sod_merc_weekly_paiment_paid_in_a_row", 0),
+	  (faction_get_slot, ":cur_debt", "$g_mercs_to_be_paid", player_debt_to_faction),
+	  (val_add, ":cur_debt", reg1),
+	  (faction_set_slot, "$g_mercs_to_be_paid", player_debt_to_faction, ":cur_debt"),
+	  (display_message, "@Unpaid sum of {reg1} denars is added to your debt", red),
+	  (change_screen_return),
+	  ]),
+    ]
+  ),
+]

@@ -1,0 +1,42 @@
+# COST: trivial
+SCRIPTS = [
+("merc_describe_report_summary",
+ [
+   (str_store_string, s60, "@No active player mercenary company."),
+   (str_store_string, s61, "@No active guild pact."),
+   (str_store_string, s62, "@No current kingdom mercenary service."),
+
+   (try_for_parties, ":cur_party"),
+     (party_slot_eq, ":cur_party", slot_party_type, spt_player_mercenaries),
+     (party_slot_eq, ":cur_party", slot_party_boss, "trp_player"),
+     (party_get_num_companions, reg20, ":cur_party"),
+     (party_get_slot, ":guild_faction", ":cur_party", slot_party_orginal_faction),
+     (str_store_faction_name, s63, ":guild_faction"),
+     (store_current_day, ":cur_day"),
+     (party_get_slot, ":contract_end", ":cur_party", slot_party_merc_contract),
+     (store_sub, reg21, ":contract_end", ":cur_day"),
+     (str_store_string, s60, "@Active company: {s63}. Size {reg20}. Contract ends in {reg21} day(s)."),
+   (try_end),
+
+   (faction_get_slot, ":pact_guild", "fac_player_faction", slot_faction_merc_pact),
+   (try_begin),
+     (gt, ":pact_guild", 0),
+     (str_store_faction_name, s63, ":pact_guild"),
+     (store_relation, reg22, ":pact_guild", "fac_player_faction"),
+     (faction_get_slot, reg23, ":pact_guild", player_debt_to_faction),
+     (assign, reg24, "$g_mercenary_guild_weekly_payment"),
+     (call_script, "script_merc_describe_pact_status", ":pact_guild"),
+     (str_store_string, s61, "@Guild pact: {s63}. Weekly fee {reg24}. Debt {reg23}. Relation {reg22}. {s59}"),
+   (try_end),
+
+   (try_begin),
+     (gt, "$players_kingdom", 0),
+     (eq, "$player_has_homage", 0),
+     (str_store_faction_name, s63, "$players_kingdom"),
+     (store_current_day, ":cur_day"),
+     (store_sub, reg25, "$mercenary_service_next_renew_day", ":cur_day"),
+     (assign, reg26, "$mercenary_service_accumulated_pay"),
+     (str_store_string, s62, "@Kingdom service: {s63}. Renewal in {reg25} day(s). Accrued unpaid wages {reg26} denars."),
+   (try_end),
+ ]),
+]

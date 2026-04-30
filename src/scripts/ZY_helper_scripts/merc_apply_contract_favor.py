@@ -1,0 +1,58 @@
+# COST: low
+SCRIPTS = [
+("merc_apply_contract_favor",
+ [
+   (store_script_param_1, ":party_no"),
+
+   (party_get_slot, ":guild_faction", ":party_no", slot_party_orginal_faction),
+   (try_begin),
+     (gt, ":guild_faction", 0),
+     (call_script, "script_merc_describe_guild_favor", ":guild_faction"),
+
+     (store_relation, ":rel", ":guild_faction", "fac_player_faction"),
+     (ge, ":rel", 40),
+
+     (call_script, "script_change_player_relation_with_faction", ":guild_faction", -5),
+     (call_script, "script_merc_extend_party_contract", ":party_no", 1),
+
+     (faction_get_slot, ":t1_1", ":guild_faction", slot_guild_tier_1_unit_1),
+     (faction_get_slot, ":t1_2", ":guild_faction", slot_guild_tier_1_unit_2),
+     (faction_get_slot, ":noble", ":guild_faction", slot_guild_noble),
+
+     (try_begin),
+       (eq, ":guild_faction", "fac_sod_merc_guild1"),
+       (store_party_size, ":size", ":party_no"),
+       (store_mul, ":xp", ":size", 20),
+       (call_script, "script_cf_party_upgrade_with_xp", ":party_no", ":xp", 0),
+     (else_try),
+       (eq, ":guild_faction", "fac_sod_merc_guild2"),
+       (party_add_members, ":party_no", ":t1_1", 3),
+       (party_add_members, ":party_no", ":t1_2", 2),
+     (else_try),
+       (eq, ":guild_faction", "fac_sod_merc_guild3"),
+       (party_add_members, ":party_no", ":noble", 2),
+       (store_party_size, ":size", ":party_no"),
+       (store_mul, ":xp", ":size", 10),
+       (call_script, "script_cf_party_upgrade_with_xp", ":party_no", ":xp", 0),
+     (else_try),
+       (eq, ":guild_faction", "fac_sod_merc_guild4"),
+       (party_add_members, ":party_no", ":t1_1", 4),
+       (party_add_members, ":party_no", ":t1_2", 2),
+     (else_try),
+       (eq, ":guild_faction", "fac_sod_merc_guild5"),
+       (party_add_members, ":party_no", ":noble", 2),
+       (party_add_members, ":party_no", ":t1_1", 2),
+     (else_try),
+       (eq, ":guild_faction", "fac_sod_merc_guild6"),
+       (party_add_members, ":party_no", ":t1_1", 5),
+       (party_add_members, ":party_no", ":t1_2", 3),
+     (else_try),
+       (eq, ":guild_faction", "fac_sod_merc_guild7"),
+       (party_add_members, ":party_no", ":t1_1", 4),
+       (party_add_members, ":party_no", ":noble", 1),
+     (try_end),
+
+     (display_message, "@Your standing lets you call in {s54}. The guild grants the favor, but your reputation with them drops slightly.", 0x66CC66),
+   (try_end),
+ ]),
+]

@@ -1,0 +1,27 @@
+SCRIPTS = [
+("sod_party_count_strength",
+    [
+      (store_script_param_1, ":party"), #Party_id
+      (party_get_num_companion_stacks, ":num_stacks", ":party"),
+      (assign, reg0, 0),
+      (try_for_range, ":i_stack", 0, ":num_stacks"),
+        (party_stack_get_troop_id, ":stack_troop", ":party", ":i_stack"),
+		(store_character_level, ":troop_level", ":stack_troop"),
+        (assign, ":num_fit", 0),
+        (try_begin),
+          (troop_is_hero, ":stack_troop"),
+          #          (store_troop_health, ":troop_hp", ":stack_troop"),
+          (try_begin),
+            (neg|troop_is_wounded, ":stack_troop"),
+            #            (ge,  ":troop_hp", 20),
+            (assign, ":num_fit", ":troop_level"),
+          (try_end),
+        (else_try),
+          (party_stack_get_size,         ":num_fit", ":party", ":i_stack"),
+          (party_stack_get_num_wounded, ":num_wounded", ":party", ":i_stack"),
+          (val_sub, ":num_fit", ":num_wounded"),
+        (try_end),
+        (val_add, reg0, ":num_fit"),
+      (try_end),
+  ]),
+]

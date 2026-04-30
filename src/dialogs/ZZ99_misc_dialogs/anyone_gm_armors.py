@@ -1,0 +1,4 @@
+DIALOGS = [
+[anyone, "gm_Armors", [
+   ],"Unlike in most parts of the cruel world, everyone is 'born' equally in the Black Army, and only personal skill and determination - or lack of it - decides one's fate as he or she climbs higher on the ladder of ranks or falls down from it. Fresh Blades are the newest generation of recruits in the company, mostly freshly assimilated young sell-swords in process of retraining. Their equipment is diverse and above-average quality, but not their skills. As they show off their talents in battle and the training grounds they are sorted out for different purposes. Line Keepers are recruits who insist on fighting in close combat. They aren't much better armed than Fresh Blades but are given wide shields to provide cover for other troops. Afterwards, they have yet to flesh out their full potential to ascend into the ranks of either the Ravagers or the Iron Guards.", "gm_guild_soldiers", []],
+]

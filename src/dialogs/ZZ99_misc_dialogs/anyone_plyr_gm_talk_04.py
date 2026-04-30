@@ -1,0 +1,15 @@
+DIALOGS = [
+[anyone|plyr, "gm_talk", [(store_partner_quest, "$g_gm_quest"),
+                                                 (this_or_next|eq, "$g_gm_quest", "qst_elephant_guard_deliver_grain"),
+												 (eq, "$g_gm_quest", "qst_conquistadors_deliver_grain"),
+                                                 (quest_get_slot, ":quest_target_amount", "$g_gm_quest", slot_quest_target_amount),
+												 (quest_get_slot, ":quest_target_item", "$g_gm_quest", slot_quest_target_item),
+                                                 (call_script, "script_get_troop_item_amount", "trp_player", ":quest_target_item"),
+												 (str_store_item_name_plural, s13, ":quest_target_item"),
+                                                 (assign, ":cur_amount", reg0),
+                                                 (ge, ":cur_amount", ":quest_target_amount"),
+                                                 (assign, reg5, ":quest_target_amount"),
+                                                 ],
+   "I brought you {reg5} packs of {s13}.", "gm_deliver_grain_thank",
+   []],
+]

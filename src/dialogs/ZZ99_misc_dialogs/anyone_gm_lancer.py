@@ -1,0 +1,4 @@
+DIALOGS = [
+[anyone, "gm_Lancer", [
+   ],"On an expedition across the ocean, there was little need or actual space for war steeds, but back then I insisted taking some horses with us, and now I'm glad I did.  Our company has a small cavalry force, the Lancer division, but you make a grave mistake if you consider them inferior.  With finely crafted lances and horses bred for battle, they can trample enemy infantry formations with ease and are equal in skill to any knight of Calradia.  However, since our horses are a unique breed and considerably few men in the company are trained in mounted combat, I rarely let them be fielded by anyone, except if I know our partner is not only reliable, but a man that shares my morals.  Even then, my business is war, and war is not cheap.", "gm_guild_soldiers", []],
+]

@@ -1,0 +1,33 @@
+MISSION_TEMPLATES = [
+(
+    "town_default", 0, -1,
+    "Default town visit",
+    [(0, mtef_scene_source|mtef_team_0, af_override_horse, 0, 1, pilgrim_disguise),
+     (1, mtef_scene_source|mtef_team_0, af_override_horse, 0, 1, []), (2, mtef_scene_source|mtef_team_0, af_override_horse, 0, 1, []),
+     (3, mtef_scene_source|mtef_team_0, af_override_horse, 0, 1, []),
+     (4, mtef_scene_source|mtef_team_0, af_override_horse, 0, 1, []), (5, mtef_scene_source|mtef_team_0, af_override_horse, 0, 1, []), (6, mtef_scene_source|mtef_team_0, af_override_horse, 0, 1, []), (7, mtef_scene_source|mtef_team_0, af_override_horse, 0, 1, []),
+     (8, mtef_scene_source, af_override_horse, 0, 1, []), (9, mtef_scene_source, af_override_horse, 0, 1, []), (10, mtef_scene_source, af_override_horse, 0, 1, []), (11, mtef_scene_source, af_override_horse, 0, 1, []),
+     (12, mtef_scene_source, af_override_horse, 0, 1, []), (13, mtef_scene_source, 0, 0, 1, []), (14, mtef_scene_source, 0, 0, 1, []), (15, mtef_scene_source, 0, 0, 1, []),
+     (16, mtef_visitor_source, af_override_horse, 0, 1, []), (17, mtef_visitor_source, af_override_horse, 0, 1, []), (18, mtef_visitor_source, af_override_horse, 0, 1, []), (19, mtef_visitor_source, af_override_horse, 0, 1, []), (20, mtef_visitor_source, af_override_horse, 0, 1, []), (21, mtef_visitor_source, af_override_horse, 0, 1, []), (22, mtef_visitor_source, af_override_horse, 0, 1, []), (23, mtef_visitor_source, af_override_horse, 0, 1, []), (24, mtef_visitor_source, af_override_horse, 0, 1, []),
+     (25, mtef_visitor_source, af_override_horse, 0, 1, []), (26, mtef_visitor_source, af_override_horse, 0, 1, []), (27, mtef_visitor_source, af_override_horse, 0, 1, []), (28, mtef_visitor_source, af_override_horse, 0, 1, []), (29, mtef_visitor_source, af_override_horse, 0, 1, []), (30, mtef_visitor_source, af_override_horse, 0, 1, []), (31, mtef_visitor_source, af_override_horse, 0, 1, []),
+     ],
+    [
+      (1, 0, ti_once, [], [
+          (store_current_scene, ":cur_scene"),
+          (scene_set_slot, ":cur_scene", slot_scene_visited, 1),
+          (try_begin),
+            (eq, "$sneaked_into_town", 1),
+            (call_script, "script_music_set_situation_with_culture", mtf_sit_town_infiltrate),
+          (else_try),
+            (eq, "$talk_context", tc_tavern_talk),
+            (call_script, "script_music_set_situation_with_culture", mtf_sit_tavern),
+          (else_try),
+            (call_script, "script_music_set_situation_with_culture", mtf_sit_travel),
+          (try_end),
+        ]),
+      (ti_before_mission_start, 0, 0, [], [(call_script, "script_change_banners_and_chest")]),
+      (ti_inventory_key_pressed, 0, 0, [(set_trigger_result, 1)], []),
+      (ti_tab_pressed, 0, 0, [(set_trigger_result, 1)], []),
+    ],
+  ),
+]

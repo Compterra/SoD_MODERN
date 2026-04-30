@@ -1,0 +1,105 @@
+MENUS = [
+(
+    "event_22", mnf_disable_all_keys,
+    "Unhappy with the way you lead your party {s2}.",
+    "none",
+    [(party_get_num_companion_stacks, ":num_stacks", "p_main_party"),
+
+	  (assign, ":num_heroes", 0),
+	  (try_for_range, ":stack_no", 1, ":num_stacks"),
+	  (party_stack_get_troop_id, ":troop_id", "p_main_party", ":stack_no"),
+	  (gt, ":troop_id", 0),
+	  (party_stack_get_size, ":size", "p_main_party", ":stack_no"),
+		  (try_begin),
+		  (this_or_next|lt, ":size", 1),
+		  (troop_is_hero, ":troop_id"),
+		  (val_add, ":num_heroes", 1),
+		  (try_end),
+	  (try_end),
+
+	  (store_sub, ":num_non_hero_stacks", ":num_stacks", ":num_heroes"),
+	  (store_random_in_range, ":rnd", 1, ":num_non_hero_stacks"),
+
+	  (assign, ":non_hero_stack", 0),
+	  (assign, reg2, -1),
+
+	  (try_for_range, ":stack_no", 1, ":num_stacks"),
+	  (party_stack_get_troop_id, ":troop_id", "p_main_party", ":stack_no"),
+	  (gt, ":troop_id", 0),
+	  (party_stack_get_size, ":size", "p_main_party", ":stack_no"),
+	  (neg|troop_is_hero, ":troop_id"),
+	  (gt, ":size", 0),
+	  (val_add, ":non_hero_stack", 1),
+	     (try_begin),
+		 (eq, ":non_hero_stack", ":rnd"),
+		 (assign, reg2, ":troop_id"),
+		 (assign, ":this_stack", ":stack_no"),
+	     (try_end),
+	  (try_end),
+
+	  (party_stack_get_size, ":stack_size", "p_main_party", ":this_stack"),
+
+	  (try_begin),
+	     (eq, ":stack_size", 1),
+		 (assign, reg3, 1),
+	  (else_try),
+         (lt, ":stack_size", 4),
+         (assign, reg3, ":stack_size"),
+      (else_try),
+	   	(party_get_morale, ":morale", "p_main_party"),
+             (try_begin),
+                (lt, ":morale", 30),
+                (assign, reg3, ":stack_size"),
+             (else_try),
+                (lt, ":morale", 60),
+                (store_div, reg3, ":stack_size", 2),
+ 			  (else_try),
+			     (store_div, ":max", ":stack_size", 2),
+				 (store_random_in_range, reg3, 1, ":max"),
+		      (try_end),
+        (try_end),
+
+		(str_clear, s2),
+        (try_begin),
+		(eq, reg3, 1),
+	    (str_store_troop_name, s1, reg2),
+        (str_store_string, s2, "@a {s1} has deserted and left your party"),
+	    (else_try),
+        (str_store_troop_name_plural, s1, reg2),
+        (str_store_string, s2, "@some of your soldiers have deserted : {reg3} {s1} have left the party"),
+        (try_end),
+		(party_remove_members, "p_main_party", reg2, reg3),
+    ],
+    [
+      ("choice_22_1", [], "It's sad.", [
+	      (call_script, "script_change_player_party_morale", -5),
+          (change_screen_return),
+        ]
+       ),
+             ("choice_22_2", [], "Give my remaining soldiers a bonus of 20 denars each.", [
+			 (party_get_num_companions, ":cost", "p_main_party"),
+			 (val_mul, ":cost", 20),
+			 (store_troop_gold, ":gold", "trp_player"),
+			(try_begin),
+            (ge, ":gold", ":cost"),
+            (call_script, "script_change_player_party_morale", 10),
+            (troop_remove_gold, "trp_player", ":cost"),
+            (else_try),
+            (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+            (call_script, "script_change_troop_renown", "trp_player", -5),
+            (call_script, "script_change_player_party_morale", -5),
+             (try_end),
+			 
+			 
+          (change_screen_return),
+        ]
+       ),
+         ("choice_22_1", [], "Whip some of your remaining soldiers they must have stopped the deserter.", [
+			(call_script, "script_change_player_party_morale", -10),
+			(assign, "$g_whiped_for_example", 1),
+          (change_screen_return),
+        ]
+       ),
+      ]
+  ),
+]

@@ -1,0 +1,30 @@
+MISSION_TEMPLATES = [
+(
+    "fgtq_s_hunter_slaves", mtf_team_fight|mtf_no_blood, charge,
+    "You will fight a match in the arena.",
+    [
+      (0, mtef_visitor_source|mtef_team_0, af_override_all, aif_start_alarmed, 1, [itm_winged_mace, itm_slaver_shield_round_hide, itm_throwing_hammers1, itm_skullcap, itm_leather_armor, itm_leather_gloves],),
+      (1, mtef_visitor_source|mtef_team_0, af_override_horse, aif_start_alarmed, 1, []),
+      (2, mtef_visitor_source|mtef_team_0, af_override_horse, aif_start_alarmed, 1, []),
+      (3, mtef_visitor_source|mtef_team_0, af_override_horse, aif_start_alarmed, 1, []),
+      (4, mtef_visitor_source|mtef_team_0, af_override_horse, aif_start_alarmed, 1, []),
+      (5, mtef_visitor_source|mtef_team_0, af_override_horse, aif_start_alarmed, 1, []),
+	  (6, mtef_visitor_source|mtef_team_0, af_override_horse, aif_start_alarmed, 1, []),
+      (7, mtef_visitor_source|mtef_team_0, af_override_horse, aif_start_alarmed, 1, []),
+	  (8, mtef_visitor_source|mtef_team_0, af_override_horse, aif_start_alarmed, 1, []),
+	  (9, mtef_visitor_source|mtef_team_0, af_override_horse, aif_start_alarmed, 1, []),
+	  
+      (10, mtef_visitor_source|mtef_team_1, af_override_horse, aif_start_alarmed, 1, [itm_hatchet, itm_club, itm_butchering_knife, itm_stones, itm_woolen_cap, itm_nomad_boots]),
+      (11, mtef_visitor_source|mtef_team_1, af_override_horse, aif_start_alarmed, 1, [itm_hatchet, itm_club, itm_butchering_knife, itm_stones, itm_woolen_cap, itm_nomad_boots]),
+      (12, mtef_visitor_source|mtef_team_1, af_override_horse, aif_start_alarmed, 1, [itm_hatchet, itm_club, itm_butchering_knife, itm_stones, itm_woolen_cap, itm_nomad_boots]),
+      (13, mtef_visitor_source|mtef_team_1, af_override_horse, aif_start_alarmed, 1, [itm_hatchet, itm_club, itm_butchering_knife, itm_stones, itm_woolen_cap, itm_nomad_boots]),
+      (14, mtef_visitor_source|mtef_team_1, af_override_horse, aif_start_alarmed, 1, [itm_hatchet, itm_club, itm_butchering_knife, itm_stones, itm_woolen_cap, itm_nomad_boots]),
+      (15, mtef_visitor_source|mtef_team_1, af_override_horse, aif_start_alarmed, 1, [itm_hatchet, itm_club, itm_butchering_knife, itm_stones, itm_woolen_cap, itm_nomad_boots]),
+      (16, mtef_visitor_source|mtef_team_1, af_override_horse, aif_start_alarmed, 1, [itm_hatchet, itm_club, itm_butchering_knife, itm_stones, itm_woolen_cap, itm_nomad_boots]),
+      (17, mtef_visitor_source|mtef_team_1, af_override_horse, aif_start_alarmed, 1, [itm_hatchet, itm_club, itm_butchering_knife, itm_stones, itm_woolen_cap, itm_nomad_boots]),
+      (18, mtef_visitor_source|mtef_team_1, af_override_horse, aif_start_alarmed, 1, [itm_hatchet, itm_club, itm_butchering_knife, itm_stones, itm_woolen_cap, itm_nomad_boots]),
+      (19, mtef_visitor_source|mtef_team_1, af_override_horse, aif_start_alarmed, 1, [itm_hatchet, itm_club, itm_butchering_knife, itm_stones, itm_woolen_cap, itm_nomad_boots]),
+    ],
+    fgtq_triggers,
+  ),
+]

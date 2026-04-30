@@ -1,0 +1,150 @@
+MISSION_TEMPLATES = [
+(
+    "lead_charge", mtf_battle_mode, charge,
+    "You lead your men to battle.",
+    [
+     (1, mtef_defenders|mtef_team_0, 0, aif_start_alarmed, 12, []),
+     (0, mtef_defenders|mtef_team_0, 0, aif_start_alarmed, 0, []),
+     (4, mtef_attackers|mtef_team_1, 0, aif_start_alarmed, 12, []),
+     (4, mtef_attackers|mtef_team_1, 0, aif_start_alarmed, 0, []),
+     ],
+    [
+      (ti_on_agent_spawn, 0, 0, [],
+       [
+         (store_trigger_param_1, ":agent_no"),
+         (call_script, "script_agent_reassign_team", ":agent_no"),
+         ]),
+
+      common_battle_tab_press, 
+	  common_battle_horse_health,
+	  
+
+      (ti_question_answered, 0, 0, [],
+       [(store_trigger_param_1, ":answer"),
+        (eq, ":answer", 0),
+        (assign, "$pin_player_fallen", 0),
+        (try_begin),
+          (store_mission_timer_a, ":elapsed_time"),
+          (gt, ":elapsed_time", 20),
+          (str_store_string, s5, "str_retreat"),
+          (call_script, "script_simulate_retreat", 10, 20),
+        (try_end),
+        (call_script, "script_count_mission_casualties_from_agents"),
+        (finish_mission, 0), ]),
+
+      (ti_before_mission_start, 0, 0, [],
+       [
+         (team_set_relation, 0, 2, 1),
+         (team_set_relation, 1, 3, 1),
+         (call_script, "script_place_player_banner_near_inventory_bms"),
+         (call_script, "script_sod_quest_battle_mission_start"),
+         ]),
+      quest_battle_agent_defeated,
+      quest_battle_tick,
+
+
+      (0, 0, ti_once, [], [(assign, "$battle_won", 0),
+                           (assign, "$defender_reinforcement_stage", 0),
+                           (assign, "$attacker_reinforcement_stage", 0),
+                           (assign, "$g_presentation_battle_active", 0),
+                           (call_script, "script_place_player_banner_near_inventory"),
+                           (call_script, "script_combat_music_set_situation_with_culture"),
+                           ]),
+
+      common_music_situation_update,
+      common_battle_check_friendly_kills,
+
+      (1, 0, 5, [(lt, "$defender_reinforcement_stage", 2),
+                 (store_mission_timer_a, ":mission_time"),
+                 (ge, ":mission_time", 10),
+                 (store_normalized_team_count, ":num_defenders", 0),
+                 (lt, ":num_defenders", 6),
+                 ],
+           [(add_reinforcements_to_entry, 0, 7), (val_add, "$defender_reinforcement_stage", 1)]),
+
+      (1, 0, 5, [(lt, "$attacker_reinforcement_stage", 2),
+                 (store_mission_timer_a, ":mission_time"),
+                 (ge, ":mission_time", 10),
+                 (store_normalized_team_count, ":num_attackers", 1),
+                 (lt, ":num_attackers", 6),
+                 ],
+           [(add_reinforcements_to_entry, 3, 7), (val_add, "$attacker_reinforcement_stage", 1)]),
+
+      common_battle_check_victory_condition,
+      common_battle_victory_display,
+
+      (1, 4, ti_once, [(main_hero_fallen)],
+          [
+              (assign, "$pin_player_fallen", 1),
+#SoD              (str_store_string, s5, "str_retreat"),
+#SoD               (call_script, "script_simulate_retreat", 10, 20),
+#SoD               (assign, "$g_battle_result", -1),
+#SoD               (set_mission_result, -1),
+#SoD               (call_script, "script_count_mission_casualties_from_agents"),
+#SoD               (finish_mission, 0)
+        ]),
+
+      common_battle_inventory,
+
+      #AI Tiggers
+      (0, 0, ti_once, [
+          (store_mission_timer_a, ":mission_time"), (ge, ":mission_time", 2),
+          ],
+       [(call_script, "script_select_battle_tactic"),
+        (call_script, "script_battle_tactic_init")]),
+
+      (5, 0, 0, [
+          (store_mission_timer_a, ":mission_time"), (ge, ":mission_time", 3),
+          (call_script, "script_battle_tactic_apply"),
+          ], []),
+
+      common_battle_order_panel,
+      common_battle_order_panel_tick,
+
+      camera_trigger_1,
+      camera_trigger_2,
+      camera_trigger_3,
+      camera_trigger_4,
+      camera_trigger_5,
+      camera_trigger_6,
+      camera_trigger_7,
+      camera_trigger_8,
+
+      formations_init,
+      formations_1,
+      formations_2,
+      formations_3,
+      formations_j,
+      formations_p,
+      formations_k,
+      formations_u,
+      formations_ai_end,
+      formations_ai_dismount,
+      formations_end,
+      formations_dismount,
+      formations_move_infantry,
+      formations_move_archers,
+      formations_move_cavalry,
+      formations_update_ai_infantry,
+      formations_update_ai_archers,
+      formations_update_ai_cavalry,
+      formations_update_ally_infantry,
+      formations_update_ally_archers,
+      formations_update_ally_cavalry,
+      commander_duel_init,
+      commander_duel_player_challenge,
+      commander_duel_player_feedback,
+      commander_duel_ai_challenge,
+      commander_duel_tick,
+      commander_duel_camera_tick,
+      formations_init_kill_count,
+      formations_update_kill_count,
+      formations_t,
+      formations_rally,
+      formations_v,
+      formations_start_coherence,
+      formations_update_morale,
+      formations_update_route,
+    ],
+  ),
+]

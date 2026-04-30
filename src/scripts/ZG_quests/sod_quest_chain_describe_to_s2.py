@@ -1,0 +1,35 @@
+SCRIPTS = [
+("sod_quest_chain_describe_to_s2",
+    [
+      (assign, ":active_chains", 0),
+      (assign, ":delayed_chains", 0),
+      (assign, ":locked_chains", 0),
+      (assign, ":hidden_unlocked", 0),
+      (try_for_range, ":quest_no", all_quests_begin, all_quests_end),
+        (quest_get_slot, ":chain_id", ":quest_no", slot_quest_sod_chain_id),
+        (gt, ":chain_id", 0),
+        (val_add, ":active_chains", 1),
+        (try_begin),
+          (quest_slot_eq, ":quest_no", slot_quest_sod_chain_lock_state, sod_quest_chain_lock_resuming),
+          (val_add, ":delayed_chains", 1),
+        (else_try),
+          (quest_slot_eq, ":quest_no", slot_quest_sod_chain_lock_state, sod_quest_chain_lock_locked),
+          (val_add, ":locked_chains", 1),
+        (try_end),
+        (quest_get_slot, ":flags", ":quest_no", slot_quest_sod_chain_flags),
+        (store_and, ":hidden_flag", ":flags", sod_quest_chain_flag_hidden_unlocked),
+        (try_begin),
+          (gt, ":hidden_flag", 0),
+          (val_add, ":hidden_unlocked", 1),
+        (try_end),
+      (try_end),
+      (assign, reg1, ":active_chains"),
+      (assign, reg2, ":delayed_chains"),
+      (assign, reg3, ":locked_chains"),
+      (assign, reg4, ":hidden_unlocked"),
+      (str_store_string, s3, "@Branching Quest Chains^^Tracked chain quests: {reg1}^Delayed resumes: {reg2}^Locked paths: {reg3}^Hidden paths revealed: {reg4}^^Supported chain mechanics:^* Linear next-quest continuation.^* Success and failure branches.^* Player choice branches.^* Faction-alignment branches.^* Hidden branch unlocks.^* Alternate ending markers.^* Resettable chains and lockouts.^* Delayed resume after campaign time passes."),
+  ]),
+]
+
+script_sod_quest_chain_describe_to_s2 = SCRIPTS[0][1]
+SCRIPT = script_sod_quest_chain_describe_to_s2

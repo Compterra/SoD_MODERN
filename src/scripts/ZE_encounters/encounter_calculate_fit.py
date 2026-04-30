@@ -1,0 +1,32 @@
+SCRIPTS = [
+("encounter_calculate_fit",
+    [
+      #      (assign, "$g_enemy_fit_for_battle_old",  "$g_enemy_fit_for_battle"),
+      #      (assign, "$g_friend_fit_for_battle_old", "$g_friend_fit_for_battle"),
+      #      (assign, "$g_main_party_fit_for_battle_old", "$g_main_party_fit_for_battle"),
+      (call_script, "script_party_count_fit_for_battle", "p_main_party"),
+      #     (assign, "$g_main_party_fit_for_battle", reg(0)),
+      (call_script, "script_collect_friendly_parties"),
+      (call_script, "script_party_count_fit_for_battle", "p_collective_friends"),
+      (assign, "$g_friend_fit_for_battle", reg(0)),
+
+      (party_clear, "p_collective_ally"),
+      (try_begin),
+        (gt, "$g_ally_party", 0),
+        (party_is_active, "$g_ally_party"),
+        (party_collect_attachments_to_party, "$g_ally_party", "p_collective_ally"),
+        #        (call_script, "script_party_count_fit_for_battle", "p_collective_ally"),
+        #        (val_add, "$g_friend_fit_for_battle", reg(0)),
+      (try_end),
+
+      (party_clear, "p_collective_enemy"),
+      (try_begin),
+        (party_is_active, "$g_enemy_party"),
+        (party_collect_attachments_to_party, "$g_enemy_party", "p_collective_enemy"),
+      (try_end),
+      (call_script, "script_party_count_fit_for_battle", "p_collective_enemy"),
+      (assign, "$g_enemy_fit_for_battle", reg(0)),
+      (assign, reg11, "$g_enemy_fit_for_battle"),
+      (assign, reg10, "$g_friend_fit_for_battle"),
+  ]),
+]

@@ -1,0 +1,37 @@
+SCRIPTS = [
+("troop_write_owned_centers_to_s2",
+    [
+      (store_script_param_1, ":troop_no"),
+
+      (call_script, "script_get_number_of_hero_centers", ":troop_no"),
+      (assign, ":no_centers", reg0),
+
+      (call_script, "script_store_troop_name_link", s5, ":troop_no"),
+
+      (try_begin),
+        (gt, ":no_centers", 1),
+        (try_for_range, ":i_center", 1, ":no_centers"),
+          (call_script, "script_troop_get_leaded_center_with_index", ":troop_no", ":i_center"),
+          (str_store_party_name_link, s50, reg0),
+          (try_begin),
+            (eq, ":i_center", 1),
+            (call_script, "script_troop_get_leaded_center_with_index", ":troop_no", 0),
+            (str_store_party_name_link, s51, reg0),
+            (str_store_string, s51, "str_s50_and_s51"),
+          (else_try),
+            (str_store_string, s51, "str_s50_comma_s51"),
+          (try_end),
+        (try_end),
+        (str_store_string, s2, "str_s5_is_the_ruler_of_s51"),
+      (else_try),
+        (eq, ":no_centers", 1),
+        (call_script, "script_troop_get_leaded_center_with_index", ":troop_no", 0),
+        (str_store_party_name_link, s51, reg0),
+        (str_store_string, s2, "str_s5_is_the_ruler_of_s51"),
+      (else_try),
+        (store_troop_faction, ":faction_no", ":troop_no"),
+        (str_store_faction_name_link, s6, ":faction_no"),
+        (str_store_string, s2, "str_s5_is_a_nobleman_of_s6"),
+      (try_end),
+  ]),
+]

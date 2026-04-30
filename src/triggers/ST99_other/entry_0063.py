@@ -1,0 +1,17 @@
+SIMPLE_TRIGGERS = [
+(36,
+   [(try_for_range, ":center_no", centers_begin, centers_end),
+      (this_or_next|party_slot_eq, ":center_no", slot_party_type, spt_town),
+      (             party_slot_eq, ":center_no", slot_party_type, spt_village),
+      (call_script, "script_center_remove_walker_type_from_walkers", ":center_no", walkert_needs_money),
+      (call_script, "script_center_remove_walker_type_from_walkers", ":center_no", walkert_needs_money_helped),
+      (store_random_in_range, ":rand", 0, 100),
+      (try_begin),
+        (lt, ":rand", 70),
+        (neg|party_slot_ge, ":center_no", slot_town_prosperity, 60),
+        (call_script, "script_cf_center_get_free_walker", ":center_no"),
+        (call_script, "script_center_set_walker_to_type", ":center_no", reg0, walkert_needs_money),
+      (try_end),
+    (try_end),
+    ]),
+]

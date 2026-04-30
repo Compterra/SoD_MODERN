@@ -1,0 +1,4 @@
+DIALOGS = [
+[anyone, "gm_ramun", [
+   ], "Well, Ransom Brokers are employees who look after business with the lower classes. They buy prisoners captured by soldiers, and we sell them to nobles as slaves, who may train them as soldiers who will capture prisoners... nicely thought-out business, don't you agree?  But Ramun in Tihr... bah.  He's a different story.  That mongrel has been stealing our profit right from under our noses!  See, the Kingdom of Nords is our primary trade area.  The sea is right there for intercontinental trading, and the Nord lords don't mind our presence at all as long as we share a part of the profit with them. But Ramun and his clever business policies are a thorn in the side.  But our boss says we may not lay a finger on the guy.  I wonder if he has some past connections with him...", "gm_pretalk",[]],
+]

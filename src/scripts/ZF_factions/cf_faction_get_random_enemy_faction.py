@@ -1,0 +1,29 @@
+SCRIPTS = [
+("cf_faction_get_random_enemy_faction",
+    [
+      (store_script_param_1, ":faction_no"),
+
+      (assign, ":result", -1),
+      (assign, ":count_factions", 0),
+      (try_for_range, ":cur_faction", kingdoms_begin, kingdoms_end),
+        (faction_slot_eq, ":cur_faction", slot_faction_state, sfs_active),
+        (store_relation, ":cur_relation", ":faction_no", ":cur_faction"),
+        (le, ":cur_relation", -1),
+        (val_add, ":count_factions", 1),
+      (try_end),
+      (store_random_in_range, ":random_faction", 0, ":count_factions"),
+      (assign, ":count_factions", 0),
+      (try_for_range, ":cur_faction", kingdoms_begin, kingdoms_end),
+        (eq, ":result", -1),
+        (faction_slot_eq, ":cur_faction", slot_faction_state, sfs_active),
+        (store_relation, ":cur_relation", ":faction_no", ":cur_faction"),
+        (le, ":cur_relation", -1),
+        (val_add, ":count_factions", 1),
+        (gt, ":count_factions", ":random_faction"),
+        (assign, ":result", ":cur_faction"),
+      (try_end),
+
+      (neq, ":result", -1),
+      (assign, reg0, ":result"),
+  ]),
+]

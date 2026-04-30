@@ -1,0 +1,4 @@
+DIALOGS = [
+[anyone, "gm_Thornsides", [
+   ],"Ranged combat has been generally overlooked in the company for quite a while, but time and again the existance of ranged troops have proven to be a necessity in any long-term campaign. Line Supporters are quite defenseless but make use of reliable armament, including both bows and crossbows. When they get experienced enough, they are promoted to Assaulters and given dangerous new toys - repeating crossbows, the pride of our Marinan weapon-makers. You don't know what a 'rain of bolts' really means until you see them in action. They also undergo a riding course so they may choose to mount swift steeds. They still require protection from other army branches though, but provided with the necessary defense they can make a bloody mess out of the battlefield.", "gm_guild_soldiers", []],
+]

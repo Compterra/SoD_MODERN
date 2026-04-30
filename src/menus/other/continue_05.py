@@ -1,0 +1,83 @@
+MENUS = [
+(
+    "battle_debrief", mnf_disable_all_keys,
+    "{s11}^^Your Casualties:{s8}{s10}^^Enemy Casualties:{s9}",
+    "none",
+    [
+      (set_background_mesh, "mesh_pic_attack_ready"),
+
+      (try_begin),
+        (eq, "$g_battle_result", 1),
+        (call_script, "script_change_troop_renown", "trp_player", "$battle_renown_value"),
+      (try_end),
+
+     (call_script, "script_encounter_calculate_fit"),
+
+     (call_script, "script_party_count_fit_regulars", "p_main_party"),
+     (assign, "$playerparty_postbattle_regulars", reg0),
+
+     (try_begin),
+       (eq, "$g_battle_result", 1),
+       (eq, "$g_enemy_fit_for_battle", 0),
+       (str_store_string, s11, "@You were victorious!"),
+#       (play_track, "track_bogus"), #clear current track.
+#       (call_script, "script_music_set_situation_with_culture", mtf_sit_victorious),
+       (try_begin),
+         (gt, "$g_friend_fit_for_battle", 1),
+         (set_background_mesh, "mesh_pic_victory"),
+       (try_end),
+     (else_try),
+       (eq, "$g_battle_result", -1),
+       (ge, "$g_enemy_fit_for_battle", 1),
+       (this_or_next|le, "$g_friend_fit_for_battle", 0),
+       (             le, "$playerparty_postbattle_regulars", 0),
+       (str_store_string, s11, "@Battle was lost. Your forces were utterly crushed."),
+       (set_background_mesh, "mesh_pic_defeat"),
+     (else_try),
+       (eq, "$g_battle_result", -1),
+       (str_store_string, s11, "@Your companions carry you away from the fighting."),
+       (troop_get_type, ":is_female", "trp_player"),
+       (try_begin),
+         (eq, ":is_female", 1),
+         (set_background_mesh, "mesh_pic_wounded_fem"),
+       (else_try),
+         (set_background_mesh, "mesh_pic_wounded"),
+       (try_end),
+     (else_try),
+       (eq, "$g_battle_result", 1),
+       (str_store_string, s11, "@You have defeated the enemy."),
+       (try_begin),
+         (gt, "$g_friend_fit_for_battle", 1),
+         (set_background_mesh, "mesh_pic_victory"),
+       (try_end),
+     (else_try),
+       (eq, "$g_battle_result", 0),
+       (str_store_string, s11, "@You have retreated from the fight."),
+     (try_end),
+#NPC companion changes begin
+##check for excessive casualties, more forgiving if battle result is good
+     (try_begin),
+        (gt, "$playerparty_prebattle_regulars", 9),
+        (store_add, ":divisor", 3, "$g_battle_result"),
+        (store_div, ":half_of_prebattle_regulars", "$playerparty_prebattle_regulars", ":divisor"),
+        (lt, "$playerparty_postbattle_regulars", ":half_of_prebattle_regulars"),
+        (call_script, "script_objectionable_action", tmt_egalitarian, "str_excessive_casualties"),
+     (try_end),
+#NPC companion changes end
+
+     (call_script, "script_print_casualties_to_s0", "p_player_casualties", 0),
+     (str_store_string_reg, s8, s0),
+     (call_script, "script_print_casualties_to_s0", "p_enemy_casualties", 0),
+     (str_store_string_reg, s9, s0),
+     (str_clear, s10),
+     (try_begin),
+       (eq, "$any_allies_at_the_last_battle", 1),
+       (call_script, "script_print_casualties_to_s0", "p_ally_casualties", 0),
+       (str_store_string, s10, "@^^Ally Casualties:{s0}"),
+     (try_end),
+     ],
+    [
+      ("continue", [], "Continue...", [(jump_to_menu, "$g_next_menu"), ]),
+    ]
+  ),
+]

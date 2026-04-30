@@ -1,0 +1,40 @@
+MENUS = [
+(
+    "jotnar_clan_competition", 0,
+    "You are participating in a duel tornament.^In order to become the best fighter you need to gain at least 10 points in up to 7 fights.^^Your points: {reg1}^Battles fought: {reg2}",
+    "none",
+    [
+	(quest_get_slot, reg1, "qst_jotnar_clan_competition", slot_quest_target_amount),
+	(quest_get_slot, reg2, "qst_jotnar_clan_competition", slot_quest_gold_reward),
+	(try_begin),
+		(ge, reg1, 10),
+		(le, reg2, 7),
+		(jump_to_menu, "mnu_jotnar_clan_competition_won"),
+	(else_try),
+		(eq, reg2, 7),
+		(lt, reg1, 10),
+		(jump_to_menu, "mnu_jotnar_clan_competition_lost"),
+	(try_end),
+	],
+    [
+      ("choose_opponent", [], "Choose your next opponent.",
+       [(jump_to_menu, "mnu_jc_choose_opponent"),
+        ]),
+	  ("test-cheat", [], "test-cheat",
+	   [
+	   (set_jump_entry, 56),
+	   (set_jump_mission, "mt_sod_arena_duel_fight"),
+		(jump_to_scene, "scn_jotnar_clan_arena"),
+		(change_screen_mission),]),
+	  ("get_choosen", [], "Wait until someone chooses you as an opponent.",
+       [(jump_to_menu, "mnu_jc_get_choosen"),
+        ]),
+	  ("resign", [], "Quit from the tournament.",
+       [(call_script, "script_end_quest", "qst_jotnar_clan_competition"),
+	   (call_script, "script_change_troop_renown", "trp_player", -5),
+	   (call_script, "script_change_player_relation_with_troop", jotnar_clan_guild_master, -2),
+	   (jump_to_menu, "mnu_sod_merc_guild"),
+        ]),
+     ]
+  ),
+]

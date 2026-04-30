@@ -1,0 +1,22 @@
+SIMPLE_TRIGGERS = [
+(24,
+    [
+      (try_for_parties, ":cur_party"),
+		(party_slot_eq, ":cur_party", slot_party_type, spt_player_mercenaries),
+		(store_current_day, ":cur_day"),
+		(party_get_slot,":time",":cur_party",slot_party_merc_contract),
+		(val_sub, ":time", ":cur_day"),
+		(try_begin),
+		    (party_slot_eq, ":cur_party", slot_party_merc_asked, 1),
+		    (lt, ":time", 0),
+			(call_script, "script_merc_party_change_state", ":cur_party"),
+		(else_try),
+		    (neg|party_slot_eq, ":cur_party", slot_party_merc_asked, 1),
+			(le, ":time", 7),
+			(party_get_num_companions,"$temp_size",":cur_party"),
+			(assign, "$temp_party", ":cur_party"),
+			(jump_to_menu, "mnu_contract_fulfilled"),
+		(try_end),
+	  (try_end),
+	  ]),
+]

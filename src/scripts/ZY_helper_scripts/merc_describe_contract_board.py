@@ -1,0 +1,60 @@
+# COST: medium
+SCRIPTS = [
+("merc_describe_contract_board",
+ [
+   (assign, ":active_service", 0),
+
+   (str_store_string, s58, "@No active mercenary contract."),
+   (str_store_string, s63, "@Contract duration: none."),
+   (str_store_string, s64, "@Contract value: none."),
+   (str_store_string, s65, "@Employer hostility/risk: none."),
+   (str_store_string, s66, "@Support benefits and penalties: none."),
+
+   (try_begin),
+     (gt, "$players_kingdom", 0),
+     (eq, "$player_has_homage", 0),
+     (assign, ":active_service", 1),
+     (str_store_faction_name, s59, "$players_kingdom"),
+     (store_current_day, ":cur_day"),
+     (store_sub, reg27, "$mercenary_service_next_renew_day", ":cur_day"),
+     (assign, reg28, "$mercenary_service_accumulated_pay"),
+     (store_relation, ":rel", "$players_kingdom", "fac_player_supporters_faction"),
+
+     (str_store_string, s58, "@Current employer: {s59}."),
+     (str_store_string, s63, "@Contract duration: {reg27} day(s) remaining."),
+     (str_store_string, s64, "@Contract value: {reg28} denars in accrued wages."),
+
+     (try_begin),
+       (ge, ":rel", 20),
+       (str_store_string, s65, "@Employer hostility/risk: low; the employer remains satisfied with your service."),
+     (else_try),
+       (ge, ":rel", 0),
+       (str_store_string, s65, "@Employer hostility/risk: moderate; the contract holds, but missed pay will strain relations."),
+     (else_try),
+       (str_store_string, s65, "@Employer hostility/risk: high; the employer's patience is wearing thin."),
+     (try_end),
+   (try_end),
+
+   (faction_get_slot, ":pact_guild", "fac_player_faction", slot_faction_merc_pact),
+   (try_begin),
+     (gt, ":pact_guild", 0),
+     (str_store_faction_name, s67, ":pact_guild"),
+     (call_script, "script_merc_describe_pact_status", ":pact_guild"),
+     (assign, reg29, "$g_mercenary_guild_weekly_payment"),
+     (faction_get_slot, reg30, ":pact_guild", player_debt_to_faction),
+
+     (try_begin),
+       (eq, ":active_service", 0),
+       (str_store_string, s58, "@Current employer: {s67}."),
+       (str_store_string, s63, "@Contract duration: weekly renewal."),
+       (str_store_string, s64, "@Contract value: {reg29} denars per week."),
+       (str_store_string, s65, "@Employer hostility/risk: {s59}"),
+     (try_end),
+
+     (str_store_string, s66, "@Support benefits and penalties: guild backing from {s67}; weekly fee {reg29} denars; debt {reg30} denars. {s59}"),
+   (else_try),
+     (eq, ":active_service", 1),
+     (str_store_string, s66, "@Support benefits and penalties: without a guild pact, your leverage comes from staying in the employer's favor."),
+   (try_end),
+ ]),
+]

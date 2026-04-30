@@ -1,0 +1,46 @@
+SCRIPTS = [
+("rout_check",
+                      [
+						  
+						(assign, ":ally", "$allies_coh"),
+                        #(assign, reg2, "$allies_coh"),
+                      #  (display_message, "@allies {reg2}% cohesion!", debug_color),
+                        (assign, ":enemy", "$enemies_coh"),
+                      #  (assign, reg2, "$enemies_coh"),
+                       # (display_message, "@enemies {reg2}% cohesion!", debug_color),
+                      # (val_sub, ":ally", ":enemy"),
+                      # (assign, reg2, ":ally"),
+                       # (display_message, "@difference {reg2}.", debug_color),
+						
+						(try_begin),
+							(gt, "$allies_coh", "$enemies_coh"),
+							(val_div, ":ally", ":enemy"),
+							(gt, ":ally", 5),
+							(display_message, "@Your army has crushing advantage!", 0x7ccd7c),
+							(call_script, "script_rout_enemies"),
+							(assign, "$airout", 1),
+						(else_try),
+							(gt, "$enemies_coh", "$allies_coh"),
+							(val_div, ":enemy", ":ally"),
+							(gt, ":enemy", 5),
+							(display_message, "@Your enemy has crushing advantage!", red),
+							(call_script, "script_rout_allies"),
+							(assign, "$rout", 1),
+						(try_end),
+						
+                        #(try_begin),
+                      #    (ge, ":ally", 400),
+                      #    (display_message, "@Your enemies flee in terror!", 0x7ccd7c),
+                     #     (call_script, "script_rout_enemies"),
+                     #     (assign, "$airout", 1),
+                     #   (try_end),
+
+                     #   (try_begin),
+                     #     (le, ":ally", -400),
+                      #    (display_message, "@Your troops flee in terror!", red),
+                     #    (call_script, "script_rout_allies"),
+                     #     (assign, "$rout", 1),
+                     #   (try_end),
+                      ]
+                    ),
+]

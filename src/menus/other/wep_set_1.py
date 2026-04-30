@@ -1,0 +1,61 @@
+MENUS = [
+(
+    "jc_get_choosen", 0,
+    "{s2} challenges you to a duel. As the challenged one you have the right to selcet the equipment.",
+    "none",
+    [
+	(assign, reg0, "trp_jotnar_clan_jarl"),
+	(assign, reg1, "trp_jotnar_clan_einherjar"),
+	(assign, reg2, "trp_jotnar_clan_valkyrie"),
+	(assign, reg3, "trp_jotnar_clan_disir"),
+	(shuffle_range, 0, 4),
+	(try_begin),
+		(eq, reg1, "trp_jotnar_clan_jarl"),
+	   (assign, "$sod_jc_competition_win_value", 1),
+	   (assign, "$sod_jc_competition_lose_value", -2),
+	(else_try),
+		(eq, reg1, "trp_jotnar_clan_einherjar"),
+	   (assign, "$sod_jc_competition_win_value", 2),
+	   (assign, "$sod_jc_competition_lose_value", -1),
+	(else_try),
+		(eq, reg1, "trp_jotnar_clan_valkyrie"),
+	   (assign, "$sod_jc_competition_win_value", 1),
+	   (assign, "$sod_jc_competition_lose_value", -2),
+	(else_try),
+	   (assign, "$sod_jc_competition_win_value", 2),
+	   (assign, "$sod_jc_competition_lose_value", -1),
+	(try_end),
+	(quest_set_slot, "qst_jotnar_clan_competition", slot_quest_target_troop, reg1),
+	(str_store_troop_name, s2, reg1),
+	],
+    [
+  ("wep_set_1", [(str_store_string, s1, "@Medium Armor"),
+	(str_store_string, s1, "@{s1}, Two Handed Sword"),], "{s1}", [
+	(assign, "$jc_wep_set", 1),
+	(jump_to_menu, "mnu_player_choosen_select_bet"),]),
+  ("wep_set_2", [(str_store_string, s1, "@Medium Armor"),
+	(str_store_string, s1, "@{s1}, Two Handed Axe"),], "{s1}", [
+	(assign, "$jc_wep_set", 2),
+	(jump_to_menu, "mnu_player_choosen_select_bet"),]),
+  ("wep_set_3", [(str_store_string, s1, "@Light Armor"),
+	(str_store_string, s1, "@{s1}, One Handed Sword"),
+	(str_store_string, s1, "@{s1}, Shield"),
+	(str_store_string, s1, "@{s1}, Bow and Arrows"),
+	(str_store_string, s1, "@{s1}, Horse"),], "{s1}", [
+	(assign, "$jc_wep_set", 3),
+	(jump_to_menu, "mnu_player_choosen_select_bet"),]),
+  ("wep_set_4", [(str_store_string, s1, "@Medium Armor"),
+	(str_store_string, s1, "@{s1}, One Handed Axe"),
+	(str_store_string, s1, "@{s1}, Shield"),
+	(str_store_string, s1, "@{s1}, Bow and Arrows"),
+	(str_store_string, s1, "@{s1}, Horse"),], "{s1}", [
+	(assign, "$jc_wep_set", 4),
+	(jump_to_menu, "mnu_player_choosen_select_bet"),]),
+	
+	  ("back", [], "Reject the challenge.",
+       [(jump_to_menu, "mnu_jotnar_clan_competition"),
+        (call_script, "script_change_troop_renown", "trp_player", -3),
+		]),
+     ]
+  ),
+]

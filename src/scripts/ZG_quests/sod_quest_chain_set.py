@@ -1,0 +1,21 @@
+SCRIPTS = [
+("sod_quest_chain_set",
+    [
+      (store_script_param, ":quest_no", 1),
+      (store_script_param, ":chain_id", 2),
+      (store_script_param, ":step_no", 3),
+      (store_script_param, ":flags", 4),
+      (quest_set_slot, ":quest_no", slot_quest_sod_chain_id, ":chain_id"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_chain_step, ":step_no"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_chain_branch, sod_quest_chain_branch_none),
+      (quest_set_slot, ":quest_no", slot_quest_sod_chain_choice, 0),
+      (quest_set_slot, ":quest_no", slot_quest_sod_chain_lock_state, sod_quest_chain_lock_none),
+      (quest_set_slot, ":quest_no", slot_quest_sod_chain_resume_day, 0),
+      (quest_set_slot, ":quest_no", slot_quest_sod_chain_ending, 0),
+      (quest_set_slot, ":quest_no", slot_quest_sod_chain_flags, ":flags"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_chain_next_quest, -1),
+      (quest_set_slot, ":quest_no", slot_quest_sod_chain_previous_quest, -1),
+      (quest_set_slot, ":quest_no", slot_quest_sod_runtime_chain, ":chain_id"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_journal_chain_progress, ":step_no"),
+  ]),
+]

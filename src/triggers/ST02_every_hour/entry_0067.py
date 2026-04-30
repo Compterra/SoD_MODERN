@@ -1,0 +1,30 @@
+SIMPLE_TRIGGERS = [
+(1,
+   [(neg|map_free),
+    (is_currently_night),
+    (ge, "$g_last_rest_center", 0),
+    (neg|party_slot_eq, "$g_last_rest_center", slot_town_lord, "trp_player"),
+
+    #MORDACHAI - don't charge the player to stay in his own lord's castles & towns.
+    (store_faction_of_party, ":center_faction", "$g_last_rest_center"),
+    (neq, ":center_faction", "fac_player_supporters_faction"),
+
+    (store_current_hours, ":cur_hours"),
+    (ge, ":cur_hours", "$g_last_rest_payment_until"),
+    (store_add, "$g_last_rest_payment_until", ":cur_hours", 24),
+    (store_troop_gold, ":gold", "trp_player"),
+    (party_get_num_companions, ":num_men", "p_main_party"),
+    (store_div, ":total_cost", ":num_men", 4),
+    (val_add, ":total_cost", 1),
+    (display_message, "@You settle the cost of food, fire, and lodging for the night.", money_color),
+    (try_begin),
+      (ge, ":gold", ":total_cost"),
+      (troop_remove_gold, "trp_player", ":total_cost"),
+      (play_sound, "snd_money_paid"),
+    (else_try),
+      (gt, ":gold", 0),
+      (troop_remove_gold, "trp_player", ":gold"),
+      (play_sound, "snd_money_paid"),
+    (try_end),
+    ]),
+]

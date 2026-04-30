@@ -1,0 +1,23 @@
+DIALOGS = [
+[anyone, "start", [
+					(store_relation, ":rel", "fac_player_faction", "$g_talk_troop_faction"),
+					(talk_info_set_relation_bar, ":rel"),
+		(check_quest_active, "qst_jotnar_clan_escort"),
+		(check_quest_succeeded, "qst_jotnar_clan_escort"),
+		(quest_slot_eq, "qst_jotnar_clan_escort", slot_quest_giver_troop, "$g_talk_troop"),
+                          ],
+   "Great work {playername}! I am in your debt for escorting her.", "close_window",
+   [(quest_get_slot, ":quest_gold_reward", "qst_jotnar_clan_escort", slot_quest_gold_reward),
+    (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),
+    (assign, reg8, ":quest_gold_reward"),
+    (assign, ":xp_reward", ":quest_gold_reward"),
+    (val_mul, ":xp_reward", 2),
+    (val_add, ":xp_reward", 100),
+    (add_xp_as_reward, ":xp_reward"),
+    (call_script, "script_change_troop_renown", "trp_player", 3),
+    (call_script, "script_change_player_relation_with_faction", "$g_talk_troop_faction", 3),
+    (call_script, "script_succeed_quest", "qst_jotnar_clan_escort"),
+    (call_script, "script_end_quest", "qst_jotnar_clan_escort"),
+  (finish_mission),
+    ]],
+]

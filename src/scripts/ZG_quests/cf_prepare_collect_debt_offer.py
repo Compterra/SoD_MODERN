@@ -1,0 +1,38 @@
+SCRIPTS = [
+("cf_prepare_collect_debt_offer",
+    [
+      (store_script_param, ":talk_troop", 1),
+
+      (assign, reg0, -1),
+
+      (try_begin),
+        (check_quest_active, "qst_collect_debt"),
+        (quest_slot_eq, "qst_collect_debt", slot_quest_current_state, 0),
+        (quest_get_slot, ":quest_target_troop", "qst_collect_debt", slot_quest_target_troop),
+        (eq, ":talk_troop", ":quest_target_troop"),
+        (assign, reg0, "qst_collect_debt"),
+      (else_try),
+        (check_quest_active, "qst_conquistadors_collect_debt"),
+        (quest_slot_eq, "qst_conquistadors_collect_debt", slot_quest_current_state, 0),
+        (quest_get_slot, ":quest_target_troop", "qst_conquistadors_collect_debt", slot_quest_target_troop),
+        (eq, ":talk_troop", ":quest_target_troop"),
+        (assign, reg0, "qst_conquistadors_collect_debt"),
+      (else_try),
+        (check_quest_active, "qst_black_army_collect_debt"),
+        (quest_slot_eq, "qst_black_army_collect_debt", slot_quest_current_state, 0),
+        (quest_get_slot, ":quest_target_troop", "qst_black_army_collect_debt", slot_quest_target_troop),
+        (eq, ":talk_troop", ":quest_target_troop"),
+        (assign, reg0, "qst_black_army_collect_debt"),
+      (else_try),
+        (check_quest_active, "qst_slavers_collect_debt"),
+        (quest_slot_eq, "qst_slavers_collect_debt", slot_quest_current_state, 0),
+        (quest_get_slot, ":quest_target_troop", "qst_slavers_collect_debt", slot_quest_target_troop),
+        (eq, ":talk_troop", ":quest_target_troop"),
+        (assign, reg0, "qst_slavers_collect_debt"),
+      (try_end),
+
+      (ge, reg0, 0),
+      (quest_get_slot, ":quest_giver_troop", reg0, slot_quest_giver_troop),
+      (call_script, "script_store_troop_name", s1, ":quest_giver_troop"),
+    ]),
+]

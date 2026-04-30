@@ -1,0 +1,31 @@
+DIALOGS = [
+[anyone, "merchant_quest_looters_brief", [
+   (try_begin),
+   (party_slot_eq, "$g_encountered_party", slot_party_type, spt_town),
+   (str_store_string, s5, "@town"),
+   (else_try),
+   (party_slot_eq, "$g_encountered_party", slot_party_type, spt_village),
+   (str_store_string, s5, "@village"),
+   (try_end),
+   (store_random_in_range, ":random_num_looters", 3, 7),
+   (quest_set_slot, "qst_deal_with_looters", slot_quest_target_amount, ":random_num_looters"),
+   (try_for_range, ":unused", 0, ":random_num_looters"),
+     (store_random_in_range, ":random_radius", 5, 14),
+     (set_spawn_radius, ":random_radius"),
+     (spawn_around_party, "$g_encountered_party", "pt_bandits"),
+     (party_set_flags, reg0, pf_quest_party, 1),
+   (try_end),
+   (call_script, "script_store_troop_name_link", s9, "$g_talk_troop"),
+   (str_store_party_name_link, s13, "$g_encountered_party"),
+   (str_store_party_name, s4, "$g_encountered_party"),
+   (setup_quest_text, "qst_deal_with_looters"),
+   (str_store_string, s2, "@The Guildmaster of {s13} has asked you to deal with looters in the surrounding countryside."),
+   (call_script, "script_start_quest", "qst_deal_with_looters", "$g_talk_troop"),
+   (assign, "$g_leave_encounter", 1),
+  ],
+   "Excellent! You'll find the looters roaming around the countryside, probably trying to rob more good people.\
+ Kill or capture the bastards, I don't care what you do with them.\
+ I'll pay you a bounty of 40 denars on every band of looters you destroy,\
+ until all the looters are dealt with.", "close_window",
+   []],
+]

@@ -1,0 +1,31 @@
+# COST: trivial
+SCRIPTS = [
+("merc_describe_master_service",
+ [
+   (store_script_param_1, ":guild_faction"),
+
+   (str_store_string, s55, "@a useful service"),
+   (try_begin),
+     (eq, ":guild_faction", "fac_sod_merc_guild1"),
+     (str_store_string, s55, "@have your current mercenary company drilled by Black Army veterans"),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild2"),
+     (str_store_string, s55, "@buy a disciplined reinforcement draft for your field company"),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild3"),
+     (str_store_string, s55, "@receive an Elephant Guard war blessing for your company"),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild4"),
+     (str_store_string, s55, "@call up a rapid Jotnar clan muster"),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild5"),
+     (str_store_string, s55, "@hire a mounted Serpent Host strike detachment"),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild6"),
+     (str_store_string, s55, "@fence captives through the slavers' hidden market and collect a dirty kickback"),
+   (else_try),
+     (eq, ":guild_faction", "fac_sod_merc_guild7"),
+     (str_store_string, s55, "@request a Boar Clan frontier escort"),
+   (try_end),
+ ]),
+]

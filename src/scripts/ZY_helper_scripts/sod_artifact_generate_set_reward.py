@@ -1,0 +1,35 @@
+# COST: low
+SCRIPTS = [
+("sod_artifact_generate_set_reward",
+ [
+   (store_script_param_1, ":template_troop"),
+   (store_script_param_2, ":tier"),
+   (store_script_param, ":family", 3),
+
+   (assign, ":equip_slot", ek_head),
+   (try_begin),
+     (eq, ":tier", 2),
+     (assign, ":equip_slot", ek_body),
+   (else_try),
+     (eq, ":tier", 3),
+     (assign, ":equip_slot", ek_foot),
+   (else_try),
+     (eq, ":tier", 4),
+     (assign, ":equip_slot", ek_horse),
+   (else_try),
+     (ge, ":tier", 5),
+     (assign, ":equip_slot", ek_item_0),
+   (try_end),
+
+   (troop_get_inventory_slot, ":item_no", ":template_troop", ":equip_slot"),
+   (try_begin),
+     (gt, ":item_no", 0),
+     (troop_add_item, "trp_player", ":item_no", imod_lordly),
+     (item_set_slot, ":item_no", slot_item_artifact_flags, artifact_flag_bounty_reward|artifact_flag_set_piece),
+     (item_set_slot, ":item_no", slot_item_artifact_family, ":family"),
+     (item_set_slot, ":item_no", slot_item_artifact_tier, ":tier"),
+     (str_store_item_name, s59, ":item_no"),
+     (display_message, "@A faction trophy is added to the reliquary: {s59}.", 0xD6B15E),
+   (try_end),
+ ]),
+]

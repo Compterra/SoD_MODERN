@@ -1,0 +1,30 @@
+SCRIPTS = [
+("cf_troop_get_random_enemy_troop_with_occupation",
+    [
+      (store_script_param_1, ":troop_no"),
+      (store_script_param_2, ":occupation"),
+
+      (assign, ":result", -1),
+      (assign, ":count_enemies", 0),
+      (try_for_range, ":cur_slot", slot_troop_enemies_begin, slot_troop_enemies_end),
+        (troop_get_slot, ":cur_enemy", ":troop_no", ":cur_slot"),
+        (gt, ":cur_enemy", 0),
+        (troop_slot_eq, ":cur_enemy", slot_troop_occupation, ":occupation"),
+        (val_add, ":count_enemies", 1),
+      (try_end),
+      (store_random_in_range, ":random_enemy", 0, ":count_enemies"),
+      (assign, ":count_enemies", 0),
+      (try_for_range, ":cur_slot", slot_troop_enemies_begin, slot_troop_enemies_end),
+        (eq, ":result", -1),
+        (troop_get_slot, ":cur_enemy", ":troop_no", ":cur_slot"),
+        (gt, ":cur_enemy", 0),
+        (troop_slot_eq, ":cur_enemy", slot_troop_occupation, ":occupation"),
+        (val_add, ":count_enemies", 1),
+        (gt, ":count_enemies", ":random_enemy"),
+        (assign, ":result", ":cur_enemy"),
+      (try_end),
+
+      (neq, ":result", -1),
+      (assign, reg0, ":result"),
+  ]),
+]

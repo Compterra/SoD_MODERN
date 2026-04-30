@@ -1,0 +1,72 @@
+SIMPLE_TRIGGERS = [
+(24 * 7,
+  [
+    (try_begin),
+      (eq, "$g_sod_hide_messages", -2),
+      (set_show_messages, 0),
+    (try_end),
+
+    (assign, ":count", 0),
+    (try_for_range, ":center_no", towns_begin, towns_end),
+
+      (party_slot_eq, ":center_no", slot_center_has_prisoner_tower, 1),
+
+      # ensure that this center is currently owned by the player's faction
+      (store_faction_of_party, ":center_faction", ":center_no"),
+      (this_or_next|eq, ":center_faction", "fac_player_supporters_faction"),
+      (eq, ":center_faction", "fac_player_faction"),
+
+      # Prison towers should also contribute a small amount of weekly civic stability.
+      (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
+      (party_get_slot, ":center_prosperity", ":center_no", slot_town_prosperity),
+      (party_get_slot, ":food_store", ":center_no", slot_party_food_store),
+      (call_script, "script_center_get_food_store_limit", ":center_no"),
+      (assign, ":food_store_limit", reg0),
+      (try_begin),
+        (lt, ":center_health", 62),
+        (call_script, "script_change_center_health", ":center_no", 1),
+      (try_end),
+      (try_begin),
+        (ge, ":center_health", 55),
+        (lt, ":center_prosperity", 60),
+        (store_random_in_range, ":tower_order_roll", 0, 100),
+        (lt, ":tower_order_roll", 30),
+        (call_script, "script_change_center_prosperity", ":center_no", 1),
+      (try_end),
+      (try_begin),
+        (gt, ":food_store_limit", 0),
+        (store_mul, ":tower_stable_supply_threshold", ":food_store_limit", 3),
+        (val_div, ":tower_stable_supply_threshold", 5),
+        (ge, ":food_store", ":tower_stable_supply_threshold"),
+        (ge, ":center_health", 58),
+        (lt, ":center_prosperity", 72),
+        (store_random_in_range, ":tower_confidence_roll", 0, 100),
+        (lt, ":tower_confidence_roll", 25),
+        (call_script, "script_change_center_prosperity", ":center_no", 1),
+      (try_end),
+
+      # Only when the player is the center lord OR the player is the faction leader (king).
+      (try_begin),
+        (this_or_next|party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
+        (faction_slot_eq, ":center_faction", slot_faction_leader, "trp_player"),
+        (party_get_slot, ":cur_relation", ":center_no", slot_center_player_relation),
+        (lt, ":cur_relation", 100),
+        (val_add, ":cur_relation", 1),
+        (val_clamp, ":cur_relation", -100, 101),
+        (party_set_slot, ":center_no", slot_center_player_relation, ":cur_relation"),
+        (val_add, ":count", 1),
+      (try_end),
+    (try_end),
+
+    (try_begin),
+      (eq, "$g_sod_hide_messages", -1),
+      (ge, ":count", 1),
+      (display_message, "@Your prison towers help keep order in your towns, strengthening the people's confidence in your rule.", dark_green),
+    (try_end),
+
+    (try_begin),
+      (eq, "$g_sod_hide_messages", -2),
+      (set_show_messages, 1),
+    (try_end),
+  ]),
+]

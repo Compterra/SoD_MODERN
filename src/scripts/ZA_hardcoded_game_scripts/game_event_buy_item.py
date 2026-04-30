@@ -1,0 +1,21 @@
+SCRIPTS = [
+("game_event_buy_item",
+    [
+      (store_script_param_1, ":item_kind_id"),
+      (store_script_param_2, ":reclaim_mode"),
+      (try_begin),
+        (is_between, ":item_kind_id", trade_goods_begin, trade_goods_end),
+        (store_sub, ":item_slot_no", ":item_kind_id", trade_goods_begin),
+        (val_add, ":item_slot_no", slot_town_trade_good_prices_begin),
+        (party_get_slot, ":multiplier", "$g_encountered_party", ":item_slot_no"),
+        (try_begin),
+          (eq, ":reclaim_mode", 0),
+          (val_add, ":multiplier", 10),
+        (else_try),
+          (val_add, ":multiplier", 15),
+        (try_end),
+        (val_min, ":multiplier", maximum_price_factor),
+        (party_set_slot, "$g_encountered_party", ":item_slot_no", ":multiplier"),
+      (try_end),
+  ]),
+]

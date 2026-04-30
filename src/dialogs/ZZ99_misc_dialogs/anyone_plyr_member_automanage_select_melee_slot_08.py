@@ -1,0 +1,17 @@
+DIALOGS = [
+[anyone|plyr,
+    "member_automanage_select_melee_slot",
+    [
+      (neq, reg1, 4),
+      (store_add, ":type", 8, "str_hero_wpn_slot_none"),
+      (str_store_string, s1, ":type")
+    ],
+    "{s1}",
+    "member_automanage_select_melee_2",
+    [
+      (store_add, ":slot_num", reg1, slot_troop_upgrade_wpn_0),
+      (troop_set_slot, reg3, ":slot_num", 8),
+      (val_add, reg1, 1)
+    ]
+  ],
+]

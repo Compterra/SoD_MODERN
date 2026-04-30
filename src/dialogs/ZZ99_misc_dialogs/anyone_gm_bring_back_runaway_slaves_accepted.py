@@ -1,0 +1,41 @@
+DIALOGS = [
+[anyone, "gm_bring_back_runaway_slaves_accepted", [], "Excellent, {playername}, excellent. I have every confidence in you.", "close_window",
+   [
+      (quest_get_slot, ":quest_target_center", "$random_quest_no", slot_quest_target_center),
+      (quest_get_slot, ":quest_target_party_template", "$random_quest_no", slot_quest_target_party_template),
+  (finish_mission),
+
+      (set_spawn_radius, 1),
+      (spawn_around_party, ":quest_target_center", ":quest_target_party_template"),
+      (assign, "$qst_bring_back_runaway_slaves_party_1", reg0),
+      (party_set_ai_behavior, "$qst_bring_back_runaway_slaves_party_1", ai_bhvr_patrol_party),
+      (party_set_slot, "$qst_bring_back_runaway_slaves_party_1", slot_party_slaves_fleed, 0),
+	  (party_set_ai_patrol_radius,"$qst_bring_back_runaway_slaves_party_1",2),
+      (party_set_ai_object, "$qst_bring_back_runaway_slaves_party_1", ":quest_target_center"),
+      (party_set_flags, "$qst_bring_back_runaway_slaves_party_1", pf_default_behavior, 0),
+	  
+      (spawn_around_party, ":quest_target_center", ":quest_target_party_template"),
+      (assign, "$qst_bring_back_runaway_slaves_party_2", reg0),
+      (party_set_ai_behavior, "$qst_bring_back_runaway_slaves_party_2", ai_bhvr_patrol_party),
+      (party_set_slot, "$qst_bring_back_runaway_slaves_party_2", slot_party_slaves_fleed, 0),
+	  (party_set_ai_patrol_radius,"$qst_bring_back_runaway_slaves_party_2",2),
+      (party_set_ai_object, "$qst_bring_back_runaway_slaves_party_2", ":quest_target_center"),
+      (party_set_flags, "$qst_bring_back_runaway_slaves_party_2", pf_default_behavior, 0),
+	  
+      (spawn_around_party, ":quest_target_center", ":quest_target_party_template"),
+      (assign, "$qst_bring_back_runaway_slaves_party_3", reg0),
+      (party_set_ai_behavior, "$qst_bring_back_runaway_slaves_party_3", ai_bhvr_patrol_party),
+      (party_set_slot, "$qst_bring_back_runaway_slaves_party_3", slot_party_slaves_fleed, 0),
+	  (party_set_ai_patrol_radius,"$qst_bring_back_runaway_slaves_party_3",2),
+      (party_set_ai_object, "$qst_bring_back_runaway_slaves_party_3", ":quest_target_center"),
+      (party_set_flags, "$qst_bring_back_runaway_slaves_party_3", pf_default_behavior, 0),
+	  (quest_set_slot, "$random_quest_no", slot_quest_target_center, "$g_encountered_party"),
+       
+	   (call_script, "script_store_troop_name_link", s9, "$g_talk_troop"),
+       (str_store_party_name_link, s4, "$g_encountered_party"),
+       (setup_quest_text, "$random_quest_no"),
+       (str_store_string, s2, "@{s9} of {s4} asked you to catch the three groups of runaway slaves and bring them back to {s4}, alive and breathing."),
+	  (call_script, "script_start_quest", "$random_quest_no", "$g_talk_troop"),
+	  (rest_for_hours, 1, 4),
+    ]],
+]

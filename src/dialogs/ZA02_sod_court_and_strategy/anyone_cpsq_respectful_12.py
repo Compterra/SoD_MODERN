@@ -1,0 +1,3 @@
+DIALOGS = [
+[anyone, "cpsq_respectful_12", [], "Others - myself included - favor a middle road. I believe it serves our empire best to conquer the Calradian kingdoms, but we should not commit genocide nor try to enforce our culture upon them; instead, just take over the ruling class and dispose of the local nobility, but otherwise let the inhabitants practice their usual way of life. Leave the work of cultural exchange to Time itself. Throughout centuries, our empire survived by adopting certain elements of culture from other nations, and slowly - very slowly - assimilating conquered territories.", "cpsq_respectful_13", [] ],
+]

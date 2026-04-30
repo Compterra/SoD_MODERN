@@ -1,0 +1,3 @@
+DIALOGS = [
+[anyone, "cp_sane_11", [], "A peace-loving lively intellectual type who was sent to this campaign at the urging of his parents. My family is very rich, thus we could contribute much to equipping the soldiers of the Legion. Also, for my family the rank of Centurion is a hereditary title. Almost a year ago, my father retired, so I joined the Calradian campaign in his stead. However, I hate and despise everything about war. I'd rather be back in my homeland chasing after girls, drinking Antarian wine and reading Zerrikan poetry. But since that's unlikely to happen anytime soon, I try to make things easier for both my soldiers and the native inhabitants by offering peaceful compromises to every enemy I encounter.", "cp_sane_12", [] ],
+]

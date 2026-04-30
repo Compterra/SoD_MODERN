@@ -1,0 +1,30 @@
+MISSION_TEMPLATES = [
+(
+    "fgtq_bc_rider", mtf_team_fight|mtf_no_blood, charge,
+    "You will fight a match in the arena.",
+    [
+      (0, mtef_visitor_source|mtef_team_0, af_override_all, aif_start_alarmed, 1, [itm_gladiator_helmet, itm_padded_mail_4, itm_leather_gloves, itm_shield_heater_boar, itm_battle_fork_1, itm_trident_1, itm_camel_1],),
+      (1, mtef_visitor_source|mtef_team_0, 0, aif_start_alarmed, 1, []),
+      (2, mtef_visitor_source|mtef_team_0, 0, aif_start_alarmed, 1, []),
+      (3, mtef_visitor_source|mtef_team_0, 0, aif_start_alarmed, 1, []),
+      (4, mtef_visitor_source|mtef_team_0, 0, aif_start_alarmed, 1, []),
+      (5, mtef_visitor_source|mtef_team_0, 0, aif_start_alarmed, 1, []),
+	  (6, mtef_visitor_source|mtef_team_0, 0, aif_start_alarmed, 1, []),
+      (7, mtef_visitor_source|mtef_team_0, 0, aif_start_alarmed, 1, []),
+	  (8, mtef_visitor_source|mtef_team_0, 0, aif_start_alarmed, 1, []),
+	  (9, mtef_visitor_source|mtef_team_0, 0, aif_start_alarmed, 1, []),
+	  
+      (10, mtef_visitor_source|mtef_team_1, 0, aif_start_alarmed, 1, []),
+      (11, mtef_visitor_source|mtef_team_1, 0, aif_start_alarmed, 1, []),
+      (12, mtef_visitor_source|mtef_team_1, 0, aif_start_alarmed, 1, []),
+      (13, mtef_visitor_source|mtef_team_1, 0, aif_start_alarmed, 1, []),
+      (14, mtef_visitor_source|mtef_team_1, 0, aif_start_alarmed, 1, []),
+      (15, mtef_visitor_source|mtef_team_1, 0, aif_start_alarmed, 1, []),
+      (16, mtef_visitor_source|mtef_team_1, 0, aif_start_alarmed, 1, []),
+      (17, mtef_visitor_source|mtef_team_1, 0, aif_start_alarmed, 1, []),
+      (18, mtef_visitor_source|mtef_team_1, 0, aif_start_alarmed, 1, []),
+      (19, mtef_visitor_source|mtef_team_1, 0, aif_start_alarmed, 1, []),
+    ],
+    fgtq_triggers,
+  ),
+]

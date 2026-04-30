@@ -1,0 +1,22 @@
+DIALOGS = [
+[trp_sod_jester|plyr|repeat_for_factions, "jester_faction_choice", 
+	[ (store_repeat_object, ":faction_no"),
+	(neq, ":faction_no", "fac_player_supporters_faction"),
+	(neq, ":faction_no", "fac_player_faction"),
+	(str_store_faction_name, s1, ":faction_no")], "{s1}.", "jester_relations", [
+	(store_repeat_object, ":faction_no"),
+	(try_begin),
+	(eq, reg6, 0),
+    (store_relation, ":rln", ":faction_no", "fac_player_supporters_faction"),	
+	   (try_begin),
+	   (ge, ":rln", -10),
+	   (is_between, ":faction_no", kingdoms_begin, kingdoms_end),
+	   (call_script, "script_diplomacy_start_peace_between_kingdoms", ":faction_no", "fac_player_supporters_faction", 3),
+	   (try_end),
+	(call_script, "script_change_player_relation_with_faction", ":faction_no", 10),
+	(else_try),
+	(eq, reg6, 1),
+    (call_script, "script_change_player_relation_with_faction", ":faction_no", -10),
+	(try_end),
+	]],
+]

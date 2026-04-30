@@ -1,0 +1,3 @@
+DIALOGS = [
+[anyone, "cpdla_nihilistic_9", [], "I don't deserve nor ask for any mercy or pity ! The higher powers don't care whether we live or die, nor do they care where, how and why... The One, the Void, the Old Gods, Marsus himself... all they do at best is... they resurrect or reincarnate their favourite fighters, and you know why ? We are... like those wooden puppets the carpenters make for their children... we're merely mortals, toys to faceless deities ! SLAUGHTER AND DRAMA, that's what they want to see ! And you said I was insane ?! I finally see now... that's the whole point of this... worthless... existence... sad, isn't it ? So... sad... ", "cpdla_nihilistic_10", [] ],
+]

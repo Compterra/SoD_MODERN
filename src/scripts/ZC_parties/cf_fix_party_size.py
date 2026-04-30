@@ -1,0 +1,28 @@
+SCRIPTS = [
+("cf_fix_party_size",
+                      [
+                        (store_script_param, ":cur_party", 1),
+                        (store_script_param, ":mode", 2),
+                        (call_script, "script_cf_is_patrol", ":cur_party"),
+                        (try_begin),
+                          (eq, reg0, 0),
+                          (call_script, "script_game_get_party_companion_limit", 3),
+                          (call_script, "script_cf_fix_party_size_recursive", ":cur_party", ":mode"),
+                          (assign, ":bool", 0),
+                          (party_get_num_prisoner_stacks, ":num_stacks", ":cur_party"),
+                          (try_for_range_backwards, ":index", 0, ":num_stacks"),
+                            (party_prisoner_stack_get_troop_id, ":cur_troop", ":cur_party", ":index"),
+                            (party_prisoner_stack_get_size, ":cur_size", ":cur_party", ":index"),
+                            (try_for_range, ":num", companions_begin, heroes_end),
+                              (eq, ":cur_troop", ":num"),
+                              (assign, ":bool", 1),
+                            (try_end),
+                            (try_begin),
+                              (neq, ":bool", 1),
+                              (party_remove_prisoners, ":cur_party", ":cur_troop", ":cur_size"),
+                            (try_end),
+                          (try_end),
+                        (try_end),
+                      ]
+                    ),
+]

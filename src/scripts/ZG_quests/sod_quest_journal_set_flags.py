@@ -1,0 +1,21 @@
+SCRIPTS = [
+("sod_quest_journal_set_flags",
+    [
+      (store_script_param, ":quest_no", 1),
+      (store_script_param, ":flags", 2),
+      (store_script_param, ":priority", 3),
+      (quest_set_slot, ":quest_no", slot_quest_sod_journal_flags, ":flags"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_journal_priority, ":priority"),
+      (try_begin),
+        (store_and, ":is_main", ":flags", sod_quest_journal_flag_main),
+        (gt, ":is_main", 0),
+        (quest_set_slot, ":quest_no", slot_quest_sod_journal_category, sod_quest_journal_category_main),
+      (else_try),
+        (store_and, ":is_urgent", ":flags", sod_quest_journal_flag_urgent),
+        (gt, ":is_urgent", 0),
+        (quest_set_slot, ":quest_no", slot_quest_sod_journal_category, sod_quest_journal_category_urgent),
+      (else_try),
+        (quest_set_slot, ":quest_no", slot_quest_sod_journal_category, sod_quest_journal_category_side),
+      (try_end),
+  ]),
+]

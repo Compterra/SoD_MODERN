@@ -1,0 +1,208 @@
+SCRIPTS = [
+("calculate_dist_factor",
+[
+   (store_script_param_1, ":lord_no"),
+   (store_script_param_2, ":object"),
+
+   (troop_get_slot, ":party", ":lord_no", slot_troop_leaded_party),
+   (try_begin),
+   (party_is_active, ":party"),
+   (party_is_active, ":object"),
+   (store_distance_to_party_from_party, ":dist_lord", ":party", ":object"),
+   
+   (try_begin),
+   (eq, "$g_sod_deactivate_ai", 1),
+   (assign, reg0, ":dist_lord"),
+   (else_try),
+
+	   (store_troop_faction, ":faction", ":lord_no"),   
+	   (faction_get_slot, ":ambition", ":faction", slot_faction_ambition),
+	   (troop_get_slot, ":personnal_objective", ":lord_no", slot_lord_personnal_objective), 
+	   (troop_get_slot, ":initiative", ":lord_no", slot_lord_initiative),
+	   
+	   (try_begin),
+	   (faction_slot_eq, ":faction", slot_faction_marshall, ":lord_no"),  # make the marshall more focused on national objectives and offensive than other lords
+	   (assign, ":personnal_objective", -1),
+	   (val_max, ":initiative", 3),
+	   (val_add, ":ambition", 1),
+	   (val_max, ":ambition", 3),
+	   (try_end),
+	   
+	   (faction_get_slot, ":central_center", ":faction", slot_faction_central_center),
+	   (faction_get_slot, ":offensive_objective", ":faction", slot_faction_offensive_objective),
+	   (faction_get_slot, ":defensive_objective", ":faction", slot_faction_defensive_objective),
+	   
+	   (try_begin),
+	   (is_between, ":central_center", centers_begin, centers_end),
+	   (store_distance_to_party_from_party, ":dist_center", ":object", ":central_center"),
+	   (store_distance_to_party_from_party, ":dist_central_lord", ":party", ":central_center"),
+	   (else_try),
+	   (assign, ":dist_center", ":dist_lord"),
+	   (assign, ":dist_central_lord", 0),
+	   (try_end),
+
+	   (try_begin),
+	   (is_between, ":offensive_objective", centers_begin, centers_end),
+	   (lt, ":initiative", 10),  #twan453 for invaders scouts
+	   (store_distance_to_party_from_party, ":dist_off_objective", ":object", ":offensive_objective"),
+	   (else_try),
+	   (assign, ":dist_off_objective", ":dist_lord"),
+	   (try_end), 
+	   
+	   (try_begin),
+	   (this_or_next|ge, ":initiative", 10),
+	   (troop_slot_eq, ":lord_no", slot_lord_reputation_type, lrep_debauched),
+	   (assign, ":dist_def_objective", ":dist_lord"),
+	   (else_try),
+	   (is_between, ":defensive_objective", centers_begin, centers_end),
+	   (store_distance_to_party_from_party, ":dist_def_objective", ":object", ":defensive_objective"),
+	   (else_try),
+	   (assign, ":dist_def_objective", ":dist_center"),
+	   (try_end),
+	   
+	   (try_begin), # twan new
+	   (gt, ":dist_center", 110),  # make so the walled centers of other factions extremely far from central center (110 = about the distance Jamiche - Sargoth) get always the worst ai value
+	   (is_between, ":object", walled_centers_begin, walled_centers_end),
+	   (store_faction_of_party, ":object_fac", ":object"),    
+	   (neq, ":object_fac", ":faction"),
+	   (assign, reg0, ":dist_center"),
+	   (else_try), # twan new
+	   
+		   (try_begin),
+		   (gt, ":dist_central_lord", 60),
+		   (store_sub, ":anti_excentricity", ":dist_central_lord", 50), # anti excentricity make central center position more important when a lord is far away
+		   (val_div, ":anti_excentricity", 10),
+		   (else_try),
+		   (assign, ":anti_excentricity", 0),
+			   (try_begin),
+			   (lt, ":dist_lord", 25),  # lords examining close objects near to defensive objective ignore central center position
+			   (lt, ":dist_def_objective", 30),
+			   (gt, ":ambition", -4),
+			   (lt, ":dist_def_objective", ":dist_center"),
+			   (assign, ":dist_center", ":dist_def_objective"),
+			   (try_end),
+			(try_end),   
+
+		   # lords examining close objects only consider the closer objective (except if ambition favor the other objective a lot)
+		   (try_begin),
+		   (lt, ":dist_lord", 20),
+		   (lt, ":dist_def_objective", ":dist_off_objective"),
+		   (lt, ":ambition", 3),
+		   (assign, ":dist_off_objective", ":dist_def_objective"),
+		   (else_try),
+		   (lt, ":dist_lord", 20),
+		   (lt, ":dist_off_objective", ":dist_def_objective"),
+		   (gt, ":ambition", -3),
+		   (assign, ":dist_def_objective", ":dist_off_objective"),
+		   (else_try),
+		   (lt, ":dist_lord", 35),                 # same thing at a greater range when ambition is high/low in favor of this objective 
+		   (lt, ":dist_off_objective", ":dist_def_objective"),
+		   (ge, ":ambition", 2),
+		   (assign, ":dist_def_objective", ":dist_off_objective"),
+		   (else_try),
+		   (lt, ":dist_lord", 35),
+		   (lt, ":dist_def_objective", ":dist_off_objective"),
+		   (le, ":ambition", -2),
+		   (assign, ":dist_off_objective", ":dist_def_objective"),
+		   (else_try),
+		   (lt, ":dist_lord", 50),                 
+		   (lt, ":dist_off_objective", ":dist_def_objective"),
+		   (ge, ":ambition", 4),
+		   (assign, ":dist_def_objective", ":dist_off_objective"),
+		   (else_try),
+		   (lt, ":dist_lord", 50),
+		   (lt, ":dist_def_objective", ":dist_off_objective"),
+		   (le, ":ambition", -4),
+		   (assign, ":dist_off_objective", ":dist_def_objective"),
+		   (try_end),
+		   
+		   (try_begin),  # make lords consider also their personnal objective position when they have high initiative  # twan new
+		   (ge, ":personnal_objective", 1),
+		   (ge, ":initiative", 3), 
+		   (store_distance_to_party_from_party, ":dist_lord2", ":object", ":personnal_objective"),
+		   (assign, ":done", 0),
+			   (try_begin),
+			   (eq, ":object", ":personnal_objective"),
+			   (store_mul, ":range", ":initiative", 5),
+				 (try_begin),
+				 (lt, ":dist_lord", ":range"),		   
+				 (assign, ":adjusted_dist_lord", 0),
+				 (assign, ":done", 1),
+				 (try_end), 		   
+			   (try_end), 
+			   (try_begin),
+			   (eq, ":done", 0),
+			   (assign, ":lord_objective_weight", ":initiative"),
+			   (val_max, ":lord_objective_weight", 7),
+			   (store_sub, ":lord_position_weight", 10, ":lord_objective_weight"),
+			   (val_mul, ":dist_lord2", ":lord_objective_weight"),
+			   (store_mul, ":adjusted_dist_lord", ":lord_position_weight", ":dist_lord"),
+			   (val_add, ":adjusted_dist_lord", ":dist_lord2"),
+			   (val_div, ":adjusted_dist_lord", 10),
+			   (try_end),
+		   (else_try),
+		   (assign, ":adjusted_dist_lord", ":dist_lord"),                                                               # twan new   		  
+		   (try_end),
+		   
+		   (store_add, ":offensiveness", 10, ":ambition"),              # the total of the two objectives is always 20, the total of central center and lord initiative 20 too
+		   (store_sub, ":defensiveness", 20, ":offensiveness"),                 
+		   (store_sub, ":conservativeness", ":defensiveness", ":initiative"),   
+		   (val_add, ":conservativeness", ":anti_excentricity"),  # make the position of central center more important when the lord is far away
+		   (val_clamp, ":conservativeness", 0, 20),
+		   (store_sub, ":initiativeness", 20, ":conservativeness"),                   
+		   
+		   (val_mul, ":dist_off_objective", ":offensiveness"),
+		   (val_mul, ":dist_def_objective", ":defensiveness"),
+		   (val_mul, ":adjusted_dist_lord", ":initiativeness"),
+		   (val_mul, ":dist_center", ":conservativeness"),
+		   
+		   (assign, ":dist", ":adjusted_dist_lord"),
+		   (val_add, ":dist", ":dist_center"),
+		   (val_add, ":dist", ":dist_off_objective"),
+		   (val_add, ":dist", ":dist_def_objective"),
+
+		   (val_div, ":dist", 40),                    
+
+		    (try_begin),          # twan new accentuates the importance of the calculated number as distances tend to be medium as based on averages      
+           (le, ":dist", 20),
+           (val_mul, ":dist", 3),
+           (val_div, ":dist", 4),
+         (else_try),    
+           (le, ":dist", 30),
+           (val_mul, ":dist", 4),
+           (val_div, ":dist", 5),
+         (else_try),
+           (ge, ":dist", 45),
+           (val_mul, ":dist", 5),
+           (val_div, ":dist", 4),
+         (try_end), 
+         
+         (val_add, ":dist", ":dist_lord"),     # make the (non adjusted) dist lord always a little more important than other factors               
+         (val_div, ":dist", 3),   
+         (assign, reg0, ":dist"),
+         
+         (try_begin),          # twan re accentuates the importance of the final number as distances tend to be medium as based on averages      
+           (le, ":dist", 20),
+           (val_mul, ":dist", 3),
+           (val_div, ":dist", 4),
+         (else_try),    
+           (le, ":dist", 30),
+           (val_mul, ":dist", 4),
+           (val_div, ":dist", 5),
+         (else_try),
+           (ge, ":dist", 45),
+           (val_mul, ":dist", 5),
+           (val_div, ":dist", 4),
+         (try_end),  
+		   
+	   (try_end), #twan new
+   (else_try),
+	   (assign, reg0, 1000),
+	   (assign, reg1, ":lord_no"),
+	   (str_store_troop_name, s7, ":lord_no"),
+	   (assign, reg2, ":object"),
+	   
+	   (display_log_message, "@Bug : Calculate dist factor invalid call.{s33} Lord number {reg1} {s7} object number {reg2}."),
+   (try_end), #twan new
+    ]),
+]

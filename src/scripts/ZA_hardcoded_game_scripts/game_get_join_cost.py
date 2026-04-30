@@ -1,0 +1,31 @@
+SCRIPTS = [
+("game_get_join_cost",
+    [
+      (store_script_param_1, ":troop_id"),
+
+      (assign, ":join_cost", 0),
+      (try_begin),
+        (troop_is_hero, ":troop_id"),
+      (else_try),
+        (store_character_level, ":troop_level", ":troop_id"),
+        (assign, ":join_cost", ":troop_level"),
+        (val_add, ":join_cost", 5),
+        (val_mul, ":join_cost", ":join_cost"),
+        (val_add, ":join_cost", 40),
+        (val_div, ":join_cost", 5),
+        (try_begin), #mounted troops cost %50 more than the normal cost
+          (troop_is_mounted, ":troop_id"),
+          (val_mul, ":join_cost", 3),
+          (val_div, ":join_cost", 2),
+        (try_end),
+		(try_begin),
+			(store_troop_faction, ":fac", ":troop_id"),
+			(faction_slot_eq, "fac_player_supporters_faction", slot_faction_merc_pact, ":fac"),
+			(val_mul, ":join_cost", 3),
+			(val_div, ":join_cost", 4),
+		(try_end),
+      (try_end),
+      (assign, reg0, ":join_cost"),
+      (set_trigger_result, reg0),
+  ]),
+]

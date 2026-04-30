@@ -1,0 +1,28 @@
+DIALOGS = [
+[anyone, "gm_tell_mission", [
+   (this_or_next|eq, "$random_quest_no", "qst_black_army_deliver_message"),
+   (this_or_next|eq, "$random_quest_no", "qst_conquistadors_deliver_message"),
+   (this_or_next|eq, "$random_quest_no", "qst_elephant_guard_deliver_message"),
+   (this_or_next|eq, "$random_quest_no", "qst_jotnar_clan_deliver_message"),
+   (this_or_next|eq, "$random_quest_no", "qst_serpent_host_deliver_message"),
+   (this_or_next|eq, "$random_quest_no", "qst_bc_deliver_message"),
+   (eq, "$random_quest_no", "qst_slavers_deliver_message"),
+   (faction_get_slot, ":message_text", "$g_talk_troop_faction", slot_guild_deliver_message_text),
+   (quest_get_slot, ":quest_target_troop", "$random_quest_no", slot_quest_target_troop),
+   (call_script, "script_store_troop_name_link", s9, "$g_talk_troop"),
+   (call_script, "script_store_troop_name_link", s13, ":quest_target_troop"),
+   (str_store_string, s15, ":message_text"),
+   ],
+   "{s15}", "gm_mission_deliver_message",
+   [
+	 (try_begin),
+		(eq, "$random_quest_no", "qst_slavers_deliver_message"),
+		(str_store_party_name, s10, "$g_encountered_party"),
+		(setup_quest_text, "$random_quest_no"),
+		(str_store_string, s2, "@{s9} of {s10} asked you to take a message to {s13}."),
+	 (else_try),
+		(setup_quest_text, "$random_quest_no"),
+		(str_store_string, s2, "@{s9} asked you to take a message to {s13}."),
+	 (try_end),
+   ]],
+]

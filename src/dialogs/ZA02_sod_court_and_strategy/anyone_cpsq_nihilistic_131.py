@@ -1,0 +1,3 @@
+DIALOGS = [
+[anyone, "cpsq_nihilistic_131", [], "Only the feelings. Only the memories. That's why I consider folks like you pathetic. When you die, you will have nothing to remember but your struggle for power. I, on the other hand, will be different. I want to try out everything I can, remember everything I experienced, every joyful event, no matter how twisted some of those events may seem to others ! And what's more, I want to be remembered by others; if nowehere else, then in their darkest nightmares ! Remembered as someone who showed power-hungry would-be despots like you how pathetic their attemps to rule everything truly are !", "cpsq_nihilistic_132", [] ],
+]

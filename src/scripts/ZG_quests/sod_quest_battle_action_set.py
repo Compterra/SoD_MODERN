@@ -1,0 +1,20 @@
+SCRIPTS = [
+("sod_quest_battle_action_set",
+    [
+      (store_script_param, ":quest_no", 1),
+      (store_script_param, ":action_type", 2),
+      (store_script_param, ":target_troop", 3),
+      (store_script_param, ":required", 4),
+      (store_script_param, ":duration", 5),
+      (store_mission_timer_a, ":mission_time"),
+      (val_max, ":required", 1),
+      (quest_set_slot, ":quest_no", slot_quest_sod_battle_action, ":action_type"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_battle_target_troop, ":target_troop"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_battle_required, ":required"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_battle_progress, 0),
+      (quest_set_slot, ":quest_no", slot_quest_sod_battle_timer_start, ":mission_time"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_battle_timer_duration, ":duration"),
+      (quest_set_slot, ":quest_no", slot_quest_sod_runtime_state, sod_quest_state_active),
+      (quest_set_slot, ":quest_no", slot_quest_sod_runtime_last_event, sod_quest_event_mission),
+  ]),
+]

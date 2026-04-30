@@ -1,0 +1,16 @@
+SCRIPTS = [
+("get_poorest_village_of_faction",
+        [(store_script_param, ":faction_no", 1),
+          (assign, ":min_prosperity_village", -1),
+          (assign, ":min_prosperity", 101),
+          (try_for_range, ":village_no", villages_begin, villages_end),
+            (store_faction_of_party, ":village_faction", ":village_no"),
+            (eq, ":village_faction", ":faction_no"),
+            (party_get_slot, ":prosperity", ":village_no", slot_town_prosperity),
+            (lt, ":prosperity", ":min_prosperity"),
+            (assign, ":min_prosperity", ":prosperity"),
+            (assign, ":min_prosperity_village", ":village_no"),
+          (try_end),
+          (assign, reg0, ":min_prosperity_village"),
+      ]),
+]

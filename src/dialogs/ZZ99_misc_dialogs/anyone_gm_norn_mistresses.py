@@ -1,0 +1,4 @@
+DIALOGS = [
+[anyone, "gm_norn_mistresses", [
+   ],"Norn Mistresses are the leading class of the Jotnar Clan, but their life is not a joyful one, that much I can tell by personal experience. Only female babies born with physical or mental abnormalities can become Norns; for example, I had a right eye that cried blood. If by some miracle they survive until the age of 3, they start a constant training in the mystical arts of farsight, along with being instructed in combat techniques with different weapons. It is rare for an adult Norn to actually go into battle, being rather priestesses than warriors, but should the need rise they are even more dangerous than a vengenceful Disir. As you may expect, it is unusual for a Norn to set off with strangers like yourself... but it is not impossible, if you manage to earn their attention.", "gm_pretalk", []],
+]

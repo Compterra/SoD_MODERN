@@ -1,0 +1,3 @@
+DIALOGS = [
+[anyone, "prison_break_6", [], "As I aged, I decided to settle down and live the rest of my life in peace. I bought a house in Buvran, and I was even elected village elder there. But my past reached out to me and whacked my skull from behind pretty hard. By the time I regained consciousness, I was here in this cage. The Slavers don't forget - nor forgive - those who cause them profit loss, it seems. The Slavers won't let me free unless in exchange for a ridiculous amount of ransom. A million Denars ! Honestly, one could buy a whole kingdom with such a wealth ! ", "prison_break_7", []],
+]

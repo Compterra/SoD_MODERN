@@ -1,0 +1,51 @@
+SCRIPTS = [
+("update_npc_volunteer_troops_in_village",
+      [
+        (store_script_param, ":center_no", 1),
+        (party_get_slot, ":center_culture", ":center_no", slot_center_culture),
+        (faction_get_slot, ":volunteer_troop", ":center_culture", slot_faction_tier_1_troop),
+        (assign, ":volunteer_troop_tier", 1),
+        (try_for_range, ":unused", 0, 5),
+          (store_random_in_range, ":random_no", 0, 100),
+          (lt, ":random_no", 10),
+          (store_random_in_range, ":random_no", 0, 2),
+          (troop_get_upgrade_troop, ":upgrade_troop_no", ":volunteer_troop", ":random_no"),
+          (try_begin),
+            (le, ":upgrade_troop_no", 0),
+            (troop_get_upgrade_troop, ":upgrade_troop_no", ":volunteer_troop", 0),
+          (try_end),
+          (gt, ":upgrade_troop_no", 0),
+          (val_add, ":volunteer_troop_tier", 1),
+          (assign, ":volunteer_troop", ":upgrade_troop_no"),
+        (try_end),
+
+        (assign, ":upper_limit", 12),
+
+        (store_add, ":amount_random_divider", 2, ":volunteer_troop_tier"),
+        (val_div, ":upper_limit", ":amount_random_divider"),
+
+        (call_script, "script_sod_law_calculate_center_tax_compliance", ":center_no"),
+        (assign, ":law_recruitment_compliance", reg0),
+        (try_begin),
+          (lt, ":law_recruitment_compliance", 90),
+          (val_mul, ":upper_limit", ":law_recruitment_compliance"),
+          (val_div, ":upper_limit", 100),
+        (else_try),
+          (ge, ":law_recruitment_compliance", 105),
+          (val_mul, ":upper_limit", ":law_recruitment_compliance"),
+          (val_div, ":upper_limit", 100),
+          (val_add, ":upper_limit", 1),
+        (try_end),
+
+        # Troops come from pops: cap NPC volunteer pool by village population surplus (above minimum)
+        (party_get_slot, ":population", ":center_no", slot_center_sod_local_population),
+        (val_sub, ":population", village_pop_min),
+        (val_max, ":population", 0),
+        (val_min, ":upper_limit", ":population"),
+        (val_max, ":upper_limit", 0),
+
+        (store_random_in_range, ":amount", 0, ":upper_limit"),
+        (party_set_slot, ":center_no", slot_center_npc_volunteer_troop_type, ":volunteer_troop"),
+        (party_set_slot, ":center_no", slot_center_npc_volunteer_troop_amount, ":amount"),
+    ]),
+]
