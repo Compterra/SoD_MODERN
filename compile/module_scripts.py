@@ -7832,6 +7832,9 @@ def _build_validate_construction_choice_ops():
 # --- ZY_helper_scripts/sod_threat_board_apply_regional_pressure.py preamble ---
 # COST: low
 
+# --- ZY_helper_scripts/sod_threat_board_calculate_reward.py preamble ---
+# COST: trivial
+
 # --- ZY_helper_scripts/sod_threat_board_complete_contract.py preamble ---
 # COST: medium
 
@@ -42499,7 +42502,7 @@ scripts = [
      (assign, "$sod_mission_19", ":state"),
    (try_end),
  ]),
-# [ src/scripts/ZY_helper_scripts/sod_threat_board_accept_contract.py:L3-L69 ] sod_threat_board_accept_contract
+# [ src/scripts/ZY_helper_scripts/sod_threat_board_accept_contract.py:L3-L65 ] sod_threat_board_accept_contract
 ("sod_threat_board_accept_contract",
  [
    (store_script_param_1, ":offer_index"),
@@ -42541,13 +42544,9 @@ scripts = [
     (assign, ":deadline_day", reg(1)),
     (assign, ":sponsor_faction", reg(2)),
 
-     (store_mul, ":reward_gold", ":tier", 450),
-     (val_add, ":reward_gold", 300),
-     (store_character_level, ":level", "trp_player"),
-     (store_mul, ":level_bonus", ":level", 20),
-     (val_add, ":reward_gold", ":level_bonus"),
-     (store_mul, ":reward_xp", ":tier", 250),
-     (val_add, ":reward_xp", 150),
+     (call_script, "script_sod_threat_board_calculate_reward", ":archetype"),
+    (assign, ":reward_gold", reg(0)),
+    (assign, ":reward_xp", reg(1)),
 
      (quest_set_slot, "qst_regional_threat_contract", slot_quest_sod_threat_type, ":threat_type"),
      (quest_set_slot, "qst_regional_threat_contract", slot_quest_sod_threat_tier, ":tier"),
@@ -42590,7 +42589,59 @@ scripts = [
      (call_script, "script_change_player_relation_with_center", ":sponsor_center", -1),
    (try_end),
  ]),
-# [ src/scripts/ZY_helper_scripts/sod_threat_board_complete_contract.py:L3-L54 ] sod_threat_board_complete_contract
+# [ src/scripts/ZY_helper_scripts/sod_threat_board_calculate_reward.py:L3-L53 ] sod_threat_board_calculate_reward
+("sod_threat_board_calculate_reward",
+ [
+   (store_script_param_1, ":archetype"),
+
+   (call_script, "script_sod_threat_board_get_archetype", ":archetype"),
+    (assign, ":threat_type", reg(0)),
+    (assign, ":tier", reg(1)),
+    (assign, ":deadline_days", reg(3)),
+
+   (store_mul, ":reward_gold", ":tier", 450),
+   (val_add, ":reward_gold", 300),
+   (store_character_level, ":level", "trp_player"),
+   (store_mul, ":level_bonus", ":level", 20),
+   (val_add, ":reward_gold", ":level_bonus"),
+
+   (store_mul, ":reward_xp", ":tier", 250),
+   (val_add, ":reward_xp", 150),
+
+   # Shorter notices are riskier: pay a visible urgency premium.
+   (store_sub, ":urgency", 12, ":deadline_days"),
+   (val_max, ":urgency", 0),
+   (store_mul, ":urgency_gold", ":urgency", ":tier"),
+   (val_mul, ":urgency_gold", 35),
+   (val_add, ":reward_gold", ":urgency_gold"),
+   (store_mul, ":urgency_xp", ":urgency", ":tier"),
+   (val_mul, ":urgency_xp", 15),
+   (val_add, ":reward_xp", ":urgency_xp"),
+
+   (try_begin),
+     (eq, ":threat_type", sod_threat_type_relic_thieves),
+     (val_add, ":reward_gold", 200),
+     (val_add, ":reward_xp", 75),
+   (else_try),
+     (eq, ":threat_type", sod_threat_type_rogue_company),
+     (val_add, ":reward_gold", 175),
+     (val_add, ":reward_xp", 60),
+   (else_try),
+     (eq, ":threat_type", sod_threat_type_faction_problem),
+     (val_add, ":reward_gold", 250),
+     (val_add, ":reward_xp", 100),
+   (else_try),
+     (eq, ":threat_type", sod_threat_type_cattle_raiders),
+     (val_add, ":reward_gold", 100),
+     (val_add, ":reward_xp", 40),
+   (try_end),
+
+    (assign, reg(0), ":reward_gold"),
+    (assign, reg(1), ":reward_xp"),
+    (assign, reg(2), ":urgency_gold"),
+    (assign, reg(3), ":urgency_xp"),
+ ]),
+# [ src/scripts/ZY_helper_scripts/sod_threat_board_complete_contract.py:L3-L56 ] sod_threat_board_complete_contract
 ("sod_threat_board_complete_contract",
  [
    (assign, ":can_complete", 0),
@@ -42638,18 +42689,21 @@ scripts = [
 
      (str_store_party_name, s1, ":sponsor_center"),
     (assign, reg(1), ":reward_gold"),
-     (display_message, "@The regional board at {s1} pays {reg1} denars and marks the threat resolved.", 0x66CC66),
+    (assign, reg(2), ":reward_xp"),
+    (assign, reg(3), ":reward_relation"),
+     (display_message, "@The regional board at {s1} pays {reg1} denars, {reg2} XP, and +{reg3} relation.", 0x66CC66),
      (call_script, "script_end_quest", "qst_regional_threat_contract"),
      (call_script, "script_sod_threat_board_init_registry"),
    (try_end),
  ]),
-# [ src/scripts/ZY_helper_scripts/sod_threat_board_describe_active_contract.py:L3-L65 ] sod_threat_board_describe_active_contract
+# [ src/scripts/ZY_helper_scripts/sod_threat_board_describe_active_contract.py:L3-L67 ] sod_threat_board_describe_active_contract
 ("sod_threat_board_describe_active_contract",
  [
    (quest_get_slot, ":target_party", "qst_regional_threat_contract", slot_quest_sod_threat_target_party),
    (quest_get_slot, ":sponsor_center", "qst_regional_threat_contract", slot_quest_sod_threat_sponsor_center),
    (quest_get_slot, ":deadline", "qst_regional_threat_contract", slot_quest_sod_threat_deadline_day),
    (quest_get_slot, ":reward_gold", "qst_regional_threat_contract", slot_quest_sod_threat_reward_gold),
+   (quest_get_slot, ":reward_xp", "qst_regional_threat_contract", slot_quest_sod_threat_reward_xp),
    (quest_get_slot, ":ready", "qst_regional_threat_contract", slot_quest_sod_threat_ready_to_claim),
    (quest_get_slot, ":archetype", "qst_regional_threat_contract", slot_quest_sod_threat_archetype),
 
@@ -42699,15 +42753,16 @@ scripts = [
     (assign, reg(3), ":tier"),
     (assign, reg(4), ":relation_reward"),
     (assign, reg(5), ":threat_type"),
+    (assign, reg(6), ":reward_xp"),
 
    (try_begin),
      (eq, ":ready", 1),
-     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^Tier: {reg3}^Target: {s3}^Status: completed; return for payment.^Reward: {reg2} denars, +{reg4} relation^{s4}"),
+     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^Tier: {reg3}^Target: {s3}^Status: completed; return for payment.^Reward: {reg2} denars, {reg6} XP, +{reg4} relation^{s4}"),
    (else_try),
-     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^Tier: {reg3}^Target: {s3}^Days remaining: {reg1}^Reward: {reg2} denars, +{reg4} relation^{s4}"),
+     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^Tier: {reg3}^Target: {s3}^Days remaining: {reg1}^Reward: {reg2} denars, {reg6} XP, +{reg4} relation^{s4}"),
    (try_end),
  ]),
-# [ src/scripts/ZY_helper_scripts/sod_threat_board_describe_offer.py:L3-L66 ] sod_threat_board_describe_offer
+# [ src/scripts/ZY_helper_scripts/sod_threat_board_describe_offer.py:L3-L65 ] sod_threat_board_describe_offer
 ("sod_threat_board_describe_offer",
  [
    (store_script_param_1, ":offer_index"),
@@ -42725,52 +42780,51 @@ scripts = [
     (assign, ":tier", reg(1)),
     (assign, ":deadline", reg(3)),
 
-   (store_mul, ":gold", ":tier", 450),
-   (val_add, ":gold", 300),
-   (store_character_level, ":level", "trp_player"),
-   (store_mul, ":level_bonus", ":level", 20),
-   (val_add, ":gold", ":level_bonus"),
+   (call_script, "script_sod_threat_board_calculate_reward", ":archetype"),
+    (assign, ":gold", reg(0)),
+    (assign, ":xp", reg(1)),
 
    (try_begin),
      (eq, ":archetype", sod_threat_archetype_river_pirates),
-     (str_store_string, s1, "@River pirates harassing caravans - Tier {reg1}, {reg2} denars, {reg3} days. Tag: Trade Road Warrant."),
+     (str_store_string, s1, "@River pirates harassing caravans - Tier {reg1}, {reg2} denars, {reg4} XP, {reg3} days. Tag: Trade Road Warrant."),
    (else_try),
      (eq, ":archetype", sod_threat_archetype_coastal_smugglers),
-     (str_store_string, s1, "@Coastal smugglers moving contraband - Tier {reg1}, {reg2} denars, {reg3} days. Tag: Harbor Warrant."),
+     (str_store_string, s1, "@Coastal smugglers moving contraband - Tier {reg1}, {reg2} denars, {reg4} XP, {reg3} days. Tag: Harbor Warrant."),
    (else_try),
      (eq, ":archetype", sod_threat_archetype_army_deserters),
-     (str_store_string, s1, "@Army deserters preying on patrols - Tier {reg1}, {reg2} denars, {reg3} days. Tag: Military Warrant."),
+     (str_store_string, s1, "@Army deserters preying on patrols - Tier {reg1}, {reg2} denars, {reg4} XP, {reg3} days. Tag: Military Warrant."),
    (else_try),
      (eq, ":archetype", sod_threat_archetype_noble_deserters),
-     (str_store_string, s1, "@Noble deserters with stolen arms - Tier {reg1}, {reg2} denars, {reg3} days. Tag: Elite Warrant."),
+     (str_store_string, s1, "@Noble deserters with stolen arms - Tier {reg1}, {reg2} denars, {reg4} XP, {reg3} days. Tag: Elite Warrant."),
    (else_try),
      (eq, ":archetype", sod_threat_archetype_relic_thieves),
-     (str_store_string, s1, "@Relic thieves carrying a recovered clue - Tier {reg1}, {reg2} denars, {reg3} days. Tag: Relic Lead."),
+     (str_store_string, s1, "@Relic thieves carrying a recovered clue - Tier {reg1}, {reg2} denars, {reg4} XP, {reg3} days. Tag: Relic Lead."),
    (else_try),
      (eq, ":archetype", sod_threat_archetype_tomb_robbers),
-     (str_store_string, s1, "@Tomb robbers selling royal fragments - Tier {reg1}, {reg2} denars, {reg3} days. Tag: Reliquary Lead."),
+     (str_store_string, s1, "@Tomb robbers selling royal fragments - Tier {reg1}, {reg2} denars, {reg4} XP, {reg3} days. Tag: Reliquary Lead."),
    (else_try),
      (eq, ":archetype", sod_threat_archetype_rogue_company),
-     (str_store_string, s1, "@Rogue mercenary company collecting tolls - Tier {reg1}, {reg2} denars, {reg3} days. Tag: Guild Work."),
+     (str_store_string, s1, "@Rogue mercenary company collecting tolls - Tier {reg1}, {reg2} denars, {reg4} XP, {reg3} days. Tag: Guild Work."),
    (else_try),
      (eq, ":archetype", sod_threat_archetype_guild_traitors),
-     (str_store_string, s1, "@Guild traitor band using stolen colors - Tier {reg1}, {reg2} denars, {reg3} days. Tag: Rogue Company."),
+     (str_store_string, s1, "@Guild traitor band using stolen colors - Tier {reg1}, {reg2} denars, {reg4} XP, {reg3} days. Tag: Rogue Company."),
    (else_try),
      (eq, ":archetype", sod_threat_archetype_cattle_raiders),
-     (str_store_string, s1, "@Cattle raiders shadowing village herds - Tier {reg1}, {reg2} denars, {reg3} days. Tag: Village Defense."),
+     (str_store_string, s1, "@Cattle raiders shadowing village herds - Tier {reg1}, {reg2} denars, {reg4} XP, {reg3} days. Tag: Village Defense."),
    (else_try),
      (eq, ":archetype", sod_threat_archetype_herd_rustlers),
-     (str_store_string, s1, "@Herd rustlers hired by a rival lord - Tier {reg1}, {reg2} denars, {reg3} days. Tag: Village Defense."),
+     (str_store_string, s1, "@Herd rustlers hired by a rival lord - Tier {reg1}, {reg2} denars, {reg4} XP, {reg3} days. Tag: Village Defense."),
    (else_try),
      (eq, ":archetype", sod_threat_archetype_invader_scouts),
-     (str_store_string, s1, "@Invader scouts mapping weak roads - Tier {reg1}, {reg2} denars, {reg3} days. Tag: Faction Warrant."),
+     (str_store_string, s1, "@Invader scouts mapping weak roads - Tier {reg1}, {reg2} denars, {reg4} XP, {reg3} days. Tag: Faction Warrant."),
    (else_try),
-     (str_store_string, s1, "@Named raiding captain terrorizing the marches - Tier {reg1}, {reg2} denars, {reg3} days. Tag: Faction Warrant."),
+     (str_store_string, s1, "@Named raiding captain terrorizing the marches - Tier {reg1}, {reg2} denars, {reg4} XP, {reg3} days. Tag: Faction Warrant."),
    (try_end),
 
     (assign, reg(1), ":tier"),
     (assign, reg(2), ":gold"),
     (assign, reg(3), ":deadline"),
+    (assign, reg(4), ":xp"),
  ]),
 # [ src/scripts/ZY_helper_scripts/sod_threat_board_fail_contract.py:L3-L18 ] sod_threat_board_fail_contract
 ("sod_threat_board_fail_contract",

@@ -41,13 +41,9 @@ SCRIPTS = [
     (assign, ":deadline_day", reg(1)),
     (assign, ":sponsor_faction", reg(2)),
 
-     (store_mul, ":reward_gold", ":tier", 450),
-     (val_add, ":reward_gold", 300),
-     (store_character_level, ":level", "trp_player"),
-     (store_mul, ":level_bonus", ":level", 20),
-     (val_add, ":reward_gold", ":level_bonus"),
-     (store_mul, ":reward_xp", ":tier", 250),
-     (val_add, ":reward_xp", 150),
+     (call_script, "script_sod_threat_board_calculate_reward", ":archetype"),
+    (assign, ":reward_gold", reg(0)),
+    (assign, ":reward_xp", reg(1)),
 
      (quest_set_slot, "qst_regional_threat_contract", slot_quest_sod_threat_type, ":threat_type"),
      (quest_set_slot, "qst_regional_threat_contract", slot_quest_sod_threat_tier, ":tier"),

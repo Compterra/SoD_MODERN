@@ -6,6 +6,7 @@ SCRIPTS = [
    (quest_get_slot, ":sponsor_center", "qst_regional_threat_contract", slot_quest_sod_threat_sponsor_center),
    (quest_get_slot, ":deadline", "qst_regional_threat_contract", slot_quest_sod_threat_deadline_day),
    (quest_get_slot, ":reward_gold", "qst_regional_threat_contract", slot_quest_sod_threat_reward_gold),
+   (quest_get_slot, ":reward_xp", "qst_regional_threat_contract", slot_quest_sod_threat_reward_xp),
    (quest_get_slot, ":ready", "qst_regional_threat_contract", slot_quest_sod_threat_ready_to_claim),
    (quest_get_slot, ":archetype", "qst_regional_threat_contract", slot_quest_sod_threat_archetype),
 
@@ -55,12 +56,13 @@ SCRIPTS = [
     (assign, reg(3), ":tier"),
     (assign, reg(4), ":relation_reward"),
     (assign, reg(5), ":threat_type"),
+    (assign, reg(6), ":reward_xp"),
 
    (try_begin),
      (eq, ":ready", 1),
-     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^Tier: {reg3}^Target: {s3}^Status: completed; return for payment.^Reward: {reg2} denars, +{reg4} relation^{s4}"),
+     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^Tier: {reg3}^Target: {s3}^Status: completed; return for payment.^Reward: {reg2} denars, {reg6} XP, +{reg4} relation^{s4}"),
    (else_try),
-     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^Tier: {reg3}^Target: {s3}^Days remaining: {reg1}^Reward: {reg2} denars, +{reg4} relation^{s4}"),
+     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^Tier: {reg3}^Target: {s3}^Days remaining: {reg1}^Reward: {reg2} denars, {reg6} XP, +{reg4} relation^{s4}"),
    (try_end),
  ]),
 ]

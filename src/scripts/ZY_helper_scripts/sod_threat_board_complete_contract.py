@@ -47,7 +47,9 @@ SCRIPTS = [
 
      (str_store_party_name, s1, ":sponsor_center"),
     (assign, reg(1), ":reward_gold"),
-     (display_message, "@The regional board at {s1} pays {reg1} denars and marks the threat resolved.", 0x66CC66),
+    (assign, reg(2), ":reward_xp"),
+    (assign, reg(3), ":reward_relation"),
+     (display_message, "@The regional board at {s1} pays {reg1} denars, {reg2} XP, and +{reg3} relation.", 0x66CC66),
      (call_script, "script_end_quest", "qst_regional_threat_contract"),
      (call_script, "script_sod_threat_board_init_registry"),
    (try_end),
