@@ -22,6 +22,7 @@ __pycache__/
 /build_full_debug.txt
 /build_last_run.txt
 /_build_log_summary.txt
+/docs/reports/
 
 # Generated root IDs
 /ID_*.py
