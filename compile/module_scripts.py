@@ -7844,6 +7844,9 @@ def _build_validate_construction_choice_ops():
 # --- ZY_helper_scripts/sod_threat_board_describe_active_contract.py preamble ---
 # COST: low
 
+# --- ZY_helper_scripts/sod_threat_board_describe_center_stakes.py preamble ---
+# COST: trivial
+
 # --- ZY_helper_scripts/sod_threat_board_describe_offer.py preamble ---
 # COST: low
 
@@ -42805,7 +42808,7 @@ scripts = [
      (call_script, "script_sod_threat_board_init_registry"),
    (try_end),
  ]),
-# [ src/scripts/ZY_helper_scripts/sod_threat_board_describe_active_contract.py:L3-L67 ] sod_threat_board_describe_active_contract
+# [ src/scripts/ZY_helper_scripts/sod_threat_board_describe_active_contract.py:L3-L68 ] sod_threat_board_describe_active_contract
 ("sod_threat_board_describe_active_contract",
  [
    (quest_get_slot, ":target_party", "qst_regional_threat_contract", slot_quest_sod_threat_target_party),
@@ -42828,6 +42831,7 @@ scripts = [
     (assign, reg(1), ":days_left"),
     (assign, reg(2), ":reward_gold"),
    (str_store_party_name, s2, ":sponsor_center"),
+   (call_script, "script_sod_threat_board_describe_center_stakes", ":sponsor_center"),
 
    (try_begin),
      (party_is_active, ":target_party"),
@@ -42866,9 +42870,39 @@ scripts = [
 
    (try_begin),
      (eq, ":ready", 1),
-     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^Tier: {reg3}^Target: {s3}^Status: completed; return for payment.^Reward: {reg2} denars, {reg6} XP, +{reg4} relation^{s4}"),
+     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^{s8}^Tier: {reg3}^Target: {s3}^Status: completed; return for payment.^Reward: {reg2} denars, {reg6} XP, +{reg4} relation^{s4}"),
    (else_try),
-     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^Tier: {reg3}^Target: {s3}^Days remaining: {reg1}^Reward: {reg2} denars, {reg6} XP, +{reg4} relation^{s4}"),
+     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^{s8}^Tier: {reg3}^Target: {s3}^Days remaining: {reg1}^Reward: {reg2} denars, {reg6} XP, +{reg4} relation^{s4}"),
+   (try_end),
+ ]),
+# [ src/scripts/ZY_helper_scripts/sod_threat_board_describe_center_stakes.py:L3-L31 ] sod_threat_board_describe_center_stakes
+("sod_threat_board_describe_center_stakes",
+ [
+   (store_script_param_1, ":center_no"),
+
+   (party_get_slot, ":population", ":center_no", slot_center_sod_local_population),
+   (party_get_slot, ":health", ":center_no", slot_center_sod_local_health),
+   (party_get_slot, ":prosperity", ":center_no", slot_town_prosperity),
+   (party_get_slot, ":local_prosperity", ":center_no", slot_center_sod_local_prosperity),
+   (party_get_slot, ":wealth", ":center_no", slot_town_wealth),
+   (assign, ":cattle", 0),
+   (try_begin),
+     (party_slot_eq, ":center_no", slot_party_type, spt_village),
+     (party_get_slot, ":cattle", ":center_no", slot_village_number_of_cattle),
+   (try_end),
+
+    (assign, reg(11), ":population"),
+    (assign, reg(12), ":health"),
+    (assign, reg(13), ":prosperity"),
+    (assign, reg(14), ":local_prosperity"),
+    (assign, reg(15), ":wealth"),
+    (assign, reg(16), ":cattle"),
+
+   (try_begin),
+     (party_slot_eq, ":center_no", slot_party_type, spt_village),
+     (str_store_string, s8, "@Local ledger: {reg11} people, health {reg12}, prosperity {reg13}, local reserves {reg14}, wealth {reg15}, {reg16} cattle."),
+   (else_try),
+     (str_store_string, s8, "@Local ledger: {reg11} people, health {reg12}, prosperity {reg13}, local reserves {reg14}, wealth {reg15}."),
    (try_end),
  ]),
 # [ src/scripts/ZY_helper_scripts/sod_threat_board_describe_offer.py:L3-L65 ] sod_threat_board_describe_offer

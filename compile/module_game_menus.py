@@ -687,7 +687,7 @@ game_menus = [
       ("continue", [], "Continue.", [(jump_to_menu, "mnu_reports")]),
     ]
   ),
-# [ src/menus/camp/regional_threat_board.py:L1-L89 ] regional_threat_board
+# [ src/menus/camp/regional_threat_board.py:L1-L92 ] regional_threat_board
 ("regional_threat_board", mnf_enable_hot_keys,
     "{s1}",
     "none",
@@ -704,7 +704,8 @@ game_menus = [
         (try_end),
         (call_script, "script_sod_threat_board_generate_offers", "$g_sod_threat_board_context_center"),
         (str_store_party_name, s2, "$g_sod_threat_board_context_center"),
-        (str_store_string, s1, "@Regional Threat Board - {s2}^^Three notices are posted for captains willing to do hard, useful work. Each contract spawns or marks a real warband, pays once, and carries a deadline.^^Choose a contract:"),
+        (call_script, "script_sod_threat_board_describe_center_stakes", "$g_sod_threat_board_context_center"),
+        (str_store_string, s1, "@Regional Threat Board - {s2}^^{s8}^^Three notices are posted for captains willing to do hard, useful work. Each contract spawns or marks a real warband, pays once, and carries a deadline. Outcomes affect the local economy and population.^^Choose a contract:"),
       (try_end),
     ],
     [
@@ -722,7 +723,9 @@ game_menus = [
           (neg|quest_slot_eq, "qst_regional_threat_contract", slot_quest_sod_threat_ready_to_claim, 1),
         ], "Review the active contract.",
         [
-          (display_message, "@The marked warband remains at large. Track it down before the deadline.", 0xFFCC66),
+          (quest_get_slot, ":sponsor_center", "qst_regional_threat_contract", slot_quest_sod_threat_sponsor_center),
+          (call_script, "script_sod_threat_board_describe_center_stakes", ":sponsor_center"),
+          (display_message, "@The marked warband remains at large. Track it down before the deadline. {s8}", 0xFFCC66),
           (jump_to_menu, "mnu_regional_threat_board"),
         ]),
 

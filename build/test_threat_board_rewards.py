@@ -24,6 +24,8 @@ def main() -> int:
     defeated = read("src/scripts/ZY_helper_scripts/sod_threat_board_note_party_defeated.py")
     economy = read("src/scripts/ZY_helper_scripts/sod_threat_board_apply_economy_effect.py")
     pressure = read("src/scripts/ZY_helper_scripts/sod_threat_board_apply_regional_pressure.py")
+    stakes = read("src/scripts/ZY_helper_scripts/sod_threat_board_describe_center_stakes.py")
+    board_menu = read("src/menus/camp/regional_threat_board.py")
 
     assert_contains(reward, "sod_threat_board_calculate_reward")
     assert_contains(reward, "store_sub, \":urgency\", 12, \":deadline_days\"")
@@ -50,6 +52,16 @@ def main() -> int:
     assert_contains(economy, "script_change_center_prosperity")
     assert_contains(economy, "script_change_center_health")
     assert_contains(pressure, "script_sod_threat_board_apply_economy_effect\", \":threat_type\", \":sponsor_center\", -1")
+    assert_contains(stakes, "slot_center_sod_local_population")
+    assert_contains(stakes, "slot_center_sod_local_health")
+    assert_contains(stakes, "slot_town_prosperity")
+    assert_contains(stakes, "slot_center_sod_local_prosperity")
+    assert_contains(stakes, "slot_town_wealth")
+    assert_contains(stakes, "slot_village_number_of_cattle")
+    assert_contains(stakes, "Local ledger:")
+    assert_contains(active, "script_sod_threat_board_describe_center_stakes")
+    assert_contains(board_menu, "script_sod_threat_board_describe_center_stakes")
+    assert_contains(board_menu, "Outcomes affect the local economy and population.")
 
     print("[threat_board_rewards] OK")
     return 0

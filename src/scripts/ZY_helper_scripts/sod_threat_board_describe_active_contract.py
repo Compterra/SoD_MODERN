@@ -22,6 +22,7 @@ SCRIPTS = [
     (assign, reg(1), ":days_left"),
     (assign, reg(2), ":reward_gold"),
    (str_store_party_name, s2, ":sponsor_center"),
+   (call_script, "script_sod_threat_board_describe_center_stakes", ":sponsor_center"),
 
    (try_begin),
      (party_is_active, ":target_party"),
@@ -60,9 +61,9 @@ SCRIPTS = [
 
    (try_begin),
      (eq, ":ready", 1),
-     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^Tier: {reg3}^Target: {s3}^Status: completed; return for payment.^Reward: {reg2} denars, {reg6} XP, +{reg4} relation^{s4}"),
+     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^{s8}^Tier: {reg3}^Target: {s3}^Status: completed; return for payment.^Reward: {reg2} denars, {reg6} XP, +{reg4} relation^{s4}"),
    (else_try),
-     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^Tier: {reg3}^Target: {s3}^Days remaining: {reg1}^Reward: {reg2} denars, {reg6} XP, +{reg4} relation^{s4}"),
+     (str_store_string, s1, "@Regional Threat Contract^^Sponsor: {s2}^{s8}^Tier: {reg3}^Target: {s3}^Days remaining: {reg1}^Reward: {reg2} denars, {reg6} XP, +{reg4} relation^{s4}"),
    (try_end),
  ]),
 ]
