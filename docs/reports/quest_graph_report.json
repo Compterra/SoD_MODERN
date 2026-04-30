@@ -1,0 +1,205 @@
+{
+  "diagnostics": [],
+  "graphs": [
+    {
+      "edges": [
+        {
+          "from": "diagnostics_delivery",
+          "kind": "branch",
+          "label": "main",
+          "to": "diagnostics_hunt"
+        }
+      ],
+      "entry": "",
+      "graph_id": "diagnostics_chain",
+      "kind": "chain",
+      "metadata": {},
+      "nodes": [
+        {
+          "id": "diagnostics_delivery",
+          "kind": "quest",
+          "label": "Deliver sealed orders",
+          "metadata": {
+            "diagnostics_stage": {
+              "actions": [],
+              "battle_hooks": [],
+              "battle_objective": null,
+              "conditions": [],
+              "description": "",
+              "failures": [],
+              "metadata": {
+                "dsl_stage_kind": "optional",
+                "optional": true
+              },
+              "objective": "Find an optional clue.",
+              "rewards": [
+                {
+                  "description": "Award gold",
+                  "expression": "gold:100",
+                  "metadata": {
+                    "amount": 100,
+                    "bundle": "diagnostics_rewards"
+                  },
+                  "reward_id": "diagnostics_rewards_gold"
+                },
+                {
+                  "description": "Award experience",
+                  "expression": "xp:50",
+                  "metadata": {
+                    "amount": 50,
+                    "bundle": "diagnostics_rewards"
+                  },
+                  "reward_id": "diagnostics_rewards_xp"
+                }
+              ],
+              "stage_id": "diagnostics_optional",
+              "title": "Optional clue",
+              "transitions": {},
+              "triggers": []
+            },
+            "dsl_pattern": "delivery"
+          },
+          "stage_count": 1
+        },
+        {
+          "id": "diagnostics_hunt",
+          "kind": "quest",
+          "label": "Hunt the road thieves",
+          "metadata": {
+            "diagnostics_stage": {
+              "actions": [],
+              "battle_hooks": [],
+              "battle_objective": null,
+              "conditions": [],
+              "description": "",
+              "failures": [],
+              "metadata": {
+                "dsl_stage_kind": "timed",
+                "duration_days": 0,
+                "duration_hours": 8,
+                "timeout_transition": ""
+              },
+              "objective": "Finish before the timer expires.",
+              "rewards": [],
+              "stage_id": "diagnostics_timed",
+              "title": "Timed errand",
+              "transitions": {
+                "success": "completed",
+                "timed_out": "failed"
+              },
+              "triggers": []
+            }
+          },
+          "stage_count": 1
+        }
+      ],
+      "templates": [
+        {
+          "edges": [],
+          "entry": "diagnostics_delivery_stage_1",
+          "graph_id": "diagnostics_delivery",
+          "kind": "template",
+          "metadata": {
+            "diagnostics_stage": {
+              "actions": [],
+              "battle_hooks": [],
+              "battle_objective": null,
+              "conditions": [],
+              "description": "",
+              "failures": [],
+              "metadata": {
+                "dsl_stage_kind": "optional",
+                "optional": true
+              },
+              "objective": "Find an optional clue.",
+              "rewards": [
+                {
+                  "description": "Award gold",
+                  "expression": "gold:100",
+                  "metadata": {
+                    "amount": 100,
+                    "bundle": "diagnostics_rewards"
+                  },
+                  "reward_id": "diagnostics_rewards_gold"
+                },
+                {
+                  "description": "Award experience",
+                  "expression": "xp:50",
+                  "metadata": {
+                    "amount": 50,
+                    "bundle": "diagnostics_rewards"
+                  },
+                  "reward_id": "diagnostics_rewards_xp"
+                }
+              ],
+              "stage_id": "diagnostics_optional",
+              "title": "Optional clue",
+              "transitions": {},
+              "triggers": []
+            },
+            "dsl_pattern": "delivery"
+          },
+          "nodes": [
+            {
+              "id": "diagnostics_delivery_stage_1",
+              "kind": "stage",
+              "label": "Make the delivery",
+              "metadata": {
+                "dsl_pattern": "delivery"
+              }
+            }
+          ]
+        },
+        {
+          "edges": [],
+          "entry": "diagnostics_hunt_stage_1",
+          "graph_id": "diagnostics_hunt",
+          "kind": "template",
+          "metadata": {
+            "diagnostics_stage": {
+              "actions": [],
+              "battle_hooks": [],
+              "battle_objective": null,
+              "conditions": [],
+              "description": "",
+              "failures": [],
+              "metadata": {
+                "dsl_stage_kind": "timed",
+                "duration_days": 0,
+                "duration_hours": 8,
+                "timeout_transition": ""
+              },
+              "objective": "Finish before the timer expires.",
+              "rewards": [],
+              "stage_id": "diagnostics_timed",
+              "title": "Timed errand",
+              "transitions": {
+                "success": "completed",
+                "timed_out": "failed"
+              },
+              "triggers": []
+            }
+          },
+          "nodes": [
+            {
+              "id": "diagnostics_hunt_stage_1",
+              "kind": "stage",
+              "label": "Track and defeat the target",
+              "metadata": {
+                "terminal": true
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "diagnostic_count": 0,
+    "edge_count": 1,
+    "graph_count": 1,
+    "node_count": 2,
+    "stage_count": 2,
+    "template_count": 2
+  }
+}

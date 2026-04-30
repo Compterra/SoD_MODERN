@@ -1,0 +1,18 @@
+Global Variables Unused Report
+
+Outcome: 0 warning(s)
+Unused globals: 0
+Preserved compatibility globals: 4
+Stale allowlist entries: 0
+
+Unused Globals
+- None
+
+Preserved Compatibility Globals
+- temp7: Native/module-system scratch global retained from the inherited variable table.
+- player_can_refuse_npc_quitting: Native companion dialogue compatibility flag; assigned by legacy dialogue flow.
+- player_can_persuade_npc: Native companion dialogue compatibility flag; assigned by legacy dialogue flow.
+- g_sod_zealot_candidate: Retired SoD faith-event state kept as a save-compatible global id placeholder.
+
+Stale Allowlist Entries
+- None

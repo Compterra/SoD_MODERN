@@ -1,0 +1,16 @@
+# Intentional inherited dialog head variants.
+# Keep this list narrow so new copy-paste collisions still show up in build output.
+anyone|plyr::member_automanage_select_melee_slot->member_automanage_select_melee_2 [neq|store_add|str_store_string]*
+anyone::merchant_quest_about_job_5b->close_window [no_conditions]*
+anyone::merchant_quest_requested->merchant_quest_brief [eq]*
+anyone::start->close_window [gt|eq]*
+anyone::start->gm_pretalk [store_partner_quest|store_relation|talk_info_set_relation_bar]*
+anyone|plyr::centurion_avoid_battle_denied->close_window [try_begin|troop_slot_eq|str_store_string]*
+anyone|plyr::town_dweller_talk->town_dweller_ask_situation [party_slot_eq|eq]*
+anyone|plyr::village_elder_talk->village_elder_ask_fugitive [check_quest_active|neg|check_quest_concluded|quest_slot_eq]*
+trp_sod_marshal|plyr::marshal_upgrade_choose->marshal_upgrade_check_again [eq|ge|troop_get_slot]*
+trp_sod_marshal|plyr::marshal_upgrade_choose->marshal_upgrade_list_options [eq|eq|ge]*
+trp_sod_marshal|plyr::marshal_upgrade_choose->marshal_upgrade_list_options [eq|eq|gt]*
+trp_sod_marshal|plyr::marshal_upgrade_garrison_choose->marshal_upgrade_garrison_check_again [eq|ge|troop_get_slot]*
+trp_sod_marshal|plyr::marshal_upgrade_garrison_choose->marshal_upgrade_garrison_list_options [eq|eq|ge]*
+trp_sod_marshal|plyr::marshal_upgrade_garrison_choose->marshal_upgrade_garrison_list_options [eq|eq|gt]*

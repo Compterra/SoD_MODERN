@@ -1,0 +1,27 @@
+# Generated caches and build outputs
+/.buildcache/
+/.sixth/
+/_export/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Large external/reference material
+/References/
+
+# Local scratch and temporary repair scripts
+/temp/
+/tmp/
+/build/tmp_*
+/_temp_*.py
+/_tmp_*.py
+/tmp_*.py
+
+# Build logs and diagnostics
+/build_debug.txt
+/build_full_debug.txt
+/build_last_run.txt
+/_build_log_summary.txt
+
+# Generated root IDs
+/ID_*.py

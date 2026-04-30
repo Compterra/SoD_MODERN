@@ -1,0 +1,13 @@
+digraph diagnostics_chain {
+  diagnostics_delivery [label="Deliver sealed orders"];
+  diagnostics_hunt [label="Hunt the road thieves"];
+  diagnostics_delivery -> diagnostics_hunt [label="main"];
+  subgraph cluster_diagnostics_delivery {
+    label="diagnostics_delivery stages";
+    diagnostics_delivery_diagnostics_delivery_stage_1 [label="Make the delivery"];
+  }
+  subgraph cluster_diagnostics_hunt {
+    label="diagnostics_hunt stages";
+    diagnostics_hunt_diagnostics_hunt_stage_1 [label="Track and defeat the target"];
+  }
+}

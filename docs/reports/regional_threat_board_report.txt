@@ -1,0 +1,7 @@
+Regional Threat Board Report
+
+Archetypes: 12 curated v1 contracts
+Threat types: pirates, deserters, relic thieves, rogue companies, cattle raiders, faction problems
+Interfaces: center board menu, camp report entry, quest-backed active contract
+Lifecycle: generate offers, accept, spawn/mark target, defeat, claim, expire/fail
+Integrations: mercenary guild favor, artifact bounty rewards, village cattle pressure, faction/center relations

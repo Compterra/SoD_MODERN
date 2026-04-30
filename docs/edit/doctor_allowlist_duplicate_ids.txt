@@ -1,0 +1,12 @@
+# Doctor allowlist: expected duplicate top-level IDs
+#
+# One pattern per line, matched case-insensitively.
+# Format:
+#   <label>:<id>
+#
+# Examples:
+#   menu:event_37
+#   script:game_start
+#   *:legacy_*
+
+menu:event_37

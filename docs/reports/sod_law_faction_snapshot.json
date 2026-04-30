@@ -1,0 +1,78 @@
+{
+  "active_law_slots": [
+    "slot_faction_law_1",
+    "slot_faction_law_2",
+    "slot_faction_law_3",
+    "slot_faction_law_4",
+    "slot_faction_law_5",
+    "slot_faction_law_6",
+    "slot_faction_law_7",
+    "slot_faction_law_8",
+    "slot_faction_law_9",
+    "slot_faction_law_10"
+  ],
+  "compatibility": {
+    "legacy_player_troop": "trp_law",
+    "legacy_scripts": [
+      "law_is_active",
+      "activate_law",
+      "deactivate_law"
+    ]
+  },
+  "diagnostics": {
+    "conflict_pairs": [
+      [
+        "sod_law_enfranchisement",
+        "sod_law_serfdom"
+      ],
+      [
+        "sod_law_high_capitation",
+        "sod_law_low_capitation"
+      ],
+      [
+        "sod_law_low_town_taxes",
+        "sod_law_high_town_taxes"
+      ],
+      [
+        "sod_law_temple_supremacy",
+        "sod_law_royal_supremacy"
+      ]
+    ],
+    "missing_effect_branches": [],
+    "required_constants": [
+      "slot_faction_law_1",
+      "slot_faction_law_10",
+      "faction_laws_begin",
+      "faction_laws_end",
+      "sod_law_max_active",
+      "slot_faction_law_tax_peasants",
+      "slot_faction_law_holy_modifier",
+      "slot_faction_law_unrest",
+      "slot_faction_sod_laws_migrated",
+      "sod_law_block_conflict",
+      "sod_law_ai_tag_economic"
+    ],
+    "required_scripts": [
+      "sod_law_is_active_for_faction",
+      "sod_law_count_active_for_faction",
+      "sod_law_find_empty_slot_for_faction",
+      "sod_law_add_to_faction",
+      "sod_law_remove_from_faction",
+      "sod_law_compact_faction_laws",
+      "sod_law_sync_player_legacy_slots",
+      "sod_law_can_enact_for_faction",
+      "sod_law_can_dismiss_for_faction",
+      "sod_law_recalculate_faction_law_modifiers",
+      "sod_law_sync_player_globals_from_faction",
+      "sod_law_ai_process_all_factions",
+      "sod_law_ai_score_law_for_faction",
+      "sod_law_initialize_all_faction_defaults",
+      "sod_law_describe_realm_law_report",
+      "sod_law_store_block_reason_text",
+      "sod_law_maybe_notify_foreign_change"
+    ]
+  },
+  "reports": {
+    "text": "docs/reports/sod_law_audit_report.txt"
+  }
+}

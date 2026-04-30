@@ -1,0 +1,45 @@
+Quest Migration Plan
+=====================
+
+Purpose: incremental quest library migration that keeps legacy tuples compiling while converting the smallest, safest fragments first.
+
+Migration Order Principles
+--------------------------
+1. Keep legacy tuples compiling.
+2. Convert the smallest chain fragments first.
+3. Define shared helper patterns.
+4. Migrate repeated quest families.
+5. Migrate special cases later.
+6. Normalize metadata and shared tags.
+7. Remove one-off duplication.
+8. Consolidate common patterns into DSL helpers.
+
+Recommended Conversion Order
+----------------------------
+1. 0001_prison_break_chain.py | small_chain | chain_spec | score -51 | already structured; easiest to normalize metadata and reuse shared DSL helpers
+2. 0009_story_and_meta_quests.py | special_case | chain_spec | score -34 | already structured; easiest to normalize metadata and reuse shared DSL helpers
+3. 00_schema_helpers.py | general | chain_spec | score -31 | already structured; easiest to normalize metadata and reuse shared DSL helpers
+4. quest_migration.py | general | chain_spec | score -30 | already structured; easiest to normalize metadata and reuse shared DSL helpers
+5. quest_schema.py | general | chain_spec | score -28 | already structured; easiest to normalize metadata and reuse shared DSL helpers
+6. 0010_sample_campaign_quests.py | general | chain_spec | score -26 | already structured; easiest to normalize metadata and reuse shared DSL helpers
+7. quest_specs.py | general | chain_spec | score -22 | already structured; easiest to normalize metadata and reuse shared DSL helpers
+8. 0001_all_quests.py | small_chain | legacy_tuple | score -8 | small chain fragment; good first conversion target
+9. 0004_enemy_lord_quests.py | repeated_family | legacy_tuple_bundle | score 0 | repeated family; convert after helper patterns are established
+10. 0006_lady_quests.py | special_case | legacy_tuple_bundle | score 0 | special-case quest content; migrate after the common families are stable
+11. 0002_mercenary_guild_quests.py | repeated_family | legacy_tuple_bundle | score 0 | repeated family; convert after helper patterns are established
+12. 0005_army_quests.py | repeated_family | legacy_tuple_bundle | score 1 | repeated family; convert after helper patterns are established
+13. 0008_village_elder_quests.py | repeated_family | legacy_tuple_bundle | score 1 | repeated family; convert after helper patterns are established
+14. 01_runtime_helpers.py | general | legacy_tuple | score 2 | legacy tuple bundle; keep compiling until helper patterns are in place
+15. 0007_mayor_quests.py | repeated_family | legacy_tuple_bundle | score 2 | repeated family; convert after helper patterns are established
+16. quest_lanes.py | general | legacy_tuple | score 3 | legacy tuple bundle; keep compiling until helper patterns are in place
+17. 0003_lord_quests.py | repeated_family | legacy_tuple_bundle | score 5 | repeated family; convert after helper patterns are established
+18. quest_authoring.py | general | legacy_tuple | score 8 | legacy tuple bundle; keep compiling until helper patterns are in place
+19. quest_generation.py | general | legacy_tuple | score 8 | legacy tuple bundle; keep compiling until helper patterns are in place
+20. quest_event_sources.py | general | legacy_tuple | score 12 | legacy tuple bundle; keep compiling until helper patterns are in place
+21. quest_outcomes.py | general | legacy_tuple | score 12 | legacy tuple bundle; keep compiling until helper patterns are in place
+22. quest_giver_runtime.py | general | legacy_tuple | score 12 | legacy tuple bundle; keep compiling until helper patterns are in place
+23. quest_events.py | general | legacy_tuple | score 12 | legacy tuple bundle; keep compiling until helper patterns are in place
+24. quest_runtime.py | general | legacy_tuple | score 12 | legacy tuple bundle; keep compiling until helper patterns are in place
+25. quest_dsl.py | general | legacy_tuple | score 16 | legacy tuple bundle; keep compiling until helper patterns are in place
+26. quest_diagnostics.py | general | legacy_tuple | score 16 | legacy tuple bundle; keep compiling until helper patterns are in place
+27. quest_domain.py | general | legacy_tuple | score 16 | legacy tuple bundle; keep compiling until helper patterns are in place

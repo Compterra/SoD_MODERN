@@ -1,0 +1,19 @@
+# Doctor allowlist - globals that are intentionally shared
+#
+# This only suppresses Doctor collision warnings. It does not change build or
+# runtime behavior.
+#
+# One pattern per line. Use * as a wildcard.
+
+# Native-style presentation overlay slots reused across multiple screens.
+$g_presentation_obj_*
+$g_presentation_next_presentation
+$g_presentation_output_slot
+
+# Shared banner selection pagination state.
+$g_presentation_banner_start
+$g_presentation_page_no
+
+# Shared battle/training mission template state.
+$g_battle_result
+$g_mt_mode

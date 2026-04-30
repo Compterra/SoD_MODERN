@@ -1,0 +1,10 @@
+flowchart TD
+  diagnostics_delivery["Deliver sealed orders"]
+  diagnostics_hunt["Hunt the road thieves"]
+  diagnostics_delivery -->|main| diagnostics_hunt
+  subgraph diagnostics_delivery_stages["diagnostics_delivery stages"]
+    diagnostics_delivery_diagnostics_delivery_stage_1["Make the delivery"]
+  end
+  subgraph diagnostics_hunt_stages["diagnostics_hunt stages"]
+    diagnostics_hunt_diagnostics_hunt_stage_1["Track and defeat the target"]
+  end

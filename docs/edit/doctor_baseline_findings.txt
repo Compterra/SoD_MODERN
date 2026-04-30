@@ -1,0 +1,27 @@
+# Optional baseline for --doctor-new-only.
+# One wildcard pattern per line, matched against full warning/error lines in lowercase.
+# Current baseline captures known warning debt so new findings stand out cleanly.
+[stub] found 3 suspected stub/empty fragment record(s).
+[stub] src/dialogs/za01_startup_and_dispatch/anyone_start_117.py:2 [dialogs #1] stub marker with empty/no-op consequences *
+[stub] src/dialogs/za01_startup_and_dispatch/anyone_start_61.py:2 [dialogs #1] stub marker with empty/no-op consequences *
+[stub] src/dialogs/zc01_centers_and_economy/anyone_plyr_merchant_talk_03.py:2 [dialogs #1] stub marker with empty/no-op consequences *
+[stub] found 7 suspected stub/empty fragment record(s).
+[stub] src/menus/other/auto_return_to_map.py:2 [menus #1] stub marker with empty/no-op options *
+[stub] src/menus/other/captivity_castle_check.py:2 [menus #1] stub marker with empty/no-op options *
+[stub] src/menus/other/captivity_start_castle_defeat.py:2 [menus #1] stub marker with empty/no-op options *
+[stub] src/menus/other/captivity_start_castle_surrender.py:2 [menus #1] stub marker with empty/no-op options *
+[stub] src/menus/other/captivity_start_wilderness.py:2 [menus #1] stub marker with empty/no-op options *
+[stub] src/menus/other/captivity_start_wilderness_surrender.py:2 [menus #1] stub marker with empty/no-op options *
+[stub] src/menus/other/captivity_wilderness_check.py:2 [menus #1] stub marker with empty/no-op options *
+[stub] found 2 suspected stub/empty fragment record(s).
+[stub] src/presentations/0024_sod_6_reserved/sod_6_reserved.py:2 [presentations #1] empty trigger list *
+[stub] src/presentations/0025_sod_7_reserved/sod_7_reserved.py:2 [presentations #1] empty trigger list *
+[stub] found 1 suspected stub/empty fragment record(s).
+[stub] src/mission_templates/0002_conversation_encounter/conversation_encounter.py:2 [mission_templates #1] empty trigger list *
+[dialog-dup] found 14 duplicate dialog head signature(s). *
+[dialog-dup] anyone|plyr::member_automanage_select_melee_slot->member_automanage_select_melee_2 *
+[dialog-dup] anyone::merchant_quest_about_job_5b->close_window *
+[dialog-dup] anyone::merchant_quest_requested->merchant_quest_brief *
+[dialog-dup] anyone::start->close_window *
+[dialog-dup] anyone::start->gm_pretalk *
+[dialog-dup] ...and 9 more signature(s)

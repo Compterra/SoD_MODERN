@@ -1,0 +1,50 @@
+Building Registry Report
+========================
+
+Purpose: data-driven matrix for construction UI, validation, effects, and balance review.
+Registry entries: 25
+
+Compatibility:
+- Existing slot_center_has_* save slots are preserved.
+- module_constants center building lists are checked against registry allowed_center_types.
+- script_get_improvement_details remains as a compatibility wrapper.
+
+Runtime APIs:
+- script_get_building_definition
+- script_get_building_display_name
+- script_get_building_description
+- script_get_building_cost
+- script_get_building_prerequisites
+- script_can_build_improvement
+- script_validate_construction_choice
+- script_get_center_building_effect_totals
+- script_apply_weekly_building_effects
+
+Matrix:
+slot | key | centers | category | tier | cost | build_days | prereqs | upgrade_from | upgrade_to | exclusive_group | effects | upkeep
+--- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+slot_center_has_chapel | chapel | castle | faith | 1 | 500 | - | - | - | - | - | faith_troop_upgrade:1,weekly_global_faith:1 | 5
+slot_center_has_monastery | monastery | village | faith | 2 | 2000 | - | slot_center_has_shrine | slot_center_has_shrine | - | village_religious_progression | weekly_taxes_percent:5,weekly_local_faith:2,weekly_global_faith:2 | 20
+slot_center_has_shrine | shrine | village | faith | 1 | 1000 | - | - | - | slot_center_has_monastery | village_religious_progression | weekly_relations:1,weekly_local_faith:3,weekly_global_faith:2 | 5
+slot_center_has_temple | temple | town | faith | 1 | 2000 | - | - | - | - | - | weekly_relations:1,weekly_local_faith:5,weekly_global_faith:4 | 10
+slot_center_has_barracks | barracks | town,castle | military | 1 | 2000 | - | - | - | - | - | infantry_training:1,demesne_cost:-1 | 10
+slot_center_has_blacksmith | blacksmith | town,castle | military | 1 | 1000 | - | - | - | - | - | troop_upgrade_cost_multiplier:50,garrison_upkeep_reduction:1 | 10
+slot_center_has_chapter | chapter | castle | military | 2 | 4000 | - | - | - | - | - | weekly_renown:5,noble_assembly:1,demesne_cost:-1 | 20
+slot_center_has_range | practice_range | town,castle | military | 1 | 2000 | - | - | - | - | - | ranged_training:1,demesne_cost:-1 | 10
+slot_center_has_stables | stables | town,castle | military | 1 | 2000 | - | - | - | - | - | cavalry_training:1,weekly_renown:4,demesne_cost:-1 | 15
+slot_center_has_messenger_post | messenger_post | village,town,castle | security | 1 | 1200 | - | - | - | - | - | enemy_warning_messages:1,demesne_cost:-1 | 5
+slot_center_has_prisoner_tower | prisoner_tower | town,castle | security | 1 | 1000 | - | - | - | - | - | captives_escape_chance:1,weekly_relations:1 | 10
+slot_center_has_university | university | town | town_civic | 2 | 4000 | - | - | - | - | - | weekly_relations:1,weekly_renown:15 | 20
+slot_center_has_bank | bank | town | town_economy | 2 | 1200 | - | - | - | slot_center_has_manufacture | town_economic_progression | prosperity_cap:10 | 15
+slot_center_has_manufacture | manufacture | town | town_economy | 3 | 2500 | - | slot_center_has_bank | slot_center_has_bank | - | town_economic_progression | prosperity_cap:20 | 45
+slot_center_has_guild | merchant_guild_hall | town | town_economy | 2 | 9000 | - | - | - | - | - | weekly_relations:1,weekly_prosperity:2,demesne_cost:-2,weekly_taxes_percent:10 | 30
+slot_center_has_canalization | canalization | town | town_health | 2 | 1200 | - | - | - | slot_center_has_hospital | town_health_progression | health_cap:10 | 15
+slot_center_has_hospital | hospital | town | town_health | 3 | 2500 | - | slot_center_has_canalization | slot_center_has_canalization | - | town_health_progression | health_cap:20 | 35
+slot_center_has_inn | inn | village | village_civic | 1 | 2000 | - | - | - | - | - | weekly_loyalty:2 | 10
+slot_center_has_watch_tower | watch_tower | village | village_defense | 1 | 1200 | - | - | - | - | - | loot_time_bonus_percent:25,demesne_cost:-1 | 5
+slot_center_has_clayworks | clayworks | village | village_economy | 1 | 2500 | - | - | - | - | - | prosperity_cap:20 | 10
+slot_center_has_manor | manor | village | village_economy | 1 | 2000 | - | - | - | - | - | weekly_renown:3,demesne_cost:-2 | 5
+slot_center_has_mill | mill | village | village_economy | 1 | 2500 | - | - | - | - | - | weekly_prosperity:1,prosperity_cap:20,weekly_taxes_percent:10 | 10
+slot_center_has_rustic_blacksmith | rustic_blacksmith | village | village_economy | 1 | 1200 | - | - | - | - | - | prosperity_cap:10 | 5
+slot_center_has_ambulatory | ambulatory | village | village_health | 2 | 2500 | - | slot_center_has_water_supply | slot_center_has_water_supply | - | village_health_progression | health_cap:20 | 15
+slot_center_has_water_supply | water_supply | village | village_health | 1 | 1200 | - | - | - | slot_center_has_ambulatory | village_health_progression | health_cap:10 | 5

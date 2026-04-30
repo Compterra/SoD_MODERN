@@ -1,0 +1,25 @@
+# Optional allowlist for expected stub/placeholder fragments.
+# One wildcard pattern per line, matched against repo-relative paths like:
+#   src/scripts/ZZ_doctor_tmp/example.py
+#   src/triggers/ST99_other/example.py
+src/dialogs/ZA01_startup_and_dispatch/anyone_start_117.py
+src/dialogs/ZA01_startup_and_dispatch/anyone_start_61.py
+src/dialogs/ZC01_centers_and_economy/anyone_plyr_merchant_talk_03.py
+src/menus/other/auto_return_to_map.py
+src/menus/other/captivity_castle_check.py
+src/menus/other/captivity_start_castle_defeat.py
+src/menus/other/captivity_start_castle_surrender.py
+src/menus/other/captivity_start_wilderness.py
+src/menus/other/captivity_start_wilderness_surrender.py
+src/menus/other/captivity_wilderness_check.py
+src/presentations/0024_sod_6_reserved/sod_6_reserved.py
+src/presentations/0025_sod_7_reserved/sod_7_reserved.py
+src/mission_templates/0002_conversation_encounter/conversation_encounter.py
+src/scripts/ZA_hardcoded_game_scripts/game_event_battle_end.py
+src/scripts/ZA_hardcoded_game_scripts/game_event_party_encounter.py
+src/scripts/ZG_quests/sod_quest_battle_advance_action.py
+src/scripts/ZG_quests/sod_quest_battle_agent_defeated.py
+src/scripts/ZG_quests/sod_quest_battle_message.py
+src/scripts/ZG_quests/sod_quest_battle_note_prisoner_freed.py
+src/scripts/ZG_quests/sod_quest_battle_note_target_captured.py
+src/scripts/ZG_quests/sod_quest_battle_tick.py

@@ -1,0 +1,3 @@
+Dialog head duplicates (heuristic)
+
+No non-allowlisted duplicates detected.

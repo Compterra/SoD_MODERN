@@ -1,0 +1,274 @@
+# -*- coding: utf-8 -*-
+"""
+Build compile/module_simple_triggers.py from src/triggers fragments (vanilla-compatible).
+
+Simple triggers are STRICTLY ordered. Triggers with the same interval execute in list order.
+We preserve order using src/triggers/_order_simple_triggers.txt which lists fragment paths
+(relative to src/triggers).
+"""
+from __future__ import annotations
+
+from pathlib import Path
+from typing import List, Optional
+import re
+
+import json
+import hashlib
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src" / "triggers"
+OUT = ROOT / "compile" / "module_simple_triggers.py"
+
+# Incremental build cache (v42): skip regeneration if inputs unchanged
+CACHE_SCHEMA_VERSION = 1
+CACHE_DIR = ROOT / ".buildcache"
+CACHE_FILE = CACHE_DIR / "triggers_manifest.json"
+
+
+def _sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _builder_fingerprint() -> str:
+    # Invalidate cache when this builder changes
+    return _sha256_file(Path(__file__).resolve())
+
+
+def _sig_for(path: Path) -> dict:
+    st = path.stat()
+    return {
+        "rel": path.relative_to(ROOT).as_posix(),
+        "mtime_ns": int(getattr(st, "st_mtime_ns", int(st.st_mtime * 1e9))),
+        "size": int(st.st_size),
+    }
+
+
+def _load_cache() -> 'Optional[dict]':
+    if not CACHE_FILE.exists():
+        return None
+    try:
+        return json.loads(CACHE_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _write_cache(payload: dict) -> None:
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    CACHE_FILE.write_text(json.dumps(payload, indent=2, sort_keys=False) + "\n", encoding="utf-8")
+ORDER_FILE = SRC / "_order_simple_triggers.txt"
+
+
+# Optional: user-defined preamble lines live here.
+# If present, they replace the hardcoded import block below.
+PREAMBLE_DIR = SRC / "_preamble"
+def _line_no(raw: str, idx: int) -> int:
+    return raw.count("\n", 0, idx) + 1
+
+
+def _syntax_check_fragment(fp: Path, raw: str) -> None:
+    try:
+        compile(raw, fp.as_posix(), "exec")
+    except SyntaxError as e:
+        lines = raw.splitlines()
+        lineno = int(getattr(e, "lineno", 0) or 0)
+        offset = int(getattr(e, "offset", 0) or 0)
+        msg = getattr(e, "msg", "SyntaxError")
+        start = max(1, lineno - 2)
+        end = min(len(lines), lineno + 2)
+        snippet = []
+        for i in range(start, end + 1):
+            mark = ">" if i == lineno else " "
+            snippet.append(f"{mark}{i:4d}| {lines[i-1]}")
+        rel = fp.relative_to(ROOT).as_posix() if fp.is_absolute() else fp.as_posix()
+        raise SystemExit(f"[build_simple_triggers] FAIL: {rel}:{lineno}:{offset} {msg}\n" + "\n".join(snippet))
+
+
+def extract_list_block(raw: str, var_name: str) -> tuple[str, int, int]:
+    """
+    Return (inner_text, start_line, end_line) of: VAR = [ ... ]  (handles strings + # comments)
+    Raises ValueError if not found or unclosed.
+    """
+    idx = raw.find(var_name)
+    if idx < 0:
+        raise ValueError(f"Missing {var_name} in fragment.")
+    lb = raw.find("[", idx)
+    if lb < 0:
+        raise ValueError(f"Missing '[' after {var_name}.")
+    i = lb
+    depth = 0
+    in_str = False
+    str_ch = ""
+    esc = False
+    in_comment = False
+
+    while i < len(raw):
+        ch = raw[i]
+
+        if in_comment:
+            if ch == "\n":
+                in_comment = False
+            i += 1
+            continue
+
+        if in_str:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == str_ch:
+                in_str = False
+            i += 1
+            continue
+
+        # not in string/comment
+        if ch == "#":
+            in_comment = True
+            i += 1
+            continue
+        if ch in ("'", '"'):
+            in_str = True
+            str_ch = ch
+            i += 1
+            continue
+
+        if ch == "[":
+            depth += 1
+        elif ch == "]":
+            depth -= 1
+            if depth == 0:
+                start_ln = _line_no(raw, lb)
+                end_ln = _line_no(raw, i)
+                return raw[lb + 1 : i].strip(), start_ln, end_ln
+        i += 1
+
+    raise ValueError(f"Unclosed list bracket for {var_name}.")
+
+def read_order() -> List[Path]:
+    if not ORDER_FILE.exists():
+        raise SystemExit(f"Missing triggers order file: {ORDER_FILE}")
+    files: List[Path] = []
+    seen: set[str] = set()
+    for ln in ORDER_FILE.read_text(encoding="utf-8", errors="replace").splitlines():
+        ln = ln.strip()
+        if not ln or ln.startswith("#"):
+            continue
+        rel = ln.replace("\\", "/")
+        if rel in seen:
+            raise SystemExit(f"Duplicate entry in triggers order file: {rel}")
+        seen.add(rel)
+        p = SRC / rel
+        if not p.exists():
+            raise SystemExit(f"Trigger fragment listed but missing: {p}")
+        files.append(p)
+
+    listed = {p.relative_to(SRC).as_posix() for p in files}
+    existing = {
+        p.relative_to(SRC).as_posix()
+        for p in SRC.rglob("*.py")
+        if p.is_file() and "_preamble" not in p.parts and p.name != ORDER_FILE.name
+    }
+    missing = sorted(existing - listed)
+    if missing:
+        preview = "\n  ".join(missing[:25])
+        suffix = "" if len(missing) <= 25 else f"\n  ...and {len(missing) - 25} more"
+        raise SystemExit(
+            "Trigger manifest is incomplete. Unlisted fragment(s):\n"
+            f"  {preview}{suffix}"
+        )
+    return files
+
+def load_preamble_lines() -> List[str]:
+    """Load preamble lines from src/triggers/_preamble/*.py, if any."""
+    if not PREAMBLE_DIR.exists():
+        return []
+
+    files = [p for p in PREAMBLE_DIR.glob('*.py') if p.is_file()]
+    files.sort(key=lambda p: p.name.lower())
+
+    lines: List[str] = []
+    for fp in files:
+        for ln in fp.read_text(encoding='utf-8', errors='replace').splitlines():
+            ln = ln.rstrip()
+            if ln:
+                lines.append(ln)
+    return lines
+
+
+def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
+    if not SRC.exists():
+        raise SystemExit(f"Missing source folder: {SRC}")
+
+    files = read_order()
+
+    # Incremental cache: compare inputs and skip regeneration when unchanged
+    preamble_files: List[Path] = []
+    if PREAMBLE_DIR.exists():
+        preamble_files = [p for p in PREAMBLE_DIR.glob('*.py') if p.is_file()]
+        preamble_files.sort(key=lambda p: p.name.lower())
+    order_sig = _sig_for(ORDER_FILE) if ORDER_FILE.exists() else None
+    cache_payload = {
+        'schema': CACHE_SCHEMA_VERSION,
+        'builder_sha256': _builder_fingerprint(),
+        'emit_source_map': bool(emit_source_map),
+        'fragments': [_sig_for(p) for p in files],
+        'preamble': [_sig_for(p) for p in preamble_files],
+        'order_file': order_sig,
+    }
+    if use_cache and OUT.exists():
+        prev = _load_cache()
+        if prev == cache_payload:
+            print('[build_simple_triggers] Up-to-date; skipped (cache)')
+            return
+    entries: List[str] = []
+
+    for fp in files:
+        raw = fp.read_text(encoding="utf-8", errors="replace")
+        _syntax_check_fragment(fp, raw)
+        if "SIMPLE_TRIGGERS" not in raw:
+            continue
+        inner, start_ln, end_ln = extract_list_block(raw, "SIMPLE_TRIGGERS")
+        block = inner.rstrip()
+        if block and not block.rstrip().endswith(","):
+            block += ","
+        rel = fp.relative_to(SRC).as_posix()
+        m = re.search(r"^\s*\(\s*([^,]+)\s*,", inner, re.M)
+        interval = m.group(1).strip() if m else ""
+        label = f"# [ src/triggers/{rel}:L{start_ln}-L{end_ln} ]"
+        if interval:
+            label += f" {interval}"
+        if emit_source_map:
+            entries.append(label)
+        entries.append(block)
+    preamble = load_preamble_lines()
+    if not preamble:
+        # Fallback (legacy) preamble.
+        preamble = [
+            'from header_common import *',
+            'from header_operations import *',
+            'from header_parties import *',
+            'from header_items import *',
+            'from header_skills import *',
+            'from header_triggers import *',
+            'from header_troops import *',
+            'from header_music import *',
+            'from module_constants import *',
+        ]
+
+    header_lines: List[str] = [
+        '# -*- coding: cp1252 -*-',
+        '# AUTO-GENERATED by build/build_simple_triggers.py (do not edit by hand)',
+        *preamble,
+        '',
+        'simple_triggers = [',
+        '',
+    ]
+    out_lines = header_lines + entries + [']', '']
+    OUT.write_text("\n".join(out_lines), encoding="cp1252", errors="replace")
+
+    if use_cache:
+        _write_cache(cache_payload)
+    print(f"[build_simple_triggers] Wrote {OUT}")
+
+if __name__ == "__main__":
+    from build_profile import parse_profile, emit_source_map
+    prof = parse_profile()
+    build(emit_source_map=emit_source_map(prof))
