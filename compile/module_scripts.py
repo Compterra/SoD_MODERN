@@ -7766,6 +7766,9 @@ def _build_validate_construction_choice_ops():
 # --- ZY_helper_scripts/ponavosa_duel_restore.py preamble ---
 # COST: trivial
 
+# --- ZY_helper_scripts/sod_apply_center_investment.py preamble ---
+# COST: O(1)
+
 # --- ZY_helper_scripts/sod_artifact_add_kill.py preamble ---
 # COST: low
 
@@ -7816,6 +7819,12 @@ def _build_validate_construction_choice_ops():
 
 # --- ZY_helper_scripts/sod_describe_elite_doctrine_report.py preamble ---
 # COST: O(number of player walled centers)
+
+# --- ZY_helper_scripts/sod_find_investment_target.py preamble ---
+# COST: O(centers)
+
+# --- ZY_helper_scripts/sod_npc_invest_in_centers.py preamble ---
+# COST: O(lords * centers)
 
 # --- ZY_helper_scripts/sod_royal_deliver_pending_artifact.py preamble ---
 # COST: low
@@ -41634,6 +41643,109 @@ scripts = [
       (try_end),
       (jump_to_scene, ":scene_to_use"),
   ]),
+# [ src/scripts/ZY_helper_scripts/sod_apply_center_investment.py:L3-L104 ] sod_apply_center_investment
+("sod_apply_center_investment",
+  [
+    (store_script_param, ":center_no", 1),
+    (store_script_param, ":investor_troop", 2),
+    (store_script_param, ":budget", 3),
+    (store_script_param, ":mode", 4),
+
+    (assign, ":prosperity_delta", 0),
+    (assign, ":health_delta", 0),
+    (assign, ":population_delta", 0),
+    (assign, ":local_prosperity_delta", 0),
+    (assign, ":wealth_delta", 0),
+    (assign, ":cattle_delta", 0),
+
+    (val_max, ":budget", 0),
+    (try_begin),
+      (ge, ":budget", 300),
+      (try_begin),
+        (eq, ":mode", 1), # emergency recovery: raids, razing, starvation, disease
+        (store_div, ":health_delta", ":budget", 500),
+        (store_div, ":population_delta", ":budget", 125),
+        (store_div, ":prosperity_delta", ":budget", 900),
+        (store_div, ":local_prosperity_delta", ":budget", 700),
+        (store_div, ":wealth_delta", ":budget", 3),
+        (store_div, ":cattle_delta", ":budget", 1000),
+      (else_try),
+        (eq, ":mode", 2), # trade stimulus: inventories, workshops, credit
+        (store_div, ":prosperity_delta", ":budget", 450),
+        (store_div, ":local_prosperity_delta", ":budget", 350),
+        (store_div, ":wealth_delta", ":budget", 2),
+        (store_div, ":health_delta", ":budget", 1800),
+        (store_div, ":population_delta", ":budget", 350),
+      (else_try), # balanced civic investment
+        (store_div, ":prosperity_delta", ":budget", 700),
+        (store_div, ":health_delta", ":budget", 900),
+        (store_div, ":population_delta", ":budget", 225),
+        (store_div, ":local_prosperity_delta", ":budget", 650),
+        (store_div, ":wealth_delta", ":budget", 2),
+        (store_div, ":cattle_delta", ":budget", 1600),
+      (try_end),
+
+      (val_clamp, ":prosperity_delta", 0, 12),
+      (val_clamp, ":health_delta", 0, 12),
+      (val_clamp, ":population_delta", 0, 80),
+      (val_clamp, ":local_prosperity_delta", 0, 12),
+      (val_clamp, ":wealth_delta", 0, 6000),
+      (val_clamp, ":cattle_delta", 0, 8),
+
+      (try_begin),
+        (neg|is_between, ":center_no", castles_begin, castles_end),
+        (call_script, "script_change_center_prosperity", ":center_no", ":prosperity_delta"),
+      (try_end),
+      (call_script, "script_change_center_health", ":center_no", ":health_delta"),
+
+      (party_get_slot, ":population", ":center_no", slot_center_sod_local_population),
+      (val_add, ":population", ":population_delta"),
+      (try_begin),
+        (is_between, ":center_no", villages_begin, villages_end),
+        (val_clamp, ":population", village_pop_min, village_pop_max),
+      (else_try),
+        (is_between, ":center_no", towns_begin, towns_end),
+        (val_clamp, ":population", town_pop_min, town_pop_max),
+      (try_end),
+      (party_set_slot, ":center_no", slot_center_sod_local_population, ":population"),
+
+      (party_get_slot, ":local_prosperity", ":center_no", slot_center_sod_local_prosperity),
+      (val_add, ":local_prosperity", ":local_prosperity_delta"),
+      (val_clamp, ":local_prosperity", 0, 101),
+      (party_set_slot, ":center_no", slot_center_sod_local_prosperity, ":local_prosperity"),
+
+      (party_get_slot, ":wealth", ":center_no", slot_town_wealth),
+      (val_add, ":wealth", ":wealth_delta"),
+      (val_max, ":wealth", 0),
+      (party_set_slot, ":center_no", slot_town_wealth, ":wealth"),
+
+      (try_begin),
+        (is_between, ":center_no", villages_begin, villages_end),
+        (party_get_slot, ":cattle", ":center_no", slot_village_number_of_cattle),
+        (val_add, ":cattle", ":cattle_delta"),
+        (val_clamp, ":cattle", 0, 101),
+        (party_set_slot, ":center_no", slot_village_number_of_cattle, ":cattle"),
+      (try_end),
+
+      (try_begin),
+        (eq, ":investor_troop", "trp_player"),
+        (call_script, "script_change_player_relation_with_center", ":center_no", 1),
+        (str_store_party_name_link, s1, ":center_no"),
+        (assign, reg1, ":budget"),
+        (assign, reg2, ":prosperity_delta"),
+        (assign, reg3, ":health_delta"),
+        (assign, reg4, ":population_delta"),
+        (display_message, "@You invest {reg1} denars into {s1}: prosperity +{reg2}, health +{reg3}, population +{reg4}.", quest_success_color),
+      (try_end),
+    (try_end),
+
+    (assign, reg0, ":prosperity_delta"),
+    (assign, reg1, ":health_delta"),
+    (assign, reg2, ":population_delta"),
+    (assign, reg3, ":local_prosperity_delta"),
+    (assign, reg4, ":wealth_delta"),
+    (assign, reg5, ":cattle_delta"),
+  ]),
 # [ src/scripts/ZY_helper_scripts/sod_artifact_add_kill.py:L3-L57 ] sod_artifact_add_kill
 ("sod_artifact_add_kill",
  [
@@ -42483,6 +42595,105 @@ scripts = [
     (try_end),
 
     (str_store_string, s1, "@{s1}^{s4}: noble elite. Status: {s6}.^Faith ascension: {s5}. Status: {s7}. Requires chapel or temple support, an eligible noble, and sufficient effective faith.^^Royal legitimacy:^Artifact doctrine discount: {reg5}%. Duel inspiration batches remaining: {reg6}. Matching recovered or vaulted royal artifacts can reduce elite training costs, and commander duel victories can inspire a few veteran upgrades. Neither bypasses buildings, faith, or culture gates.^^Doctrine notes:^Infantry, ranged, and mounted troops still require barracks, range, and stables. Nobles remain the second-best troop tier. Faith elites remain the best-in-game tier."),
+  ]),
+# [ src/scripts/ZY_helper_scripts/sod_find_investment_target.py:L3-L53 ] sod_find_investment_target
+("sod_find_investment_target",
+  [
+    (store_script_param, ":investor_troop", 1),
+    (store_script_param, ":scope", 2),
+
+    (assign, ":best_center", -1),
+    (assign, ":best_score", 1000000),
+    (store_troop_faction, ":investor_faction", ":investor_troop"),
+
+    (try_for_range, ":center_no", centers_begin, centers_end),
+      (assign, ":eligible", 0),
+      (try_begin),
+        (eq, ":scope", 0),
+        (party_slot_eq, ":center_no", slot_town_lord, ":investor_troop"),
+        (assign, ":eligible", 1),
+      (else_try),
+        (eq, ":scope", 1),
+        (store_faction_of_party, ":center_faction", ":center_no"),
+        (eq, ":center_faction", ":investor_faction"),
+        (faction_slot_eq, ":investor_faction", slot_faction_leader, ":investor_troop"),
+        (assign, ":eligible", 1),
+      (try_end),
+
+      (eq, ":eligible", 1),
+      (neg|is_between, ":center_no", castles_begin, castles_end),
+      (party_get_slot, ":health", ":center_no", slot_center_sod_local_health),
+      (party_get_slot, ":prosperity", ":center_no", slot_town_prosperity),
+      (party_get_slot, ":population", ":center_no", slot_center_sod_local_population),
+      (party_get_slot, ":local_prosperity", ":center_no", slot_center_sod_local_prosperity),
+      (assign, ":population_need", 0),
+      (try_begin),
+        (is_between, ":center_no", villages_begin, villages_end),
+        (store_sub, ":population_need", village_pop_max, ":population"),
+      (else_try),
+        (is_between, ":center_no", towns_begin, towns_end),
+        (store_sub, ":population_need", town_pop_max, ":population"),
+        (val_div, ":population_need", 6),
+      (try_end),
+      (val_max, ":population_need", 0),
+      (store_add, ":score", ":health", ":prosperity"),
+      (val_add, ":score", ":local_prosperity"),
+      (store_sub, ":population_pressure", 180, ":population_need"),
+      (val_add, ":score", ":population_pressure"),
+      (lt, ":score", ":best_score"),
+      (assign, ":best_score", ":score"),
+      (assign, ":best_center", ":center_no"),
+    (try_end),
+
+    (assign, reg0, ":best_center"),
+    (assign, reg1, ":best_score"),
+  ]),
+# [ src/scripts/ZY_helper_scripts/sod_npc_invest_in_centers.py:L3-L48 ] sod_npc_invest_in_centers
+("sod_npc_invest_in_centers",
+  [
+    (try_for_range, ":lord_no", kingdom_heroes_begin, kingdom_heroes_end),
+      (neq, ":lord_no", "trp_player"),
+      (store_troop_faction, ":lord_faction", ":lord_no"),
+      (is_between, ":lord_faction", kingdoms_begin, kingdoms_end),
+      (troop_get_slot, ":wealth", ":lord_no", slot_troop_wealth),
+      (ge, ":wealth", 2500),
+      (assign, ":scope", 0),
+      (try_begin),
+        (faction_slot_eq, ":lord_faction", slot_faction_leader, ":lord_no"),
+        (ge, ":wealth", 6000),
+        (assign, ":scope", 1),
+      (try_end),
+      (call_script, "script_sod_find_investment_target", ":lord_no", ":scope"),
+      (assign, ":center_no", reg0),
+      (gt, ":center_no", 0),
+      (party_get_slot, ":health", ":center_no", slot_center_sod_local_health),
+      (party_get_slot, ":prosperity", ":center_no", slot_town_prosperity),
+      (assign, ":need_score", 0),
+      (try_begin),
+        (lt, ":health", 60),
+        (store_sub, ":need_score", 60, ":health"),
+      (try_end),
+      (try_begin),
+        (lt, ":prosperity", 60),
+        (store_sub, ":prosperity_need", 60, ":prosperity"),
+        (val_add, ":need_score", ":prosperity_need"),
+      (try_end),
+      (gt, ":need_score", 0),
+      (assign, ":budget", 1200),
+      (try_begin),
+        (faction_slot_eq, ":lord_faction", slot_faction_leader, ":lord_no"),
+        (assign, ":budget", 2500),
+      (try_end),
+      (store_div, ":extra_budget", ":wealth", 10),
+      (val_add, ":budget", ":extra_budget"),
+      (val_min, ":budget", 5000),
+      (store_div, ":reserve", ":wealth", 2),
+      (val_min, ":budget", ":reserve"),
+      (ge, ":budget", 500),
+      (val_sub, ":wealth", ":budget"),
+      (troop_set_slot, ":lord_no", slot_troop_wealth, ":wealth"),
+      (call_script, "script_sod_apply_center_investment", ":center_no", ":lord_no", ":budget", 1),
+    (try_end),
   ]),
 # [ src/scripts/ZY_helper_scripts/sod_royal_deliver_pending_artifact.py:L3-L26 ] sod_royal_deliver_pending_artifact
 ("sod_royal_deliver_pending_artifact",

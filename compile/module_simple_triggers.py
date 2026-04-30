@@ -9069,4 +9069,9 @@ simple_triggers = [
    [
       (call_script, "script_sod_quest_runtime_daily_update"),
     ]),
+# [ src/triggers/ST04_weekly/entry_0153.py:L1-L6 ] 24 * 7
+(24 * 7,
+  [
+    (call_script, "script_sod_npc_invest_in_centers"),
+  ]),
 ]
