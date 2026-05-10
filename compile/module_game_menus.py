@@ -335,7 +335,7 @@ game_menus = [
        ),
       ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/start_phase_2.py:L1-L25 ] start_phase_2
+# [ src/menus/0000_hardcoded_mb1011/start_phase_2.py:L1-L23 ] start_phase_2
 (
     "start_phase_2", mnf_disable_all_keys,
     "You arrive at Calradia, a land torn between rival kingdoms battling each other for supremacy,"\
@@ -352,9 +352,7 @@ game_menus = [
        [
          (assign, "$g_sod_initial_world_setup_pending", 1),
          (assign, "$g_sod_description_return_to_reports", 0),
-         (assign, "$sod_description_page", 1),
-         (jump_to_menu, "mnu_sod_continue_return"),
-         (start_presentation, "prsnt_sod_description"),
+         (change_screen_map),
         ]
        ),
     ]

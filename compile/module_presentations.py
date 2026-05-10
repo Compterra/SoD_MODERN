@@ -7303,7 +7303,7 @@ presentations = [
 	(try_end),
 	  ]),
   ]),
-# [ src/presentations/0022_sod_description/sod_description.py:L1-L120 ] sod_description
+# [ src/presentations/0022_sod_description/sod_description.py:L1-L119 ] sod_description
 ("sod_description", 0, 0,[
   
   (ti_on_presentation_load,
@@ -7396,7 +7396,6 @@ presentations = [
 				(assign, "$g_sod_description_return_to_reports", 0),
 				(jump_to_menu, "mnu_reports"),
 			(else_try),
-				(assign, "$g_sod_initial_world_setup_pending", 1),
 				(change_screen_return),
 			(try_end),
 		(else_try),
