@@ -91,7 +91,7 @@ PRESENTATIONS = [
 				(assign, "$g_sod_description_return_to_reports", 0),
 				(jump_to_menu, "mnu_reports"),
 			(else_try),
-				(call_script, "script_sod_finish_initial_party_world_setup"),
+				(assign, "$g_sod_initial_world_setup_pending", 1),
 				(change_screen_return),
 			(try_end),
 		(else_try),

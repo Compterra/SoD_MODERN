@@ -87,6 +87,8 @@ SCRIPTS = [
   ),
 ("sod_apply_initial_party_members",
     [
+      (try_begin),
+      (party_is_active, "p_main_party"),
       (party_add_members, "p_main_party", "trp_sod_strategy_advisor", 1),
 
       (try_begin),
@@ -144,6 +146,7 @@ SCRIPTS = [
         (party_add_members, "p_main_party", "trp_sod_zer_2_archer", 5),
       (try_end),
       (assign, "$g_sod_initial_party_members_pending", 0),
+      (try_end),
     ]
   ),
 ("sod_apply_player_banner_map_icon",
@@ -152,6 +155,7 @@ SCRIPTS = [
       (assign, "$g_sod_pending_player_banner_map_icon", ":flag_icon"),
       (try_begin),
         (eq, "$g_sod_player_world_ready", 1),
+        (party_is_active, "p_main_party"),
         (party_set_banner_icon, "p_main_party", ":flag_icon"),
         (assign, "$g_sod_pending_player_banner_map_icon", -1),
       (try_end),
@@ -161,6 +165,7 @@ SCRIPTS = [
     [
       (try_begin),
         (eq, "$g_sod_player_world_ready", 0),
+        (party_is_active, "p_main_party"),
         (try_begin),
           (eq, "$g_sod_initial_party_members_pending", 1),
           (call_script, "script_sod_apply_initial_party_members"),
@@ -189,6 +194,7 @@ SCRIPTS = [
       (assign, reg0, 0),
       (try_begin),
         (map_free),
+        (party_is_active, "p_main_party"),
         (main_party_has_troop, "trp_player"),
         (try_begin),
           (eq, "$g_sod_main_party_setup_pending", 1),

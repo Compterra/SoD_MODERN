@@ -9680,12 +9680,13 @@ simple_triggers = [
 (3, [
     (call_script, "script_sod_process_looter_village_raids"),
   ]),
-# [ src/triggers/ST01_every_frame/entry_0169.py:L1-L10 ] 0
+# [ src/triggers/ST01_every_frame/entry_0169.py:L1-L11 ] 0
 (0,
    [
       (try_begin),
         (map_free),
         (eq, "$g_sod_initial_world_setup_pending", 1),
+        (party_is_active, "p_main_party"),
         (call_script, "script_sod_finish_initial_party_world_setup"),
       (try_end),
     ]),
