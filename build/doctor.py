@@ -136,6 +136,109 @@ _ACTION_AFTER_THIS_OR_NEXT_RE = re.compile(
 _COST_HEADER_RE = re.compile(r"(?m)^\s*#\s*COST\s*:\s*")
 _STUB_MARKER_RE = re.compile(r"(?i)\b(?:stub|placeholder|not implemented|todo|tbd|wip)\b")
 
+# M&B 1.011 and Original SoD both have a handful of engine-facing entries whose
+# order matters. The generated module files are the real build input, so Doctor
+# validates these after src fragments have been assembled into compile/.
+MB1011_HARDCODED_MENU_NAMES = [
+    "start_game_1",
+    "start_phase_2",
+    "start_game_3",
+    "tutorial",
+    "reports",
+]
+
+MB1011_HARDCODED_SCRIPT_NAMES = [
+    "game_start",
+    "game_event_party_encounter",
+    "game_event_simulate_battle",
+    "game_event_battle_end",
+    "game_get_item_buy_price_factor",
+    "game_get_item_sell_price_factor",
+    "game_event_buy_item",
+    "game_event_sell_item",
+    "game_get_troop_wage",
+    "game_get_total_wage",
+    "game_get_join_cost",
+    "game_get_prisoner_price",
+    "game_check_prisoner_can_be_sold",
+    "game_event_detect_party",
+    "game_event_undetect_party",
+    "game_check_party_sees_party",
+    "game_get_party_speed_multiplier",
+    "game_get_statistics_line",
+    "game_get_date_text",
+    "game_get_money_text",
+    "game_get_party_companion_limit",
+    "game_reset_player_party_name",
+    "game_get_party_prisoner_limit",
+    "game_get_item_extra_text",
+    "game_on_disembark",
+    "game_context_menu_get_buttons",
+    "game_event_context_menu_button_clicked",
+    "game_get_skill_modifier_for_troop",
+]
+
+MB1011_HARDCODED_SKILL_NAMES = [
+    "trade",
+    "leadership",
+    "prisoner_management",
+    "reserved_1",
+    "reserved_2",
+    "reserved_3",
+    "reserved_4",
+    "persuasion",
+    "engineer",
+    "first_aid",
+    "surgery",
+    "wound_treatment",
+    "inventory_management",
+    "spotting",
+    "pathfinding",
+    "tactics",
+    "tracking",
+    "trainer",
+    "reserved_5",
+    "reserved_6",
+    "reserved_7",
+    "reserved_8",
+    "looting",
+    "horse_archery",
+    "riding",
+    "athletics",
+    "shield",
+    "weapon_master",
+    "reserved_9",
+    "reserved_10",
+    "reserved_11",
+    "reserved_12",
+    "reserved_13",
+    "power_draw",
+    "power_throw",
+    "power_strike",
+    "ironflesh",
+    "reserved_14",
+    "reserved_15",
+    "reserved_16",
+    "reserved_17",
+    "reserved_18",
+]
+
+MB1011_HARDCODED_CONTRACTS = [
+    ("menus", ROOT / "compile" / "module_game_menus.py", ROOT / "compile" / "ids" / "ID_menus.py", "menu_", MB1011_HARDCODED_MENU_NAMES),
+    ("skills", ROOT / "compile" / "module_skills.py", ROOT / "compile" / "ids" / "ID_skills.py", "skl_", MB1011_HARDCODED_SKILL_NAMES),
+    ("parties", ROOT / "compile" / "module_parties.py", ROOT / "compile" / "ids" / "ID_parties.py", "p_", ["main_party", "temp_party", "camp_bandits"]),
+    ("troops", ROOT / "compile" / "module_troops.py", ROOT / "compile" / "ids" / "ID_troops.py", "trp_", ["player", "temp_troop", "game", "unarmed_troop"]),
+    ("factions", ROOT / "compile" / "module_factions.py", ROOT / "compile" / "ids" / "ID_factions.py", "fac_", ["no_faction", "commoners", "outlaws"]),
+    ("strings", ROOT / "compile" / "module_strings.py", ROOT / "compile" / "ids" / "ID_strings.py", "str_", ["no_string", "empty_string", "yes", "no"]),
+    ("mission templates", ROOT / "compile" / "module_mission_templates.py", ROOT / "compile" / "ids" / "ID_mission_templates.py", "mst_", ["town_default", "conversation_encounter"]),
+    ("items", ROOT / "compile" / "module_items.py", ROOT / "compile" / "ids" / "ID_items.py", "itm_", ["no_item", "horse_meat"]),
+]
+
+MB1011_ENGINE_CALLBACK_CONTRACTS = [
+    ("scripts", ROOT / "compile" / "module_scripts.py", ROOT / "compile" / "ids" / "ID_scripts.py", "script_", MB1011_HARDCODED_SCRIPT_NAMES),
+    ("presentations", ROOT / "compile" / "module_presentations.py", ROOT / "compile" / "ids" / "ID_presentations.py", "prsnt_", ["game_credits"]),
+]
+
 @dataclass
 class DoctorResult:
     errors: List[str]
@@ -145,6 +248,180 @@ class DoctorResult:
 
 def _read_text(p: Path) -> str:
     return p.read_text(encoding="utf-8", errors="replace")
+
+def _parse_id_assignments(path: Path) -> Dict[str, int]:
+    if not path.exists():
+        return {}
+    raw = _read_text(path)
+    assignments: Dict[str, int] = {}
+    for match in re.finditer(r"(?m)^\s*([A-Za-z0-9_]+)\s*=\s*(-?\d+)\s*$", raw):
+        assignments[match.group(1)] = int(match.group(2))
+    return assignments
+
+def _parse_module_tuple_names(path: Path) -> List[str]:
+    if not path.exists():
+        return []
+    raw = _read_text(path)
+    list_vars = {
+        "module_game_menus.py": "game_menus",
+        "module_presentations.py": "presentations",
+        "module_scripts.py": "scripts",
+        "module_skills.py": "skills",
+        "module_parties.py": "parties",
+        "module_troops.py": "troops",
+        "module_factions.py": "factions",
+        "module_strings.py": "strings",
+        "module_mission_templates.py": "mission_templates",
+        "module_items.py": "items",
+    }
+    list_var = list_vars.get(path.name)
+    if list_var:
+        try:
+            return _iter_top_level_tuple_ids(_extract_list_block(raw, list_var))
+        except Exception:
+            pass
+
+    if path.name in {"module_items.py", "module_troops.py"}:
+        pattern = re.compile(r"(?m)^\s{0,2}\[\s*[\"']([A-Za-z0-9_]+)[\"']\s*,")
+    elif path.name in {"module_game_menus.py", "module_presentations.py", "module_scripts.py"}:
+        pattern = re.compile(r"(?m)^\s{0,4}\(\s*(?:\n\s*)?[\"']([A-Za-z0-9_]+)[\"']\s*,")
+    elif path.name == "module_mission_templates.py":
+        pattern = re.compile(r"(?m)^\s{0,2}\(\s*(?:\n\s*)?[\"']([A-Za-z0-9_]+)[\"']\s*,")
+    else:
+        pattern = re.compile(r"(?m)^\s{2}\(\s*(?:\n\s*)?[\"']([A-Za-z0-9_]+)[\"']\s*,")
+    return [match.group(1) for match in pattern.finditer(raw)]
+
+def _check_generated_sequence_contract(
+    label: str,
+    module_path: Path,
+    id_path: Path,
+    id_prefix: str,
+    expected_names: List[str],
+    errors: List[str],
+    warnings: List[str],
+) -> None:
+    module_names = _parse_module_tuple_names(module_path)
+    if not module_names:
+        errors.append(f"[MB1011] Missing or unparsable generated {label} file: {module_path.relative_to(ROOT).as_posix()}")
+    else:
+        for expected_index, expected_name in enumerate(expected_names):
+            actual_name = module_names[expected_index] if expected_index < len(module_names) else "<missing>"
+            if actual_name != expected_name:
+                errors.append(
+                    "[MB1011] Generated "
+                    f"{label} order mismatch at index {expected_index}: expected {expected_name}, got {actual_name}"
+                )
+
+    id_assignments = _parse_id_assignments(id_path)
+    if not id_assignments:
+        warnings.append(f"[MB1011] Generated ID file not available for {label}: {id_path.relative_to(ROOT).as_posix()}")
+        return
+    for expected_index, expected_name in enumerate(expected_names):
+        id_name = f"{id_prefix}{expected_name}"
+        actual_index = id_assignments.get(id_name)
+        if actual_index != expected_index:
+            errors.append(
+                "[MB1011] Generated "
+                f"{label} ID mismatch for {id_name}: expected {expected_index}, got {actual_index}"
+            )
+
+def _check_generated_presence_contract(
+    label: str,
+    module_path: Path,
+    id_path: Path,
+    id_prefix: str,
+    expected_names: List[str],
+    errors: List[str],
+    warnings: List[str],
+) -> None:
+    module_names = set(_parse_module_tuple_names(module_path))
+    if not module_names:
+        errors.append(f"[MB1011] Missing or unparsable generated {label} file: {module_path.relative_to(ROOT).as_posix()}")
+    id_assignments = _parse_id_assignments(id_path)
+    if not id_assignments:
+        warnings.append(f"[MB1011] Generated ID file not available for {label}: {id_path.relative_to(ROOT).as_posix()}")
+
+    for expected_name in expected_names:
+        if module_names and expected_name not in module_names:
+            errors.append(f"[MB1011] Engine callback missing from generated {label}: {expected_name}")
+        if id_assignments and f"{id_prefix}{expected_name}" not in id_assignments:
+            errors.append(f"[MB1011] Engine callback ID missing from generated {label}: {id_prefix}{expected_name}")
+
+def _write_mb1011_hardcoded_contract_report(errors: List[str], warnings: List[str]) -> None:
+    DOCS_REPORTS.mkdir(parents=True, exist_ok=True)
+    report_path = DOCS_REPORTS / "mb1011_hardcoded_contract.md"
+    lines = [
+        "# M&B 1.011 Hardcoded Contract",
+        "",
+        "Doctor validates these generated compile-layer contracts after source fragments are assembled:",
+        "",
+        "- Startup menus: the first five menu windows (`start_game_1`, `start_phase_2`, `start_game_3`, `tutorial`, `reports`) must keep their generated IDs.",
+        "- Engine callback scripts: `game_start` and the other `game_*` callbacks must exist by name; their generated order is not treated as hardcoded.",
+        "- Engine callback presentations: `game_credits` must exist by name; Warband-only `game_start` and `game_escape` presentation callbacks stay absent.",
+        "- Engine sentinels: first parties, troops, factions, strings, skills, mission templates, and the two hardwired item sentinels keep their hardwired indices.",
+        "",
+        "Current result:",
+        "",
+        f"- Errors: {len(errors)}",
+        f"- Warnings: {len(warnings)}",
+    ]
+    if errors:
+        lines.append("")
+        lines.append("## Errors")
+        lines.extend(f"- {error}" for error in errors)
+    if warnings:
+        lines.append("")
+        lines.append("## Warnings")
+        lines.extend(f"- {warning}" for warning in warnings)
+    report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+def check_generated_hardcoded_contract() -> Tuple[List[str], List[str]]:
+    """Validate generated compile files against the M&B 1.011 hardcoded contract."""
+    errors: List[str] = []
+    warnings: List[str] = []
+
+    for label, module_path, id_path, id_prefix, expected_names in MB1011_HARDCODED_CONTRACTS:
+        _check_generated_sequence_contract(
+            label,
+            module_path,
+            id_path,
+            id_prefix,
+            expected_names,
+            errors,
+            warnings,
+        )
+
+    for label, module_path, id_path, id_prefix, expected_names in MB1011_ENGINE_CALLBACK_CONTRACTS:
+        _check_generated_presence_contract(
+            label,
+            module_path,
+            id_path,
+            id_prefix,
+            expected_names,
+            errors,
+            warnings,
+        )
+
+    presentation_names = _parse_module_tuple_names(ROOT / "compile" / "module_presentations.py")
+    presentation_ids = _parse_id_assignments(ROOT / "compile" / "ids" / "ID_presentations.py")
+    for forbidden_name in ("game_start", "game_escape"):
+        if forbidden_name in presentation_names:
+            errors.append(f"[MB1011] Warband-only presentation callback is exported in M&B 1.011: {forbidden_name}")
+        if f"prsnt_{forbidden_name}" in presentation_ids:
+            errors.append(f"[MB1011] Warband-only presentation ID is generated in M&B 1.011: prsnt_{forbidden_name}")
+
+    export_parties_path = ROOT / "_export" / "parties.txt"
+    if export_parties_path.exists():
+        export_lines = [
+            line.strip()
+            for line in _read_text(export_parties_path).splitlines()
+            if line.strip() and not line.startswith("partiesfile") and not re.fullmatch(r"\d+\s+\d+", line.strip())
+        ]
+        if export_lines and "p_main_party" not in export_lines[0]:
+            errors.append("[MB1011] Exported parties.txt does not put p_main_party first.")
+
+    _write_mb1011_hardcoded_contract_report(errors, warnings)
+    return errors, warnings
 
 def _doctor_report_artifacts() -> List[Dict[str, object]]:
     if not DOCS_REPORTS.exists():
@@ -3597,6 +3874,14 @@ def run_doctor(
     DOCS_EDIT.mkdir(parents=True, exist_ok=True)
     DOCS_REPORTS.mkdir(parents=True, exist_ok=True)
     _check_compile_id_shadow_artifacts(errors)
+
+    def run_generated_contract() -> None:
+        contract_errors, contract_warnings = check_generated_hardcoded_contract()
+        errors.extend(contract_errors)
+        warnings.extend(contract_warnings)
+
+    run_timed("mb1011_generated_hardcoded_contract", run_generated_contract)
+
     # Gather files (exclude _preamble folders from fragment validation)
     script_files_all = _iter_py_files(SRC_SCRIPTS)
     menu_files_all = _iter_py_files(SRC_MENUS)
@@ -4043,6 +4328,7 @@ def run_doctor(
     summary.append(f"ASCII build/bat:    {'ENABLED (STRICT)' if check_ascii and ascii_strict else ('ENABLED (WARN)' if check_ascii else 'DISABLED')}")
     summary.append(f"Stub detection:     {'ENABLED (STRICT)' if check_stubs and stubs_strict else ('ENABLED (WARN)' if check_stubs else 'DISABLED')}")
     summary.append(f"Dialog duplicates:  {'ENABLED (STRICT)' if check_dialog_duplicates and dialog_duplicates_strict else ('ENABLED (WARN)' if check_dialog_duplicates else 'DISABLED')}")
+    summary.append("M&B 1.011 generated hardcoded contract: ENABLED (STRICT)")
     summary.append("SoD doctrine:       ENABLED (STRICT)")
     summary.append("Threat board:       ENABLED (STRICT)")
     summary.append(f"Strict umbrella:    {'ENABLED' if strict_all else 'DISABLED'}")

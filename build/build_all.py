@@ -9,7 +9,7 @@ from pathlib import Path
 
 from build_profile import emit_source_map, parse_profile
 from build_constants import build as build_constants
-from doctor import main as doctor_main
+from doctor import check_generated_hardcoded_contract, main as doctor_main
 
 from build_dialogs import build as build_dialogs
 from build_game_menus import build as build_game_menus
@@ -68,6 +68,16 @@ def main() -> None:
     build_dialogs(use_cache=use_cache, emit_source_map=source_map)
     build_presentations(use_cache=use_cache, emit_source_map=source_map)
     build_mission_templates(use_cache=use_cache, emit_source_map=source_map)
+
+    contract_errors, contract_warnings = check_generated_hardcoded_contract()
+    for warning in contract_warnings:
+        print(f"[doctor] WARNING: {warning}")
+    if contract_errors:
+        for error in contract_errors:
+            print(f"[doctor] ERROR: {error}")
+        raise SystemExit(1)
+    print(f"[doctor] M&B 1.011 generated hardcoded contract OK: {len(contract_warnings)} warning(s).")
+
     _backup_successful_compile(profile)
 
 
