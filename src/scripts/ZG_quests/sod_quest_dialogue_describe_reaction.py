@@ -290,7 +290,7 @@ def _generic_reaction_line(
         return f"You broke the trust around {quest_label}. That's not easily repaired."
     if location_label:
         return f"{quest_label} still points to {location_label}. Stay sharp."
-    return f"We still have business regarding {quest_label}."
+    return f"The matter of {quest_label} still lingers between us."
 
 
 def resolve_quest_reaction_line(*args: Any, **kwargs: Any) -> str:

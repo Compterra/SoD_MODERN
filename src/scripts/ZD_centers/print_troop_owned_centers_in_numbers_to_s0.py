@@ -7,6 +7,7 @@ SCRIPTS = [
       (assign, ":owned_castles", 0),
       (assign, ":owned_villages", 0),
       (try_for_range_backwards, ":cur_center", centers_begin, centers_end),
+        (party_is_active, ":cur_center"),
         (party_slot_eq, ":cur_center", slot_town_lord, ":troop_no"),
         (try_begin),
           (party_slot_eq, ":cur_center", slot_party_type, spt_town),

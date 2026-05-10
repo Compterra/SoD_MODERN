@@ -6,6 +6,12 @@ SIMPLE_TRIGGERS = [
 		(neg|party_slot_eq, ":center_no", slot_party_type, spt_castle),
 
 		(assign, ":cur_rents", 0),
+		(assign, ":town_services", 0),
+		(assign, ":town_liquidity", 0),
+		(assign, ":town_tax_reliability", 100),
+		(assign, ":tax_extraction_revenue_pct", 100),
+		(assign, ":tax_extraction_pressure", 0),
+		(assign, ":tax_wealth_drift", 0),
 		(party_get_slot, ":center_population", ":center_no", slot_center_sod_local_population),
 		(str_store_party_name_link, s2, ":center_no"),
 		# Safety: population should never be negative (data corruption / bad math elsewhere).
@@ -18,64 +24,44 @@ SIMPLE_TRIGGERS = [
 
 			# taxes = 1x population for villages
 			(assign, ":cur_rents", ":center_population"),
-			(assign, ":ideal_population", village_pop_ideal),
 		(else_try),
 			# town
 			(party_slot_eq, ":center_no", slot_party_type, spt_town),
 
 			# taxes = 1x population for towns
 			(assign, ":cur_rents", ":center_population"),
-			(assign, ":ideal_population", town_pop_ideal),
+			(call_script, "script_sod_get_town_market_profile", ":center_no"),
+			(assign, ":town_services", reg4),
+			(assign, ":town_liquidity", reg6),
+			(assign, ":town_tax_reliability", reg9),
 		(try_end),
 
+		(call_script, "script_sod_get_center_tax_extraction_profile", ":center_no"),
+		(assign, ":tax_extraction_revenue_pct", reg0),
+		(assign, ":tax_extraction_pressure", reg1),
+		(assign, ":tax_wealth_drift", reg6),
+
 		# Productive population matters, not just raw headcount.
-		# Underpopulated centers underperform, while centers near their ideal size
-		# collect taxes more efficiently. Severe overcrowding hurts efficiency again.
+		# A shared capacity profile keeps tax behavior aligned with recruitment,
+		# construction, food, and recovery.
 		(try_begin),
 			(gt, ":cur_rents", 0),
+			(call_script, "script_sod_get_center_population_capacity_profile", ":center_no"),
+			(assign, ":tax_capacity_pct", reg3),
+			(assign, ":ideal_population", reg7),
 			(val_max, ":ideal_population", 1),
-			(store_mul, ":pop_ratio", ":center_population", 100),
-			(val_div, ":pop_ratio", ":ideal_population"),
-			(assign, ":efficiency", 100),
-
 			(try_begin),
-				(party_slot_eq, ":center_no", slot_party_type, spt_village),
-				(try_begin),
-					(lt, ":pop_ratio", 70),
-					(val_sub, ":efficiency", 20),
-				(else_try),
-					(lt, ":pop_ratio", 100),
-					(val_sub, ":efficiency", 10),
-				(else_try),
-					(gt, ":pop_ratio", 160),
-					(val_sub, ":efficiency", 10),
-				(else_try),
-					(gt, ":pop_ratio", 120),
-					(val_add, ":efficiency", 5),
-				(try_end),
-			(else_try),
-				# Towns benefit more from density, but very crowded towns lose efficiency.
-				(try_begin),
-					(lt, ":pop_ratio", 70),
-					(val_sub, ":efficiency", 20),
-				(else_try),
-					(lt, ":pop_ratio", 100),
-					(val_sub, ":efficiency", 10),
-				(else_try),
-					(gt, ":pop_ratio", 190),
-					(val_sub, ":efficiency", 10),
-				(else_try),
-					(gt, ":pop_ratio", 140),
-					(val_add, ":efficiency", 10),
-				(else_try),
-					(gt, ":pop_ratio", 110),
-					(val_add, ":efficiency", 5),
-				(try_end),
+				# Population above capacity still pays tax, but overcrowded centers
+				# are harder to administer efficiently.
+				(gt, ":center_population", ":ideal_population"),
+				(store_sub, ":overcrowding", ":center_population", ":ideal_population"),
+				(store_mul, ":overcrowding_pct", ":overcrowding", 100),
+				(val_div, ":overcrowding_pct", ":ideal_population"),
+				(store_div, ":overcrowding_tax_drag", ":overcrowding_pct", 4),
+				(val_sub, ":tax_capacity_pct", ":overcrowding_tax_drag"),
+				(val_max, ":tax_capacity_pct", 60),
 			(try_end),
-
-			# Safety: keep workforce efficiency bounded to prevent runaway income.
-			(val_clamp, ":efficiency", 50, 126),
-			(val_mul, ":cur_rents", ":efficiency"),
+			(val_mul, ":cur_rents", ":tax_capacity_pct"),
 			(val_div, ":cur_rents", 100),
 		(try_end),
 
@@ -186,6 +172,30 @@ SIMPLE_TRIGGERS = [
 		
 		(val_mul, ":cur_rents", ":multiplier"),
         (val_div, ":cur_rents", 100),
+		# Extractive tax policy buys short-term revenue with long-term pressure.
+		(val_mul, ":cur_rents", ":tax_extraction_revenue_pct"),
+        (val_div, ":cur_rents", 100),
+		(try_begin),
+			# Towns tax services, workshops, and liquid exchange, not just heads.
+			(party_slot_eq, ":center_no", slot_party_type, spt_town),
+			(store_mul, ":service_rents", ":town_services", 12),
+			(store_div, ":liquidity_rents", ":town_liquidity", 8),
+			(val_add, ":cur_rents", ":service_rents"),
+			(val_add, ":cur_rents", ":liquidity_rents"),
+			(val_mul, ":cur_rents", ":town_tax_reliability"),
+			(val_div, ":cur_rents", 100),
+			(store_div, ":market_wealth_growth", ":town_liquidity", 5),
+			(val_clamp, ":market_wealth_growth", 0, 1201),
+			(call_script, "script_sod_change_center_wealth", ":center_no", ":market_wealth_growth"),
+		(try_end),
+		(try_begin),
+			(neq, ":tax_wealth_drift", 0),
+			(call_script, "script_sod_change_center_wealth", ":center_no", ":tax_wealth_drift"),
+			(try_begin),
+				(gt, ":tax_extraction_pressure", 40),
+				(call_script, "script_sod_change_center_local_prosperity", ":center_no", -1),
+			(try_end),
+		(try_end),
 		  
 		#demesne size
 		(try_begin),

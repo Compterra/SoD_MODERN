@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone, "gm_hire12_details1",[
-	],"Where?", "gm_hire12_details2",[]],
+	],"Name the place their captain should mark.", "gm_hire12_details2",[]],
 ]

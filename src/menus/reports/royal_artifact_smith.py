@@ -1,0 +1,35 @@
+MENUS = [
+("royal_artifact_smith", mnf_enable_hot_keys,
+   "The royal smiths unroll oilcloth, chalk, and thin strips of polished steel. They can maintain one artifact weapon at a time, preserving its edge and recording its provenance.",
+   "none",
+  [
+    (set_background_mesh, "mesh_pic_report_screen"),
+    ],
+    [
+      ("refine_weapon", [(store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 1500)], "Commission careful artifact maintenance (1500 denars).",
+       [
+         (call_script, "script_sod_artifact_find_maintainable_weapon", "trp_player"),
+         (assign, ":done", reg0),
+         (try_begin),
+           (eq, ":done", 1),
+           (assign, ":item_no", reg2),
+           (assign, ":kills", reg4),
+           (assign, ":next_mark", reg5),
+           (call_script, "script_sod_player_charge_gold", 1500),
+           (item_get_slot, ":tech", ":item_no", slot_item_artifact_technique_flags),
+           (val_or, ":tech", artifact_tech_reinforced_haft),
+           (item_set_slot, ":item_no", slot_item_artifact_technique_flags, ":tech"),
+           (item_set_slot, ":item_no", slot_item_artifact_current_owner, "trp_player"),
+           (str_store_item_name, s59, ":item_no"),
+           (assign, reg21, ":kills"),
+           (assign, reg22, ":next_mark"),
+           (display_message, "@The royal smiths reinforce and document {s59}. Battle record: {reg21}/{reg22} kills toward the next provenance mark.", 0x66CC66),
+         (else_try),
+           (display_message, "@No equipped royal artifact weapon needs smith maintenance right now.", 0xFFCC66),
+         (try_end),
+         (jump_to_menu, "mnu_royal_reliquary_report"),
+       ]),
+      ("back", [], "Back to the reliquary.", [(jump_to_menu, "mnu_royal_reliquary_report"),]),
+      ]
+  ),
+]

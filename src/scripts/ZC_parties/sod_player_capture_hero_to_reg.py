@@ -1,0 +1,21 @@
+SCRIPTS = [
+("sod_player_capture_hero_to_reg",
+ [
+   (store_script_param_1, ":troop_no"),
+   (assign, reg0, 0),
+   (try_begin),
+     (is_between, ":troop_no", heroes_begin, heroes_end),
+     (call_script, "script_remove_troop_from_prison", ":troop_no"),
+     (troop_set_slot, ":troop_no", slot_troop_prisoner_of_party, "p_main_party"),
+     (party_count_prisoners_of_type, ":already_prisoner", "p_main_party", ":troop_no"),
+     (try_begin),
+       (le, ":already_prisoner", 0),
+       (party_force_add_prisoners, "p_main_party", ":troop_no", 1),
+     (try_end),
+     (call_script, "script_event_hero_taken_prisoner_by_player", ":troop_no"),
+     (call_script, "script_sod_runtime_trace_event", 3, "p_main_party", ":troop_no"),
+     (assign, "$g_sod_last_captured_hero", ":troop_no"),
+     (assign, reg0, 1),
+   (try_end),
+ ]),
+]

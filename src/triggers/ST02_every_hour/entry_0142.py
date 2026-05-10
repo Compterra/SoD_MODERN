@@ -139,6 +139,7 @@ SIMPLE_TRIGGERS = [
 				   
 							   (party_stack_get_troop_id, ":troop_id", ":attached_to", ":stack_no"),
 							   (gt, ":troop_id", -1),
+							   (neg|troop_is_hero, ":troop_id"),
 							   
 							   (assign, ":transfer", 0),
 							   

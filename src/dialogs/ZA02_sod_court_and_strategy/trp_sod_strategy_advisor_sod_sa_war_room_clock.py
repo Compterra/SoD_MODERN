@@ -1,0 +1,23 @@
+DIALOGS = [
+[trp_sod_strategy_advisor, "sod_sa_war_room_clock", [
+    (store_mul, ":estimated_day", "$g_sod_invasion_begin", "$g_sod_invasion_inaccuracy"),
+    (val_div, ":estimated_day", 100),
+    (store_current_day, ":today"),
+    (store_sub, ":days_left", ":estimated_day", ":today"),
+    (try_begin),
+      (lt, ":today", "$g_sod_invasion_begin"),
+      (try_begin),
+        (le, ":days_left", 20),
+        (str_store_string, s2, "@very little useful preparation time"),
+      (else_try),
+        (le, ":days_left", 60),
+        (str_store_string, s2, "@a short season of preparation"),
+      (else_try),
+        (str_store_string, s2, "@time to prepare, if we stop wasting it"),
+      (try_end),
+      (str_store_string, s1, "@My best estimate still gives us {s2}. Treat that as a lying witness, not scripture. The Legion fed false dates before our homeland fell."),
+    (else_try),
+      (str_store_string, s1, "@It has begun. The clock is no longer a clock; it is marching iron. Count roads, granaries, allies, and reserve horses now."),
+    (try_end),
+], "{s1}", "sod_sa_war_room", []],
+]

@@ -55,6 +55,8 @@ MENUS = [
       (neq, "$upgrade_count", 5),
 
       (troop_get_slot, ":upgrade1", "$g_upgrade_troop", slot_troop_sod_upgrade1),
+      (call_script, "script_sod_troop_get_elite_tier", ":upgrade1"),
+      (neq, reg0, sod_elite_tier_faith),
 
       (str_store_troop_name_by_count, s1, "$g_upgrade_troop", "$upgrade_count"),
       (str_store_troop_name_by_count, s2, ":upgrade1", "$upgrade_count"),
@@ -72,10 +74,11 @@ MENUS = [
       (val_mul, reg0, "$upgrade_count"),
 	  (try_begin),
 		(gt, reg0, 0),
-		(troop_remove_gold, "trp_player", reg0),
+		(call_script, "script_sod_player_charge_gold", reg0),
 	  (try_end),
       (party_remove_members, "p_main_party", "$g_upgrade_troop", "$upgrade_count"),
       (party_add_members, "p_main_party", ":upgrade1", "$upgrade_count"),
+      (call_script, "script_sod_company_accounts_record_company_growth", sod_company_growth_upgrade, "$upgrade_count", reg0),
       (jump_to_menu, "mnu_sod_upgrade_continue"),
     ]
   ),
@@ -87,6 +90,8 @@ MENUS = [
       (ge, "$upgrade_count", 5),
 
       (troop_get_slot, ":upgrade1", "$g_upgrade_troop", slot_troop_sod_upgrade1),
+      (call_script, "script_sod_troop_get_elite_tier", ":upgrade1"),
+      (neq, reg0, sod_elite_tier_faith),
 
       (str_store_troop_name_by_count, s1, "$g_upgrade_troop", "$upgrade_count"),
       (str_store_troop_name_by_count, s2, ":upgrade1", "$upgrade_count"),
@@ -104,10 +109,11 @@ MENUS = [
       (val_mul, reg0, 5),
 	  (try_begin),
 		(gt, reg0, 0),
-		(troop_remove_gold, "trp_player", reg0),
+		(call_script, "script_sod_player_charge_gold", reg0),
 	  (try_end),
       (party_remove_members, "p_main_party", "$g_upgrade_troop", 5),
       (party_add_members, "p_main_party", ":upgrade1", 5),
+      (call_script, "script_sod_company_accounts_record_company_growth", sod_company_growth_upgrade, 5, reg0),
       (jump_to_menu, "mnu_sod_upgrade_continue"),
     ]
   ),
@@ -134,10 +140,16 @@ MENUS = [
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_encountered_party"),
 	  (try_begin),
 		(gt, reg0, 0),
-		(troop_remove_gold, "trp_player", reg0),
+		(call_script, "script_sod_player_charge_gold", reg0),
 	  (try_end),
       (party_remove_members, "p_main_party", "$g_upgrade_troop", 1),
       (party_add_members, "p_main_party", ":upgrade1", 1),
+      (call_script, "script_sod_company_accounts_record_company_growth", sod_company_growth_upgrade, 1, reg0),
+      (call_script, "script_sod_troop_get_elite_tier", ":upgrade1"),
+      (try_begin),
+        (eq, reg0, sod_elite_tier_faith),
+        (call_script, "script_sod_troop_apply_faith_ascension_cost", 1),
+      (try_end),
       (jump_to_menu, "mnu_sod_upgrade_continue"),
     ]
   ),
@@ -150,6 +162,8 @@ MENUS = [
       (neq, "$upgrade_count", 5),
 
       (troop_get_slot, ":upgrade2", "$g_upgrade_troop", slot_troop_sod_upgrade2),
+      (call_script, "script_sod_troop_get_elite_tier", ":upgrade2"),
+      (neq, reg0, sod_elite_tier_faith),
 
       (str_store_troop_name_by_count, s1, "$g_upgrade_troop", "$upgrade_count"),
       (str_store_troop_name_by_count, s2, ":upgrade2", "$upgrade_count"),
@@ -167,10 +181,11 @@ MENUS = [
       (val_mul, reg0, "$upgrade_count"),
 	  (try_begin),
 		(gt, reg0, 0),
-		(troop_remove_gold, "trp_player", reg0),
+		(call_script, "script_sod_player_charge_gold", reg0),
 	  (try_end),
       (party_remove_members, "p_main_party", "$g_upgrade_troop", "$upgrade_count"),
       (party_add_members, "p_main_party", ":upgrade2", "$upgrade_count"),
+      (call_script, "script_sod_company_accounts_record_company_growth", sod_company_growth_upgrade, "$upgrade_count", reg0),
       (jump_to_menu, "mnu_sod_upgrade_continue"),
     ]
   ),
@@ -182,6 +197,8 @@ MENUS = [
       (ge, "$upgrade_count", 5),
 
       (troop_get_slot, ":upgrade2", "$g_upgrade_troop", slot_troop_sod_upgrade2),
+      (call_script, "script_sod_troop_get_elite_tier", ":upgrade2"),
+      (neq, reg0, sod_elite_tier_faith),
 
       (str_store_troop_name_by_count, s1, "$g_upgrade_troop", "$upgrade_count"),
       (str_store_troop_name_by_count, s2, ":upgrade2", "$upgrade_count"),
@@ -199,10 +216,11 @@ MENUS = [
       (val_mul, reg0, 5),
 	  (try_begin),
 		(gt, reg0, 0),
-		(troop_remove_gold, "trp_player", reg0),
+		(call_script, "script_sod_player_charge_gold", reg0),
 	  (try_end),
       (party_remove_members, "p_main_party", "$g_upgrade_troop", 5),
       (party_add_members, "p_main_party", ":upgrade2", 5),
+      (call_script, "script_sod_company_accounts_record_company_growth", sod_company_growth_upgrade, 5, reg0),
       (jump_to_menu, "mnu_sod_upgrade_continue"),
     ]
   ),
@@ -229,10 +247,16 @@ MENUS = [
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_encountered_party"),
 	  (try_begin),
 		(gt, reg0, 0),
-		(troop_remove_gold, "trp_player", reg0),
+		(call_script, "script_sod_player_charge_gold", reg0),
 	  (try_end),
       (party_remove_members, "p_main_party", "$g_upgrade_troop", 1),
       (party_add_members, "p_main_party", ":upgrade2", 1),
+      (call_script, "script_sod_company_accounts_record_company_growth", sod_company_growth_upgrade, 1, reg0),
+      (call_script, "script_sod_troop_get_elite_tier", ":upgrade2"),
+      (try_begin),
+        (eq, reg0, sod_elite_tier_faith),
+        (call_script, "script_sod_troop_apply_faith_ascension_cost", 1),
+      (try_end),
       (jump_to_menu, "mnu_sod_upgrade_continue"),
     ]
   ),

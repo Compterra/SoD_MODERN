@@ -6,8 +6,9 @@ DIALOGS = [
       # don't clutter their options with their currently chosen option
       (neq, ":center_no", "$g_sod_nobles_gather_at"),
 
-      # must be player's
-      (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
+      # must be in the player's realm
+      (store_faction_of_party, ":center_faction", ":center_no"),
+      (eq, ":center_faction", "fac_player_supporters_faction"),
 
       # check if this location has a chapter house
       (party_slot_eq, ":center_no", slot_center_has_chapter, 1),

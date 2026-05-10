@@ -64,6 +64,21 @@ def _merge_metadata(
     return merged
 
 
+def _apply_interactive_metadata_defaults(metadata: Mapping[str, Any]) -> dict[str, Any]:
+    result = dict(metadata or {})
+    if result.get("companion") and not result.get("availability_mode"):
+        phase = str(result.get("phase", "") or "").strip().lower()
+        if phase in {"opening", "aftermath"}:
+            result["availability_mode"] = "dialog"
+        elif phase in {"scene", "mission", "duel", "challenge"}:
+            result["availability_mode"] = "scene"
+        elif phase in {"battle", "combat"}:
+            result["availability_mode"] = "battle"
+        else:
+            result["availability_mode"] = "travel"
+    return result
+
+
 def _coerce_spec_sequence(value: Any) -> tuple[Any, ...]:
     if value in (None, ""):
         return ()
@@ -389,7 +404,7 @@ class QuestStageSpec:
         validate_quest_id(quest_id)
         key = validate_quest_id(self.key)
         stage_id = f"{quest_id}_{key}" if key else f"{quest_id}_stage_{index}"
-        merged_metadata = _merge_metadata(metadata, self.metadata)
+        merged_metadata = _apply_interactive_metadata_defaults(_merge_metadata(metadata, self.metadata))
         return quest_stage(
             stage_id,
             self.title,

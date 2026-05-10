@@ -13,7 +13,10 @@ MISSION_TEMPLATES = [
      (20, mtef_defenders|mtef_use_exact_number|mtef_team_0, af_override_horse, aif_start_alarmed, 1, []),
      ],
     [
-      (ti_before_mission_start, 0, 0, [], [(call_script, "script_change_banners_and_chest")]),
+      (ti_before_mission_start, 0, 0, [], [
+        (call_script, "script_change_banners_and_chest"),
+        (call_script, "script_sod_battle_initialize_morale_context"),
+      ]),
 
       common_battle_tab_press, 
 	  common_battle_horse_health, 
@@ -73,6 +76,7 @@ MISSION_TEMPLATES = [
 
       formations_init_kill_count,
       formations_update_kill_count,
+      formations_start_coherence,
     ],
   ),
 ]

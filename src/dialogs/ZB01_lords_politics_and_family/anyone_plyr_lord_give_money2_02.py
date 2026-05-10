@@ -4,7 +4,7 @@ DIALOGS = [
     (ge, ":gold", 1000),
   ], "Here, take this 1000 gold", "lord_pretalk", [
     (call_script, "script_change_player_relation_with_troop", "$g_talk_troop", 2),
-    (troop_remove_gold, "trp_player", 1000),
+    (call_script, "script_sod_player_charge_gold", 1000),
     (play_sound, "snd_money_paid"),
 	(troop_get_slot, ":cur_gold", "$g_talk_troop", slot_troop_wealth),
 	(val_add, ":cur_gold", 1000),

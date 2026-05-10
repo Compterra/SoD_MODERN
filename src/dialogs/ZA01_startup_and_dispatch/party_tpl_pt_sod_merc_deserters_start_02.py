@@ -1,7 +1,6 @@
 DIALOGS = [
 [party_tpl|pt_sod_merc_deserters, "start", [
-      (eq, "$talk_context", tc_party_encounter)
-                    ], "We are the free brothers.\
- We will fight only for ourselves from now on.\
- Now give us your gold or taste our steel.", "deserter_talk", []],
+      (eq, "$talk_context", tc_party_encounter),
+      (call_script, "script_sod_store_hostile_greeting"),
+                    ], "{s5}", "deserter_talk", []],
 ]

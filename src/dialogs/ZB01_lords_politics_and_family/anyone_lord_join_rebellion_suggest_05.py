@@ -16,6 +16,11 @@ DIALOGS = [
        (call_script, "script_find_rival_from_faction", "$g_talk_troop", "$players_kingdom"),
        (assign, "$rival_lord", reg0),
        (assign, "$rebellion_chance", 40),
+       (call_script, "script_sod_pretender_get_claim_pressure_to_reg", ":pretender", "$g_talk_troop"),
+       (store_sub, "$sod_rebel_pressure_mod", reg0, 50),
+       (val_div, "$sod_rebel_pressure_mod", 5),
+       (val_clamp, "$sod_rebel_pressure_mod", -8, 13),
+       (val_add, "$rebellion_chance", "$sod_rebel_pressure_mod"),
 
        (assign, "$prior_argument_value", 0),
 

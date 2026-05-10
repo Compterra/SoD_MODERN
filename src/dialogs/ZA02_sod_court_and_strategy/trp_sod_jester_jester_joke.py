@@ -1,3 +1,3 @@
 DIALOGS = [
-[trp_sod_jester, "jester_joke", [], "I don't thinks so. I didn't have time to learn any jokes. I was tweaking items and designing troops.", "jester_talk", []],
+[trp_sod_jester, "jester_joke", [], "A king, a priest, and a quartermaster walk into a siege. Only the quartermaster knows why everyone is starving. There, a joke with a lesson. The worst kind.", "jester_talk", []],
 ]

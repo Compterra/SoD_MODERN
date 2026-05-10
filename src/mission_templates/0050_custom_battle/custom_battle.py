@@ -56,6 +56,7 @@ MISSION_TEMPLATES = [
       camera_trigger_7,
       camera_trigger_8,
       formations_init,
+      formations_0,
       formations_1,
       formations_2,
       formations_3,

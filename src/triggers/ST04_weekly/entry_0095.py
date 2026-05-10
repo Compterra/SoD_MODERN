@@ -45,15 +45,9 @@ SIMPLE_TRIGGERS = [
         (call_script, "script_change_center_prosperity", ":center_no", 1),
       (try_end),
 
-      # Only when the player is the center lord OR the player is the faction leader (king).
       (try_begin),
         (this_or_next|party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
         (faction_slot_eq, ":center_faction", slot_faction_leader, "trp_player"),
-        (party_get_slot, ":cur_relation", ":center_no", slot_center_player_relation),
-        (lt, ":cur_relation", 100),
-        (val_add, ":cur_relation", 1),
-        (val_clamp, ":cur_relation", -100, 101),
-        (party_set_slot, ":center_no", slot_center_player_relation, ":cur_relation"),
         (val_add, ":count", 1),
       (try_end),
     (try_end),

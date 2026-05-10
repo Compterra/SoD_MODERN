@@ -19,6 +19,7 @@ DIALOGS = [
 
     # give the player their honor, faction relation, and lord relation change
     (call_script, "script_change_player_relation_with_troop", "$g_talk_troop", 10),
+    (call_script, "script_sod_nemesis_note_lord_resolution", "$g_talk_troop", sod_nemesis_lord_resolution_mercy),
     (call_script, "script_change_player_honor", ":honor"),
     (call_script, "script_change_player_relation_with_faction", "$g_talk_troop_faction", ":fac_reln" ),
   ]],

@@ -24,7 +24,7 @@ def main() -> int:
     defenders = read("src/scripts/ZD_centers/refresh_village_defenders.py")
     farmers = read("src/scripts/ZC_parties/create_village_farmer_party.py")
     recruit_cond = read("src/scripts/ZD_centers/cf_village_recruit_volunteers_cond.py")
-    raid_attack = read("src/menus/village/village_raid_attack.py")
+    raid_attack = read("src/menus/centers/village/village_raid_attack.py")
     normalize_trigger = read("src/triggers/ST03_daily/entry_0154.py")
     trigger_order = read("src/triggers/_order_simple_triggers.txt")
 
@@ -33,6 +33,9 @@ def main() -> int:
     assert_contains(population, "slot_center_sod_local_prosperity")
     assert_contains(population, "slot_town_prosperity")
     assert_contains(population, "slot_town_wealth")
+    assert_contains(population, "script_sod_get_center_food_profile")
+    assert_contains(population, ":food_security")
+    assert_contains(population, ":food_pressure")
     assert_contains(population, "script_sod_normalize_center_population")
     assert_contains(population, "slot_faction_law_village_population_modifier")
     assert_contains(population, "slot_faction_law_town_population_modifier")
@@ -91,3 +94,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

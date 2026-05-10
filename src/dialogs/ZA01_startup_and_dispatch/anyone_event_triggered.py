@@ -2,7 +2,7 @@ DIALOGS = [
 [anyone , "event_triggered", [(store_conversation_troop, "$g_talk_troop"),
                            (try_begin),
                                (is_between, "$g_talk_troop", companions_begin, companions_end),
-                               (talk_info_show, 1),
+                               (main_party_has_troop, "$g_talk_troop"),
                                (call_script, "script_setup_talk_info_companions"),
                            (try_end),
 

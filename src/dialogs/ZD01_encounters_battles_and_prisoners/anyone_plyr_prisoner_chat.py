@@ -62,7 +62,6 @@ DIALOGS = [
       (assign, reg1, "$g_talk_troop_relation"),
       (display_message, "@{s1} relation = {reg1}", debug_color),
     (try_end),
-    (talk_info_show, 1),
     (call_script, "script_setup_talk_info"),
     (eq, 1, 0)
   ], "", "close_window", []],

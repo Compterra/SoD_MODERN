@@ -1,5 +1,9 @@
 DIALOGS = [
-[anyone|plyr, "gm_mission_told_free_spy", [],
+[anyone|plyr, "gm_mission_told_free_spy", [
+      (quest_get_slot, ":quest_target_center", "qst_serpent_host_free_spy", slot_quest_target_center),
+      (party_is_active, ":quest_target_center"),
+      (party_is_active, "$g_encountered_party"),
+      ],
       "Alright. I'll do that.",
    "gm_mission_told_free_spy_taken", [(set_spawn_radius, 4),
                                  (quest_get_slot, ":quest_target_center", "qst_serpent_host_free_spy", slot_quest_target_center),

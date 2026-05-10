@@ -2,7 +2,7 @@ DIALOGS = [
 [anyone|plyr, "member_talk",
     [
       # display a slightly smarter message to the player if the NPC has leveled up since last time...
-      (str_store_string, s1, "@Tell me about your skills."),
+      (str_store_string, s1, "@Show me your skills and kit."),
       (try_begin),
         # only track level ups for NPC companions
         (troop_slot_eq, "$g_talk_troop", slot_troop_occupation, slto_player_companion),
@@ -10,7 +10,7 @@ DIALOGS = [
         (store_character_level, ":current", "$g_talk_troop"),
         (try_begin),
           (lt, ":last", ":current"),
-          (str_store_string, s1, "@Level Up! Review skills."),
+          (str_store_string, s1, "@You have grown. Let us review your skills."),
         (try_end),
       (try_end),
     ],

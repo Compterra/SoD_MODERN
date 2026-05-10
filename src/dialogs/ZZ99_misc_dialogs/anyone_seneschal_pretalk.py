@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone, "seneschal_pretalk", [], "Anything else?", "seneschal_talk", []],
+[anyone, "seneschal_pretalk", [], "The household rolls are still open. What else shall I look up?", "seneschal_talk", []],
 ]

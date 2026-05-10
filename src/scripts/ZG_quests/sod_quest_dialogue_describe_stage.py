@@ -754,7 +754,7 @@ SCRIPTS = [
     (
         "sod_quest_dialogue_describe_stage",
         [
-            (str_store_string, s4, "@The task is still unfolding."),
+            (str_store_string, s4, "@This matter is still unfolding."),
             (assign, reg0, 1),
         ],
     )

@@ -10,13 +10,12 @@ SIMPLE_TRIGGERS = [
          (assign, ":food_consumption", reg0),
          (party_get_slot, ":center_wealth", ":center_no", slot_town_wealth),
          (val_max, ":center_wealth", 0),
-         (assign, ":support_population", 0),
-         (try_for_range, ":village_no", villages_begin, villages_end),
-           (party_slot_eq, ":village_no", slot_village_bound_center, ":center_no"),
-           (party_get_slot, ":village_population", ":village_no", slot_center_sod_local_population),
-           (val_max, ":village_population", 0),
-           (val_add, ":support_population", ":village_population"),
-         (try_end),
+         (call_script, "script_sod_get_castle_support_profile", ":center_no"),
+         (assign, ":castle_support", reg0),
+         (assign, ":garrison", reg1),
+         (assign, ":support_population", reg2),
+         (assign, ":food_security", reg4),
+         (assign, ":road_control", reg6),
 
          # Daily replenishment should reflect actual demand rather than a flat +240.
          # Small garrisons recover slowly; large garrisons need stronger peacetime resupply.
@@ -25,6 +24,8 @@ SIMPLE_TRIGGERS = [
          (val_div, ":daily_restock", 2),
          (store_div, ":support_bonus", ":support_population", 80),
          (val_add, ":daily_restock", ":support_bonus"),
+         (store_div, ":castle_support_bonus", ":castle_support", 4),
+         (val_add, ":daily_restock", ":castle_support_bonus"),
 
          # If stores are badly depleted, push extra catch-up supply into the center.
          (store_div, ":quarter_limit", ":food_store_limit", 4),
@@ -56,16 +57,22 @@ SIMPLE_TRIGGERS = [
          (val_add, ":resupply_capacity", ":wealth_capacity"),
          (store_div, ":population_capacity", ":support_population", 35),
          (val_add, ":resupply_capacity", ":population_capacity"),
-         (val_clamp, ":resupply_capacity", 30, 481),
+         (store_div, ":garrison_capacity", ":garrison", 8),
+         (val_add, ":resupply_capacity", ":garrison_capacity"),
+         (store_div, ":road_capacity", ":road_control", 2),
+         (val_add, ":resupply_capacity", ":road_capacity"),
+         (store_div, ":food_network_capacity", ":food_security", 40),
+         (val_add, ":resupply_capacity", ":food_network_capacity"),
+         (val_clamp, ":resupply_capacity", 30, 561),
          (val_min, ":daily_restock", ":resupply_capacity"),
 
          # Safety: keep daily resupply bounded and non-negative.
-         (val_clamp, ":daily_restock", 20, 481),
+         (val_clamp, ":daily_restock", 20, 561),
 
          (store_div, ":resupply_cost", ":daily_restock", 3),
          (val_min, ":resupply_cost", ":center_wealth"),
-         (val_sub, ":center_wealth", ":resupply_cost"),
-         (party_set_slot, ":center_no", slot_town_wealth, ":center_wealth"),
+         (store_sub, ":wealth_cost", 0, ":resupply_cost"),
+         (call_script, "script_sod_change_center_wealth", ":center_no", ":wealth_cost"),
 
          (val_add, ":center_food_store", ":daily_restock"),
          (val_min, ":center_food_store", ":food_store_limit"),

@@ -17,6 +17,8 @@ DIALOGS = [
                                                        (party_set_flags, ":quest_target_party", pf_default_behavior, 0),
                                                        (str_store_party_name, s21, ":quest_target_center"),
                                                        (call_script, "script_change_player_relation_with_center", ":quest_giver_center", 1),
+                                                       (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_caravan_protection, 3),
+                                                       (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_trade_profit, 2),
                                                        (call_script, "script_end_quest", "qst_escort_merchant_caravan"),
                                                        (quest_set_slot, "qst_escort_merchant_caravan", slot_quest_current_state, 2),
                                                        (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),

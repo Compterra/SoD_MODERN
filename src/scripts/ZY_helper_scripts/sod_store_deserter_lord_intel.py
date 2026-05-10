@@ -1,0 +1,26 @@
+# COST: medium
+SCRIPTS = [
+("sod_store_deserter_lord_intel",
+ [
+   (assign, ":best_lord", -1),
+   (assign, ":best_dist", 100000),
+   (try_for_range, ":cur_lord", kingdom_heroes_begin, kingdom_heroes_end),
+     (troop_get_slot, ":cur_party", ":cur_lord", slot_troop_leaded_party),
+     (gt, ":cur_party", 0),
+     (party_is_active, ":cur_party"),
+     (store_distance_to_party_from_party, ":cur_dist", "p_main_party", ":cur_party"),
+     (lt, ":cur_dist", ":best_dist"),
+     (assign, ":best_dist", ":cur_dist"),
+     (assign, ":best_lord", ":cur_lord"),
+   (try_end),
+   (try_begin),
+     (ge, ":best_lord", 0),
+     (le, ":best_dist", 25),
+     (str_store_troop_name, s6, ":best_lord"),
+     (assign, reg1, ":best_dist"),
+     (assign, reg0, 1),
+   (else_try),
+     (assign, reg0, 0),
+   (try_end),
+ ]),
+]

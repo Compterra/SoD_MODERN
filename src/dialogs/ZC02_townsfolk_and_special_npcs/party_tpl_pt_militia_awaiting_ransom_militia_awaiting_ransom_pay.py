@@ -4,7 +4,7 @@ DIALOGS = [
    [(quest_get_slot, ":quest_target_amount", "qst_serpent_host_free_spy", slot_quest_target_amount),
     (quest_get_slot, ":quest_target_party", "qst_serpent_host_free_spy", slot_quest_target_party),
     (quest_get_slot, ":quest_target_center", "qst_serpent_host_free_spy", slot_quest_target_center),
-    (troop_remove_gold, "trp_player", ":quest_target_amount"),
+    (call_script, "script_sod_player_charge_gold", ":quest_target_amount"),
     (play_sound, "snd_money_paid"),
 	(quest_set_slot, "qst_serpent_host_free_spy", slot_quest_current_state, 1),
     (set_spawn_radius, 1),

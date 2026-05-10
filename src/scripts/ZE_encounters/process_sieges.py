@@ -4,7 +4,16 @@ SCRIPTS = [
       (try_for_range, ":center_no", walled_centers_begin, walled_centers_end),
         #Reducing siege hardness every day by 20
         (party_get_slot, ":siege_hardness", ":center_no", slot_center_siege_hardness),
-        (val_sub, ":siege_hardness", 20),
+        (assign, ":daily_siege_hardness_decay", 20),
+        (try_begin),
+          (party_slot_eq, ":center_no", slot_party_type, spt_castle),
+          (call_script, "script_sod_get_castle_support_profile", ":center_no"),
+          (assign, ":castle_siege_readiness", reg11),
+          (store_div, ":readiness_delay", ":castle_siege_readiness", 50),
+          (val_sub, ":daily_siege_hardness_decay", ":readiness_delay"),
+          (val_clamp, ":daily_siege_hardness_decay", 10, 21),
+        (try_end),
+        (val_sub, ":siege_hardness", ":daily_siege_hardness_decay"),
         (val_max, ":siege_hardness", 0),
         (party_set_slot, ":center_no", slot_center_siege_hardness, ":siege_hardness"),
 
@@ -67,6 +76,21 @@ SCRIPTS = [
 
             (call_script, "script_center_get_food_consumption", ":center_no"),
             (assign, ":food_consumption", reg0),
+            (assign, ":starvation_wound_chance", 15),
+            (try_begin),
+              (party_slot_eq, ":center_no", slot_party_type, spt_castle),
+              (call_script, "script_sod_get_castle_support_profile", ":center_no"),
+              (assign, ":castle_siege_readiness", reg11),
+              (store_div, ":consumption_reduction", ":castle_siege_readiness", 4),
+              (val_clamp, ":consumption_reduction", 0, 36),
+              (store_sub, ":consumption_factor", 100, ":consumption_reduction"),
+              (val_mul, ":food_consumption", ":consumption_factor"),
+              (val_div, ":food_consumption", 100),
+              (val_max, ":food_consumption", 1),
+              (store_div, ":wound_reduction", ":castle_siege_readiness", 20),
+              (val_sub, ":starvation_wound_chance", ":wound_reduction"),
+              (val_clamp, ":starvation_wound_chance", 5, 16),
+            (try_end),
             (val_sub, ":town_food_store", ":food_consumption"), # reduce food while under siege
 
             # Model shortage pressure in stages instead of only at absolute starvation.
@@ -89,7 +113,7 @@ SCRIPTS = [
                   (call_script, "script_change_center_prosperity", ":center_no", -2),
                 (try_end),
                 (store_random_in_range, ":r", 0, 100),
-                (lt, ":r", 15),
+                (lt, ":r", ":starvation_wound_chance"),
                 (call_script, "script_party_wound_all_members", ":center_no"), # starving garrison may collapse
               (else_try),
                 # Critically low stocks: famine conditions begin before full starvation.

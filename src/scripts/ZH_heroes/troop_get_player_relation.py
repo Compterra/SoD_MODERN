@@ -49,18 +49,6 @@ SCRIPTS = [
 		(neq, ":faction", "fac_player_supporters_faction"),
 		(val_div, ":badboy", 5),
 		(val_sub, ":honor_bonus", ":badboy"),
-		(else_try),
-		(eq, ":faction", "fac_player_supporters_faction"),
-		(gt, ":badboy", 15),
-		(eq, ":reputation", lrep_goodnatured),
-		(val_div, ":badboy", 5),
-		(val_sub, ":honor_bonus", ":badboy"),
-		(else_try),
-		(eq, ":faction", "fac_player_supporters_faction"),
-		(gt, ":badboy", 15),
-		(eq, ":reputation", lrep_quarrelsome),
-		(val_div, ":badboy", 5),
-		(val_add, ":honor_bonus", ":badboy"),
 	  (try_end), 	                                         #twan456 end
 	  
       (val_add, ":effective_relation", ":honor_bonus"),

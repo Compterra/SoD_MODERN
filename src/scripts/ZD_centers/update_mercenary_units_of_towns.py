@@ -33,6 +33,8 @@ SCRIPTS = [
             (ge, ":prosperity", 70),
             (val_add, ":amount", 1),
           (try_end),
+          (call_script, "script_sod_get_center_recruitment_policy", ":town_no"),
+          (val_add, ":amount", reg0),
           (val_min, ":amount", ":population_surplus"),
           (val_max, ":amount", 0),
           (party_set_slot, ":town_no", slot_center_mercenary_troop_amount, ":amount"),

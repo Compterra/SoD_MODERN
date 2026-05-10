@@ -1,0 +1,63 @@
+MENUS = [
+("slaver_black_market_report", mnf_enable_hot_keys,
+    "{s1}",
+    "none",
+    [
+      (set_background_mesh, "mesh_pic_report_screen"),
+      (call_script, "script_sod_slavers_describe_status_to_s20"),
+      (faction_get_slot, ":slaver_heat", "fac_sod_merc_guild6", slot_faction_slaver_market_heat),
+      (call_script, "script_sod_mini_faction_describe_recent_incident_to_s28", sod_mini_faction_incident_slaver_heat),
+      (call_script, "script_sod_mini_faction_describe_recent_countermeasure_to_s30", 1),
+      (call_script, "script_sod_mini_faction_describe_recommendation_to_s32", 1, ":slaver_heat"),
+      (store_current_day, ":cur_day"),
+      (store_sub, ":days_since_disrupt", ":cur_day", "$g_sod_slaver_last_report_disrupt_day"),
+      (store_sub, reg10, 7, ":days_since_disrupt"),
+      (val_max, reg10, 0),
+      (try_begin),
+        (lt, "$g_sod_slaver_last_report_disrupt_day", 1),
+        (assign, reg10, 0),
+      (try_end),
+      (str_store_string, s1, "@Slaver Black Market Web^^{s20}{s28}{s30}{s32}^^Report action:^Anti-Slaver disruption costs 600 denars. Cooldown remaining: {reg10} days. Slaver deals are still handled through Ramun, Slaver guild contacts, prisoner sales, runaway encounters, and active Slaver traffic, but this action funds informants and safehouses against the web.^^Field notes:^Demand, supply, heat, bases, and active transports define the Slaver mini-faction. Prisoner sales and slave purchases strengthen the market. Freeing captives or attacking Slaver traffic raises heat and improves standing with anti-slavery mini-factions such as the Jotnar and Elephant Guard."),
+    ],
+    [
+      ("slaver_black_market_report_disrupt", [
+          (store_troop_gold, ":player_gold", "trp_player"),
+          (ge, ":player_gold", 600),
+          (store_current_day, ":cur_day"),
+          (store_sub, ":days_since_disrupt", ":cur_day", "$g_sod_slaver_last_report_disrupt_day"),
+          (this_or_next|ge, ":days_since_disrupt", 7),
+          (lt, "$g_sod_slaver_last_report_disrupt_day", 1),
+        ], "Fund 600 denars of anti-Slaver disruption.",
+        [
+          (call_script, "script_sod_player_charge_gold", 600),
+          (store_current_day, ":cur_day"),
+          (assign, "$g_sod_slaver_last_report_disrupt_day", ":cur_day"),
+          (call_script, "script_sod_mini_faction_apply_report_counterplay", 1, 8),
+          (display_message, "@Your coin buys names, safe beds, and broken ledgers along the slave road.", 0x99CCFF),
+          (jump_to_menu, "mnu_slaver_black_market_report"),
+        ]),
+      ("slaver_black_market_report_disrupt_cooldown", [
+          (store_troop_gold, ":player_gold", "trp_player"),
+          (ge, ":player_gold", 600),
+          (ge, "$g_sod_slaver_last_report_disrupt_day", 1),
+          (store_current_day, ":cur_day"),
+          (store_sub, ":days_since_disrupt", ":cur_day", "$g_sod_slaver_last_report_disrupt_day"),
+          (lt, ":days_since_disrupt", 7),
+        ], "Anti-Slaver disruption unavailable: safehouses are still moving people.",
+        [
+          (display_message, "@Your anti-Slaver contacts are still moving people from the last disruption."),
+          (jump_to_menu, "mnu_slaver_black_market_report"),
+        ]),
+      ("slaver_black_market_report_disrupt_no_gold", [
+          (store_troop_gold, ":player_gold", "trp_player"),
+          (lt, ":player_gold", 600),
+        ], "Anti-Slaver disruption unavailable: you need 600 denars.",
+        [
+          (display_message, "@You need 600 denars to fund anti-Slaver disruption."),
+          (jump_to_menu, "mnu_slaver_black_market_report"),
+        ]),
+      ("slaver_black_market_report_overview", [], "Back to mini-faction overview.", [(jump_to_menu, "mnu_mercenary_world_activity_report")]),
+      ("slaver_black_market_report_back", [], "Back to reports.", [(jump_to_menu, "mnu_reports")]),
+    ]
+  ),
+]

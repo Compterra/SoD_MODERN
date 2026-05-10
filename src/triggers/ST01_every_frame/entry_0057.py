@@ -1,6 +1,9 @@
 SIMPLE_TRIGGERS = [
 (0,
-   [(troop_get_inventory_slot, ":cur_horse", "trp_player", 8), #horse slot
+   [(map_free),
+    (eq, "$g_sod_player_world_ready", 1),
+    (main_party_has_troop, "trp_player"),
+    (troop_get_inventory_slot, ":cur_horse", "trp_player", 8), #horse slot
     (assign, ":new_icon", -1),
     (try_begin),
       (eq, "$g_player_icon_state", pis_normal),

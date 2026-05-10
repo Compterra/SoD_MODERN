@@ -5,6 +5,7 @@ DIALOGS = [
 
       # "kill" the NPC - force the 48 hr respawn kingdom heros trigger to ignore this troop (no party will be created for this troop, ever again)
       # [q.v. script_create_kingdom_hero_party]
+      (call_script, "script_sod_runtime_trace_event", 5, "$g_enemy_party", "$g_talk_troop"),
       (call_script, "script_kill_kingdom_hero", "$g_talk_troop"),
 
       # determine the penalty for this act (based on the honor of the troop they've killed)

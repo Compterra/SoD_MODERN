@@ -1,2 +1,3 @@
 module_constants.py
+center_modifier_registry.py
 building_registry.py

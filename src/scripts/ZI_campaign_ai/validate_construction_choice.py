@@ -148,7 +148,8 @@ def _faction_requirement_guard_ops(definition):
 
 def _prerequisite_guard_ops(definition):
     prerequisite_buildings = tuple(definition.get("prerequisite_buildings", ()))
-    if not prerequisite_buildings:
+    prerequisite_any_buildings = tuple(definition.get("prerequisite_any_buildings", ()))
+    if not prerequisite_buildings and not prerequisite_any_buildings:
         return []
 
     ops = []
@@ -166,6 +167,31 @@ def _prerequisite_guard_ops(definition):
             (assign, reg0, 0),
             (assign, reg1, BUILDING_VALIDATION_MISSING_PREREQUISITE),
             (assign, reg2, prereq_slot),
+            (try_end,),
+        ])
+    if prerequisite_any_buildings:
+        ops.extend([
+            (assign, ":any_prereq_ok", 0),
+            (try_begin,),
+        ])
+        for index, prereq_slot in enumerate(prerequisite_any_buildings):
+            if index > 0:
+                ops.append((else_try,))
+            ops.extend([
+                (party_slot_ge, ":center_no", prereq_slot, 1),
+                (assign, ":any_prereq_ok", 1),
+            ])
+        ops.extend([
+            (try_end,),
+            (try_begin,),
+            (eq, ":validation_ok", 1),
+            (eq, ":prereq_ok", 1),
+            (eq, ":any_prereq_ok", 0),
+            (assign, ":prereq_ok", 0),
+            (assign, ":validation_ok", 0),
+            (assign, reg0, 0),
+            (assign, reg1, BUILDING_VALIDATION_MISSING_PREREQUISITE),
+            (assign, reg2, prerequisite_any_buildings[0]),
             (try_end,),
         ])
     return ops
@@ -261,8 +287,10 @@ def _validation_ops_for_definition(definition):
         (assign, ":upgrade_source_slot", 0),
         (assign, ":faction_ok", 1),
         (assign, ":conflict_ok", 1),
+        (assign, ":any_prereq_ok", 0),
         (assign, ":blocked_slot", 0),
         (assign, ":ignore_conflict", 0),
+        (eq, ":any_prereq_ok", ":any_prereq_ok"),
         (eq, ":faction_ok", ":faction_ok"),
         (eq, ":blocked_slot", ":blocked_slot"),
         (party_get_slot, ":center_type", ":center_no", slot_party_type),

@@ -9,11 +9,13 @@ MENUS = [
     [
       ("continue", [], "Continue...",
        [
+         (call_script, "script_sod_companion_retinue_handle_player_defeat"),
          (try_for_range, ":npc", companions_begin, companions_end),
            (main_party_has_troop, ":npc"),
            (store_random_in_range, ":rand", 0, 100),
            (lt, ":rand", 30),
            (remove_member_from_party, ":npc", "p_main_party"),
+           (call_script, "script_sod_companion_cleanup_departed_companion", ":npc"),
            (troop_set_slot, ":npc", slot_troop_occupation, 0),
            (troop_set_slot, ":npc", slot_troop_playerparty_history, pp_history_scattered),
            (assign, "$last_lost_companion", ":npc"),

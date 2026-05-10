@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone, "bookseller_buy", [], "Of course {sir/madam}.", "book_trade_completed", [[change_screen_trade]]],
+[anyone, "bookseller_buy", [], "Of course, {sir/madam}. Mind the cheap copies with pretty covers; pretty covers have ruined more minds than bad ink.", "book_trade_completed", [[change_screen_trade]]],
 ]

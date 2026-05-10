@@ -1,0 +1,22 @@
+SCRIPTS = [
+("sod_auto_loot_item_is_protected",
+ [
+   (store_script_param_1, ":item_no"),
+   (assign, reg0, 0),
+   (try_begin),
+     (gt, ":item_no", 0),
+     (item_get_slot, ":artifact_flags", ":item_no", slot_item_artifact_flags),
+     (gt, ":artifact_flags", 0),
+     (assign, reg0, 1),
+   (else_try),
+     (item_slot_eq, ":item_no", slot_item_sod_auto_loot_protected, 1),
+     (assign, reg0, 1),
+   (else_try),
+     (is_between, ":item_no", books_begin, books_end),
+     (assign, reg0, 1),
+   (else_try),
+     (is_between, ":item_no", trade_goods_begin, trade_goods_end),
+     (assign, reg0, 1),
+   (try_end),
+ ]),
+]

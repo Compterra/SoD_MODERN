@@ -1,0 +1,24 @@
+# COST: light
+SCRIPTS = [
+("sod_resolve_hostile_party_noncombat",
+ [
+   (store_script_param, ":party_no", 1),
+   (try_begin),
+     (gt, ":party_no", 0),
+     (party_is_active, ":party_no"),
+     (party_get_slot, ":active_quest", ":party_no", slot_party_sod_threat_active_quest),
+     (try_begin),
+       (eq, ":active_quest", "qst_regional_threat_contract"),
+       (party_get_slot, "$g_sod_hostile_reputation_last_center", ":party_no", slot_party_sod_threat_sponsor_center),
+       (party_get_slot, "$g_sod_hostile_reputation_last_faction", ":party_no", slot_party_sod_threat_sponsor_faction),
+       (val_add, "$g_sod_hostile_regional_noncombat_count", 1),
+       (assign, "$g_sod_threat_board_last_noncombat_resolution", 1),
+       (call_script, "script_sod_threat_board_note_party_defeated", ":party_no"),
+       (display_message, "@The Job Board target has been resolved without a pitched battle. Return to the board to claim the contract reward."),
+     (try_end),
+     (call_script, "script_sod_apply_hostile_noncombat_economy_effects", ":party_no"),
+     (remove_party, ":party_no"),
+   (try_end),
+   (assign, "$g_leave_encounter", 1),
+ ]),
+]

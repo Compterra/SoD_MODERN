@@ -3,7 +3,6 @@ SCRIPTS = [
     [
       (try_for_range, ":faction_no", kingdoms_begin, kingdoms_end),
         (faction_slot_eq, ":faction_no", slot_faction_state, sfs_active),
-        (neq, ":faction_no", "fac_player_supporters_faction"),
         (faction_get_slot, ":faction_ai_state", ":faction_no", slot_faction_ai_state),
         (neq, ":faction_ai_state", sfai_default),
         (faction_get_slot, ":faction_ai_object", ":faction_no", slot_faction_ai_object),

@@ -13,6 +13,8 @@ SCRIPTS = [
                         (try_for_range, ":i_inventory", 0, ":inv_cap"),
                           (troop_get_inventory_slot, ":item", ":pool", ":i_inventory"),
                           (ge, ":item", 0),
+                          (call_script, "script_sod_auto_loot_item_is_protected", ":item"),
+                          (eq, reg0, 0),
                           (item_get_type, ":this_item_type", ":item"),
                           (eq, ":this_item_type", ":item_type"), # it's one of the kind we're looking for
                           (troop_get_inventory_slot_modifier, ":imod", ":pool", ":i_inventory"),

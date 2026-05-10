@@ -1,7 +1,5 @@
 DIALOGS = [
 [anyone, "start", [(store_partner_quest, ":lords_quest"),
-					(store_relation, ":rel", "fac_player_faction", "$g_talk_troop_faction"),
-					(talk_info_set_relation_bar, ":rel"),
                          (eq, ":lords_quest", "qst_slavers_bring_back_runaway_slaves"),
 						 (quest_slot_eq, ":lords_quest", slot_quest_giver_center, "$g_encountered_party"),
                          (check_quest_concluded, "qst_slavers_bring_back_runaway_slaves"),

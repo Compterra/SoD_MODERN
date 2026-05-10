@@ -45,7 +45,7 @@ SCRIPTS = [
       (store_div, ":max_lost", ":cur_gold", 4),
       (store_div, ":min_lost", ":cur_gold", 10),
       (store_random_in_range, ":lost_gold", ":min_lost", ":max_lost"),
-      (troop_remove_gold, "trp_player", ":lost_gold"),
+      (call_script, "script_sod_player_charge_gold", ":lost_gold"),
       (play_sound, "snd_money_paid"),
   ]),
 ]

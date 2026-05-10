@@ -5,6 +5,8 @@ SIMPLE_TRIGGERS = [
     (neg|troop_slot_ge, "trp_player", slot_troop_prisoner_of_party, 0),
     (party_get_num_companions, ":num_comp", "p_main_party"),
 	(gt, ":num_comp", 15),
+	(call_script, "script_party_count_fit_regulars", "p_main_party"),
+	(gt, reg0, 0),
 	
     (store_random_in_range, ":rand" , 0, 200),
 	

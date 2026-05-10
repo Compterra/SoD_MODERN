@@ -1,0 +1,60 @@
+MENUS = [
+("companion_interactive_quest_qa", mnf_scale_picture|mnf_enable_hot_keys,
+   "Companion interactive quest QA.^^These options are debug-only accelerators for live playtesting. Use them to recruit the roster, open trust, and prime a companion campaign either to the live climax or the final aftermath.",
+   "none",
+    [
+      (set_background_mesh, "mesh_pic_camp"),
+      (try_begin),
+        (neq, "$g_sod_debug", 1),
+        (jump_to_menu, "mnu_camp_action"),
+      (try_end),
+    ],
+    [
+      ("qa_recruit_roster", [], "QA: Recruit companion roster and open trust.",
+        [
+          (call_script, "script_sod_companion_qa_recruit_roster"),
+          (jump_to_menu, "mnu_companion_interactive_quest_qa"),
+        ]
+      ),
+
+      ("qa_borcha_climax", [], "Borcha: ready for road climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc1", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_borcha_final", [], "Borcha: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc1", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_marnid_climax", [], "Marnid: ready for warehouse climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc2", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_marnid_final", [], "Marnid: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc2", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_ymira_climax", [], "Ymira: ready for refugee climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc3", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_ymira_final", [], "Ymira: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc3", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_rolf_climax", [], "Rolf: ready for public proof.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc4", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_rolf_final", [], "Rolf: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc4", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_baheshtur_climax", [], "Baheshtur: ready for rider-oath trial.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc5", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_baheshtur_final", [], "Baheshtur: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc5", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_firentis_climax", [], "Firentis: ready for restitution climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc6", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_firentis_final", [], "Firentis: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc6", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_deshavi_climax", [], "Deshavi: ready for trail climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc7", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_deshavi_final", [], "Deshavi: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc7", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_matheld_climax", [], "Matheld: ready for shield-line test.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc8", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_matheld_final", [], "Matheld: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc8", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_alayen_climax", [], "Alayen: ready for standard test.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc9", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_alayen_final", [], "Alayen: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc9", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_bunduk_climax", [], "Bunduk: ready for watch-line test.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc10", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_bunduk_final", [], "Bunduk: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc10", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_katrin_climax", [], "Katrin: ready for supply watch.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc11", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_katrin_final", [], "Katrin: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc11", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_jeremus_climax", [], "Jeremus: ready for infirmary crisis.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc12", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_jeremus_final", [], "Jeremus: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc12", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_nizar_climax", [], "Nizar: ready for charge-lane test.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc13", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_nizar_final", [], "Nizar: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc13", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_lezalit_climax", [], "Lezalit: ready for drill trial.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc14", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_lezalit_final", [], "Lezalit: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc14", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_artimenner_climax", [], "Artimenner: ready for repair watch.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc15", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_artimenner_final", [], "Artimenner: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc15", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_klethi_climax", [], "Klethi: ready for alley confrontation.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc16", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_klethi_final", [], "Klethi: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc16", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+
+      ("qa_return", [], "Return to camp actions.",
+        [
+          (jump_to_menu, "mnu_camp_action"),
+        ]
+      ),
+    ]
+  ),
+]

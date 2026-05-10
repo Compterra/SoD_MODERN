@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone, "mayor_pretalk", [], "Yes?", "mayor_talk", []],
+[anyone, "mayor_pretalk", [], "The town ledger is not closed. What other matter needs ink?", "mayor_talk", []],
 ]

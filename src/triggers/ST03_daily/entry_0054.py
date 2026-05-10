@@ -15,6 +15,9 @@ SIMPLE_TRIGGERS = [
     #MORDACHAI - one unit of food per 5 troops (instead of per 3 troops)
     (store_div, ":consumption_amount", ":num_men", 5),
     (val_max, ":consumption_amount", 1),
+    (call_script, "script_sod_company_accounts_adjust_food_consumption_to_reg", ":consumption_amount"),
+    (assign, ":consumption_amount", reg0),
+    (call_script, "script_sod_company_accounts_update_ration_pressure"),
 
     (assign, ":no_food_displayed", 0),
     (try_for_range, ":unused", 0, ":consumption_amount"),
@@ -32,6 +35,9 @@ SIMPLE_TRIGGERS = [
         (eq, ":no_food_displayed", 0),
         (display_message, "@Your party has no food left!", red),
         (call_script, "script_change_player_party_morale", -3),
+        (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_hunger, 2),
+        (call_script, "script_sod_companion_try_katrin_last_coin_incident", 1, 2),
+        (call_script, "script_sod_companion_try_deshavi_trail_warning_incident", 1, 2),
         (assign, ":no_food_displayed", 1),
         #NPC companion changes begin
         (try_begin),

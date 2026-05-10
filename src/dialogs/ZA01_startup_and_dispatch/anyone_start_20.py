@@ -1,7 +1,5 @@
 DIALOGS = [
 [anyone, "start", [(store_partner_quest, ":lords_quest"),
-					(store_relation, ":rel", "fac_player_faction", "$g_talk_troop_faction"),
-					(talk_info_set_relation_bar, ":rel"),
 						(eq, ":lords_quest", "qst_slavers_deal_with_good_guys"),
                           (check_quest_succeeded, ":lords_quest"),
                           (quest_slot_eq, ":lords_quest", slot_quest_giver_troop, "$g_talk_troop"),

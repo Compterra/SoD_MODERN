@@ -1,5 +1,9 @@
 DIALOGS = [
 [anyone, "prison_break_2_accepted", [
+  (check_quest_active, "qst_slave_q2"),
+  (neg|check_quest_active, "qst_slave_q3"),
+  (neg|check_quest_succeeded, "qst_slave_q3"),
+  (neg|check_quest_failed, "qst_slave_q3"),
   (setup_quest_text, "qst_slave_q3"),
   (str_store_string, s2, "@Fight your way out of the dungeon."),
   (call_script, "script_start_quest", "qst_slave_q3", "$g_talk_troop"),

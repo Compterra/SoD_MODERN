@@ -6,6 +6,7 @@ SCRIPTS = [
       (assign, "$talk_context", tc_court_talk),
 
       (set_jump_mission, "mt_visit_town_castle"),
+      (set_passage_menu, "mnu_town_castle_passages"),
       (party_get_slot, ":castle_scene", ":center_no", slot_town_castle),
       (modify_visitors_at_site, ":castle_scene"),
       (reset_visitors),
@@ -42,8 +43,12 @@ SCRIPTS = [
 		(set_visitor, 17, ":representative"),
 	  (try_end),
       #SoD COURT END
-	  #Sod now jester is available even before player creates a kingdom
-	  (set_visitor, 16, "trp_sod_jester"),
+	  # The Jester is a cheat/debug court actor and should not appear in normal play.
+	  (try_begin),
+	    (this_or_next|eq, "$cheat_mode", 1),
+	    (eq, "$g_sod_cheat_mode", 1),
+	    (set_visitor, 16, "trp_sod_jester"),
+	  (try_end),
       #SoD following was changed from (assign, ":cur_pos", 16),
 	  
       (try_begin),

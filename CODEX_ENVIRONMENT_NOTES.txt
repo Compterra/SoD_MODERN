@@ -1,0 +1,29 @@
+CODEX ENVIRONMENT NOTES
+=======================
+
+Ripgrep / rg.exe
+----------------
+
+In this Codex desktop session, `rg` is installed and works, but normal sandboxed
+tool calls cannot execute it. PowerShell sees `rg.exe`, then fails with:
+
+    Access is denied
+
+Confirmed working behavior:
+
+    rg --version
+
+works when the shell command is run with:
+
+    sandbox_permissions = "require_escalated"
+
+The user approved the `["rg"]` prefix for escalated use. Use escalated `rg` for
+repo-wide searches. If escalation is not appropriate, fall back to PowerShell
+`Select-String` / `Get-ChildItem`.
+
+Observed paths:
+
+    C:\Users\Computica\AppData\Local\Microsoft\WinGet\Links\rg.exe
+    C:\Program Files\WindowsApps\OpenAI.Codex_...\app\resources\rg.exe
+
+Both are blocked by the default sandbox, but `rg` itself is not broken.

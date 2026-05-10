@@ -13,5 +13,5 @@ DIALOGS = [
      (try_end),
      (eq, ":pass", 1),
      ],
-   "We are reconsidering our next objective.", "lord_pretalk", []],
+   "We are reading the map again. Sometimes the wisest order is the one you do not give too early.", "lord_pretalk", []],
 ]

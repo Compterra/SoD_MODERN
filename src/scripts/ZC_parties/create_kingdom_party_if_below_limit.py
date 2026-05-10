@@ -23,9 +23,9 @@ SCRIPTS = [
         ##      (else_try),
         (eq, ":party_type", spt_kingdom_caravan),
         (assign, ":party_count_limit", 5),
-        ##      (else_try),
-        ##        (eq, ":party_type", spt_prisoner_train),
-        ##        (assign, ":party_count_limit", 1),
+      (else_try),
+        (eq, ":party_type", spt_prisoner_train),
+        (assign, ":party_count_limit", peak_prisoner_trains),
       (try_end),
 
       (try_begin),

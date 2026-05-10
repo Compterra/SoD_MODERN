@@ -3,7 +3,11 @@ SCRIPTS = [
     [
       (store_script_param_1, ":party"), #Party_id
       (store_script_param_2, ":exclude_leader"), #Party_id
+      (assign, reg0, 0),
+      (try_begin),
+      (party_is_active, ":party"),
 	  
+
 	  (party_get_attached_to, ":attached_to", ":party"),  # SoD twan
 	  
 	  (assign, ":siege", 0),
@@ -121,5 +125,6 @@ SCRIPTS = [
 	  (eq, "$g_sod_autoresolve", -1),
       (party_set_slot, ":party", slot_party_cached_strength, reg0),
 	  (try_end),
+      (try_end),
   ]),
 ]

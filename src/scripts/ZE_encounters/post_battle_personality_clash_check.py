@@ -42,12 +42,22 @@ SCRIPTS = [
 
           (try_begin),
             (gt, "$npc_with_personality_clash_2", 0),
+            (main_party_has_troop, "$npc_with_personality_clash_2"),
+            (neq, "$g_player_is_captive", 1),
             (assign, "$npc_map_talk_context", slot_troop_personalityclash2_state),
             (start_map_conversation, "$npc_with_personality_clash_2"),
           (else_try),
+            (gt, "$npc_with_personality_clash_2", 0),
+            (assign, "$npc_with_personality_clash_2", 0),
+          (else_try),
             (gt, "$npc_with_personality_match", 0),
+            (main_party_has_troop, "$npc_with_personality_match"),
+            (neq, "$g_player_is_captive", 1),
             (assign, "$npc_map_talk_context", slot_troop_personalitymatch_state),
             (start_map_conversation, "$npc_with_personality_match"),
+          (else_try),
+            (gt, "$npc_with_personality_match", 0),
+            (assign, "$npc_with_personality_match", 0),
           (try_end),
 
 

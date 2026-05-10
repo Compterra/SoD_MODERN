@@ -4,6 +4,6 @@ DIALOGS = [
                                           (ge, ":gold", ":quest_target_amount"),
                                           ],
    "Of course. Here you are...", "merchant_quest_about_job_5a", [(quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
-                                                                (troop_remove_gold, "trp_player", ":quest_target_amount"), (play_sound, "snd_money_paid"),
+                                                                (call_script, "script_sod_player_charge_gold", ":quest_target_amount"), (play_sound, "snd_money_paid"),
                                                                 ]],
 ]

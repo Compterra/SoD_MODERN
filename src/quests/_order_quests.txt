@@ -12,3 +12,7 @@
 0008_village_elder_quests.py
 0009_story_and_meta_quests.py
 0010_sample_campaign_quests.py
+0011_road_to_crown_quests.py
+0012_companion_personal_quests.py
+0013_seven_oaths_of_ash_quests.py
+9999_quests_end.py

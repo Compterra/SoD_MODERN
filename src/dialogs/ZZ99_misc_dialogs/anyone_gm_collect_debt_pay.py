@@ -5,7 +5,7 @@ DIALOGS = [
      (quest_get_slot, ":total_collected", ":lords_quest", slot_quest_target_amount),
      (val_mul, ":total_collected", 4),
      (val_div, ":total_collected", 5),
-	 (troop_remove_gold, "trp_player", ":total_collected"),
+	 (call_script, "script_sod_player_charge_gold", ":total_collected"),
      (play_sound, "snd_money_paid"),
      (call_script, "script_change_player_relation_with_faction", "$g_talk_troop_faction", 3),
      (add_xp_as_reward, 300),

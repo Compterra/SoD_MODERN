@@ -1,0 +1,51 @@
+MENUS = [
+  ("center_manage", 0,
+    "{s1}",
+    "none",
+    [
+      (set_background_mesh, "mesh_pic_report_screen"),
+      (str_store_party_name, s2, "$current_town"),
+      (call_script, "script_sod_ensure_center_construction_state", "$current_town"),
+      (party_get_slot, ":current_project", "$current_town", slot_center_current_improvement),
+      (assign, "$g_improvement_type", ":current_project"),
+      (ge, "$g_improvement_type", 0),
+      (try_begin),
+        (gt, ":current_project", 0),
+        (str_store_string, s1, "@Construction at {s2}:^^A project is already underway here. You may review the realm construction reports or inspect cancellation details."),
+      (else_try),
+        (call_script, "script_center_has_more_construction_opportunities", "$current_town"),
+        (assign, ":remaining_projects", reg0),
+        (try_begin),
+          (gt, ":remaining_projects", 0),
+          (assign, reg1, ":remaining_projects"),
+          (str_store_string, s1, "@Construction at {s2}:^^This center has {reg1} possible project(s) remaining. Use the construction reports to compare available works before commissioning."),
+        (else_try),
+          (str_store_string, s1, "@Construction at {s2}:^^All known construction opportunities for this center have been completed."),
+        (try_end),
+      (try_end),
+    ],
+    [
+      ("view_available_construction", [], "Review available construction report.",
+        [
+          (jump_to_menu, "mnu_fief_available_construction_report"),
+        ]),
+      ("view_current_construction", [], "Review current construction report.",
+        [
+          (jump_to_menu, "mnu_fief_under_construction_report"),
+        ]),
+      ("inspect_cancellation", [(party_slot_ge, "$current_town", slot_center_current_improvement, 1)], "Inspect cancellation details.",
+        [
+          (jump_to_menu, "mnu_center_cancel"),
+        ]),
+      ("return_to_center", [], "Return.",
+        [
+          (try_begin),
+            (party_slot_eq, "$current_town", slot_party_type, spt_village),
+            (jump_to_menu, "mnu_village"),
+          (else_try),
+            (jump_to_menu, "mnu_town"),
+          (try_end),
+        ]),
+    ]
+  ),
+]

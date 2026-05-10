@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone, "lady_ask_for_quest", [], "No, {playername}, I've no need for a champion right now.", "lady_pretalk", []],
+[anyone, "lady_ask_for_quest", [], "No, {playername}. Even a champion must wait until there is a cause worthy of being seen.", "lady_pretalk", []],
 ]

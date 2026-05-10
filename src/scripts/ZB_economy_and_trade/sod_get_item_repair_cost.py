@@ -1,0 +1,26 @@
+SCRIPTS = [
+("sod_get_item_repair_cost",
+ [
+   (store_script_param_1, ":item_no"),
+   (store_script_param_2, ":imod"),
+
+   (assign, reg0, 0),
+   (try_begin),
+     (ge, ":item_no", 0),
+     (call_script, "script_sod_item_modifier_is_repairable", ":imod"),
+     (eq, reg0, 1),
+     (call_script, "script_get_item_cost_with_imod", ":item_no", imod_plain),
+     (assign, ":plain_value", reg0),
+     (call_script, "script_get_item_cost_with_imod", ":item_no", ":imod"),
+     (assign, ":current_value", reg0),
+     (store_sub, ":repair_cost", ":plain_value", ":current_value"),
+     (try_begin),
+       (gt, ":repair_cost", 0),
+       (val_mul, ":repair_cost", 9),
+       (val_div, ":repair_cost", 10),
+       (val_max, ":repair_cost", 10),
+       (assign, reg0, ":repair_cost"),
+     (try_end),
+   (try_end),
+ ]),
+]

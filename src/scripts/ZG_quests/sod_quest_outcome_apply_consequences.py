@@ -52,7 +52,10 @@ SCRIPTS = [
           (quest_set_slot, ":quest_no", slot_quest_sod_chain_resume_day, ":resume_day"),
         (try_end),
         (quest_set_slot, ":quest_no", slot_quest_sod_outcome_applied, 1),
-        (display_message, "@Quest consequence applied: reputation and regional effects recorded.", quest_fail_color),
+        (try_begin),
+          (eq, "$cheat_mode", 1),
+          (display_message, "@DEBUG: Quest consequence applied: reputation and regional effects recorded.", quest_fail_color),
+        (try_end),
       (try_end),
   ]),
 ]

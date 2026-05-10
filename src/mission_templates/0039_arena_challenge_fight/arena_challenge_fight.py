@@ -1,6 +1,6 @@
 MISSION_TEMPLATES = [
 (
-    "arena_challenge_fight", mtf_arena_fight|mtf_commit_casualties, -1,
+    "arena_challenge_fight", mtf_arena_fight, -1,
     "You enter a melee fight in the arena.",
     [
       (56, mtef_visitor_source|mtef_team_0, 0, aif_start_alarmed, 1, []),
@@ -24,6 +24,7 @@ MISSION_TEMPLATES = [
            (else_try),
              (call_script, "script_succeed_quest", "qst_duel_for_lady"),
            (try_end),
+           (jump_to_menu, "mnu_sod_continue_return"),
            (finish_mission),
            ]),
     ],

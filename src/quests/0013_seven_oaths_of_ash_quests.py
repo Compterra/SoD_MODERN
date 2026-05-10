@@ -1,0 +1,203 @@
+# -*- coding: utf-8 -*-
+# The Seven Oaths of Ash campaign quest foundation.
+# This fragment establishes the executable quest records before live scene wiring.
+
+QUESTS = [
+ *quest_chain_from_specs(
+  "campaign_seven_oaths_of_ash",
+  "The Seven Oaths of Ash",
+  entry_quest_id="seven_ash_ultimatum",
+  quests=(
+   quest_template_spec(
+    "seven_ash_ultimatum",
+    "The Teeth in the Sack",
+    qf_random_quest,
+    "Wulfred Carr has marked Ashwick for tribute: coin, grain, and surety children. Hear the ultimatum, inspect the village, and decide how Ashwick will answer.",
+    stages=(
+     quest_stage_spec(
+      "seven_ash_ultimatum_hear_rafe",
+      "Hear Rafe's Ultimatum",
+      "Meet Wulfred's riders and hear the demand placed on Ashwick.",
+      description="Rafe Carrick delivers Wulfred's demand before the village witnesses.",
+      actions=("store ultimatum", "open Ashwick audit"),
+      metadata={"act": "act_01_teeth", "chapter": "ultimatum", "dialogue": "dlg_seven_ash_rafe_ultimatum"},
+     ),
+     quest_stage_spec(
+      "seven_ash_ultimatum_choose_posture",
+      "Choose Ashwick's First Answer",
+      "Choose whether to prepare, seek defenders, call for aid, bargain, evacuate, or kill the messengers.",
+      description="The first posture is confirmed after dialogue with Ashwick's witnesses.",
+      conditions=("Rafe has delivered the ultimatum",),
+      actions=("set method flag", "advance to village audit or branch route"),
+      metadata={"branch_point": "first_answer", "menu_confirms_after_dialogue": True},
+     ),
+    ),
+    metadata={
+     "category": "campaign",
+     "campaign": "campaign_seven_oaths_of_ash",
+     "act": "act_01_teeth",
+     "chapter": "ultimatum",
+     "design_doc": "docs/campaigns/the_seven_oaths_of_ash.md",
+     "checklist": "docs/campaigns/the_seven_oaths_of_ash_implementation_checklist.md",
+    },
+   ),
+   quest_template_spec(
+    "seven_ash_village_audit",
+    "Ashwick Laid Bare",
+    qf_random_quest,
+    "Inspect Ashwick's palisade, granary, churchyard, mill bridge, outer farms, cellars, and witnesses before committing the village's labor.",
+    stages=(
+     quest_stage_spec(
+      "seven_ash_audit_inspect_places",
+      "Inspect the Village",
+      "Walk Ashwick's weak points with Mother Hilda, Reeve Martin, Piers, and Nell.",
+      actions=("set readiness baseline", "record witness fears"),
+      metadata={"act": "act_01_teeth", "chapter": "audit", "dialogue": "dlg_seven_ash_mother_hilda_audit"},
+     ),
+     quest_stage_spec(
+      "seven_ash_audit_first_priority",
+      "Choose the First Priority",
+      "Choose one immediate preparation after the witnesses have spoken.",
+      conditions=("audit places inspected",),
+      actions=("modify readiness", "open recruitment board or preparation route"),
+      metadata={"branch_point": "first_preparation_priority"},
+     ),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_01_teeth", "chapter": "audit"},
+   ),
+   quest_template_spec(
+    "seven_ash_garric_ashbow",
+    "Garric Ashbow",
+    qf_random_quest,
+    "Find Garric at the Split Hart, hear Eda Flint's testimony, and decide whether Ashwick needs his disciplined bow line.",
+    stages=(
+     quest_stage_spec("seven_ash_garric_find_split_hart", "Find the Split Hart", "Travel to the tavern near the disputed hunting wood.", actions=("set target center",), metadata={"defender": "garric", "status": "available"}),
+     quest_stage_spec("seven_ash_garric_hear_eda", "Hear Eda Flint", "Hear the widow who knows what happened on the church roof.", conditions=("Garric found",), actions=("set witness flag",), metadata={"dialogue": "dlg_seven_ash_garric_recruit"}),
+     quest_stage_spec("seven_ash_garric_resolve_terms", "Resolve Garric's Terms", "Recruit, refuse, pay, promise, or blackmail Garric through dialogue.", conditions=("Eda testimony resolved",), actions=("set defender terminal state",), metadata={"companion_unlock_checks": "truth, covered fire, no wasted charges"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_seven_roads", "defender": "garric"},
+   ),
+   quest_template_spec(
+    "seven_ash_oswin_ditchwright",
+    "Oswin Ditchwright",
+    qf_random_quest,
+    "Find Oswin at Harrowcut Quarry, inspect the failed bridge, and decide whether Ashwick will listen to an engineer before the wall fails.",
+    stages=(
+     quest_stage_spec("seven_ash_oswin_find_quarry", "Find Harrowcut Quarry", "Travel to the quarry camp after the bridge collapse.", actions=("set target center",), metadata={"defender": "oswin", "status": "available"}),
+     quest_stage_spec("seven_ash_oswin_inspect_bridge", "Inspect the Bridge", "Question workers and test Oswin's account of the collapse.", conditions=("Oswin found",), actions=("set evidence flag",), metadata={"dialogue": "dlg_seven_ash_oswin_recruit"}),
+     quest_stage_spec("seven_ash_oswin_resolve_authority", "Resolve Oswin's Authority", "Vindicate, pay, limit, force, or refuse Oswin through dialogue.", conditions=("bridge evidence resolved",), actions=("set defender terminal state",), metadata={"companion_unlock_checks": "engineering authority, hard fieldwork sacrifice"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_seven_roads", "defender": "oswin"},
+   ),
+   quest_template_spec(
+    "seven_ash_sir_aldrik_vane",
+    "Sir Aldrik Vane",
+    qf_random_quest,
+    "Find the landless knight at Saint Cuthbert's chapel and test whether shame can become an oath Ashwick can trust.",
+    stages=(
+     quest_stage_spec("seven_ash_aldrik_find_chapel", "Find Saint Cuthbert's Chapel", "Travel to the poor wayside chapel.", actions=("set target center",), metadata={"defender": "aldrik"}),
+     quest_stage_spec("seven_ash_aldrik_hear_mara", "Hear Mara of the Bridge", "Hear the hostage witness before judging Aldrik's old surrender.", conditions=("Aldrik found",), actions=("set witness flag",), metadata={"dialogue": "dlg_seven_ash_aldrik_recruit"}),
+     quest_stage_spec("seven_ash_aldrik_resolve_oath", "Resolve Aldrik's Oath", "Let him swear, hire him, restore him, coerce him, or leave him.", conditions=("Mara testimony resolved",), actions=("set defender terminal state",), metadata={"companion_unlock_checks": "public oath, lawful mercy, civilian protection"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_seven_roads", "defender": "aldrik"},
+   ),
+   quest_template_spec(
+    "seven_ash_mirelle_voss",
+    "Mirelle Voss",
+    qf_random_quest,
+    "Find Mirelle at the Low Lantern and decide how much ugly work Ashwick can bear without losing itself.",
+    stages=(
+     quest_stage_spec("seven_ash_mirelle_find_lantern", "Find the Low Lantern", "Travel to the riverside tavern that serves deserters and boatmen.", actions=("set target center",), metadata={"defender": "mirelle"}),
+     quest_stage_spec("seven_ash_mirelle_catch_tib", "Catch Tib's Messages", "Resolve what happens to the boy carrying Wulfred's messages.", conditions=("Mirelle found",), actions=("set informant flag",), metadata={"dialogue": "dlg_seven_ash_mirelle_recruit"}),
+     quest_stage_spec("seven_ash_mirelle_resolve_secrets", "Resolve Mirelle's Secrets", "Trust, buy, leverage, threaten, or refuse Mirelle.", conditions=("informant test resolved",), actions=("set defender terminal state",), metadata={"companion_unlock_checks": "trusted dirty work, no pointless cruelty"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_seven_roads", "defender": "mirelle"},
+   ),
+   quest_template_spec(
+    "seven_ash_tomas_reed",
+    "Tomas Reed",
+    qf_random_quest,
+    "Find Tomas at the veterans' almshouse and decide where discipline ends and cruelty begins.",
+    stages=(
+     quest_stage_spec("seven_ash_tomas_find_almshouse", "Find the Almshouse", "Travel to the veterans' almshouse where Tomas mends boots.", actions=("set target center",), metadata={"defender": "tomas"}),
+     quest_stage_spec("seven_ash_tomas_hear_veterans", "Hear the Veterans", "Hear Old Jory and Matteo split the truth of Tomas's discipline.", conditions=("Tomas found",), actions=("set witness split",), metadata={"dialogue": "dlg_seven_ash_tomas_recruit"}),
+     quest_stage_spec("seven_ash_tomas_resolve_discipline", "Resolve Tomas's Discipline", "Set limits, grant harsh command, train trainers, use fear, or refuse him.", conditions=("veterans heard",), actions=("set defender terminal state",), metadata={"companion_unlock_checks": "discipline without cruelty"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_seven_roads", "defender": "tomas"},
+   ),
+   quest_template_spec(
+    "seven_ash_beren_hardhand",
+    "Beren Hardhand",
+    qf_random_quest,
+    "Find Beren in a fighting pit or outlaw camp and decide whether his violence can be given a lawful boundary.",
+    stages=(
+     quest_stage_spec("seven_ash_beren_find_pit", "Find the Fighting Pit", "Travel to the place Mirelle says holds a man ugly enough for Halvorn.", actions=("set target center",), metadata={"defender": "beren"}),
+     quest_stage_spec("seven_ash_beren_hear_ansel", "Hear Ansel Miller", "Hear the famine story behind Beren's outlaw name.", conditions=("Beren found",), actions=("set witness flag",), metadata={"dialogue": "dlg_seven_ash_beren_recruit"}),
+     quest_stage_spec("seven_ash_beren_resolve_boundary", "Resolve Beren's Boundary", "Beat, withstand, hire, unleash, or refuse Beren.", conditions=("Ansel heard",), actions=("set defender terminal state",), metadata={"companion_unlock_checks": "fair contest, lawful enemy, civilian restraint"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_seven_roads", "defender": "beren"},
+   ),
+   quest_template_spec(
+    "seven_ash_sister_elianor",
+    "Sister Elianor Grey",
+    qf_random_quest,
+    "Find Sister Elianor at Saint Ormond's refugee camp and decide whether Ashwick's defense has room for sanctuary.",
+    stages=(
+     quest_stage_spec("seven_ash_elianor_find_camp", "Find Saint Ormond's Camp", "Travel to the burned grange where Elianor keeps refugees alive.", actions=("set target center",), metadata={"defender": "elianor"}),
+     quest_stage_spec("seven_ash_elianor_inspect_refugees", "Inspect the Refugees", "Walk the camp and see who can fight, who can work, and who must be carried.", conditions=("Elianor found",), actions=("set sanctuary pressure",), metadata={"dialogue": "dlg_seven_ash_elianor_recruit"}),
+     quest_stage_spec("seven_ash_elianor_resolve_sanctuary", "Resolve Sanctuary", "Create sanctuary, limit aid, fund the camp, force labor, or refuse Elianor.", conditions=("refugee camp inspected",), actions=("set defender terminal state",), metadata={"companion_unlock_checks": "sanctuary, wounded protected, mercy under pressure"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_seven_roads", "defender": "elianor"},
+   ),
+   quest_template_spec(
+    "seven_ash_return_to_ashwick",
+    "The Road Back to Ashwick",
+    qf_random_quest,
+    "Return to Ashwick after the recruitment board closes and let the village see who came back.",
+    stages=(
+     quest_stage_spec("seven_ash_return_count_defenders", "Count the Defenders", "Mother Hilda counts beds while Reeve Martin counts days, coin, and grain.", actions=("set act2 complete", "start Act III pressure"), metadata={"dialogue": "dlg_seven_ash_return_home"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_return"},
+   ),
+   quest_template_spec(
+    "seven_ash_pressure_interlude",
+    "The Village Learns Fear",
+    qf_random_quest,
+    "Resolve Ashwick pressure interludes after recruitment closes.",
+    stages=(
+     quest_stage_spec("seven_ash_pressure_burned_cow", "The Burned Cow", "Answer Wulfred's first visible pressure on the outer farms.", actions=("modify pressure or strain",), metadata={"interlude": "burned_cow"}),
+     quest_stage_spec("seven_ash_pressure_marked_door", "The Knife-Marked Door", "Find or fail to find the informant marking homes for surety taking.", actions=("modify civilian safety",), metadata={"interlude": "marked_door"}),
+     quest_stage_spec("seven_ash_pressure_grain_riot", "The Grain Riot", "Settle hunger before arithmetic becomes violence.", actions=("modify food, morale, strain",), metadata={"interlude": "grain_riot"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_03_pressure"},
+   ),
+   quest_template_spec(
+    "seven_ash_oath_council",
+    "The Oath Council",
+    qf_random_quest,
+    "Gather defenders and village witnesses in the church to choose the final defense plan.",
+    stages=(
+     quest_stage_spec("seven_ash_oath_council_argue_map", "Argue Over the Map", "Let each present defender mark Ashwick by their craft.", actions=("read recruited bitmask", "read readiness"), metadata={"dialogue": "dlg_seven_ash_oath_council"}),
+     quest_stage_spec("seven_ash_oath_council_lock_plan", "Lock the Defense Plan", "Commit to palisade, depth, counterstroke, cut-head, or empty-village defense.", conditions=("map argued",), actions=("set final plan", "open sector commitment"), metadata={"branch_point": "final_defense_plan"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_04_oath_council"},
+   ),
+   quest_template_spec("seven_ash_outer_fields", "The Outer Fields", qf_random_quest, "Fight or yield the farms, roads, scouts, hayricks, and first fires.", stages=(quest_stage_spec("seven_ash_outer_fields_resolve", "Resolve the Outer Fields", "Resolve the first siege sector.", actions=("read intelligence", "apply wave allocation"), metadata={"siege_phase": "outer_fields"}),), metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_05_siege"}),
+   quest_template_spec("seven_ash_palisade", "The Ditch and Palisade", qf_random_quest, "Hold the ditch, stakes, palisade, and killing lanes.", stages=(quest_stage_spec("seven_ash_palisade_resolve", "Resolve the Palisade", "Resolve the main wall pressure.", actions=("read fortification", "apply wave allocation"), metadata={"siege_phase": "palisade"}),), metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_05_siege"}),
+   quest_template_spec("seven_ash_breach", "The Gate and Breach", qf_random_quest, "Meet Halvorn's push and decide whether the gate becomes a wound or a trap.", stages=(quest_stage_spec("seven_ash_breach_resolve", "Resolve the Breach", "Resolve the close-fighting breach phase.", actions=("read Aldrik, Beren, Tomas", "apply elite core"), metadata={"siege_phase": "breach"}),), metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_05_siege"}),
+   quest_template_spec("seven_ash_inner_streets", "The Inner Streets", qf_random_quest, "Defend homes, fire lines, routes, cellars, and the infirmary.", stages=(quest_stage_spec("seven_ash_inner_streets_resolve", "Resolve the Streets", "Resolve civilian danger and street defense.", actions=("read civilian safety", "apply fires"), metadata={"siege_phase": "inner_streets"}),), metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_05_siege"}),
+   quest_template_spec("seven_ash_churchyard_stand", "The Churchyard Stand", qf_random_quest, "Make the final stand at the stone churchyard wall.", stages=(quest_stage_spec("seven_ash_churchyard_resolve", "Resolve the Churchyard", "Resolve Wulfred's fate and Ashwick's military outcome.", actions=("set Wulfred outcome", "advance aftermath"), metadata={"siege_phase": "churchyard"}),), metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_05_siege"}),
+   quest_template_spec(
+    "seven_ash_aftermath",
+    "The Names After",
+    qf_random_quest,
+    "Count the dead, store the ending, and resolve each surviving defender's future.",
+    stages=(
+     quest_stage_spec("seven_ash_aftermath_count_cost", "Count the Cost", "Count civilians, homes, defenders, promises, prisoners, and Wulfred's fate.", actions=("set result grade", "store ending"), metadata={"dialogue": "dlg_seven_ash_aftermath"}),
+     quest_stage_spec("seven_ash_aftermath_companion_offers", "Resolve the Seven", "Offer companion, Ashwick-stay, farewell, or refusal outcomes to qualifying survivors.", conditions=("cost counted",), actions=("set companion unlock/refusal bitmasks",), metadata={"dialogue": "dlg_seven_ash_companion_offers"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_06_aftermath"},
+   ),
+  ),
+ ).as_legacy_tuples(),
+]

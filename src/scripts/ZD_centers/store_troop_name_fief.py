@@ -6,7 +6,7 @@ SCRIPTS = [
 
 	(try_begin),
 		(troop_get_slot, ":title", ":troop", slot_troop_title),
-		(gt, ":title", 0),
+		(is_between, ":title", "str_sod_c1_ruler", "str_bc_random_warrior1_1"),
 		(str_store_troop_name, s37, ":troop"),
 		(str_store_string, s27, ":title"),
 		(call_script, "script_get_best_fief_name_of_troop", s17, ":troop"),

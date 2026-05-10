@@ -164,7 +164,7 @@ def _store_definition_metadata_ops(definition):
 
 
 def _store_prerequisites_ops(definition):
-    prereqs = definition["prerequisite_buildings"]
+    prereqs = tuple(definition["prerequisite_buildings"]) + tuple(definition.get("prerequisite_any_buildings", ()))
     ops = [
         (assign, reg0, len(prereqs)),
         (assign, reg1, 0),
@@ -197,9 +197,11 @@ def _store_center_type_ok_ops(definition):
 
 def _store_prereq_ok_ops(definition):
     prereqs = definition["prerequisite_buildings"]
+    any_prereqs = tuple(definition.get("prerequisite_any_buildings", ()))
     ops = [
         (assign, ":prereq_ok", 1),
         (assign, ":blocked_slot", 0),
+        (assign, ":any_prereq_ok", 0),
     ]
     for prereq in prereqs:
         ops.extend([
@@ -210,6 +212,24 @@ def _store_prereq_ok_ops(definition):
             (eq, ":prereq_ok", 1),
             (assign, ":prereq_ok", 0),
             (assign, ":blocked_slot", prereq),
+            (try_end,),
+        ])
+    if any_prereqs:
+        ops.append((try_begin,))
+        for index, prereq in enumerate(any_prereqs):
+            if index > 0:
+                ops.append((else_try,))
+            ops.extend([
+                (party_slot_ge, ":center_no", prereq, 1),
+                (assign, ":any_prereq_ok", 1),
+            ])
+        ops.extend([
+            (try_end,),
+            (try_begin,),
+            (eq, ":prereq_ok", 1),
+            (eq, ":any_prereq_ok", 0),
+            (assign, ":prereq_ok", 0),
+            (assign, ":blocked_slot", any_prereqs[0]),
             (try_end,),
         ])
     return ops

@@ -3,6 +3,7 @@ SCRIPTS = [
       [(store_script_param, ":faction_no", 1),
         (assign, ":total_men", 0),
         (try_for_parties, ":cur_party"),
+          (party_is_active, ":cur_party"),
           (store_faction_of_party, ":center_faction", ":cur_party"),
           (eq, ":center_faction", ":faction_no"),
           (party_get_num_companions, ":num_men", ":cur_party"),
@@ -10,6 +11,13 @@ SCRIPTS = [
         (try_end),
         (str_store_faction_name_link, s5, ":faction_no"),
         (assign, reg1, ":total_men"),
-        (add_faction_note_from_sreg, ":faction_no", 1, "@{s5} has a strength of {reg1} men in total.", 1),
+        (try_begin),
+          (gt, ":total_men", 0),
+          (str_store_string, s49, "@{s5} has a strength of {reg1} men in total."),
+        (else_try),
+          (str_store_string, s49, "@{s5} has no field strength currently reported."),
+        (try_end),
+
+        (add_faction_note_from_sreg, ":faction_no", 1, s49, 1),
     ]),
 ]

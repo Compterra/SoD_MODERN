@@ -2,13 +2,10 @@
 SCRIPTS = [
 ("sod_threat_board_generate_offers",
  [
-   (store_script_param_1, ":center_no"),
+  (store_script_param_1, ":center_no"),
 
-   (try_begin),
-     (le, ":center_no", 0),
-     (call_script, "script_get_closest_center", "p_main_party"),
-    (assign, ":center_no", reg(0)),
-   (try_end),
+   (call_script, "script_sod_threat_board_normalize_center", ":center_no"),
+   (assign, ":center_no", reg0),
 
    (store_current_day, ":cur_day"),
    (store_sub, ":center_seed", ":center_no", centers_begin),
@@ -41,6 +38,10 @@ SCRIPTS = [
    (party_get_slot, ":prosperity", ":center_no", slot_town_prosperity),
    (party_get_slot, ":local_prosperity", ":center_no", slot_center_sod_local_prosperity),
    (party_get_slot, ":wealth", ":center_no", slot_town_wealth),
+   (call_script, "script_sod_get_center_security_profile", ":center_no"),
+   (assign, ":effective_threat", reg0),
+   (assign, ":security", reg1),
+   (assign, ":vulnerability", reg10),
 
    (try_begin),
      (party_slot_eq, ":center_no", slot_party_type, spt_village),
@@ -71,6 +72,22 @@ SCRIPTS = [
    (else_try),
      (lt, ":population", 220),
      (assign, ":offer_3", sod_threat_archetype_invader_scouts),
+   (try_end),
+
+   (try_begin),
+     (ge, ":effective_threat", 7),
+     (assign, ":offer_1", sod_threat_archetype_raiding_captain),
+   (else_try),
+     (ge, ":effective_threat", 4),
+     (assign, ":offer_1", sod_threat_archetype_invader_scouts),
+   (try_end),
+
+   (try_begin),
+     (ge, ":vulnerability", 70),
+     (assign, ":offer_2", sod_threat_archetype_rogue_company),
+   (else_try),
+     (lt, ":security", 0),
+     (assign, ":offer_2", sod_threat_archetype_guild_traitors),
    (try_end),
 
    (quest_set_slot, "qst_regional_threat_contract", slot_quest_sod_threat_offer_1, ":offer_1"),

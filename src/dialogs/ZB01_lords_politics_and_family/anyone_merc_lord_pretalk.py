@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone, "merc_lord_pretalk", [],
-   "So, what do you want, {playername}?", "merc_lord_talk", [],],
+   "Coin, blood, and reputation all spend differently, {playername}. Which are we discussing?", "merc_lord_talk", [],],
 ]

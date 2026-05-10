@@ -1,7 +1,5 @@
 DIALOGS = [
 [anyone, "start", [(store_partner_quest, ":lords_quest"),
-					(store_relation, ":rel", "fac_player_faction", "$g_talk_troop_faction"),
-					(talk_info_set_relation_bar, ":rel"),
 						(this_or_next|eq, ":lords_quest", "qst_elephant_guard_troublesome_bandits"),
 						(this_or_next|eq, ":lords_quest", "qst_serpent_host_troublesome_bandits"),
 						(this_or_next|eq, ":lords_quest", "qst_bc_troublesome_bandits"),

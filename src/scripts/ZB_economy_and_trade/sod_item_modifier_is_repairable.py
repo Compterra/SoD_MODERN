@@ -1,0 +1,20 @@
+SCRIPTS = [
+("sod_item_modifier_is_repairable",
+ [
+   (store_script_param_1, ":imod"),
+   (assign, reg0, 0),
+   (try_begin),
+     (this_or_next|eq, ":imod", imod_cracked),
+     (this_or_next|eq, ":imod", imod_rusty),
+     (this_or_next|eq, ":imod", imod_bent),
+     (this_or_next|eq, ":imod", imod_chipped),
+     (this_or_next|eq, ":imod", imod_battered),
+     (this_or_next|eq, ":imod", imod_poor),
+     (this_or_next|eq, ":imod", imod_crude),
+     (this_or_next|eq, ":imod", imod_old),
+     (this_or_next|eq, ":imod", imod_lame),
+     (eq, ":imod", imod_swaybacked),
+     (assign, reg0, 1),
+   (try_end),
+ ]),
+]

@@ -1,0 +1,31 @@
+SCRIPTS = [
+("sod_seven_ash_resolve_outer_fields",
+    [
+      (store_script_param, ":outer_result", 1),
+      (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_outer_result, ":outer_result"),
+
+      (try_begin),
+        (eq, ":outer_result", sod_seven_ash_siege_result_held),
+        (quest_get_slot, ":pressure", "qst_seven_ash_ultimatum", slot_quest_seven_ash_wulfred_pressure),
+        (val_sub, ":pressure", 8),
+        (val_max, ":pressure", 0),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_wulfred_pressure, ":pressure"),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_outer_casualty_pressure, 1),
+      (else_try),
+        (eq, ":outer_result", sod_seven_ash_siege_result_bloodied),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_outer_casualty_pressure, 2),
+      (else_try),
+        (eq, ":outer_result", sod_seven_ash_siege_result_lost),
+        (quest_get_slot, ":civilian_safety", "qst_seven_ash_ultimatum", slot_quest_seven_ash_civilian_safety),
+        (val_sub, ":civilian_safety", 10),
+        (val_max, ":civilian_safety", 0),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_civilian_safety, ":civilian_safety"),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_outer_casualty_pressure, 3),
+      (try_end),
+
+      (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_siege_phase_active, sod_seven_ash_siege_phase_palisade),
+      (setup_quest_text, "qst_seven_ash_palisade"),
+      (str_store_string, s2, "@The outer fields are resolved. Survivors fall back through the ditch lanes, and the siege moves to the palisade."),
+      (call_script, "script_sod_quest_chain_branch_success", "qst_seven_ash_outer_fields", "qst_seven_ash_palisade"),
+  ]),
+]

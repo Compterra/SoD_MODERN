@@ -65,7 +65,7 @@ MISSION_TEMPLATES = [
          ],
        [
 		 (add_xp_as_reward, 1000),
-		 (assign, "$prison_break", -1),
+		 (assign, "$prison_break", 6),
 		 (finish_mission),
 		 (display_message, "@You saved Diego and managed to escape the dungeon.", green),
 		 (call_script, "script_succeed_quest", "qst_slave_q3"),
@@ -90,7 +90,7 @@ MISSION_TEMPLATES = [
          ],
        [
 		 (add_xp_as_reward, 100),
-		 (assign, "$prison_break", -1),
+		 (assign, "$prison_break", 6),
 		 (finish_mission),
 		 (display_message, "@Diego is dead but you managed to escape the dungeon.", red),
 		 (call_script, "script_fail_quest", "qst_slave_q3"),

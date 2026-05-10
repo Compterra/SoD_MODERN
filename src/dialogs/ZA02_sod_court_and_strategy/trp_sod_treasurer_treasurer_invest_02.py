@@ -32,10 +32,20 @@ DIALOGS = [
       (val_sub, ":success", ":risk"),
       (assign, "$g_sod_invested_succes", ":success"),
 
-      # setup our dialog values
-      (assign, reg1, ":risk"),
+      (try_begin),
+        (le, ":risk", 35),
+        (str_store_string, s1, "@favorable"),
+      (else_try),
+        (le, ":risk", 55),
+        (str_store_string, s1, "@uncertain but acceptable"),
+      (else_try),
+        (le, ":risk", 75),
+        (str_store_string, s1, "@risky"),
+      (else_try),
+        (str_store_string, s1, "@dangerous"),
+      (try_end),
     ],
-    "Considering our current knowledge of the market and our relations with the merchant's guilds, I estimate investment risk at {reg1} percent.", "treasurer_invest2",
+    "Considering our current knowledge of the market and our relations with the merchant guilds, I would call this investment {s1}.", "treasurer_invest2",
     []
   ],
 ]

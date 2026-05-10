@@ -4,5 +4,7 @@ DIALOGS = [
                                          (eq, "$g_encountered_party", reg0),
                                          (call_script, "script_store_troop_name", s2, ":castle_lord"),
                                          (assign, "$lord_requested_to_talk_to", ":castle_lord"),
-                                          ],  "Wait here. {s2} will see you.", "close_window", []],
+                                          ],  "Wait here. {s2} will see you.", "close_window", [
+                                            (call_script, "script_setup_troop_meeting", "$lord_requested_to_talk_to", 0),
+                                          ]],
 ]

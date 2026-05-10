@@ -4,5 +4,5 @@ DIALOGS = [
 		(assign, "$merc_cost", reg0),
 		(assign, reg19, reg0),
 		(call_script, "script_merc_describe_guild_offer", "$g_talk_troop_faction"),
-                        ],"Very well. Hiring such a party will cost you {reg19} denars.^^You are paying for {s50} and {s51}. Our base terms are {s52}, and your standing adds {s53}.","gm_hire9", []],
+                        ],"Very well. The retainer for such a party is {reg19} denars.^^You are paying for {s50} and {s51}. Our base terms are {s52}, and your standing adds {s53}.^^{s54}^{s55}^{s56}^{s57}^{s58}","gm_hire9", []],
 ]

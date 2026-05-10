@@ -1,0 +1,31 @@
+SCRIPTS = [
+("sod_seven_ash_resolve_inner_streets",
+    [
+      (store_script_param, ":inner_result", 1),
+      (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_inner_result, ":inner_result"),
+
+      (try_begin),
+        (eq, ":inner_result", sod_seven_ash_siege_result_held),
+        (quest_get_slot, ":civilian_safety", "qst_seven_ash_ultimatum", slot_quest_seven_ash_civilian_safety),
+        (val_add, ":civilian_safety", 5),
+        (val_min, ":civilian_safety", 100),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_civilian_safety, ":civilian_safety"),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_inner_churchyard_pressure, 1),
+      (else_try),
+        (eq, ":inner_result", sod_seven_ash_siege_result_bloodied),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_inner_churchyard_pressure, 2),
+      (else_try),
+        (eq, ":inner_result", sod_seven_ash_siege_result_lost),
+        (quest_get_slot, ":civilian_safety", "qst_seven_ash_ultimatum", slot_quest_seven_ash_civilian_safety),
+        (val_sub, ":civilian_safety", 20),
+        (val_max, ":civilian_safety", 0),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_civilian_safety, ":civilian_safety"),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_inner_churchyard_pressure, 3),
+      (try_end),
+
+      (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_siege_phase_active, sod_seven_ash_siege_phase_churchyard),
+      (setup_quest_text, "qst_seven_ash_churchyard_stand"),
+      (str_store_string, s2, "@The inner streets are resolved. The survivors and remaining fighters gather at the churchyard wall for the last stand."),
+      (call_script, "script_sod_quest_chain_branch_success", "qst_seven_ash_inner_streets", "qst_seven_ash_churchyard_stand"),
+  ]),
+]

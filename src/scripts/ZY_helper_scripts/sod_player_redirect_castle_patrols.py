@@ -1,0 +1,27 @@
+# COST: party scan
+SCRIPTS = [
+("sod_player_redirect_castle_patrols",
+ [
+   (store_script_param, ":castle_no", 1),
+   (assign, reg0, 0),
+   (call_script, "script_sod_player_can_order_castle_patrols", ":castle_no"),
+   (try_begin),
+     (eq, reg0, 1),
+     (store_faction_of_party, ":faction_no", ":castle_no"),
+     (call_script, "script_sod_find_castle_patrol_route_endpoint", ":castle_no", ":faction_no"),
+     (assign, ":target", reg0),
+     (assign, reg0, 0),
+     (try_for_parties, ":cur_party"),
+       (party_slot_eq, ":cur_party", slot_party_sod_support_type, sod_support_type_castle_patrol),
+       (party_slot_eq, ":cur_party", slot_party_sod_patrol_origin_castle, ":castle_no"),
+       (party_set_slot, ":cur_party", slot_party_sod_support_target, ":target"),
+       (party_set_slot, ":cur_party", slot_party_sod_patrol_route_endpoint, ":target"),
+       (party_set_ai_behavior, ":cur_party", ai_bhvr_patrol_party),
+       (party_set_ai_object, ":cur_party", ":target"),
+       (val_add, reg0, 1),
+     (try_end),
+   (else_try),
+     (assign, reg0, 0),
+   (try_end),
+ ]),
+]

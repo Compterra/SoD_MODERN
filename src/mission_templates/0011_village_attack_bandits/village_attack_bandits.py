@@ -8,6 +8,7 @@ MISSION_TEMPLATES = [
      (1, mtef_visitor_source|mtef_team_0, 0, aif_start_alarmed, 1, []),
      ],
     [
+      common_battle_mission_start,
       common_battle_tab_press, 
 	  common_battle_horse_health, 
 
@@ -64,6 +65,7 @@ MISSION_TEMPLATES = [
       camera_trigger_8,
 
       formations_init,
+      formations_0,
       formations_1,
       formations_2,
       formations_3,
@@ -88,7 +90,6 @@ MISSION_TEMPLATES = [
       formations_update_kill_count,
       formations_t,
       formations_rally,
-      formations_v,
       formations_start_coherence,
       formations_update_morale,
       formations_update_route,

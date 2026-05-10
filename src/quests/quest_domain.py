@@ -54,6 +54,7 @@ QUEST_BATTLE_OBJECTIVE_ACTION_KINDS = (
     "kill_target",
     "capture_target",
     "protect_target",
+    "rescue_target",
     "survive_timer",
     "break_siege_line",
     "hold_position",
@@ -68,6 +69,7 @@ QUEST_BATTLE_OBJECTIVE_ACTION_ALIASES = {
     "kill": "kill_target",
     "capture": "capture_target",
     "protect": "protect_target",
+    "rescue": "rescue_target",
     "survive": "survive_timer",
     "break_siege": "break_siege_line",
     "hold": "hold_position",
@@ -82,6 +84,7 @@ QUEST_BATTLE_OBJECTIVE_REQUIRED_PAYLOAD_KEYS = {
     "kill_target": ("target_troop_id",),
     "capture_target": ("target_troop_id", "target_party_id"),
     "protect_target": ("target_troop_id", "target_party_id"),
+    "rescue_target": ("target_troop_id",),
     "survive_timer": ("timer_duration",),
     "break_siege_line": ("target_party_id", "target_center_id"),
     "hold_position": ("target_party_id", "timer_duration"),
@@ -104,6 +107,10 @@ QUEST_BATTLE_OBJECTIVE_MESSAGE_TEMPLATES = {
     "protect_target": {
         "success": "The protected target survived the battle.",
         "failure": "The protected target was lost.",
+    },
+    "rescue_target": {
+        "success": "The rescue target was recovered.",
+        "failure": "The rescue target was not recovered.",
     },
     "survive_timer": {
         "success": "The force held out long enough.",

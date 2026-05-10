@@ -1,0 +1,42 @@
+# COST: trivial
+SCRIPTS = [
+("sod_merc_guild_get_profile",
+ [
+   (store_script_param_1, ":guild_faction"),
+
+   (assign, ":base", 0),
+   (assign, ":master", 0),
+   (assign, ":representative", 0),
+   (assign, ":t1_1", 0),
+   (assign, ":t1_2", 0),
+   (assign, ":noble", 0),
+   (assign, ":proportion", 0),
+   (assign, ":price_factor", 100),
+   (assign, ":elite_requirement", 30),
+
+   (try_begin),
+     (call_script, "script_cf_sod_faction_is_merc_guild", ":guild_faction"),
+     (faction_get_slot, ":base", ":guild_faction", slot_guild_base),
+     (faction_get_slot, ":master", ":guild_faction", slot_guild_master),
+     (faction_get_slot, ":representative", ":guild_faction", slot_guild_representative),
+     (faction_get_slot, ":t1_1", ":guild_faction", slot_guild_tier_1_unit_1),
+     (faction_get_slot, ":t1_2", ":guild_faction", slot_guild_tier_1_unit_2),
+     (faction_get_slot, ":noble", ":guild_faction", slot_guild_noble),
+     (faction_get_slot, ":proportion", ":guild_faction", slot_guild_troop_proportion),
+     (call_script, "script_merc_get_guild_price_factor", ":guild_faction"),
+     (assign, ":price_factor", reg0),
+     (call_script, "script_merc_get_elite_relation_requirement", ":guild_faction"),
+     (assign, ":elite_requirement", reg0),
+   (try_end),
+
+   (assign, reg0, ":base"),
+   (assign, reg1, ":master"),
+   (assign, reg2, ":representative"),
+   (assign, reg3, ":t1_1"),
+   (assign, reg4, ":t1_2"),
+   (assign, reg5, ":noble"),
+   (assign, reg6, ":proportion"),
+   (assign, reg7, ":price_factor"),
+   (assign, reg8, ":elite_requirement"),
+ ]),
+]

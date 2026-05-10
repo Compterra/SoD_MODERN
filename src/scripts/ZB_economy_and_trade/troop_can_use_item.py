@@ -20,6 +20,7 @@ SCRIPTS = [
                         (val_add, ":difficulty", ":adj"),
 
                         # determine which skill or attribute the difficulty rating applies to
+                        (assign, ":skill", 0),
                         (item_get_type, ":type", ":item"),
                         (try_begin),
                           # horse (skl_riding)
@@ -48,6 +49,10 @@ SCRIPTS = [
                           # thrown weapon (power throw)
                           (eq, ":type", itp_type_thrown),
                           (store_skill_level, ":skill", skl_power_throw, ":troop"),
+                        (else_try),
+                          # books (intelligence), only used by automation if a caller explicitly allows books through protection checks
+                          (eq, ":type", itp_type_book),
+                          (store_attribute_level, ":skill", ":troop", ca_intelligence),
                         (try_end),
 
                         (try_begin),

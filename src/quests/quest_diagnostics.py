@@ -188,6 +188,8 @@ __all__ = [
     "build_quest_diagnostics_report",
     "diagnose_battle_objective",
     "diagnose_battle_objectives",
+    "diagnose_interactive_quest_contracts",
+    "diagnose_rtc_price_of_bread_simulation_contract",
     "diagnose_dialogue_branch_coverage",
     "diagnose_quest_graph",
     "diagnose_quest_narrative",
@@ -1375,11 +1377,16 @@ def diagnose_battle_objective(
         )
 
     known_action_kinds = {
+        "break_siege_line",
         "capture_target",
-        "defeat_wave",
-        "escort_party",
+        "defeat_wave_objective",
+        "destroy_force",
+        "escort_during_battle",
+        "free_prisoner_during_mission",
         "hold_position",
         "kill_target",
+        "protect_target",
+        "rescue_allied_captain",
         "rescue_target",
         "survive_timer",
     }
@@ -1402,14 +1409,14 @@ def diagnose_battle_objective(
             "target",
         )
     )
-    if action_kind in {"capture_target", "escort_party", "hold_position", "kill_target", "rescue_target"} and not has_target:
+    if action_kind in {"capture_target", "escort_during_battle", "free_prisoner_during_mission", "hold_position", "kill_target", "protect_target", "rescue_allied_captain", "rescue_target"} and not has_target:
         add("missing_battle_target", f"Battle objective {action_kind!r} requires a target.")
 
     timer_duration = _get_attr(objective, "timer_duration", "duration", "timer", default=None)
     if action_kind == "survive_timer" and (timer_duration is None or int(timer_duration) <= 0):
         add("impossible_battle_timer", "Survive-timer objective requires a positive timer duration.")
 
-    if action_kind == "defeat_wave":
+    if action_kind == "defeat_wave_objective":
         progress = _get_attr(objective, "progress", "required_count", "required", default=None)
         wave_index = _get_attr(objective, "wave_index", "wave", default=None)
         if progress is None or wave_index is None:
@@ -1566,6 +1573,371 @@ def quest_graph_dot(chain_or_template: Any) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _quest_requires_interactive_contract(quest: Any) -> bool:
+    metadata = _as_mapping(_get_attr(quest, "metadata", default={}))
+    category = str(metadata.get("category", "") or "").strip().lower()
+    if category in {"companion", "campaign", "mentor"}:
+        return True
+    return bool(metadata.get("companion") or metadata.get("campaign") or metadata.get("mentor"))
+
+
+def diagnose_interactive_quest_contracts(
+    quests: Iterable[Any] | None = None,
+    *,
+    root: str | Path | None = None,
+    project_root: str | Path | None = None,
+) -> QuestDiagnosticsReport:
+    report = QuestDiagnosticsReport()
+    for quest_index, quest in enumerate(_iter_loaded_quests(quests), start=1):
+        quest_id = _quest_identifier(quest, quest_index)
+        if not _quest_requires_interactive_contract(quest):
+            continue
+        quest_metadata = _as_mapping(_get_attr(quest, "metadata", default={}))
+        category = str(quest_metadata.get("category", "") or "").strip().lower()
+        is_companion = category == "companion" or bool(quest_metadata.get("companion"))
+        for stage_index, stage in enumerate(_quest_stages(quest), start=1):
+            stage_id = _stage_identifier(stage, stage_index)
+            metadata = _stage_metadata(stage)
+            phase = str(metadata.get("phase", "") or "").strip().lower()
+            if is_companion or metadata.get("companion"):
+                if not metadata.get("availability_mode"):
+                    _emit(
+                        report,
+                        code="missing_companion_availability_mode",
+                        message=f"Companion quest stage {stage_id!r} should declare availability_mode.",
+                        severity="warning",
+                        subject=quest_id,
+                        quest_id=quest_id,
+                        stage_id=stage_id,
+                    )
+            if phase in {"test", "field_test", "investigation", "pressure_test", "witness_check"} or metadata.get("branch_point"):
+                for key in ("world_target", "world_action", "witness", "failure_mode", "cleanup", "result_grade"):
+                    if not metadata.get(key):
+                        _emit(
+                            report,
+                            code=f"missing_{key}",
+                            message=f"Interactive quest stage {stage_id!r} should declare {key}.",
+                            severity="warning",
+                            subject=quest_id,
+                            quest_id=quest_id,
+                            stage_id=stage_id,
+                        )
+    return report
+
+
+def diagnose_rtc_price_of_bread_simulation_contract(
+    *,
+    project_root: str | Path | None = None,
+) -> QuestDiagnosticsReport:
+    report = QuestDiagnosticsReport()
+    root_path = _as_path(project_root) if project_root is not None else PROJECT_ROOT
+    sources = {
+        "bind_world": root_path / "src/scripts/ZG_quests/sod_rtc_price_of_bread_bind_world.py",
+        "aftermath": root_path / "src/scripts/ZG_quests/sod_rtc_price_of_bread_apply_local_aftermath.py",
+        "rumor": root_path / "src/scripts/ZG_quests/sod_rtc_price_of_bread_describe_aftermath_to_s49.py",
+        "resolver": root_path / "src/scripts/ZG_quests/sod_rtc_price_of_bread_resolve.py",
+        "menu": root_path / "src/menus/start_game/rtc_price_of_bread.py",
+    }
+    source_text = {key: _safe_read_text(path) for key, path in sources.items()}
+    required_tokens = {
+        "bind_world": (
+            "slot_quest_target_center",
+            "slot_quest_target_troop",
+            "trp_rtc_tamsin_reedhand",
+            "slot_quest_object_troop",
+            "trp_rtc_celeste_di_marina",
+            "slot_quest_giver_troop",
+            "trp_rtc_brother_odran",
+            "slot_quest_target_amount",
+            "script_sod_rtc_price_of_bread_prepare_bandit_target",
+        ),
+        "aftermath": (
+            "slot_quest_sod_chain_choice",
+            "script_change_player_relation_with_center",
+            "script_change_center_prosperity",
+        ),
+        "rumor": (
+            "script_sod_rtc_price_of_bread_describe_aftermath_to_s49",
+            "str_store_party_name_link",
+        ),
+        "resolver": (
+            "script_sod_rtc_price_of_bread_bind_world",
+            "script_sod_rtc_price_of_bread_apply_local_aftermath",
+            "script_sod_rtc_price_of_bread_describe_aftermath_to_s49",
+            "script_sod_rtc_price_of_bread_cleanup_bandit_target",
+        ),
+        "menu": (
+            "script_sod_rtc_price_of_bread_bind_world",
+            "slot_quest_target_center",
+            "slot_quest_target_amount",
+        ),
+    }
+    for source_key, tokens in required_tokens.items():
+        text = source_text[source_key]
+        path = str(sources[source_key])
+        if not text:
+            _emit(
+                report,
+                code="missing_rtc_price_of_bread_contract_file",
+                message=f"Missing Price of Bread simulation contract file {path!r}.",
+                severity="error",
+                subject="qst_rtc_price_of_bread",
+                path=path,
+                quest_id="rtc_price_of_bread",
+            )
+            continue
+        for token in tokens:
+            if token not in text:
+                _emit(
+                    report,
+                    code="missing_rtc_price_of_bread_contract_token",
+                    message=f"Price of Bread simulation contract is missing {token!r} in {source_key}.",
+                    severity="warning",
+                    subject="qst_rtc_price_of_bread",
+                    path=path,
+                    quest_id="rtc_price_of_bread",
+                    token=token,
+                    source_key=source_key,
+                )
+    three_offers_menu = _safe_read_text(root_path / "src/menus/start_game/rtc_three_offers.py")
+    three_offers_script = _safe_read_text(root_path / "src/scripts/ZG_quests/sod_rtc_three_offers_choose_route.py")
+    for token, text, path in (
+        ("slot_quest_sod_chain_choice", three_offers_menu, root_path / "src/menus/start_game/rtc_three_offers.py"),
+        ("slot_quest_target_center", three_offers_menu, root_path / "src/menus/start_game/rtc_three_offers.py"),
+        ("script_sod_rtc_three_offers_prepare_route_target", three_offers_script, root_path / "src/scripts/ZG_quests/sod_rtc_three_offers_choose_route.py"),
+        ("slot_quest_target_amount", three_offers_script, root_path / "src/scripts/ZG_quests/sod_rtc_three_offers_choose_route.py"),
+    ):
+        if token not in text:
+            _emit(
+                report,
+                code="missing_rtc_bread_continuity_token",
+                message=f"Road to Crown bread continuity is missing {token!r}.",
+                severity="warning",
+                subject="qst_rtc_three_offers",
+                path=str(path),
+                quest_id="rtc_three_offers",
+                token=token,
+            )
+    companions_menu = _safe_read_text(root_path / "src/menus/start_game/rtc_companions_take_sides.py")
+    companions_script = _safe_read_text(root_path / "src/scripts/ZG_quests/sod_rtc_companions_take_sides_resolve.py")
+    for token, text, path in (
+        ("slot_quest_sod_chain_choice", companions_menu, root_path / "src/menus/start_game/rtc_companions_take_sides.py"),
+        ("sod_rtc_offer_bread_oath", companions_menu, root_path / "src/menus/start_game/rtc_companions_take_sides.py"),
+        ("sod_rtc_offer_books_oath", companions_menu, root_path / "src/menus/start_game/rtc_companions_take_sides.py"),
+        ("sod_rtc_offer_witness_oath", companions_menu, root_path / "src/menus/start_game/rtc_companions_take_sides.py"),
+        ("slot_quest_target_center", companions_menu, root_path / "src/menus/start_game/rtc_companions_take_sides.py"),
+        ("rtc_companions_reassure", companions_menu, root_path / "src/menus/start_game/rtc_companions_take_sides.py"),
+        ("rtc_companions_rebuke", companions_menu, root_path / "src/menus/start_game/rtc_companions_take_sides.py"),
+        ("rtc_companions_compromise", companions_menu, root_path / "src/menus/start_game/rtc_companions_take_sides.py"),
+        ("rtc_companions_ignore", companions_menu, root_path / "src/menus/start_game/rtc_companions_take_sides.py"),
+        ("slot_quest_sod_chain_choice", companions_script, root_path / "src/scripts/ZG_quests/sod_rtc_companions_take_sides_resolve.py"),
+        ("sod_rtc_offer_bread_oath", companions_script, root_path / "src/scripts/ZG_quests/sod_rtc_companions_take_sides_resolve.py"),
+        ("sod_rtc_offer_books_oath", companions_script, root_path / "src/scripts/ZG_quests/sod_rtc_companions_take_sides_resolve.py"),
+        ("sod_rtc_offer_witness_oath", companions_script, root_path / "src/scripts/ZG_quests/sod_rtc_companions_take_sides_resolve.py"),
+        (":campfire_answer", companions_script, root_path / "src/scripts/ZG_quests/sod_rtc_companions_take_sides_resolve.py"),
+        ("script_sod_companion_apply_player_action", companions_script, root_path / "src/scripts/ZG_quests/sod_rtc_companions_take_sides_resolve.py"),
+        ("script_sod_rtc_three_offers_cleanup_route_target", companions_script, root_path / "src/scripts/ZG_quests/sod_rtc_companions_take_sides_resolve.py"),
+    ):
+        if token not in text:
+            _emit(
+                report,
+                code="missing_rtc_bread_companion_continuity_token",
+                message=f"Road to Crown companion bread continuity is missing {token!r}.",
+                severity="warning",
+                subject="qst_rtc_companions_take_sides",
+                path=str(path),
+                quest_id="rtc_companions_take_sides",
+                token=token,
+            )
+    first_recognition_menu = _safe_read_text(root_path / "src/menus/start_game/rtc_first_recognition.py")
+    first_recognition_script = _safe_read_text(root_path / "src/scripts/ZG_quests/sod_rtc_first_recognition_resolve.py")
+    for token, text, path in (
+        ("slot_quest_sod_chain_choice", first_recognition_menu, root_path / "src/menus/start_game/rtc_first_recognition.py"),
+        ("slot_quest_target_center", first_recognition_menu, root_path / "src/menus/start_game/rtc_first_recognition.py"),
+        ("script_sod_rtc_first_recognition_prepare_witness_target", first_recognition_script, root_path / "src/scripts/ZG_quests/sod_rtc_first_recognition_resolve.py"),
+        ("slot_quest_target_center", first_recognition_script, root_path / "src/scripts/ZG_quests/sod_rtc_first_recognition_resolve.py"),
+        ("slot_quest_target_amount", first_recognition_script, root_path / "src/scripts/ZG_quests/sod_rtc_first_recognition_resolve.py"),
+    ):
+        if token not in text:
+            _emit(
+                report,
+                code="missing_rtc_bread_public_continuity_token",
+                message=f"Road to Crown public bread continuity is missing {token!r}.",
+                severity="warning",
+                subject="qst_rtc_first_recognition",
+                path=str(path),
+                quest_id="rtc_first_recognition",
+                token=token,
+            )
+    crown_council_menu = _safe_read_text(root_path / "src/menus/start_game/rtc_crown_council.py")
+    crown_council_script = _safe_read_text(root_path / "src/scripts/ZG_quests/sod_rtc_crown_council_resolve.py")
+    for token, text, path in (
+        ("slot_quest_sod_chain_choice", crown_council_menu, root_path / "src/menus/start_game/rtc_crown_council.py"),
+        ("slot_quest_target_center", crown_council_menu, root_path / "src/menus/start_game/rtc_crown_council.py"),
+        ("sod_rtc_offer_bread_oath", crown_council_menu, root_path / "src/menus/start_game/rtc_crown_council.py"),
+        ("sod_rtc_offer_books_oath", crown_council_menu, root_path / "src/menus/start_game/rtc_crown_council.py"),
+        ("sod_rtc_offer_witness_oath", crown_council_menu, root_path / "src/menus/start_game/rtc_crown_council.py"),
+        ("rtc_council_bread_witness", crown_council_menu, root_path / "src/menus/start_game/rtc_crown_council.py"),
+        ("rtc_council_merchant_books", crown_council_menu, root_path / "src/menus/start_game/rtc_crown_council.py"),
+        ("slot_quest_sod_chain_choice", crown_council_script, root_path / "src/scripts/ZG_quests/sod_rtc_crown_council_resolve.py"),
+        ("sod_rtc_offer_bread_oath", crown_council_script, root_path / "src/scripts/ZG_quests/sod_rtc_crown_council_resolve.py"),
+        ("sod_rtc_offer_books_oath", crown_council_script, root_path / "src/scripts/ZG_quests/sod_rtc_crown_council_resolve.py"),
+        ("sod_rtc_offer_witness_oath", crown_council_script, root_path / "src/scripts/ZG_quests/sod_rtc_crown_council_resolve.py"),
+        ("script_sod_rtc_first_recognition_cleanup_witness_target", crown_council_script, root_path / "src/scripts/ZG_quests/sod_rtc_crown_council_resolve.py"),
+        ("sod_rtc_flag_witness_commoner", crown_council_script, root_path / "src/scripts/ZG_quests/sod_rtc_crown_council_resolve.py"),
+        ("sod_rtc_council_answer_bread_witness", crown_council_script, root_path / "src/scripts/ZG_quests/sod_rtc_crown_council_resolve.py"),
+        ("sod_rtc_council_answer_merchant_books", crown_council_script, root_path / "src/scripts/ZG_quests/sod_rtc_crown_council_resolve.py"),
+        ("slot_quest_target_amount", crown_council_script, root_path / "src/scripts/ZG_quests/sod_rtc_crown_council_resolve.py"),
+    ):
+        if token not in text:
+            _emit(
+                report,
+                code="missing_rtc_bread_council_continuity_token",
+                message=f"Road to Crown council bread continuity is missing {token!r}.",
+                severity="warning",
+                subject="qst_rtc_crown_council",
+                path=str(path),
+                quest_id="rtc_crown_council",
+                token=token,
+            )
+    hounds_terms_menu = _safe_read_text(root_path / "src/menus/start_game/rtc_hounds_terms.py")
+    hounds_terms_script = _safe_read_text(root_path / "src/scripts/ZG_quests/sod_rtc_hounds_terms_resolve.py")
+    for token, text, path in (
+        ("script_sod_rtc_hounds_terms_prepare_envoy", hounds_terms_menu, root_path / "src/menus/start_game/rtc_hounds_terms.py"),
+        ("script_sod_rtc_hounds_terms_handle_envoy", hounds_terms_menu, root_path / "src/menus/start_game/rtc_hounds_terms.py"),
+        ("slot_quest_object_troop", hounds_terms_menu, root_path / "src/menus/start_game/rtc_hounds_terms.py"),
+        ("sod_rtc_offer_bread_oath", hounds_terms_menu, root_path / "src/menus/start_game/rtc_hounds_terms.py"),
+        ("sod_rtc_offer_books_oath", hounds_terms_menu, root_path / "src/menus/start_game/rtc_hounds_terms.py"),
+        ("sod_rtc_offer_witness_oath", hounds_terms_menu, root_path / "src/menus/start_game/rtc_hounds_terms.py"),
+        ("rtc_terms_reject_release", hounds_terms_menu, root_path / "src/menus/start_game/rtc_hounds_terms.py"),
+        ("rtc_terms_reject_detain", hounds_terms_menu, root_path / "src/menus/start_game/rtc_hounds_terms.py"),
+        ("slot_quest_sod_chain_choice", hounds_terms_menu, root_path / "src/menus/start_game/rtc_hounds_terms.py"),
+        ("slot_quest_target_center", hounds_terms_menu, root_path / "src/menus/start_game/rtc_hounds_terms.py"),
+        ("script_sod_rtc_hounds_terms_cleanup_envoy", hounds_terms_script, root_path / "src/scripts/ZG_quests/sod_rtc_hounds_terms_resolve.py"),
+        ("slot_quest_sod_chain_choice", hounds_terms_script, root_path / "src/scripts/ZG_quests/sod_rtc_hounds_terms_resolve.py"),
+        ("slot_quest_object_troop", hounds_terms_script, root_path / "src/scripts/ZG_quests/sod_rtc_hounds_terms_resolve.py"),
+        ("slot_quest_target_center", hounds_terms_script, root_path / "src/scripts/ZG_quests/sod_rtc_hounds_terms_resolve.py"),
+        ("slot_quest_target_amount", hounds_terms_script, root_path / "src/scripts/ZG_quests/sod_rtc_hounds_terms_resolve.py"),
+    ):
+        if token not in text:
+            _emit(
+                report,
+                code="missing_rtc_bread_imperial_continuity_token",
+                message=f"Road to Crown Imperial bread continuity is missing {token!r}.",
+                severity="warning",
+                subject="qst_rtc_hounds_terms",
+                path=str(path),
+                quest_id="rtc_hounds_terms",
+                token=token,
+            )
+    war_of_witnesses_menu = _safe_read_text(root_path / "src/menus/start_game/rtc_war_of_witnesses.py")
+    war_of_witnesses_script = _safe_read_text(root_path / "src/scripts/ZG_quests/sod_rtc_war_of_witnesses_resolve.py")
+    for token, text, path in (
+        ("script_sod_rtc_war_of_witnesses_prepare_target", war_of_witnesses_menu, root_path / "src/menus/start_game/rtc_war_of_witnesses.py"),
+        ("slot_quest_sod_chain_choice", war_of_witnesses_menu, root_path / "src/menus/start_game/rtc_war_of_witnesses.py"),
+        ("slot_quest_object_troop", war_of_witnesses_menu, root_path / "src/menus/start_game/rtc_war_of_witnesses.py"),
+        ("sod_rtc_offer_bread_oath", war_of_witnesses_menu, root_path / "src/menus/start_game/rtc_war_of_witnesses.py"),
+        ("sod_rtc_offer_books_oath", war_of_witnesses_menu, root_path / "src/menus/start_game/rtc_war_of_witnesses.py"),
+        ("sod_rtc_offer_witness_oath", war_of_witnesses_menu, root_path / "src/menus/start_game/rtc_war_of_witnesses.py"),
+        (":envoy_handling", war_of_witnesses_menu, root_path / "src/menus/start_game/rtc_war_of_witnesses.py"),
+        ("rtc_witness_envoy_leverage", war_of_witnesses_menu, root_path / "src/menus/start_game/rtc_war_of_witnesses.py"),
+        ("slot_quest_target_center", war_of_witnesses_menu, root_path / "src/menus/start_game/rtc_war_of_witnesses.py"),
+        ("script_sod_rtc_war_of_witnesses_cleanup_target", war_of_witnesses_script, root_path / "src/scripts/ZG_quests/sod_rtc_war_of_witnesses_resolve.py"),
+        ("slot_quest_sod_chain_choice", war_of_witnesses_script, root_path / "src/scripts/ZG_quests/sod_rtc_war_of_witnesses_resolve.py"),
+        ("slot_quest_object_troop", war_of_witnesses_script, root_path / "src/scripts/ZG_quests/sod_rtc_war_of_witnesses_resolve.py"),
+        ("sod_rtc_offer_bread_oath", war_of_witnesses_script, root_path / "src/scripts/ZG_quests/sod_rtc_war_of_witnesses_resolve.py"),
+        ("sod_rtc_offer_books_oath", war_of_witnesses_script, root_path / "src/scripts/ZG_quests/sod_rtc_war_of_witnesses_resolve.py"),
+        ("sod_rtc_offer_witness_oath", war_of_witnesses_script, root_path / "src/scripts/ZG_quests/sod_rtc_war_of_witnesses_resolve.py"),
+        (":envoy_handling", war_of_witnesses_script, root_path / "src/scripts/ZG_quests/sod_rtc_war_of_witnesses_resolve.py"),
+        ("sod_rtc_witness_war_envoy_leverage", war_of_witnesses_script, root_path / "src/scripts/ZG_quests/sod_rtc_war_of_witnesses_resolve.py"),
+        ("slot_quest_target_center", war_of_witnesses_script, root_path / "src/scripts/ZG_quests/sod_rtc_war_of_witnesses_resolve.py"),
+        ("script_change_player_relation_with_center", war_of_witnesses_script, root_path / "src/scripts/ZG_quests/sod_rtc_war_of_witnesses_resolve.py"),
+        ("slot_quest_target_amount", war_of_witnesses_script, root_path / "src/scripts/ZG_quests/sod_rtc_war_of_witnesses_resolve.py"),
+    ):
+        if token not in text:
+            _emit(
+                report,
+                code="missing_rtc_bread_witness_war_continuity_token",
+                message=f"Road to Crown witness-war bread continuity is missing {token!r}.",
+                severity="warning",
+                subject="qst_rtc_war_of_witnesses",
+                path=str(path),
+                quest_id="rtc_war_of_witnesses",
+                token=token,
+            )
+    last_road_menu = _safe_read_text(root_path / "src/menus/start_game/rtc_last_road.py")
+    last_road_script = _safe_read_text(root_path / "src/scripts/ZG_quests/sod_rtc_last_road_resolve.py")
+    for token, text, path in (
+        ("script_sod_rtc_last_road_prepare_strategy_target", last_road_menu, root_path / "src/menus/start_game/rtc_last_road.py"),
+        ("slot_quest_sod_chain_choice", last_road_menu, root_path / "src/menus/start_game/rtc_last_road.py"),
+        ("slot_quest_object_troop", last_road_menu, root_path / "src/menus/start_game/rtc_last_road.py"),
+        ("sod_rtc_offer_bread_oath", last_road_menu, root_path / "src/menus/start_game/rtc_last_road.py"),
+        ("sod_rtc_offer_books_oath", last_road_menu, root_path / "src/menus/start_game/rtc_last_road.py"),
+        ("sod_rtc_offer_witness_oath", last_road_menu, root_path / "src/menus/start_game/rtc_last_road.py"),
+        (":envoy_handling", last_road_menu, root_path / "src/menus/start_game/rtc_last_road.py"),
+        ("rtc_last_turn_accusation", last_road_menu, root_path / "src/menus/start_game/rtc_last_road.py"),
+        ("slot_quest_target_center", last_road_menu, root_path / "src/menus/start_game/rtc_last_road.py"),
+        ("script_sod_rtc_last_road_cleanup_strategy_target", last_road_script, root_path / "src/scripts/ZG_quests/sod_rtc_last_road_resolve.py"),
+        ("slot_quest_sod_chain_choice", last_road_script, root_path / "src/scripts/ZG_quests/sod_rtc_last_road_resolve.py"),
+        ("slot_quest_object_troop", last_road_script, root_path / "src/scripts/ZG_quests/sod_rtc_last_road_resolve.py"),
+        ("sod_rtc_offer_bread_oath", last_road_script, root_path / "src/scripts/ZG_quests/sod_rtc_last_road_resolve.py"),
+        ("sod_rtc_offer_books_oath", last_road_script, root_path / "src/scripts/ZG_quests/sod_rtc_last_road_resolve.py"),
+        ("sod_rtc_offer_witness_oath", last_road_script, root_path / "src/scripts/ZG_quests/sod_rtc_last_road_resolve.py"),
+        (":envoy_handling", last_road_script, root_path / "src/scripts/ZG_quests/sod_rtc_last_road_resolve.py"),
+        ("sod_rtc_last_road_turn_accusation", last_road_script, root_path / "src/scripts/ZG_quests/sod_rtc_last_road_resolve.py"),
+        ("slot_quest_target_center", last_road_script, root_path / "src/scripts/ZG_quests/sod_rtc_last_road_resolve.py"),
+        ("script_change_player_relation_with_center", last_road_script, root_path / "src/scripts/ZG_quests/sod_rtc_last_road_resolve.py"),
+        ("slot_quest_target_amount", last_road_script, root_path / "src/scripts/ZG_quests/sod_rtc_last_road_resolve.py"),
+    ):
+        if token not in text:
+            _emit(
+                report,
+                code="missing_rtc_bread_last_road_continuity_token",
+                message=f"Road to Crown last-road bread continuity is missing {token!r}.",
+                severity="warning",
+                subject="qst_rtc_last_road",
+                path=str(path),
+                quest_id="rtc_last_road",
+                token=token,
+            )
+    final_confrontation_menu = _safe_read_text(root_path / "src/menus/start_game/rtc_final_confrontation.py")
+    final_confrontation_script = _safe_read_text(root_path / "src/scripts/ZG_quests/sod_rtc_final_confrontation_resolve.py")
+    for token, text, path in (
+        ("script_sod_rtc_final_confrontation_prepare_target", final_confrontation_menu, root_path / "src/menus/start_game/rtc_final_confrontation.py"),
+        ("slot_quest_sod_chain_choice", final_confrontation_menu, root_path / "src/menus/start_game/rtc_final_confrontation.py"),
+        ("slot_quest_object_troop", final_confrontation_menu, root_path / "src/menus/start_game/rtc_final_confrontation.py"),
+        ("sod_rtc_offer_bread_oath", final_confrontation_menu, root_path / "src/menus/start_game/rtc_final_confrontation.py"),
+        ("sod_rtc_offer_books_oath", final_confrontation_menu, root_path / "src/menus/start_game/rtc_final_confrontation.py"),
+        ("sod_rtc_offer_witness_oath", final_confrontation_menu, root_path / "src/menus/start_game/rtc_final_confrontation.py"),
+        (":envoy_handling", final_confrontation_menu, root_path / "src/menus/start_game/rtc_final_confrontation.py"),
+        ("slot_quest_target_center", final_confrontation_menu, root_path / "src/menus/start_game/rtc_final_confrontation.py"),
+        ("script_sod_rtc_final_confrontation_cleanup_target", final_confrontation_script, root_path / "src/scripts/ZG_quests/sod_rtc_final_confrontation_resolve.py"),
+        ("slot_quest_sod_chain_choice", final_confrontation_script, root_path / "src/scripts/ZG_quests/sod_rtc_final_confrontation_resolve.py"),
+        ("slot_quest_object_troop", final_confrontation_script, root_path / "src/scripts/ZG_quests/sod_rtc_final_confrontation_resolve.py"),
+        ("sod_rtc_offer_bread_oath", final_confrontation_script, root_path / "src/scripts/ZG_quests/sod_rtc_final_confrontation_resolve.py"),
+        ("sod_rtc_offer_books_oath", final_confrontation_script, root_path / "src/scripts/ZG_quests/sod_rtc_final_confrontation_resolve.py"),
+        ("sod_rtc_offer_witness_oath", final_confrontation_script, root_path / "src/scripts/ZG_quests/sod_rtc_final_confrontation_resolve.py"),
+        (":envoy_handling", final_confrontation_script, root_path / "src/scripts/ZG_quests/sod_rtc_final_confrontation_resolve.py"),
+        (":last_strategy", final_confrontation_script, root_path / "src/scripts/ZG_quests/sod_rtc_final_confrontation_resolve.py"),
+        ("sod_rtc_last_road_turn_accusation", final_confrontation_script, root_path / "src/scripts/ZG_quests/sod_rtc_final_confrontation_resolve.py"),
+        ("sod_rtc_flag_envoy_accusation_turned", final_confrontation_script, root_path / "src/scripts/ZG_quests/sod_rtc_final_confrontation_resolve.py"),
+        ("slot_quest_target_center", final_confrontation_script, root_path / "src/scripts/ZG_quests/sod_rtc_final_confrontation_resolve.py"),
+        ("script_change_player_relation_with_center", final_confrontation_script, root_path / "src/scripts/ZG_quests/sod_rtc_final_confrontation_resolve.py"),
+    ):
+        if token not in text:
+            _emit(
+                report,
+                code="missing_rtc_bread_final_continuity_token",
+                message=f"Road to Crown final bread continuity is missing {token!r}.",
+                severity="warning",
+                subject="qst_rtc_final_confrontation",
+                path=str(path),
+                quest_id="rtc_final_confrontation",
+                token=token,
+            )
+    return report
+
+
 def build_quest_diagnostics_report(
     quests: Iterable[Any] | None = None,
     *,
@@ -1577,6 +1949,8 @@ def build_quest_diagnostics_report(
     report = QuestDiagnosticsReport()
     report.merge(diagnose_quest_graph(quests=quests, root=root, project_root=project_root))
     report.merge(diagnose_battle_objectives(quests=quests, root=root, project_root=project_root))
+    report.merge(diagnose_interactive_quest_contracts(quests=quests, root=root, project_root=project_root))
+    report.merge(diagnose_rtc_price_of_bread_simulation_contract(project_root=project_root))
     report.merge(diagnose_dialogue_branch_coverage(dialogue_files=dialogue_files, helper_files=helper_files, root=root, project_root=project_root))
     report.merge(
         diagnose_quest_narrative(

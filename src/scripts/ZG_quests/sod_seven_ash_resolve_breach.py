@@ -1,0 +1,31 @@
+SCRIPTS = [
+("sod_seven_ash_resolve_breach",
+    [
+      (store_script_param, ":breach_result", 1),
+      (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_breach_result, ":breach_result"),
+
+      (try_begin),
+        (eq, ":breach_result", sod_seven_ash_siege_result_held),
+        (quest_get_slot, ":pressure", "qst_seven_ash_ultimatum", slot_quest_seven_ash_wulfred_pressure),
+        (val_sub, ":pressure", 12),
+        (val_max, ":pressure", 0),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_wulfred_pressure, ":pressure"),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_breach_street_pressure, 1),
+      (else_try),
+        (eq, ":breach_result", sod_seven_ash_siege_result_bloodied),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_breach_street_pressure, 2),
+      (else_try),
+        (eq, ":breach_result", sod_seven_ash_siege_result_lost),
+        (quest_get_slot, ":civilian_safety", "qst_seven_ash_ultimatum", slot_quest_seven_ash_civilian_safety),
+        (val_sub, ":civilian_safety", 15),
+        (val_max, ":civilian_safety", 0),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_civilian_safety, ":civilian_safety"),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_breach_street_pressure, 3),
+      (try_end),
+
+      (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_siege_phase_active, sod_seven_ash_siege_phase_inner_streets),
+      (setup_quest_text, "qst_seven_ash_inner_streets"),
+      (str_store_string, s2, "@The gate and breach are resolved. The fight spills toward Ashwick's inner streets, where doors, fires, cellars, and civilians decide the next cost."),
+      (call_script, "script_sod_quest_chain_branch_success", "qst_seven_ash_breach", "qst_seven_ash_inner_streets"),
+  ]),
+]

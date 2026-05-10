@@ -33,6 +33,8 @@ MENUS = [
       (else_try),
         (eq, "$loot_screen_shown", 0),
         (assign, "$loot_screen_shown", 1),
+        (call_script, "script_sod_degrade_player_party_equipment_after_battle"),
+        (call_script, "script_sod_companion_retinue_process_post_battle_hires"),
         (call_script, "script_total_victory_distribute_leftovers"),
         (troop_clear_inventory, "trp_temp_troop"),
         (call_script, "script_party_calculate_loot", "p_encountered_party_backup"),

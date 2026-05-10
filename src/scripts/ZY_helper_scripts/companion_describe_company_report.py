@@ -124,5 +124,7 @@ SCRIPTS = [
    (else_try),
      (str_store_string, s1, "@Companion Company Report^^Companions present: {reg3}^Average cohesion: {reg1}^Average grievance: {reg2}^Average level: {reg9}^Companions ready to level: {reg10}^^{s5}^^Steady companions: {reg4}^Strained companions: {reg5}^Troubled companions: {reg6}^^Strongest anchor: {s2} ({reg7})^Sharpest grievance: {s3} ({reg8})^^Camp mood: Watchful. Nobody is breaking, but nobody is fully settled either. The road is still deciding what kind of company this will be."),
    (try_end),
+   (call_script, "script_sod_companion_describe_company_depth_to_s30"),
+   (str_store_string, s1, "@{s1}^^{s30}"),
  ]),
 ]

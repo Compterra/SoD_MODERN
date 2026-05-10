@@ -1,3 +1,5 @@
+# Hardcoded game_* script callbacks. The engine calls these by name/role, and
+# generated order should remain stable for compatibility/debugging.
 ZA_hardcoded_game_scripts/game_start.py
 ZA_hardcoded_game_scripts/game_event_party_encounter.py
 ZA_hardcoded_game_scripts/game_event_simulate_battle.py
@@ -13,6 +15,8 @@ ZA_hardcoded_game_scripts/game_get_prisoner_price.py
 ZA_hardcoded_game_scripts/game_check_prisoner_can_be_sold.py
 ZA_hardcoded_game_scripts/game_event_detect_party.py
 ZA_hardcoded_game_scripts/game_event_undetect_party.py
+ZA_hardcoded_game_scripts/game_check_party_sees_party.py
+ZA_hardcoded_game_scripts/game_get_party_speed_multiplier.py
 ZA_hardcoded_game_scripts/game_get_statistics_line.py
 ZA_hardcoded_game_scripts/game_get_date_text.py
 ZA_hardcoded_game_scripts/game_get_money_text.py

@@ -79,14 +79,14 @@ important_color = pink
 ##  Global Constants             #######################
 ########################################################
 
-current_file_version            = 460
+current_file_version            = 461
 
-village_pop_min                 = 50
-village_pop_max                 = 500
+village_pop_min                 = 80
+village_pop_max                 = 1000
 village_pop_ideal               = (village_pop_max-village_pop_min)/2+village_pop_min
 
-town_pop_min                    = 500
-town_pop_max                    = 3000
+town_pop_min                    = 800
+town_pop_max                    = 6000
 town_pop_ideal                  = (town_pop_max-town_pop_min)/2+town_pop_min
 
 center_initial_reaction_low     = -5
@@ -110,6 +110,9 @@ sod_desperation_pop_surplus_min = 10    # need at least this surplus above min b
 
 # Ultimate troops (zealots): minimum effective faith required for the upgrade event to fire
 sod_zealot_min_faith            = 100   # effective faith (global_faith - holy*10) must be >= this to get zealot event
+sod_faith_ascension_local_min   = 35    # towns need this much local faith before manual faith ascension is allowed
+sod_faith_ascension_holy_cost   = 20    # each faith elite adds this much holy burden, reducing future effective faith
+sod_faith_ascension_event_bonus = 25    # chapel/temple support can push the rare daily calling event over the line
 
 # Nobles: population cap for immigration (nobles per run <= total_chapter_pop / divisor)
 sod_noble_cap_pop_divisor        = 2000  # higher = fewer nobles for same population
@@ -119,11 +122,88 @@ sod_town_consumption_pop_divisor = 400   # weekly grain/flour consumption = town
 sod_town_consumption_extra_pop_divisor = 800  # meat/ale consumption = town_pop / this (min 1), typically lower than grain
 sod_cattle_production_pop_divisor = 200 # cattle meat production *= village_pop / this
 
+# Construction: weekly labor output from real population/support.
+sod_village_construction_pop_divisor = 12
+sod_town_construction_pop_divisor = 35
+sod_castle_construction_bound_pop_divisor = 90
+sod_castle_construction_support_divisor = 10
+sod_castle_construction_garrison_divisor = 6
+sod_castle_construction_min_garrison_labor = 6
+sod_village_construction_workforce_cap = 75
+sod_town_construction_workforce_cap = 180
+sod_castle_construction_workforce_cap = 130
+
 # Caravan progression: profitable kingdom caravans can scale up over time.
 sod_caravan_upgrade_profit_tier_1 = 250   # total realized trade profit needed for first upgrade
 sod_caravan_upgrade_profit_tier_2 = 700   # total realized trade profit needed for second upgrade
 sod_caravan_upgrade_profit_tier_3 = 1400  # total realized trade profit needed for third upgrade
 sod_caravan_trade_percent_bonus_per_tier = 5  # extra trade intensity passed to script_do_party_center_trade per tier
+
+# Center modifier IDs. These are not slots; they are stable script selector IDs.
+sod_center_modifier_none = 0
+sod_center_modifier_trade_liquidity_flat = 1
+sod_center_modifier_trade_volume_pct = 2
+sod_center_modifier_tariff_income_pct = 3
+sod_center_modifier_market_wealth_flat = 4
+sod_center_modifier_market_wealth_pct = 5
+sod_center_modifier_prosperity_cap_flat = 6
+sod_center_modifier_prosperity_growth_flat = 7
+sod_center_modifier_prosperity_growth_pct = 8
+sod_center_modifier_production_output_pct = 9
+sod_center_modifier_goods_import_demand_pct = 10
+sod_center_modifier_goods_export_supply_pct = 11
+sod_center_modifier_merchant_happiness_flat = 12
+sod_center_modifier_tax_efficiency_pct = 13
+sod_center_modifier_population_capacity_flat = 14
+sod_center_modifier_population_growth_flat = 15
+sod_center_modifier_population_growth_pct = 16
+sod_center_modifier_population_recovery_flat = 17
+sod_center_modifier_migration_attraction_flat = 18
+sod_center_modifier_migration_retention_flat = 19
+sod_center_modifier_health_cap_flat = 20
+sod_center_modifier_health_recovery_flat = 21
+sod_center_modifier_disease_resistance_pct = 22
+sod_center_modifier_food_consumption_pct = 23
+sod_center_modifier_food_store_capacity_flat = 24
+sod_center_modifier_food_security_flat = 25
+sod_center_modifier_cattle_growth_flat = 26
+sod_center_modifier_cattle_output_pct = 27
+sod_center_modifier_security_flat = 28
+sod_center_modifier_raid_resistance_pct = 29
+sod_center_modifier_raid_recovery_flat = 30
+sod_center_modifier_threat_reduction_flat = 31
+sod_center_modifier_bandit_spawn_reduction_pct = 32
+sod_center_modifier_desperation_bandit_reduction_pct = 33
+sod_center_modifier_unrest_flat = 34
+sod_center_modifier_unrest_reduction_flat = 35
+sod_center_modifier_prisoner_escape_reduction_pct = 36
+sod_center_modifier_warning_range_flat = 37
+sod_center_modifier_patrol_response_pct = 38
+sod_center_modifier_infantry_training_flat = 39
+sod_center_modifier_ranged_training_flat = 40
+sod_center_modifier_cavalry_training_flat = 41
+sod_center_modifier_garrison_recovery_flat = 42
+sod_center_modifier_garrison_upkeep_pct = 43
+sod_center_modifier_troop_upgrade_cost_pct = 44
+sod_center_modifier_recruit_count_flat = 45
+sod_center_modifier_recruit_tier_bonus_flat = 46
+sod_center_modifier_noble_recruitment_flat = 47
+sod_center_modifier_faith_troop_access_flat = 48
+sod_center_modifier_faith_ascension_bonus_flat = 49
+sod_center_modifier_construction_speed_pct = 50
+sod_center_modifier_construction_cost_pct = 51
+sod_center_modifier_weekly_upkeep_flat = 52
+sod_center_modifier_demesne_cost_flat = 53
+sod_center_modifier_renown_weekly_flat = 54
+sod_center_modifier_relations_weekly_flat = 55
+sod_center_modifier_administration_flat = 56
+sod_center_modifier_law_compliance_flat = 57
+sod_center_modifier_local_faith_growth_flat = 58
+sod_center_modifier_global_faith_growth_flat = 59
+sod_center_modifier_faith_stability_flat = 60
+sod_center_modifier_cultural_assimilation_flat = 61
+sod_center_modifier_begin = sod_center_modifier_trade_liquidity_flat
+sod_center_modifier_end = sod_center_modifier_cultural_assimilation_flat + 1
 
 # Nobles: happiness bonus from realm population (larger realm = more attractive to nobles)
 sod_noble_happiness_pop_divisor  = 500  # bonus = total_chapter_pop / this, capped by _pop_bonus_max
@@ -214,6 +294,13 @@ sod_law_ai_tag_defensive         = 4096
 
 # Native 1.011 engine flaw: bandit parties also absorb rescued prisoners and bloat (lords are already trimmed in trigger #131)
 sod_bandit_party_bloat_max       = 120   # cap bandit/outlaw party size so they don't grow to 1000+
+sod_spawn_cap_generic_bandits    = 55
+sod_spawn_cap_mountain_bandits   = 12
+sod_spawn_cap_forest_bandits     = 12
+sod_spawn_cap_sea_raiders        = 14
+sod_spawn_cap_steppe_bandits     = 10
+sod_spawn_cap_boar_raiders       = 7
+sod_spawn_cap_boar_desert_bands  = 8
 
 # Siege AI (trigger #27): assault vs retreat
 sod_siege_assault_min_ratio      = 150   # attacker/defender strength ratio must exceed this (percent) to allow assault roll
@@ -419,6 +506,229 @@ slot_faction_law_town_relation_modifier = 272
 slot_faction_law_village_prosperity_modifier = 273
 slot_faction_law_town_prosperity_modifier = 274
 
+# Slaver black market web. Used by fac_sod_merc_guild6 only.
+slot_faction_slaver_market_demand = 275
+slot_faction_slaver_market_supply = 276
+slot_faction_slaver_market_heat = 277
+slot_faction_slaver_market_bases = 278
+slot_faction_slaver_market_last_spawn_day = 279
+
+# Elephant Guard sacred wardens. Used by fac_sod_merc_guild3 only.
+slot_faction_elephant_guard_devotion = 280
+slot_faction_elephant_guard_supplies = 281
+slot_faction_elephant_guard_omens = 282
+slot_faction_elephant_guard_active_parties = 283
+slot_faction_elephant_guard_target_center = 284
+slot_faction_elephant_guard_last_spawn_day = 285
+slot_faction_elephant_guard_slaver_alarm = 294
+
+# Jotnar Clan hearth camps. Used by fac_sod_merc_guild4 only.
+slot_faction_jotnar_hearth_pressure = 286
+slot_faction_jotnar_active_parties = 287
+slot_faction_jotnar_target_center = 288
+slot_faction_jotnar_last_spawn_day = 289
+slot_faction_jotnar_slaver_pressure = 295
+
+# Serpent Host route screens. Used by fac_sod_merc_guild5 only.
+slot_faction_serpent_route_pressure = 290
+slot_faction_serpent_active_parties = 291
+slot_faction_serpent_target_center = 292
+slot_faction_serpent_last_spawn_day = 293
+
+# Boar Clan frontier toll bands. Used by fac_sod_merc_guild7 only.
+slot_faction_boar_frontier_pressure = 296
+slot_faction_boar_active_parties = 297
+slot_faction_boar_target_center = 298
+slot_faction_boar_tribute_stock = 299
+slot_faction_boar_intimidation = 300
+
+# Black Army road-security contracts. Used by fac_sod_merc_guild1 only.
+slot_faction_black_army_security_fund = 301
+slot_faction_black_army_contract_heat = 302
+
+# Conquistador expedition logistics. Used by fac_sod_merc_guild2 only.
+slot_faction_conquistador_supply_stock = 303
+slot_faction_conquistador_requisition_heat = 304
+
+# Serpent Host route intelligence. Used by fac_sod_merc_guild5 only.
+slot_faction_serpent_intelligence = 305
+slot_faction_serpent_safe_passage = 306
+
+# Black Khergit moving horde. Used by fac_black_khergits only.
+slot_faction_black_khergit_pressure = 307
+slot_faction_black_khergit_camp_party = 308
+slot_faction_black_khergit_target_center = 309
+slot_faction_black_khergit_last_migration_day = 310
+slot_faction_black_khergit_last_spawn_day = 311
+slot_faction_black_khergit_tribute = 312
+slot_faction_black_khergit_safe_passage_until = 313
+slot_faction_black_khergit_camp_disrupted_until = 314
+slot_faction_black_khergit_last_raid_report_day = 315
+slot_faction_black_khergit_last_pressure_day = 316
+
+# Imperial Expeditionary Force campaign state. Used by fac_kingdom_6 only.
+slot_faction_imperial_expedition_pressure = 317
+slot_faction_imperial_expedition_supply = 318
+slot_faction_imperial_expedition_front = 319
+slot_faction_imperial_expedition_enemy_realms = 320
+slot_faction_imperial_expedition_last_update_day = 321
+slot_faction_imperial_expedition_sabotage_until = 322
+
+# Ponavosa diplomacy system. Normal kingdoms use these slots; fac_kingdom_6 is
+# deliberately treated as an exception by the helper scripts.
+slot_faction_diplomacy_temperament = 323
+slot_faction_diplomacy_legitimacy = 324
+slot_faction_diplomacy_fear = 325
+slot_faction_diplomacy_grievance = 326
+slot_faction_diplomacy_war_weariness = 327
+slot_faction_diplomacy_trade_interest = 328
+slot_faction_diplomacy_honor_stance = 329
+slot_faction_diplomacy_slavery_stance = 330
+slot_faction_diplomacy_border_stance = 331
+slot_faction_diplomacy_religious_stance = 332
+slot_faction_diplomacy_current_crisis = 333
+slot_faction_diplomacy_last_envoy_day = 334
+slot_faction_diplomacy_last_treaty_day = 335
+
+slot_faction_diplomacy_policy_culture = 336
+slot_faction_diplomacy_policy_border = 337
+slot_faction_diplomacy_policy_slavery = 338
+slot_faction_diplomacy_decree_war_taxes = 339
+slot_faction_diplomacy_decree_reconstruction = 340
+slot_faction_diplomacy_decree_anti_slaver = 341
+slot_faction_diplomacy_decree_road_patrol = 342
+
+slot_faction_treaty_partner_1 = 343
+slot_faction_treaty_type_1 = 344
+slot_faction_treaty_until_day_1 = 345
+slot_faction_treaty_strength_1 = 346
+slot_faction_treaty_partner_2 = 347
+slot_faction_treaty_type_2 = 348
+slot_faction_treaty_until_day_2 = 349
+slot_faction_treaty_strength_2 = 350
+slot_faction_treaty_partner_3 = 351
+slot_faction_treaty_type_3 = 352
+slot_faction_treaty_until_day_3 = 353
+slot_faction_treaty_strength_3 = 354
+slot_faction_treaty_partner_4 = 355
+slot_faction_treaty_type_4 = 356
+slot_faction_treaty_until_day_4 = 357
+slot_faction_treaty_strength_4 = 358
+faction_diplomacy_treaty_slots_begin = slot_faction_treaty_partner_1
+faction_diplomacy_treaty_slots_end = 359
+
+slot_faction_diplomacy_memory_player_trust = 359
+slot_faction_diplomacy_memory_player_grievance = 360
+slot_faction_diplomacy_memory_player_aid = 361
+slot_faction_diplomacy_memory_player_slaver = 362
+slot_faction_diplomacy_memory_player_anti_slaver = 363
+slot_faction_diplomacy_memory_player_last_day = 364
+slot_faction_diplomacy_war_reason = 365
+slot_faction_diplomacy_war_reason_target = 366
+slot_faction_diplomacy_policy_military_service = 367
+slot_faction_diplomacy_policy_justice = 368
+slot_faction_diplomacy_policy_reconstruction = 369
+slot_faction_diplomacy_decree_emergency_conscription = 370
+slot_faction_diplomacy_decree_imperial_defense = 371
+slot_faction_diplomacy_decree_caravan_protection = 372
+slot_faction_diplomacy_decree_fortress_restoration = 373
+slot_faction_diplomacy_decree_grain_relief = 374
+slot_faction_diplomacy_decree_public_executions = 375
+slot_faction_diplomacy_decree_amnesty = 376
+slot_faction_diplomacy_decree_start_day = 377
+slot_faction_diplomacy_decree_cooldown_day = 378
+slot_faction_diplomacy_ai_last_pulse_day = 379
+slot_faction_diplomacy_internal_discontent = 380
+slot_faction_diplomacy_lord_war_support = 381
+slot_faction_diplomacy_last_incident_day = 382
+slot_faction_diplomacy_telemetry_incidents = 383
+slot_faction_diplomacy_telemetry_treaty_effects = 384
+slot_faction_diplomacy_telemetry_tribute_pressure = 385
+slot_faction_diplomacy_telemetry_imperial_coordination = 386
+slot_faction_diplomacy_telemetry_discontent_delta = 387
+slot_faction_diplomacy_telemetry_support_delta = 388
+
+sod_diplomacy_temperament_expansionist = 1
+sod_diplomacy_temperament_defensive = 2
+sod_diplomacy_temperament_mercantile = 3
+sod_diplomacy_temperament_honor_bound = 4
+sod_diplomacy_temperament_predatory = 5
+sod_diplomacy_temperament_isolationist = 6
+sod_diplomacy_temperament_opportunist = 7
+sod_diplomacy_temperament_anti_imperial = 8
+sod_diplomacy_temperament_imperial_exception = 9
+
+sod_diplomacy_crisis_none = 0
+sod_diplomacy_crisis_imperial = 1
+sod_diplomacy_crisis_black_khergit = 2
+sod_diplomacy_crisis_slaver = 3
+sod_diplomacy_crisis_multi_war = 4
+sod_diplomacy_crisis_famine = 5
+sod_diplomacy_crisis_succession = 6
+
+sod_diplomacy_policy_trade = 1
+sod_diplomacy_policy_balanced = 2
+sod_diplomacy_policy_military = 3
+sod_diplomacy_policy_open = 1
+sod_diplomacy_policy_guarded = 2
+sod_diplomacy_policy_sealed = 3
+sod_diplomacy_policy_slavery_banned = 1
+sod_diplomacy_policy_slavery_tolerated = 2
+sod_diplomacy_policy_slavery_regulated = 3
+sod_diplomacy_policy_slavery_accepted = 4
+sod_diplomacy_policy_service_volunteer = 1
+sod_diplomacy_policy_service_levy = 2
+sod_diplomacy_policy_service_conscription = 3
+sod_diplomacy_policy_service_forced_levy = 4
+sod_diplomacy_policy_justice_merciful = 1
+sod_diplomacy_policy_justice_balanced = 2
+sod_diplomacy_policy_justice_severe = 3
+sod_diplomacy_policy_justice_terror = 4
+sod_diplomacy_policy_reconstruction_austerity = 1
+sod_diplomacy_policy_reconstruction_normal = 2
+sod_diplomacy_policy_reconstruction_rebuilding = 3
+sod_diplomacy_policy_reconstruction_relief = 4
+
+sod_diplomacy_treaty_none = 0
+sod_diplomacy_treaty_truce = 1
+sod_diplomacy_treaty_trade_accord = 2
+sod_diplomacy_treaty_tribute = 3
+sod_diplomacy_treaty_anti_imperial_league = 4
+sod_diplomacy_treaty_demand_tribute = 5
+sod_diplomacy_treaty_non_aggression = 6
+sod_diplomacy_treaty_military_access = 7
+sod_diplomacy_treaty_defensive_pact = 8
+sod_diplomacy_treaty_prisoner_exchange = 9
+sod_diplomacy_treaty_anti_slaver_compact = 10
+sod_diplomacy_treaty_border_security_pact = 11
+
+sod_diplomacy_memory_broken_truce = 1
+sod_diplomacy_memory_released_lord = 2
+sod_diplomacy_memory_executed_lord = 3
+sod_diplomacy_memory_captive_freed = 4
+sod_diplomacy_memory_slaver_cooperation = 5
+sod_diplomacy_memory_anti_slaver_action = 6
+sod_diplomacy_memory_anti_imperial_aid = 7
+sod_diplomacy_memory_tribute_accepted = 8
+sod_diplomacy_memory_tribute_refused = 9
+sod_diplomacy_memory_envoy_failed = 10
+sod_diplomacy_memory_border_raid = 11
+sod_diplomacy_memory_caravan_attack = 12
+sod_diplomacy_memory_shared_enemy = 13
+
+sod_diplomacy_war_reason_unknown = 0
+sod_diplomacy_war_reason_border_dispute = 1
+sod_diplomacy_war_reason_retaliation = 2
+sod_diplomacy_war_reason_conquest = 3
+sod_diplomacy_war_reason_religious_hostility = 4
+sod_diplomacy_war_reason_slaver_outrage = 5
+sod_diplomacy_war_reason_imperial_crisis = 6
+sod_diplomacy_war_reason_badboy_containment = 7
+sod_diplomacy_war_reason_trade_route_conflict = 8
+sod_diplomacy_war_reason_broken_treaty = 9
+sod_diplomacy_war_reason_black_khergit_pressure = 10
+sod_diplomacy_war_reason_mercenary_pact = 11
+
 ########################################################
 ##  PARTY SLOTS            #############################
 ########################################################
@@ -568,6 +878,10 @@ slot_party_home_center            = 123
 
 slot_center_current_improvement   = 124
 slot_center_improvement_end_hour  = 125
+slot_center_construction_progress = 126
+slot_center_construction_required = 127
+slot_center_construction_weekly_workforce = 128
+slot_center_construction_last_progress = 129
 
 slot_center_has_manor            = 130 #village
 slot_center_has_mill             = 131 #village
@@ -602,6 +916,10 @@ slot_center_has_ambulatory = 151          #village
 slot_center_has_water_supply = 152         #village
 slot_center_has_clayworks = 153           #village
 slot_center_has_rustic_blacksmith = 154   #village
+slot_center_has_militia_yard = 155        #village
+slot_center_has_beacon_hill = 156         #village
+slot_center_has_granary = 157             #village
+slot_center_has_militia_armory = 158      #village
 #SoD BUILDINGS END
 
 village_improvements_begin = slot_center_has_manor
@@ -612,6 +930,125 @@ walled_center_improvements_end = slot_center_has_university+1
 
 #SoD Faith
 slot_center_sod_local_faith = 245
+
+sod_faiths_begin = 1
+sod_faiths_end = 6
+sod_faith_support_min = 0
+sod_faith_support_max = 100
+sod_faith_tension_soft_cap = 60
+
+slot_center_sod_faith_1_support = 373
+slot_center_sod_faith_2_support = 374
+slot_center_sod_faith_3_support = 375
+slot_center_sod_faith_4_support = 376
+slot_center_sod_faith_5_support = 377
+slot_center_sod_dominant_faith = 378
+slot_center_sod_faith_tension = 379
+slot_center_sod_faith_institution_strength = 380
+slot_center_sod_faith_migrated = 381
+
+slot_center_sod_security_cache_day = 382
+slot_center_sod_security_cache_effective_threat = 383
+slot_center_sod_security_cache_security = 384
+slot_center_sod_security_cache_threat_reduction = 385
+slot_center_sod_security_cache_raid_resistance = 386
+slot_center_sod_security_cache_bandit_reduction = 387
+slot_center_sod_security_cache_desperation_bandit_reduction = 388
+slot_center_sod_security_cache_warning_range = 389
+slot_center_sod_security_cache_patrol_response = 390
+slot_center_sod_security_cache_unrest_pressure = 391
+slot_center_sod_security_cache_base_threat = 392
+slot_center_sod_security_cache_vulnerability = 393
+slot_center_sod_security_cache_contract_security = 394
+slot_center_sod_common_prisoners = 395
+slot_center_sod_military_prisoners = 396
+slot_center_sod_bandit_prisoners = 397
+slot_center_sod_slave_laborers = 398
+slot_center_sod_prisoner_unrest_pressure = 399
+slot_center_sod_prisoner_escape_pressure = 413
+slot_center_sod_prisoner_last_update_day = 414
+slot_center_sod_prisoner_capacity = 415
+slot_center_sod_prisoner_holding_policy = 416
+slot_center_sod_patrol_road_preference = 417
+slot_center_sod_patrol_recent_destroyed_day = 418
+slot_center_sod_patrol_campaign_screen_request = 419
+
+slot_faction_sod_dominant_faith = 389
+slot_faction_sod_player_faith_coverage = 390
+slot_faction_sod_faith_tension = 391
+slot_faction_sod_clergy_legitimacy = 392
+slot_faction_sod_lord_morale_pressure = 393
+slot_faction_sod_campaign_health = 394
+slot_faction_sod_tired_lord_count = 395
+slot_faction_sod_unpaid_lord_count = 396
+slot_faction_sod_campaign_posture = 397
+slot_faction_sod_campaign_posture_target = 398
+slot_faction_sod_campaign_posture_day = 399
+slot_faction_sod_campaign_posture_confidence = 400
+slot_faction_sod_campaign_posture_reason = 401
+slot_faction_sod_marshal_planning_score = 402
+slot_faction_sod_marshal_coordination_score = 403
+slot_faction_sod_marshal_logistics_score = 404
+slot_faction_sod_marshal_aggression_score = 405
+slot_faction_sod_marshal_caution_score = 406
+slot_faction_sod_last_failed_siege_target = 407
+slot_faction_sod_last_failed_siege_day = 408
+slot_faction_sod_failed_siege_avoidance = 409
+slot_faction_sod_marshal_current_followers = 410
+slot_faction_sod_marshal_desired_followers = 411
+slot_faction_sod_marshal_offensive_readiness = 412
+slot_faction_sod_prisoner_supply = 413
+slot_faction_sod_prisoner_demand = 414
+slot_faction_sod_prisoner_labor_policy = 415
+slot_faction_sod_prisoner_exchange_pressure = 416
+slot_faction_sod_prisoner_abuse_heat = 417
+slot_faction_sod_prisoner_mercy_reputation = 418
+slot_faction_sod_active_prisoner_trains = 419
+slot_faction_sod_landless_lord_count = 420
+slot_faction_sod_disgruntled_lord_count = 421
+slot_faction_sod_vassal_loyalty_health = 422
+
+# Late mini-faction lock state. Kept high to avoid legacy faction slot ranges.
+slot_faction_black_khergit_target_lock_until = 423
+slot_faction_black_khergit_last_seen_center = 424
+slot_faction_black_khergit_last_seen_day = 425
+slot_faction_sod_merc_treasury = 426
+slot_faction_sod_merc_manpower = 427
+slot_faction_sod_merc_veterans = 428
+slot_faction_sod_merc_elite_stock = 429
+slot_faction_sod_merc_contract_load = 430
+slot_faction_sod_merc_support_capacity = 431
+slot_faction_sod_merc_active_contracts = 432
+slot_faction_sod_merc_recovery_rate = 433
+slot_faction_sod_merc_risk_tolerance = 434
+slot_faction_sod_merc_market_reputation = 435
+slot_faction_sod_merc_price_pressure = 436
+slot_faction_sod_merc_last_market_day = 437
+slot_faction_sod_merc_last_settlement_day = 438
+slot_faction_sod_merc_last_report_flags = 439
+slot_faction_sod_merc_demand_score = 440
+slot_faction_sod_merc_budget = 441
+slot_faction_sod_merc_max_bid = 442
+slot_faction_sod_merc_preferred_guild = 443
+slot_faction_sod_merc_contract_need_type = 444
+slot_faction_sod_merc_contract_urgency = 445
+slot_faction_sod_merc_last_bid_day = 446
+slot_faction_sod_merc_last_hired_guild = 447
+
+slot_faction_sod_rebel_counterpart = 448
+slot_faction_sod_parent_kingdom = 449
+slot_faction_sod_claimant_pretender = 450
+slot_faction_sod_claimant_old_ruler = 451
+slot_faction_sod_civil_war_state = 452
+slot_faction_sod_civil_war_started_day = 453
+slot_faction_sod_civil_war_parent_fiefs = 454
+slot_faction_sod_civil_war_rebel_fiefs = 455
+slot_faction_sod_civil_war_last_resolution_day = 456
+slot_faction_sod_merc_village_patrol_demand = 457
+slot_faction_sod_merc_village_patrol_budget = 458
+slot_faction_sod_merc_village_patrol_target = 459
+slot_faction_sod_merc_village_patrol_urgency = 460
+slot_faction_sod_merc_world_activity_pressure = 461
 #SoD Population
 slot_center_sod_local_population = 246
 slot_center_sod_local_health = 247
@@ -721,6 +1158,180 @@ slot_party_sod_threat_expiration_day = 344
 slot_party_sod_threat_reward_seed = 345
 slot_party_sod_threat_active_quest = 346
 slot_party_sod_threat_archetype = 347
+slot_party_sod_slaver_web_activity = 348
+slot_party_sod_slaver_origin = 349
+slot_party_sod_slaver_destination = 350
+slot_party_sod_elephant_guard_activity = 351
+slot_party_sod_elephant_guard_origin = 352
+slot_party_sod_elephant_guard_destination = 353
+slot_party_sod_elephant_guard_activity_type = 354
+slot_party_sod_jotnar_hearth_activity = 355
+slot_party_sod_jotnar_hearth_origin = 356
+slot_party_sod_jotnar_hearth_destination = 357
+slot_party_sod_serpent_route_activity = 358
+slot_party_sod_serpent_route_origin = 359
+slot_party_sod_serpent_route_destination = 360
+slot_party_sod_boar_frontier_activity = 361
+slot_party_sod_boar_frontier_origin = 362
+slot_party_sod_boar_frontier_destination = 363
+slot_party_black_khergit_camp_activity = 364
+slot_party_black_khergit_origin = 365
+slot_party_black_khergit_target = 366
+slot_party_black_khergit_role = 367
+slot_party_sod_diplomacy_envoy_activity = 368
+slot_party_sod_diplomacy_envoy_target = 369
+slot_party_sod_diplomacy_envoy_treaty = 370
+slot_party_sod_diplomacy_envoy_source = 371
+slot_party_sod_diplomacy_envoy_start_day = 372
+slot_party_sod_trade_origin = 373
+slot_party_sod_trade_destination = 374
+slot_party_sod_trade_cargo_focus = 375
+slot_party_sod_trade_route_risk = 376
+slot_party_sod_trade_last_result = 377
+slot_party_sod_trade_contract = 378
+slot_party_sod_trade_player_protection = 379
+slot_party_sod_trade_recent_trouble = 380
+slot_party_sod_trade_last_result_day = 381
+slot_party_sod_trade_investment = 382
+slot_party_sod_morale_snapshot = 383
+slot_party_sod_pay_strain_snapshot = 384
+slot_party_sod_campaign_fatigue_snapshot = 385
+slot_party_sod_last_morale_snapshot_day = 386
+slot_party_sod_supply_confidence_snapshot = 387
+slot_party_sod_support_type = 388
+slot_party_sod_prisoner_origin = 389
+slot_party_sod_prisoner_destination = 390
+slot_party_sod_prisoner_purpose = 391
+slot_party_sod_prisoner_value = 392
+slot_party_sod_prisoner_guard_quality = 393
+slot_party_sod_prisoner_total_count = 394
+slot_party_sod_prisoner_military_count = 395
+slot_party_sod_prisoner_bandit_count = 396
+slot_party_sod_prisoner_civilian_count = 397
+slot_party_sod_prisoner_created_day = 398
+slot_party_sod_prisoner_expected_arrival_day = 399
+slot_party_sod_support_origin = 420
+slot_party_sod_support_target = 421
+slot_party_sod_support_commander = 422
+slot_party_sod_support_expiry_day = 423
+slot_party_sod_support_value = 424
+slot_party_sod_patrol_role = 425
+slot_party_sod_patrol_status = 426
+slot_party_sod_patrol_radius = 427
+slot_party_sod_patrol_quality = 428
+slot_party_sod_patrol_created_day = 429
+slot_party_sod_patrol_last_threat_check_day = 430
+slot_party_sod_patrol_origin_castle = 431
+slot_party_sod_patrol_route_endpoint = 432
+slot_party_sod_retinue_owner_troop = 433
+slot_party_sod_retinue_anchor_party = 434
+slot_party_sod_retinue_last_sync_hour = 435
+slot_party_sod_retinue_state = 436
+slot_party_sod_looter_raid_state = 437
+slot_party_sod_looter_raid_target = 438
+slot_party_sod_looter_raid_start_time = 439
+slot_party_sod_looter_raid_last_tick = 440
+slot_party_sod_looter_raid_origin_region = 441
+slot_party_sod_looter_recently_checked = 442
+slot_party_sod_looter_raid_assault_resolved = 443
+slot_party_sod_messenger_role = 444
+slot_party_sod_tax_courier_origin_center = 445
+slot_party_sod_tax_courier_recipient_troop = 446
+slot_party_sod_tax_courier_destination_party = 447
+slot_party_sod_tax_courier_amount = 448
+slot_party_sod_tax_courier_rents = 449
+slot_party_sod_tax_courier_tariffs = 450
+slot_party_sod_tax_courier_created_day = 451
+slot_party_sod_tax_courier_expiry_day = 452
+slot_party_sod_tax_courier_status = 453
+slot_party_sod_merc_contract_employer = 454
+slot_party_sod_merc_contract_guild = 455
+slot_party_sod_merc_contract_value = 456
+slot_party_sod_merc_contract_wage_rate = 457
+slot_party_sod_merc_contract_term_end = 458
+slot_party_sod_merc_contract_role = 459
+slot_party_sod_merc_contract_quality = 460
+slot_party_sod_merc_contract_replenishment_level = 461
+slot_party_sod_merc_contract_market_id = 462
+slot_party_sod_merc_contract_start_day = 463
+slot_party_sod_merc_contract_initial_size = 464
+slot_party_sod_merc_contract_loss_score = 465
+
+slot_center_sod_looter_raid_cooldown_until = 420
+slot_center_sod_looter_raid_pressure = 421
+slot_center_sod_looter_last_raid_day = 422
+slot_center_sod_looter_last_defense_day = 423
+slot_center_sod_security_pressure = 424
+slot_center_sod_looter_player_reward_cooldown_until = 425
+slot_center_sod_looter_last_assault_day = 426
+slot_center_sod_looter_last_assault_result = 427
+slot_center_sod_looter_garrison_losses_recent = 428
+slot_center_sod_looter_militia_losses_recent = 429
+slot_center_sod_active_tax_courier = 430
+slot_center_sod_last_tax_courier_day = 431
+slot_center_sod_tax_courier_losses = 432
+
+sod_looter_raid_state_none = 0
+sod_looter_raid_state_gathering = 1
+sod_looter_raid_state_moving_to_target = 2
+sod_looter_raid_state_assaulting = 3
+sod_looter_raid_state_plundering = 4
+sod_looter_raid_state_fleeing = 5
+sod_looter_raid_state_resolving = 6
+
+sod_village_assault_result_none = 0
+sod_village_assault_result_defender_rout = 1
+sod_village_assault_result_defender_hold = 2
+sod_village_assault_result_raider_costly = 3
+sod_village_assault_result_raider_clean = 4
+sod_village_assault_result_raider_overwhelming = 5
+
+sod_merc_contract_role_none = 0
+sod_merc_contract_role_field_company = 1
+sod_merc_contract_role_patrol = 2
+sod_merc_contract_role_escort = 3
+sod_merc_contract_role_supply_column = 4
+sod_merc_contract_role_mercenary_lord = 5
+sod_merc_contract_role_garrison_support = 6
+sod_merc_contract_role_special_world_activity = 7
+
+sod_merc_buyer_player = 1
+sod_merc_buyer_ai_lord = 2
+sod_merc_buyer_ai_kingdom = 3
+sod_merc_buyer_guild_internal = 4
+
+sod_merc_contract_term_monthly = 1
+sod_merc_contract_term_quarterly = 3
+sod_merc_contract_term_campaign = 6
+
+sod_merc_refusal_none = 0
+sod_merc_refusal_no_capacity = 1
+sod_merc_refusal_low_manpower = 2
+sod_merc_refusal_low_treasury = 3
+sod_merc_refusal_overextended = 4
+sod_merc_refusal_bad_relations = 5
+sod_merc_refusal_loss_shock = 6
+
+sod_merc_access_outsider = 0
+sod_merc_access_promotion = 1
+sod_merc_access_elite = 2
+sod_merc_access_service = 3
+sod_merc_access_trusted = 4
+
+sod_looter_raid_grace_days = 30
+sod_looter_raid_min_party_size = 45
+sod_looter_raid_global_cap = 1
+sod_looter_raid_village_cooldown_days = 14
+sod_looter_raid_defense_cooldown_days = 7
+sod_looter_raid_player_reward_cooldown_days = 10
+sod_looter_raid_target_radius = 18
+sod_looter_raid_arrival_distance = 2
+sod_looter_raid_tick_hours = 6
+sod_looter_raid_pressure_stage_low = 35
+sod_looter_raid_pressure_stage_mid = 65
+sod_looter_raid_pressure_stage_high = 90
+sod_looter_raid_success_pressure = 100
+sod_looter_raid_player_report_radius = 15
 
 # KUBA SLOTS END
 
@@ -736,12 +1347,12 @@ spt_town               = 3
 spt_village            = 4
 ##spt_forager            = 5
 ##spt_war_party          = 6
-##spt_patrol             = 7
-##spt_messenger          = 8
+spt_patrol              = 7
+spt_messenger          = 8
 ##spt_raider             = 9
 ##spt_scout              = 10
 spt_kingdom_caravan    = 11
-##spt_prisoner_train     = 12
+spt_prisoner_train     = 12
 spt_kingdom_hero_party = 13
 ##spt_merchant_caravan   = 14
 spt_village_farmer     = 15
@@ -752,9 +1363,94 @@ spt_ai_mercenaries     = 18
 spt_player_mercenaries = 19
 spt_player_patrol      = 20
 spt_merc_base          = 21
+spt_diplomatic_envoy   = 22
+spt_companion_retinue  = 23
 
 kingdom_party_types_begin = spt_kingdom_caravan
 kingdom_party_types_end = spt_kingdom_hero_party + 1
+
+sod_prisoner_category_common = 1
+sod_prisoner_category_military = 2
+sod_prisoner_category_bandit = 3
+sod_prisoner_category_civilian = 4
+sod_prisoner_category_mercenary = 5
+sod_prisoner_category_elite = 6
+
+sod_prisoner_train_purpose_ransom = 1
+sod_prisoner_train_purpose_exchange = 2
+sod_prisoner_train_purpose_imprisonment = 3
+sod_prisoner_train_purpose_labor = 4
+sod_prisoner_train_purpose_slaver_market = 5
+sod_prisoner_train_purpose_trial = 6
+sod_prisoner_train_purpose_liberation = 7
+
+sod_prisoner_train_status_forming = 1
+sod_prisoner_train_status_traveling = 2
+sod_prisoner_train_status_delayed = 3
+sod_prisoner_train_status_intercepted = 4
+sod_prisoner_train_status_arrived = 5
+sod_prisoner_train_status_disbanded = 6
+
+sod_prisoner_labor_policy_none = 1
+sod_prisoner_labor_policy_penal = 2
+sod_prisoner_labor_policy_regulated = 3
+sod_prisoner_labor_policy_unrestricted = 4
+sod_prisoner_labor_policy_liberation = 5
+
+sod_prisoner_holding_policy_balanced = 1
+sod_prisoner_holding_policy_secure = 2
+sod_prisoner_holding_policy_ransom = 3
+sod_prisoner_holding_policy_labor = 4
+sod_prisoner_holding_policy_liberation = 5
+
+sod_prisoner_train_fail_none = 0
+sod_prisoner_train_fail_invalid_origin = 1
+
+sod_castle_patrol_max_active = 3
+sod_castle_patrol_faction_min_soft_cap = 6
+
+sod_support_type_none = 0
+sod_support_type_castle_patrol = 1
+
+sod_messenger_role_none = 0
+sod_messenger_role_tax_courier = 1
+
+sod_tax_courier_status_traveling = 1
+sod_tax_courier_status_delivered = 2
+sod_tax_courier_status_lost = 3
+sod_tax_courier_status_expired = 4
+
+sod_castle_patrol_role_road = 1
+sod_castle_patrol_role_village_shield = 2
+sod_castle_patrol_role_border_harasser = 3
+sod_castle_patrol_role_caravan_screen = 4
+sod_castle_patrol_role_campaign_screen = 5
+sod_castle_patrol_role_emergency_relief = 6
+
+sod_castle_patrol_status_forming = 1
+sod_castle_patrol_status_active = 2
+sod_castle_patrol_status_returning = 3
+sod_castle_patrol_status_damaged = 4
+sod_castle_patrol_status_expired = 5
+sod_castle_patrol_status_destroyed = 6
+sod_castle_patrol_status_disbanded = 7
+
+sod_castle_patrol_fail_none = 0
+sod_castle_patrol_fail_not_castle = 1
+sod_castle_patrol_fail_no_owner = 2
+sod_castle_patrol_fail_besieged = 3
+sod_castle_patrol_fail_garrison_low = 4
+sod_castle_patrol_fail_food_low = 5
+sod_castle_patrol_fail_no_capacity = 6
+sod_castle_patrol_fail_no_demand = 7
+sod_castle_patrol_fail_bad_target = 8
+sod_castle_patrol_fail_support_cap = 9
+sod_castle_patrol_fail_no_troops = 10
+sod_prisoner_train_fail_invalid_destination = 2
+sod_prisoner_train_fail_no_prisoners = 3
+sod_prisoner_train_fail_policy_blocked = 4
+sod_prisoner_train_fail_cap_reached = 5
+sod_prisoner_train_fail_no_guards = 6
 
 #slot_faction_state values
 sfs_active                     = 0
@@ -789,6 +1485,13 @@ spai_trading_with_town          = 13
 spai_retreating_to_center       = 14
 ##spai_trading_within_kingdom     = 15
 spai_recruiting_troops          = 16
+
+# Player external party order values.
+# These cover SoD's player-owned detachments and hired guild companies.
+sod_external_order_follow_player = 101
+sod_external_order_hold_here     = 102
+sod_external_order_patrol_here   = 103
+sod_external_order_noop          = 104
 
 #slot_village_state values
 svs_normal                      = 0
@@ -1011,6 +1714,418 @@ slot_troop_honorific   = 130
 slot_troop_strings_end = 131
 slot_troop_payment_request = 132
 
+# Companion depth system: player-facing approval, roles, warnings, and personal arcs.
+slot_troop_companion_approval = 133
+slot_troop_companion_trust_tier = 134
+slot_troop_companion_personal_quest_stage = 135
+slot_troop_companion_role = 136
+slot_troop_companion_last_reaction_day = 137
+slot_troop_companion_warning_state = 138
+slot_troop_companion_loyalty_lock = 139
+slot_troop_companion_core_value_proof = 146
+
+# Companion retinues: center-style internal troop containers commanded by companions.
+slot_troop_sod_retinue_party = 318
+slot_troop_sod_retinue_capacity = 319
+slot_troop_sod_retinue_state = 320
+slot_troop_sod_retinue_policy = 321
+slot_troop_sod_retinue_last_size = 322
+slot_troop_sod_retinue_last_wage = 323
+slot_troop_sod_retinue_last_morale = 324
+slot_troop_sod_retinue_warning_state = 325
+slot_troop_sod_retinue_treasury = 326
+slot_troop_sod_retinue_wage_reserve = 327
+slot_troop_sod_retinue_strength_order = 328
+slot_troop_sod_retinue_recruit_policy = 329
+slot_troop_sod_retinue_last_recruit_hour = 330
+slot_troop_sod_retinue_last_upgrade_hour = 331
+slot_troop_sod_retinue_last_invoice = 332
+slot_troop_sod_retinue_post_battle_policy = 333
+slot_troop_sod_retinue_last_battle_hire_result = 334
+slot_troop_sod_retinue_last_battle_hire_amount = 335
+slot_troop_sod_retinue_last_battle_hire_troop = 336
+slot_troop_sod_retinue_battle_store_party = 337
+slot_troop_sod_retinue_last_shortage = 338
+slot_troop_sod_retinue_supply_pressure = 339
+slot_troop_sod_retinue_last_training_xp = 340
+slot_troop_sod_retinue_last_training_hour = 341
+slot_troop_sod_retinue_last_desertion_day = 342
+
+sod_retinue_state_inactive = 0
+sod_retinue_state_active = 1
+sod_retinue_state_suspended = 2
+sod_retinue_state_detached = 3
+sod_retinue_state_pending_cleanup = 4
+
+sod_retinue_wage_shortage_player_auto_cover = 1
+sod_retinue_wage_shortage_purse_only = 2
+
+sod_retinue_warning_none = 0
+sod_retinue_warning_no_troops_returning = 1
+sod_retinue_warning_over_capacity = 2
+sod_retinue_warning_above_target = 3
+sod_retinue_warning_full_refused = 4
+
+sod_retinue_policy_balanced = 1
+sod_retinue_policy_defensive = 2
+sod_retinue_policy_aggressive = 3
+sod_retinue_policy_training = 4
+sod_retinue_policy_guard_companion = 5
+
+sod_retinue_strength_none = 0
+sod_retinue_strength_half = 1
+sod_retinue_strength_full = 2
+
+sod_retinue_recruit_policy_none = 0
+sod_retinue_recruit_policy_cautious = 1
+sod_retinue_recruit_policy_balanced = 2
+sod_retinue_recruit_policy_eager = 3
+
+sod_retinue_post_battle_enabled = 0
+sod_retinue_post_battle_disabled = 1
+
+sod_retinue_battle_hire_none = 0
+sod_retinue_battle_hire_hired = 1
+sod_retinue_battle_hire_opted_out = 2
+sod_retinue_battle_hire_no_trust = 3
+sod_retinue_battle_hire_no_capacity = 4
+sod_retinue_battle_hire_no_gold = 5
+sod_retinue_battle_hire_no_leftovers = 6
+sod_retinue_battle_hire_no_order = 7
+
+sod_retinue_departure_cleanup = 0
+sod_retinue_departure_peaceful = 1
+sod_retinue_departure_angry = 2
+sod_retinue_departure_captured = 3
+
+sod_retinue_max_command_purse = 200000
+sod_retinue_half_strength_tolerance = 2
+
+sod_retinue_pref_general = 0
+sod_retinue_pref_scout_irregular = 1
+sod_retinue_pref_trade_guard = 2
+sod_retinue_pref_mercy_guard = 3
+sod_retinue_pref_noble_guard = 4
+sod_retinue_pref_horse_archer = 5
+sod_retinue_pref_redeemed_infantry = 6
+sod_retinue_pref_archer_tracker = 7
+sod_retinue_pref_shield_wall = 8
+sod_retinue_pref_field_captain = 9
+sod_retinue_pref_crossbow_veteran = 10
+sod_retinue_pref_household_guard = 11
+sod_retinue_pref_healer_escort = 12
+sod_retinue_pref_glory_cavalry = 13
+sod_retinue_pref_drilled_infantry = 14
+sod_retinue_pref_engineer_support = 15
+sod_retinue_pref_skirmisher = 16
+
+# Cassian Varro mentor system. This is separate from normal companion approval:
+# he is a family mentor and strategic conscience, not a normal company recruit.
+slot_troop_sod_mentor_trust = 306
+slot_troop_sod_mentor_arc_stage = 307
+slot_troop_sod_mentor_warning_state = 308
+slot_troop_sod_mentor_last_reaction_day = 309
+slot_troop_sod_mentor_legion_memory = 310
+slot_troop_sod_mentor_first_imperial_victory = 311
+slot_troop_sod_mentor_centurion_death = 312
+slot_troop_sod_mentor_alliance_victory = 313
+slot_troop_sod_mentor_ruthless_victory = 314
+slot_troop_sod_mentor_final_closure = 315
+slot_troop_sod_mentor_last_front_warning_day = 316
+slot_troop_sod_mentor_last_treaty_comment_day = 317
+
+sod_companion_approval_near_breaking = 0
+sod_companion_approval_troubled = 1
+sod_companion_approval_wary = 2
+sod_companion_approval_steady = 3
+sod_companion_approval_loyal = 4
+sod_companion_approval_devoted = 5
+
+sod_companion_warning_none = 0
+sod_companion_warning_pending = 1
+sod_companion_warning_acknowledged = 2
+sod_companion_warning_final = 3
+sod_companion_warning_redeemed = 4
+sod_companion_warning_broken = 5
+
+sod_companion_role_none = 0
+sod_companion_role_quartermaster = 1
+sod_companion_role_surgeon = 2
+sod_companion_role_scout = 3
+sod_companion_role_captain = 4
+sod_companion_role_envoy = 5
+sod_companion_role_engineer = 6
+sod_companion_role_spymaster = 7
+
+sod_companion_quest_none = 0
+sod_companion_quest_trust_unlocked = 1
+sod_companion_quest_test_started = 2
+sod_companion_quest_resolved_good = 3
+sod_companion_quest_resolved_hard = 4
+sod_companion_quest_failed = 5
+
+sod_companion_campaign_mode_dialog = 1
+sod_companion_campaign_mode_travel = 2
+sod_companion_campaign_mode_scene = 3
+sod_companion_campaign_mode_battle = 4
+sod_companion_campaign_mode_away_allowed = 5
+
+sod_companion_focus_refugee_shelter = 1
+sod_companion_focus_trail_pressure = 2
+sod_companion_focus_restitution_village = 3
+
+sod_companion_action_free_captives = 1
+sod_companion_action_sell_prisoners = 2
+sod_companion_action_buy_slaves = 3
+sod_companion_action_carry_slaves = 4
+sod_companion_action_execute_lord = 5
+sod_companion_action_help_village = 6
+sod_companion_action_abuse_village = 7
+sod_companion_action_train_troops = 8
+sod_companion_action_defeat_imperials = 9
+sod_companion_action_retreat_or_fail = 10
+sod_companion_action_black_khergit_tribute = 11
+sod_companion_action_black_khergit_bribe = 12
+sod_companion_action_jotnar_support = 13
+sod_companion_action_elephant_guard_support = 14
+sod_companion_action_safe_roadcraft = 15
+sod_companion_action_costly_battle = 16
+sod_companion_action_orderly_profit = 17
+sod_companion_action_dirty_profit = 18
+sod_companion_action_food_security = 19
+sod_companion_action_hunger = 20
+sod_companion_action_stealth_success = 21
+sod_companion_action_betray_autonomy = 22
+sod_companion_action_hard_victory = 23
+sod_companion_action_cowardice = 24
+sod_companion_action_trade_profit = 25
+sod_companion_action_caravan_protection = 26
+sod_companion_action_unpaid_wages = 27
+sod_companion_action_honorable_peace = 28
+sod_companion_action_diplomacy_betrayal = 29
+sod_companion_action_siege_preparation = 30
+sod_companion_action_scout_warning = 31
+sod_companion_action_black_khergit_camp_defeat = 32
+sod_companion_action_build_healing = 33
+sod_companion_action_build_market = 34
+sod_companion_action_black_army_security = 35
+sod_companion_action_tournament_glory = 36
+sod_companion_action_build_security = 37
+sod_companion_action_efficient_construction = 38
+sod_companion_action_ymira_refugee_mercy = 39
+sod_companion_action_ymira_refugee_expedience = 40
+sod_companion_action_lezalit_ief_reform = 41
+sod_companion_action_lezalit_ief_harsh = 42
+sod_companion_action_tavern_recreation = 43
+sod_companion_action_religious_rites = 44
+sod_companion_action_strict_discipline = 45
+sod_companion_action_peaceful_desertion_allowed = 46
+sod_companion_action_peaceful_desertion_forbidden = 47
+sod_companion_action_threatened_troops = 48
+sod_companion_action_mutiny_negotiated = 49
+sod_companion_action_mutiny_suppressed = 50
+sod_companion_action_fair_pay = 51
+sod_companion_action_bonus_pay = 52
+sod_companion_action_half_pay = 53
+sod_companion_action_delayed_pay = 54
+sod_companion_action_veteran_pay = 55
+sod_companion_action_wounded_pay = 56
+sod_companion_action_broken_pay_promise = 57
+sod_companion_action_generous_rations = 58
+sod_companion_action_thin_rations = 59
+sod_companion_action_officer_austerity = 60
+sod_companion_action_ration_feast = 61
+sod_companion_action_petition_mediated = 62
+sod_companion_action_drunken_disorder = 63
+sod_companion_action_debt_honesty = 64
+sod_companion_action_road_practicality = 65
+sod_companion_action_empty_speech = 66
+sod_companion_action_castle_patrol_village_shield = 67
+sod_companion_action_castle_patrol_road_control = 68
+sod_companion_action_castle_patrol_border_harass = 69
+sod_companion_action_castle_patrol_caravan_screen = 70
+sod_companion_action_castle_patrol_abuse = 71
+sod_companion_action_castle_patrol_scout_report = 72
+sod_companion_action_castle_patrol_quartermaster = 73
+sod_companion_action_cassian_last_order_sabotage = 74
+sod_companion_action_cassian_last_order_rescue = 75
+sod_companion_action_cassian_last_order_expose = 76
+sod_companion_action_cassian_last_order_burn = 77
+sod_companion_action_battle_defeat = 78
+sod_companion_action_morale_collapse = 79
+sod_companion_action_commander_duel_won = 80
+sod_companion_action_commander_duel_lost = 81
+sod_companion_action_mutiny_battle = 82
+sod_companion_action_hard_compromise = 83
+sod_companion_action_trade_loss = 84
+
+sod_mentor_trust_bitter = 0
+sod_mentor_trust_strained = 1
+sod_mentor_trust_watchful = 2
+sod_mentor_trust_confident = 3
+sod_mentor_trust_reverent = 4
+
+sod_mentor_arc_none = 0
+sod_mentor_arc_old_hand = 1
+sod_mentor_arc_court_counsel = 2
+sod_mentor_arc_shadow_legion = 3
+sod_mentor_arc_last_order = 4
+
+sod_mentor_warning_none = 0
+sod_mentor_warning_watchful = 1
+sod_mentor_warning_strained = 2
+sod_mentor_warning_bitter = 3
+
+sod_mentor_last_order_none = 0
+sod_mentor_last_order_opened = 1
+sod_mentor_last_order_network_found = 2
+sod_mentor_last_order_sabotage = 3
+sod_mentor_last_order_rescue = 4
+sod_mentor_last_order_exposed = 5
+sod_mentor_last_order_burned = 6
+
+# Company accounts: manual payday foundation.
+sod_company_troop_class_enlisted = 0
+sod_company_troop_class_mercenary = 1
+sod_company_troop_class_noble = 2
+sod_company_troop_class_faith = 3
+
+sod_company_pay_choice_full = 1
+sod_company_pay_choice_half = 2
+sod_company_pay_choice_bonus = 3
+sod_company_pay_choice_delay = 4
+sod_company_pay_choice_veterans = 5
+sod_company_pay_choice_wounded = 6
+
+sod_company_growth_recruit = 1
+sod_company_growth_upgrade = 2
+
+sod_company_promise_response_standard = 1
+sod_company_threat_response_discipline = 1
+
+sod_company_pay_confidence_trusted = 0
+sod_company_pay_confidence_steady = 1
+sod_company_pay_confidence_watchful = 2
+sod_company_pay_confidence_doubtful = 3
+sod_company_pay_confidence_angry = 4
+sod_company_pay_confidence_broken = 5
+
+sod_company_camp_strain_calm = 0
+sod_company_camp_strain_frayed = 1
+sod_company_camp_strain_bitter = 2
+sod_company_camp_strain_dangerous = 3
+sod_company_camp_strain_splintering = 4
+
+sod_company_ration_policy_thin = 0
+sod_company_ration_policy_standard = 1
+sod_company_ration_policy_generous = 2
+sod_company_ration_policy_officer_austerity = 3
+
+sod_company_ration_confidence_well_fed = 0
+sod_company_ration_confidence_adequate = 1
+sod_company_ration_confidence_thin = 2
+sod_company_ration_confidence_hungry = 3
+sod_company_ration_confidence_starving = 4
+
+sod_company_recreation_none = 0
+sod_company_recreation_tavern_round = 1
+sod_company_recreation_lodging = 2
+sod_company_recreation_strict_discipline = 3
+sod_company_recreation_arena_prestige = 4
+sod_company_recreation_campfire = 5
+sod_company_recreation_religious_rites = 6
+sod_company_recreation_company_offering = 7
+sod_company_recreation_wounded_care = 8
+sod_company_recreation_tavern_rumors = 9
+sod_company_recreation_own_coin = 10
+sod_company_recreation_village_festival = 11
+
+sod_company_recreation_incident_none = 0
+sod_company_recreation_incident_drunken_brawl = 1
+sod_company_recreation_incident_gambling_debt = 2
+sod_company_recreation_incident_missing_soldier = 3
+sod_company_recreation_incident_insulted_noble = 4
+sod_company_recreation_incident_mercenary_overindulgence = 5
+sod_company_recreation_incident_local_fine = 6
+
+sod_company_prestige_none = 0
+sod_company_prestige_battle = 1
+sod_company_prestige_tournament = 2
+sod_company_prestige_public_honor = 3
+
+sod_company_noble_restlessness_calm = 0
+sod_company_noble_restlessness_proud = 1
+sod_company_noble_restlessness_restless = 2
+sod_company_noble_restlessness_insulted = 3
+sod_company_noble_restlessness_withdrawing = 4
+
+sod_company_petition_none = 0
+sod_company_petition_pay_arrears = 1
+sod_company_petition_thin_rations = 2
+sod_company_petition_noble_restlessness = 3
+sod_company_petition_camp_strain = 4
+sod_company_petition_wounded_care = 5
+
+sod_company_petition_stage_none = 0
+sod_company_petition_stage_murmur = 1
+sod_company_petition_stage_formal = 2
+sod_company_petition_stage_urgent = 3
+
+sod_company_desertion_stage_none = 0
+sod_company_desertion_stage_watching = 1
+sod_company_desertion_stage_request = 2
+sod_company_desertion_stage_urgent = 3
+
+sod_company_desertion_response_paid = 1
+sod_company_desertion_response_persuade = 2
+sod_company_desertion_response_unpaid = 3
+sod_company_desertion_response_forbid = 4
+sod_company_desertion_response_battle_promise = 5
+
+sod_company_mutiny_stage_none = 0
+sod_company_mutiny_stage_warning = 1
+sod_company_mutiny_stage_final_warning = 2
+sod_company_mutiny_stage_breaking = 3
+
+sod_company_mutiny_response_negotiate = 1
+sod_company_mutiny_response_pay = 2
+sod_company_mutiny_response_threaten = 3
+sod_company_mutiny_response_drill = 4
+
+sod_company_mutiny_resolution_none = 0
+sod_company_mutiny_resolution_settlement = 1
+sod_company_mutiny_resolution_ringleaders_expelled = 2
+sod_company_mutiny_resolution_deferred = 3
+sod_company_mutiny_resolution_battle = 4
+
+sod_company_spokesperson_none = 0
+sod_company_spokesperson_pay_arrears = 1
+sod_company_spokesperson_thin_rations = 2
+sod_company_spokesperson_wounded_care = 3
+sod_company_spokesperson_hazard_pay = 4
+sod_company_spokesperson_noble_honor = 5
+sod_company_spokesperson_faith_rites = 6
+sod_company_spokesperson_battle_promise_due = 7
+sod_company_spokesperson_defeat_shock = 8
+sod_company_spokesperson_victory_spoils = 9
+sod_company_spokesperson_discipline_threat = 10
+
+sod_company_spokesperson_response_pay_now = 1
+sod_company_spokesperson_response_promise = 2
+sod_company_spokesperson_response_battle_promise = 3
+sod_company_spokesperson_response_ration_change = 4
+sod_company_spokesperson_response_recreation = 5
+sod_company_spokesperson_response_rites_wounded = 6
+sod_company_spokesperson_response_public_honors = 7
+sod_company_spokesperson_response_persuade = 8
+sod_company_spokesperson_response_mediation = 9
+sod_company_spokesperson_response_threaten = 10
+sod_company_spokesperson_response_dismiss = 11
+sod_company_spokesperson_response_hazard_pay = 12
+sod_company_spokesperson_response_victory_feast = 13
+sod_company_spokesperson_response_refuse_spectacle = 14
+sod_company_spokesperson_response_company_offering = 15
+
 #Rebellion changes begin
 slot_troop_discussed_rebellion = 140
 slot_troop_support_base = 141
@@ -1183,6 +2298,150 @@ slot_troop_sod_quest_memory_interactions = 280
 slot_troop_sod_quest_memory_battle_action = 281
 slot_troop_sod_quest_memory_summary = 282
 
+# Lightweight NPC lord party morale. This is intentionally smaller than the
+# player company accounts system; it feeds strategic caution and battle rout.
+slot_troop_sod_lord_party_morale = 283
+slot_troop_sod_lord_pay_strain = 284
+slot_troop_sod_lord_campaign_fatigue = 285
+slot_troop_sod_lord_last_pay_day = 286
+slot_troop_sod_lord_last_victory_day = 287
+slot_troop_sod_lord_last_defeat_day = 288
+slot_troop_sod_lord_last_morale_update_day = 289
+slot_troop_sod_lord_recent_battle_confidence = 290
+slot_troop_sod_lord_supply_confidence = 291
+slot_troop_sod_lord_last_desertion_day = 292
+slot_troop_sod_lord_last_battle_refusal_day = 293
+slot_troop_sod_lord_last_morale_broken_event_day = 294
+slot_troop_sod_lord_last_home_morale_event_day = 295
+slot_troop_sod_lord_last_pay_strain_event_day = 296
+slot_troop_sod_lord_last_exhaustion_event_day = 297
+slot_troop_sod_lord_last_confident_campaign_event_day = 298
+slot_troop_sod_lord_strategic_intent = 299
+slot_troop_sod_lord_last_intent_day = 300
+slot_troop_sod_lord_intent_target = 301
+slot_troop_sod_lord_last_dangerous_target = 302
+slot_troop_sod_lord_last_failed_siege_day = 303
+slot_troop_sod_lord_last_profitable_raid_target = 304
+slot_troop_sod_lord_last_profitable_raid_day = 305
+slot_troop_sod_lord_land_satisfaction = 343
+slot_troop_sod_lord_ruler_confidence = 344
+slot_troop_sod_lord_last_land_grievance_day = 345
+slot_troop_sod_lord_fief_expectation = 346
+slot_troop_sod_lord_patron_target_faction = 347
+slot_troop_sod_lord_last_patron_seek_day = 348
+slot_troop_sod_lord_last_patron_offer_day = 349
+slot_troop_sod_lord_last_petition_day = 350
+slot_troop_sod_lord_last_poached_day = 351
+slot_troop_sod_nemesis_defeats = 352
+slot_troop_sod_nemesis_strength = 353
+slot_troop_sod_nemesis_duel_pressure = 354
+slot_troop_sod_nemesis_last_duel_day = 355
+slot_troop_sod_nemesis_duel_wins = 356
+slot_troop_sod_nemesis_adaptation = 357
+slot_troop_sod_nemesis_adaptation_count = 358
+slot_troop_sod_nemesis_mercy_count = 359
+slot_troop_sod_nemesis_capture_count = 360
+slot_troop_sod_nemesis_humiliation_count = 361
+
+# Black Khergit Khan personal scaling.
+slot_troop_black_khergit_khan_duel_losses = 362
+
+# Lightweight noble-house identity. This sits beside Native family slots
+# instead of trying to turn one-spouse/one-child slots into a dynasty tree.
+slot_troop_sod_house_id = 363
+slot_troop_sod_house_rank = 364
+slot_troop_sod_house_head = 365
+slot_troop_sod_house_grievance = 366
+slot_troop_sod_house_loyalty = 367
+slot_troop_sod_house_claim_strength = 368
+slot_troop_sod_pretender_claim_pressure = 369
+slot_troop_sod_pretender_foothold_center = 370
+slot_troop_sod_pretender_backer_lord = 371
+slot_troop_sod_pretender_last_action_day = 372
+slot_troop_sod_pretender_momentum = 373
+slot_troop_sod_claimant_allegiance = 374
+slot_troop_sod_claimant_parent_faction = 375
+slot_troop_sod_claimant_rebel_faction = 376
+slot_troop_sod_claimant_join_day = 377
+slot_troop_sod_claimant_commitment = 378
+slot_troop_sod_claimant_last_offer_day = 379
+slot_troop_sod_claimant_old_ruler_status = 380
+slot_troop_sod_claimant_old_ruler_defeated_day = 381
+
+sod_house_rank_none = 0
+sod_house_rank_ruler = 1
+sod_house_rank_lord = 2
+sod_house_rank_lady = 3
+sod_house_rank_pretender = 4
+sod_house_rank_named_actor = 5
+
+sod_claimant_allegiance_none = 0
+sod_claimant_allegiance_secret_sympathizer = 1
+sod_claimant_allegiance_open_rebel = 2
+sod_claimant_allegiance_defeated_loyalist = 3
+sod_claimant_allegiance_reconciled = 4
+sod_claimant_allegiance_old_ruler_remnant = 5
+
+sod_old_ruler_status_none = 0
+sod_old_ruler_status_exiled = 1
+sod_old_ruler_status_remnant_claimant = 2
+sod_old_ruler_status_reconciled = 3
+
+sod_civil_war_none = 0
+sod_civil_war_shadow_court = 1
+sod_civil_war_open_rebellion = 2
+sod_civil_war_rebel_victory = 3
+sod_civil_war_loyalist_victory = 4
+sod_civil_war_cooldown = 5
+
+sod_pretender_pressure_quiet = 34
+sod_pretender_pressure_stirring = 49
+sod_pretender_pressure_foothold = 64
+sod_pretender_pressure_dangerous = 100
+
+sod_repair_service_all = 0
+sod_repair_service_weapons = 1
+sod_repair_service_armor = 2
+sod_repair_service_horses = 3
+
+sod_lord_morale_broken_max = 19
+sod_lord_morale_shaken_max = 39
+sod_lord_morale_wary_max = 59
+sod_lord_morale_steady_max = 79
+sod_lord_morale_confident_max = 100
+
+sod_lord_intent_none = 0
+sod_lord_intent_recovering = 1
+sod_lord_intent_defending_home = 2
+sod_lord_intent_seeking_pay = 3
+sod_lord_intent_raiding_for_cash = 4
+sod_lord_intent_following_marshal = 5
+sod_lord_intent_patrolling_border = 6
+sod_lord_intent_hunting_weak_party = 7
+sod_lord_intent_siege_ready = 8
+sod_lord_intent_independent_campaign = 9
+sod_lord_intent_disgruntled_landless = 10
+sod_lord_intent_seeking_patron = 11
+
+sod_campaign_posture_none = 0
+sod_campaign_posture_offensive_siege = 1
+sod_campaign_posture_defensive_rally = 2
+sod_campaign_posture_recovery = 3
+sod_campaign_posture_raiding = 4
+sod_campaign_posture_hunting = 5
+sod_campaign_posture_border_patrol = 6
+sod_campaign_posture_gathering = 7
+
+sod_campaign_reason_none = 0
+sod_campaign_reason_high_health = 1
+sod_campaign_reason_threatened_center = 2
+sod_campaign_reason_low_health = 3
+sod_campaign_reason_unpaid_tired_lords = 4
+sod_campaign_reason_enemy_weakness = 5
+sod_campaign_reason_poor_economy = 6
+sod_campaign_reason_recent_failed_siege = 7
+sod_campaign_reason_marshal_opportunity = 8
+
 slcp_sane = 1
 slcp_respectful = 2
 slcp_imperialist = 3
@@ -1261,6 +2520,7 @@ slot_item_artifact_original_owner    = 165
 slot_item_artifact_current_owner     = 166
 slot_item_artifact_last_modifier     = 167
 slot_item_artifact_set_piece         = 168
+slot_item_sod_auto_loot_protected    = 169
 
 slot_item_artifact_progress_begin    = 180 # 8 modifier blocks, 3 slots each: kills, milestone, owner
 artifact_progress_stride             = 3
@@ -1320,6 +2580,43 @@ cb4_revenge = 1
 cb4_peace    = 2
 cb4_bloodlust =  3
 cb4_riches  = 4
+
+# Lightweight Nemesis Memory. True named nemeses should point at existing
+# non-Imperial lords; hostile-road parties remain anonymous grudge pressure.
+sod_nemesis_actor_none = 0
+sod_nemesis_actor_outlaw = 1
+sod_nemesis_actor_deserter = 2
+sod_nemesis_actor_contract_threat = 3
+sod_nemesis_actor_lord = 4
+sod_nemesis_actor_companion_rival = 5
+
+sod_nemesis_reason_none = 0
+sod_nemesis_reason_mercy = 1
+sod_nemesis_reason_recruitment = 2
+sod_nemesis_reason_prisoners = 3
+sod_nemesis_reason_informants = 4
+sod_nemesis_reason_humiliation = 5
+sod_nemesis_reason_robbed = 6
+sod_nemesis_reason_paid_tolls = 7
+sod_nemesis_reason_deserter_killer = 8
+sod_nemesis_reason_refugee_shelter = 9
+sod_nemesis_reason_battle_defeat = 10
+sod_nemesis_reason_lord_defeat = 11
+
+sod_nemesis_adaptation_none = 0
+sod_nemesis_adaptation_anti_cavalry = 1
+sod_nemesis_adaptation_anti_ranged = 2
+sod_nemesis_adaptation_anti_duel = 3
+sod_nemesis_adaptation_anti_melee = 4
+
+sod_nemesis_lord_resolution_capture = 1
+sod_nemesis_lord_resolution_mercy = 2
+sod_nemesis_lord_resolution_humiliation = 3
+
+sod_nemesis_state_none = 0
+sod_nemesis_state_watching = 1
+sod_nemesis_state_hunting = 2
+sod_nemesis_state_spent = 3
 
 #NPC system changes end
 #Encounter types
@@ -1484,6 +2781,162 @@ slot_quest_sod_consequence_lockout_days = 122
 slot_quest_sod_outcome_flags = 123
 slot_quest_sod_outcome_applied = 124
 
+# Road to the Crown campaign state.
+# These are quest-owned slots used by the first campaign slice. Starting
+# identity still comes from the existing character creation globals.
+slot_quest_rtc_campaign_id = 125
+slot_quest_rtc_act = 126
+slot_quest_rtc_chapter = 127
+slot_quest_rtc_origin = 128
+slot_quest_rtc_faith = 129
+slot_quest_rtc_life = 130
+slot_quest_rtc_motive = 131
+slot_quest_rtc_reputation = 132
+slot_quest_rtc_commoner_trust = 133
+slot_quest_rtc_merchant_trust = 134
+slot_quest_rtc_noble_trust = 135
+slot_quest_rtc_imperial_pressure = 136
+slot_quest_rtc_salvage_choice = 137
+slot_quest_rtc_method_seed = 138
+slot_quest_rtc_branch_seed = 139
+slot_quest_rtc_companion_pressure = 140
+slot_quest_rtc_flags = 141
+slot_quest_rtc_social_contact = 142
+slot_quest_rtc_final_ending = 143
+slot_quest_rtc_successor_unlock = 144
+
+# The Seven Oaths of Ash campaign state.
+# Quest-owned slots for the Ashwick village-defense campaign.
+slot_quest_seven_ash_campaign_status = 145
+slot_quest_seven_ash_active_stage = 146
+slot_quest_seven_ash_active_recruit_id = 147
+slot_quest_seven_ash_act2_board_open = 148
+slot_quest_seven_ash_act2_resolved_count = 149
+slot_quest_seven_ash_act2_complete = 150
+slot_quest_seven_ash_act3_pressure_started = 151
+slot_quest_seven_ash_days_remaining = 152
+slot_quest_seven_ash_wulfred_pressure = 153
+slot_quest_seven_ash_settlement_strain = 154
+slot_quest_seven_ash_player_strength_ultimatum = 155
+slot_quest_seven_ash_player_strength_siege = 156
+slot_quest_seven_ash_wulfred_host_strength = 157
+slot_quest_seven_ash_wulfred_elite_core = 158
+slot_quest_seven_ash_morale = 159
+slot_quest_seven_ash_food = 160
+slot_quest_seven_ash_labor = 161
+slot_quest_seven_ash_fortification = 162
+slot_quest_seven_ash_training = 163
+slot_quest_seven_ash_intelligence = 164
+slot_quest_seven_ash_civilian_safety = 165
+slot_quest_seven_ash_elder_trust = 166
+slot_quest_seven_ash_youth_trust = 167
+slot_quest_seven_ash_farmer_trust = 168
+slot_quest_seven_ash_refugee_trust = 169
+slot_quest_seven_ash_recruited_bitmask = 170
+slot_quest_seven_ash_survival_bitmask = 171
+slot_quest_seven_ash_companion_unlock_bitmask = 172
+slot_quest_seven_ash_companion_refusal_bitmask = 173
+slot_quest_seven_ash_defender_bond_flags = 174
+slot_quest_seven_ash_defender_conflict_flags = 175
+slot_quest_seven_ash_final_plan = 176
+slot_quest_seven_ash_result_grade = 177
+slot_quest_seven_ash_garric_status = 178
+slot_quest_seven_ash_oswin_status = 179
+slot_quest_seven_ash_aldrik_status = 180
+slot_quest_seven_ash_mirelle_status = 181
+slot_quest_seven_ash_tomas_status = 182
+slot_quest_seven_ash_beren_status = 183
+slot_quest_seven_ash_elianor_status = 184
+slot_quest_seven_ash_garric_route = 185
+slot_quest_seven_ash_oswin_route = 186
+slot_quest_seven_ash_garric_evidence = 187
+slot_quest_seven_ash_oswin_evidence = 188
+slot_quest_seven_ash_garric_return_applied = 189
+slot_quest_seven_ash_oswin_return_applied = 190
+slot_quest_seven_ash_garric_trust = 191
+slot_quest_seven_ash_garric_fear = 192
+slot_quest_seven_ash_oswin_trust = 193
+slot_quest_seven_ash_oswin_debt = 194
+slot_quest_seven_ash_oswin_fear = 195
+slot_quest_seven_ash_aldrik_route = 196
+slot_quest_seven_ash_aldrik_evidence = 197
+slot_quest_seven_ash_aldrik_return_applied = 198
+slot_quest_seven_ash_aldrik_trust = 199
+slot_quest_seven_ash_aldrik_pride = 200
+slot_quest_seven_ash_aldrik_debt = 201
+slot_quest_seven_ash_aldrik_fear = 202
+slot_quest_seven_ash_mirelle_route = 203
+slot_quest_seven_ash_mirelle_evidence = 204
+slot_quest_seven_ash_mirelle_return_applied = 205
+slot_quest_seven_ash_mirelle_trust = 206
+slot_quest_seven_ash_mirelle_debt = 207
+slot_quest_seven_ash_mirelle_fear = 208
+slot_quest_seven_ash_mirelle_spy_support = 209
+slot_quest_seven_ash_tomas_route = 210
+slot_quest_seven_ash_tomas_evidence = 211
+slot_quest_seven_ash_tomas_return_applied = 212
+slot_quest_seven_ash_tomas_trust = 213
+slot_quest_seven_ash_tomas_respect = 214
+slot_quest_seven_ash_tomas_fear = 215
+slot_quest_seven_ash_tomas_discipline_support = 216
+slot_quest_seven_ash_beren_route = 217
+slot_quest_seven_ash_beren_evidence = 218
+slot_quest_seven_ash_beren_return_applied = 219
+slot_quest_seven_ash_beren_trust = 220
+slot_quest_seven_ash_beren_pride = 221
+slot_quest_seven_ash_beren_fear = 222
+slot_quest_seven_ash_beren_breach_support = 223
+slot_quest_seven_ash_elianor_route = 224
+slot_quest_seven_ash_elianor_evidence = 225
+slot_quest_seven_ash_elianor_return_applied = 226
+slot_quest_seven_ash_elianor_trust = 227
+slot_quest_seven_ash_elianor_refugee_trust = 228
+slot_quest_seven_ash_elianor_fear = 229
+slot_quest_seven_ash_elianor_infirmary_support = 230
+slot_quest_seven_ash_pressure_interlude_active = 231
+slot_quest_seven_ash_pressure_interlude_resolved_bits = 232
+slot_quest_seven_ash_sector_outer_fields = 233
+slot_quest_seven_ash_sector_palisade = 234
+slot_quest_seven_ash_sector_gate_reserve = 235
+slot_quest_seven_ash_sector_inner_streets = 236
+slot_quest_seven_ash_sector_churchyard = 237
+slot_quest_seven_ash_sector_evacuation = 238
+slot_quest_seven_ash_sector_commitment_locked = 239
+slot_quest_seven_ash_siege_phase_active = 240
+slot_quest_seven_ash_outer_wave_count = 241
+slot_quest_seven_ash_outer_enemy_committed = 242
+slot_quest_seven_ash_outer_result = 243
+slot_quest_seven_ash_outer_casualty_pressure = 244
+slot_quest_seven_ash_palisade_wave_count = 245
+slot_quest_seven_ash_palisade_enemy_committed = 246
+slot_quest_seven_ash_palisade_result = 247
+slot_quest_seven_ash_palisade_breach_pressure = 248
+slot_quest_seven_ash_breach_wave_count = 249
+slot_quest_seven_ash_breach_enemy_committed = 250
+slot_quest_seven_ash_breach_result = 251
+slot_quest_seven_ash_breach_street_pressure = 252
+slot_quest_seven_ash_inner_wave_count = 253
+slot_quest_seven_ash_inner_enemy_committed = 254
+slot_quest_seven_ash_inner_result = 255
+slot_quest_seven_ash_inner_churchyard_pressure = 256
+slot_quest_seven_ash_churchyard_wave_count = 257
+slot_quest_seven_ash_churchyard_enemy_committed = 258
+slot_quest_seven_ash_churchyard_result = 259
+slot_quest_seven_ash_wulfred_outcome = 260
+slot_quest_seven_ash_civilian_deaths = 261
+slot_quest_seven_ash_burned_homes = 262
+slot_quest_seven_ash_surviving_defender_count = 263
+slot_quest_seven_ash_promises_kept = 264
+slot_quest_seven_ash_prisoner_treatment = 265
+slot_quest_seven_ash_settlement_outcome = 266
+slot_quest_seven_ash_companion_joined_bitmask = 267
+slot_quest_seven_ash_companion_stayed_bitmask = 268
+slot_quest_seven_ash_act2_pacing_flags = 269
+slot_quest_seven_ash_act2_last_tick_day = 270
+slot_quest_seven_ash_sector_leader_bitmask = 271
+slot_quest_seven_ash_memorial_bitmask = 272
+slot_quest_seven_ash_ending_flags = 273
+
 sod_quest_state_inactive = 0
 sod_quest_state_offered = 1
 sod_quest_state_accepted = 2
@@ -1578,6 +3031,323 @@ sod_quest_outcome_flag_consequence_configured = 2
 sod_quest_outcome_flag_world_change = 4
 sod_quest_outcome_flag_followup = 8
 sod_quest_outcome_flag_access_unlock = 16
+
+sod_rtc_campaign_none = 0
+sod_rtc_campaign_road_to_crown = 1
+
+sod_rtc_act_none = 0
+sod_rtc_act_ashes = 1
+sod_rtc_act_choice = 2
+sod_rtc_act_standing = 3
+sod_rtc_act_crown = 4
+sod_rtc_act_shadow = 5
+
+sod_rtc_chapter_none = 0
+sod_rtc_chapter_last_smoke = 1
+sod_rtc_chapter_borrowed_names = 2
+sod_rtc_chapter_hound_sign = 3
+sod_rtc_chapter_door_into_calradia = 4
+sod_rtc_chapter_price_of_bread = 5
+sod_rtc_chapter_three_offers = 6
+sod_rtc_chapter_companions_take_sides = 7
+sod_rtc_chapter_first_recognition = 8
+sod_rtc_chapter_crown_council = 9
+sod_rtc_chapter_hounds_terms = 10
+sod_rtc_chapter_war_of_witnesses = 11
+sod_rtc_chapter_last_road = 12
+sod_rtc_chapter_final_confrontation = 13
+
+sod_rtc_reputation_none = 0
+sod_rtc_reputation_refugee = 1
+sod_rtc_reputation_foreign_noble = 2
+sod_rtc_reputation_free_captain = 3
+sod_rtc_reputation_trade_operator = 4
+sod_rtc_reputation_avenger = 5
+sod_rtc_reputation_unproven = 6
+
+sod_rtc_pressure_none = 0
+sod_rtc_pressure_low = 1
+sod_rtc_pressure_rising = 2
+sod_rtc_pressure_open = 3
+sod_rtc_pressure_invasion = 4
+
+sod_rtc_salvage_none = 0
+sod_rtc_salvage_wounded = 1
+sod_rtc_salvage_baggage = 2
+sod_rtc_salvage_papers = 3
+sod_rtc_salvage_abandoned = 4
+
+sod_rtc_method_none = 0
+sod_rtc_method_honor = 1
+sod_rtc_method_intrigue = 2
+sod_rtc_method_trade = 3
+sod_rtc_method_counsel = 4
+sod_rtc_method_faith = 5
+
+sod_rtc_branch_none = 0
+sod_rtc_branch_legitimacy = 1
+sod_rtc_branch_mercenary = 2
+sod_rtc_branch_conquest = 3
+sod_rtc_branch_coalition = 4
+sod_rtc_branch_restoration = 5
+sod_rtc_branch_imperial = 6
+sod_rtc_branch_regime_maker = 7
+sod_rtc_branch_fractured_claim = 8
+
+sod_rtc_council_answer_bread_witness = 101
+sod_rtc_council_answer_merchant_books = 102
+
+sod_rtc_stop_none = 0
+sod_rtc_stop_act_01_survived = 1
+sod_rtc_stop_act_01_poor_start = 2
+
+sod_rtc_contact_none = 0
+sod_rtc_contact_noble = 1
+sod_rtc_contact_merchant = 2
+sod_rtc_contact_gate_captain = 3
+sod_rtc_contact_village = 4
+sod_rtc_contact_road_scout = 5
+
+sod_rtc_flag_origin_set = 1
+sod_rtc_flag_faith_set = 2
+sod_rtc_flag_life_set = 4
+sod_rtc_flag_motive_set = 8
+sod_rtc_flag_campaign_started = 16
+sod_rtc_flag_companion_wary_mercy = 32
+sod_rtc_flag_commoner_trust_high = 64
+sod_rtc_flag_commoner_trust_low = 128
+sod_rtc_flag_merchant_trust_high = 256
+sod_rtc_flag_merchant_trust_low = 512
+sod_rtc_flag_noble_trust_high = 1024
+sod_rtc_flag_noble_trust_low = 2048
+sod_rtc_flag_village_fear = 4096
+sod_rtc_flag_route_reform = 8192
+sod_rtc_flag_route_betrayal = 16384
+sod_rtc_flag_route_hidden_regime_maker = 32768
+sod_rtc_flag_witness_noble = 65536
+sod_rtc_flag_witness_commoner = 131072
+sod_rtc_flag_witness_company = 262144
+sod_rtc_flag_witness_fourth = 524288
+sod_rtc_flag_challenge_maeron = 1048576
+sod_rtc_flag_offer_septima = 2097152
+sod_rtc_flag_leverage_vaska = 4194304
+sod_rtc_flag_route_locked = 8388608
+sod_rtc_flag_envoy_accusation_turned = 16777216
+
+sod_rtc_offer_none = 0
+sod_rtc_offer_noble_protection = 1
+sod_rtc_offer_paid_steel = 2
+sod_rtc_offer_peoples_road = 3
+sod_rtc_offer_hard_claim = 4
+sod_rtc_offer_quiet_ledger = 5
+sod_rtc_offer_bread_oath = 101
+sod_rtc_offer_books_oath = 102
+sod_rtc_offer_witness_oath = 103
+
+sod_rtc_recognition_none = 0
+sod_rtc_recognition_lawful_claimant = 1
+sod_rtc_recognition_free_captain = 2
+sod_rtc_recognition_trade_power = 3
+sod_rtc_recognition_people_defender = 4
+sod_rtc_recognition_dangerous_warlord = 5
+sod_rtc_recognition_shadow_operator = 6
+
+sod_rtc_terms_none = 0
+sod_rtc_terms_rejected = 1
+sod_rtc_terms_delay_negotiated = 2
+sod_rtc_terms_accepted = 3
+sod_rtc_terms_collapsed = 4
+
+sod_rtc_witness_war_none = 0
+sod_rtc_witness_war_protect = 1
+sod_rtc_witness_war_sacrifice = 2
+sod_rtc_witness_war_route_variant = 3
+sod_rtc_witness_war_side_crisis = 4
+sod_rtc_witness_war_envoy_leverage = 5
+
+sod_rtc_last_road_none = 0
+sod_rtc_last_road_hold_line = 1
+sod_rtc_last_road_strike_hound = 2
+sod_rtc_last_road_starve_empire = 3
+sod_rtc_last_road_break_seal = 4
+sod_rtc_last_road_accept_collar = 5
+sod_rtc_last_road_catastrophic_loss = 6
+sod_rtc_last_road_turn_accusation = 7
+
+sod_rtc_final_none = 0
+sod_rtc_final_marius_defeated = 1
+sod_rtc_final_marius_forced_back = 2
+sod_rtc_final_marius_overlord = 3
+sod_rtc_final_unworn_crown = 4
+sod_rtc_final_claim_collapse = 5
+
+sod_rtc_ending_none = 0
+sod_rtc_ending_crown_of_law = 1
+sod_rtc_ending_crown_of_iron = 2
+sod_rtc_ending_crown_of_coin = 3
+sod_rtc_ending_crown_of_ashes = 4
+sod_rtc_ending_crown_of_faith = 5
+sod_rtc_ending_crown_of_vengeance = 6
+sod_rtc_ending_crown_of_return = 7
+sod_rtc_ending_crown_of_empire = 8
+sod_rtc_ending_unworn_crown = 9
+
+sod_rtc_successor_none = 0
+sod_rtc_successor_governance_campaign = 1
+sod_rtc_successor_rebellion_reform = 2
+sod_rtc_successor_merchant_league = 3
+sod_rtc_successor_exile_redemption = 4
+sod_rtc_successor_schism_reform = 5
+sod_rtc_successor_survivor_reckoning = 6
+sod_rtc_successor_homeland_restoration = 7
+sod_rtc_successor_imperial_civil_war = 8
+sod_rtc_successor_league_protector = 9
+
+sod_seven_ash_status_inactive = 0
+sod_seven_ash_status_active = 1
+sod_seven_ash_status_suspended = 2
+sod_seven_ash_status_completed = 3
+sod_seven_ash_status_failed = 4
+sod_seven_ash_status_archived = 5
+
+sod_seven_ash_stage_none = 0
+sod_seven_ash_stage_ultimatum = 1
+sod_seven_ash_stage_audit = 2
+sod_seven_ash_stage_recruitment = 3
+sod_seven_ash_stage_return = 4
+sod_seven_ash_stage_pressure = 5
+sod_seven_ash_stage_oath_council = 6
+sod_seven_ash_stage_siege = 7
+sod_seven_ash_stage_aftermath = 8
+
+sod_seven_ash_defender_none = 0
+sod_seven_ash_defender_garric = 1
+sod_seven_ash_defender_oswin = 2
+sod_seven_ash_defender_aldrik = 4
+sod_seven_ash_defender_mirelle = 8
+sod_seven_ash_defender_tomas = 16
+sod_seven_ash_defender_beren = 32
+sod_seven_ash_defender_elianor = 64
+sod_seven_ash_defender_all = 127
+
+sod_seven_ash_recruit_unknown = 0
+sod_seven_ash_recruit_available = 1
+sod_seven_ash_recruit_in_progress = 2
+sod_seven_ash_recruit_recruited = 3
+sod_seven_ash_recruit_refused = 4
+sod_seven_ash_recruit_alienated = 5
+sod_seven_ash_recruit_lost = 6
+sod_seven_ash_recruit_abandoned = 7
+
+sod_seven_ash_route_none = 0
+sod_seven_ash_route_best = 1
+sod_seven_ash_route_hard = 2
+sod_seven_ash_route_legal_promise = 3
+sod_seven_ash_route_blackmail = 4
+sod_seven_ash_route_forced_service = 5
+sod_seven_ash_route_refusal = 6
+
+sod_seven_ash_evidence_none = 0
+sod_seven_ash_evidence_witness = 1
+sod_seven_ash_evidence_physical = 2
+sod_seven_ash_evidence_public_truth = 3
+sod_seven_ash_interlude_none = 0
+sod_seven_ash_interlude_burned_cow = 1
+sod_seven_ash_interlude_knife_marked_door = 2
+sod_seven_ash_interlude_grain_riot = 4
+sod_seven_ash_interlude_wulfred_offer = 8
+sod_seven_ash_interlude_first_funeral = 16
+sod_seven_ash_pacing_courier_10 = 1
+sod_seven_ash_pacing_courier_6 = 2
+sod_seven_ash_pacing_courier_3 = 4
+sod_seven_ash_pacing_scout_rumor_9 = 8
+sod_seven_ash_pacing_scout_rumor_5 = 16
+sod_seven_ash_pacing_slow_warning = 32
+sod_seven_ash_pacing_emergency_return = 64
+
+sod_seven_ash_method_none = 0
+sod_seven_ash_method_common_defense = 1
+sod_seven_ash_method_public_oaths = 2
+sod_seven_ash_method_paid_contracts = 3
+sod_seven_ash_method_blackmail = 4
+sod_seven_ash_method_hostage_surety = 5
+sod_seven_ash_method_civilian_first = 6
+sod_seven_ash_method_no_quarter = 7
+sod_seven_ash_method_wulfred_bargain = 8
+
+sod_seven_ash_posture_none = 0
+sod_seven_ash_posture_prepare_alone = 1
+sod_seven_ash_posture_find_defenders = 2
+sod_seven_ash_posture_lordly_aid = 3
+sod_seven_ash_posture_bargain = 4
+sod_seven_ash_posture_evacuate = 5
+sod_seven_ash_posture_kill_messengers = 6
+
+sod_seven_ash_priority_none = 0
+sod_seven_ash_priority_repair_palisade = 1
+sod_seven_ash_priority_dig_ditch = 2
+sod_seven_ash_priority_secure_granary = 3
+sod_seven_ash_priority_train_militia = 4
+sod_seven_ash_priority_evacuate_farms = 5
+sod_seven_ash_priority_scout_road = 6
+
+sod_seven_ash_plan_none = 0
+sod_seven_ash_plan_hold_palisade = 1
+sod_seven_ash_plan_defense_in_depth = 2
+sod_seven_ash_plan_counterstroke = 3
+sod_seven_ash_plan_cut_head = 4
+sod_seven_ash_plan_empty_village = 5
+sod_seven_ash_sector_none = 0
+sod_seven_ash_sector_outer_fields = 1
+sod_seven_ash_sector_palisade = 2
+sod_seven_ash_sector_gate_reserve = 3
+sod_seven_ash_sector_inner_streets = 4
+sod_seven_ash_sector_churchyard = 5
+sod_seven_ash_sector_evacuation = 6
+sod_seven_ash_siege_phase_none = 0
+sod_seven_ash_siege_phase_outer_fields = 1
+sod_seven_ash_siege_phase_palisade = 2
+sod_seven_ash_siege_phase_breach = 3
+sod_seven_ash_siege_phase_inner_streets = 4
+sod_seven_ash_siege_phase_churchyard = 5
+sod_seven_ash_siege_result_unresolved = 0
+sod_seven_ash_siege_result_held = 1
+sod_seven_ash_siege_result_bloodied = 2
+sod_seven_ash_siege_result_lost = 3
+sod_seven_ash_wulfred_unresolved = 0
+sod_seven_ash_wulfred_killed = 1
+sod_seven_ash_wulfred_captured = 2
+sod_seven_ash_wulfred_escaped = 3
+sod_seven_ash_wulfred_wins = 4
+sod_seven_ash_prisoners_none = 0
+sod_seven_ash_prisoners_bound_for_trial = 1
+sod_seven_ash_prisoners_executed = 2
+sod_seven_ash_prisoners_scattered = 3
+sod_seven_ash_settlement_village = 1
+sod_seven_ash_settlement_fortified = 2
+sod_seven_ash_settlement_refugee_camp = 3
+sod_seven_ash_settlement_ruined = 4
+
+sod_seven_ash_result_none = 0
+sod_seven_ash_result_clean_victory = 1
+sod_seven_ash_result_hard_victory = 2
+sod_seven_ash_result_pyrrhic = 3
+sod_seven_ash_result_bargain = 4
+sod_seven_ash_result_evacuation = 5
+sod_seven_ash_result_failed = 6
+
+sod_seven_ash_ending_seven_oaths_kept = 1
+sod_seven_ash_ending_ashwick_stands = 2
+sod_seven_ash_ending_wall_of_names = 4
+sod_seven_ash_ending_empty_houses = 8
+sod_seven_ash_ending_wulfred_broken = 16
+sod_seven_ash_ending_wulfred_escaped = 32
+sod_seven_ash_ending_bargain_brand = 64
+sod_seven_ash_ending_blood_for_ash = 128
+sod_seven_ash_ending_long_road_from_ashwick = 256
+sod_seven_ash_ending_palisade_grave = 512
+sod_seven_ash_ending_new_wolf = 1024
+sod_seven_ash_ending_common_bell = 2048
 
 sod_threat_type_none = 0
 sod_threat_type_pirates = 1
@@ -1739,8 +3509,8 @@ soldiers_end = "trp_town_walker_1"
 
 #Rebellion changes
 
-##rebel_factions_begin = "fac_kingdom_1_rebels"
-##rebel_factions_end =   "fac_kingdoms_end"
+rebel_factions_begin = "fac_kingdom_1_rebels"
+rebel_factions_end =   "fac_kingdoms_end"
 
 pretenders_begin = "trp_kingdom_1_pretender"
 pretenders_end = kingdom_heroes_end
@@ -2043,6 +3813,92 @@ slavers_noble         = "trp_tormenter"
 slavers_mercs_noble = "p_sod_merc_6_elite"
 slavers_sod_mercs   = "p_sod_merc_6"
 
+sod_slaver_action_trade_prisoners = 1
+sod_slaver_action_escort_caravan = 2
+sod_slaver_action_return_runaways = 3
+sod_slaver_action_free_runaways = 4
+sod_slaver_action_captivity = 5
+sod_slaver_action_hostile = 6
+sod_slaver_action_buy_slaves = 7
+sod_slaver_action_carry_slaves = 8
+
+sod_elephant_guard_activity_patrol = 1
+sod_elephant_guard_activity_procession = 2
+
+sod_boar_action_pay_toll = 1
+sod_boar_action_hire_band = 2
+sod_boar_action_defy_toll = 3
+sod_boar_action_frontier_tribute = 4
+
+sod_black_army_action_security_contract = 1
+sod_black_army_action_hire_patrol = 2
+sod_black_army_action_attack_patrol = 3
+sod_black_army_action_interdict_road_threats = 4
+
+sod_conquistador_action_fund_supplies = 1
+sod_conquistador_action_take_stores = 2
+sod_conquistador_action_delivery_contract = 3
+
+sod_serpent_action_buy_intel = 1
+sod_serpent_action_safe_passage = 2
+sod_serpent_action_attack_screen = 3
+sod_serpent_action_track_horde = 4
+
+sod_black_khergit_role_camp = 1
+sod_black_khergit_role_raider = 2
+sod_black_khergit_role_guard = 3
+
+sod_black_khergit_action_tribute = 1
+sod_black_khergit_action_bribe_target = 2
+sod_black_khergit_action_persuade_enemy = 3
+sod_black_khergit_action_attack_camp = 4
+sod_black_khergit_action_defeat_raiders = 5
+sod_black_khergit_action_defeat_guards = 6
+sod_black_khergit_action_duel_victory = 7
+sod_black_khergit_action_duel_defeat = 8
+
+sod_mini_faction_incident_none = 0
+sod_mini_faction_incident_slaver_heat = 1
+sod_mini_faction_incident_jotnar_hearth = 2
+sod_mini_faction_incident_elephant_alarm = 3
+sod_mini_faction_incident_black_khergit_raid = 4
+sod_mini_faction_incident_boar_tolls = 5
+sod_mini_faction_incident_serpent_warning = 6
+sod_mini_faction_incident_black_army_contract = 7
+sod_mini_faction_incident_conquistador_requisition = 8
+
+sod_imperial_expedition_action_sabotage_supply = 1
+sod_imperial_expedition_action_delay_invasion = 2
+
+sod_trade_cargo_unknown = 0
+sod_trade_cargo_food = 1
+sod_trade_cargo_raw = 2
+sod_trade_cargo_strategic = 3
+sod_trade_cargo_luxury = 4
+
+sod_trade_route_safe = 1
+sod_trade_route_watched = 2
+sod_trade_route_toll = 3
+sod_trade_route_raider = 4
+sod_trade_route_luxury = 5
+sod_trade_route_grain = 6
+sod_trade_route_strategic = 7
+sod_trade_route_starving = 8
+
+sod_trade_contract_none = 0
+sod_trade_contract_guards = 1
+sod_trade_contract_cargo_space = 2
+sod_trade_contract_insurance = 3
+sod_trade_contract_relief = 4
+sod_trade_contract_profit = 5
+
+sod_trade_result_none = 0
+sod_trade_result_profitable = 1
+sod_trade_result_delayed = 2
+sod_trade_result_protected = 3
+sod_trade_result_dangerous = 4
+sod_trade_result_shortage_supplied = 5
+
 hero_death_after_defeat_chance = 2
 king_death_after_defeat_chance = 1
 
@@ -2066,7 +3922,8 @@ enacted_laws_end = 20
 #SoD - Kuba: Buildings
 village_buildings = [slot_center_has_manor, slot_center_has_mill, slot_center_has_watch_tower,
 slot_center_has_inn, slot_center_has_shrine, slot_center_has_monastery, slot_center_has_messenger_post,
-slot_center_has_ambulatory, slot_center_has_water_supply, slot_center_has_clayworks, slot_center_has_rustic_blacksmith]
+slot_center_has_ambulatory, slot_center_has_water_supply, slot_center_has_clayworks, slot_center_has_rustic_blacksmith,
+slot_center_has_militia_yard, slot_center_has_beacon_hill, slot_center_has_granary, slot_center_has_militia_armory]
 
 town_buildings = [slot_center_has_temple, slot_center_has_barracks, slot_center_has_range,
 slot_center_has_stables, slot_center_has_blacksmith, slot_center_has_messenger_post,
@@ -2102,10 +3959,308 @@ for cb in castle_buildings:
 sod_upgrade_command_list = []
 #----------------------------------------------------------------------------------
 
+# --- center_modifier_registry.py ---
+# -*- coding: cp1254 -*-
+
+"""Canonical center modifier registry.
+
+The modifier layer gives buildings, laws, investments, raids, and mobile
+presence systems a shared vocabulary. Runtime scripts can ask for one modifier
+without knowing which systems contributed to it.
+"""
+
+from src.constants.module_constants import *
+
+try:
+    integer_types = (int, long)
+except NameError:
+    integer_types = (int,)
+
+
+CENTER_MODIFIER_FLAT = "flat"
+CENTER_MODIFIER_PERCENT = "percent"
+CENTER_MODIFIER_REDUCTION_PERCENT = "reduction_percent"
+
+
+def _modifier(
+    key,
+    constant,
+    category,
+    label,
+    value_type=CENTER_MODIFIER_FLAT,
+    default=0,
+    minimum=-1000000,
+    maximum=1000000,
+):
+    return {
+        "key": key,
+        "id": constant,
+        "constant_name": "sod_center_modifier_%s" % key,
+        "category": category,
+        "label": label,
+        "value_type": value_type,
+        "default": default,
+        "min": minimum,
+        "max": maximum,
+    }
+
+
+CENTER_MODIFIER_REGISTRY = (
+    _modifier("trade_liquidity_flat", sod_center_modifier_trade_liquidity_flat, "economy_trade", "Trade Liquidity", CENTER_MODIFIER_FLAT, 0, -100, 500),
+    _modifier("trade_volume_pct", sod_center_modifier_trade_volume_pct, "economy_trade", "Trade Volume %", CENTER_MODIFIER_PERCENT, 100, 25, 200),
+    _modifier("tariff_income_pct", sod_center_modifier_tariff_income_pct, "economy_trade", "Tariff Income %", CENTER_MODIFIER_PERCENT, 100, 25, 250),
+    _modifier("market_wealth_flat", sod_center_modifier_market_wealth_flat, "economy_trade", "Market Wealth", CENTER_MODIFIER_FLAT, 0, -50000, 50000),
+    _modifier("market_wealth_pct", sod_center_modifier_market_wealth_pct, "economy_trade", "Market Wealth %", CENTER_MODIFIER_PERCENT, 100, 25, 250),
+    _modifier("prosperity_cap_flat", sod_center_modifier_prosperity_cap_flat, "economy_trade", "Prosperity Cap", CENTER_MODIFIER_FLAT, 0, -100, 200),
+    _modifier("prosperity_growth_flat", sod_center_modifier_prosperity_growth_flat, "economy_trade", "Prosperity Growth", CENTER_MODIFIER_FLAT, 0, -50, 50),
+    _modifier("prosperity_growth_pct", sod_center_modifier_prosperity_growth_pct, "economy_trade", "Prosperity Growth %", CENTER_MODIFIER_PERCENT, 100, 25, 250),
+    _modifier("production_output_pct", sod_center_modifier_production_output_pct, "economy_trade", "Production Output %", CENTER_MODIFIER_PERCENT, 100, 25, 250),
+    _modifier("goods_import_demand_pct", sod_center_modifier_goods_import_demand_pct, "economy_trade", "Goods Import Demand %", CENTER_MODIFIER_PERCENT, 100, 25, 250),
+    _modifier("goods_export_supply_pct", sod_center_modifier_goods_export_supply_pct, "economy_trade", "Goods Export Supply %", CENTER_MODIFIER_PERCENT, 100, 25, 250),
+    _modifier("merchant_happiness_flat", sod_center_modifier_merchant_happiness_flat, "economy_trade", "Merchant Happiness", CENTER_MODIFIER_FLAT, 0, -100, 100),
+    _modifier("tax_efficiency_pct", sod_center_modifier_tax_efficiency_pct, "economy_trade", "Tax Efficiency %", CENTER_MODIFIER_PERCENT, 100, 0, 300),
+
+    _modifier("population_capacity_flat", sod_center_modifier_population_capacity_flat, "population_health_food", "Population Capacity", CENTER_MODIFIER_FLAT, 0, -10000, 20000),
+    _modifier("population_growth_flat", sod_center_modifier_population_growth_flat, "population_health_food", "Population Growth", CENTER_MODIFIER_FLAT, 0, -25, 50),
+    _modifier("population_growth_pct", sod_center_modifier_population_growth_pct, "population_health_food", "Population Growth %", CENTER_MODIFIER_PERCENT, 100, 20, 300),
+    _modifier("population_recovery_flat", sod_center_modifier_population_recovery_flat, "population_health_food", "Population Recovery", CENTER_MODIFIER_FLAT, 0, -25, 100),
+    _modifier("migration_attraction_flat", sod_center_modifier_migration_attraction_flat, "population_health_food", "Migration Attraction", CENTER_MODIFIER_FLAT, 0, -100, 100),
+    _modifier("migration_retention_flat", sod_center_modifier_migration_retention_flat, "population_health_food", "Migration Retention", CENTER_MODIFIER_FLAT, 0, -100, 100),
+    _modifier("health_cap_flat", sod_center_modifier_health_cap_flat, "population_health_food", "Health Cap", CENTER_MODIFIER_FLAT, 0, -100, 200),
+    _modifier("health_recovery_flat", sod_center_modifier_health_recovery_flat, "population_health_food", "Health Recovery", CENTER_MODIFIER_FLAT, 0, -25, 50),
+    _modifier("disease_resistance_pct", sod_center_modifier_disease_resistance_pct, "population_health_food", "Disease Resistance %", CENTER_MODIFIER_REDUCTION_PERCENT, 0, 0, 95),
+    _modifier("food_consumption_pct", sod_center_modifier_food_consumption_pct, "population_health_food", "Food Consumption %", CENTER_MODIFIER_PERCENT, 100, 25, 250),
+    _modifier("food_store_capacity_flat", sod_center_modifier_food_store_capacity_flat, "population_health_food", "Food Store Capacity", CENTER_MODIFIER_FLAT, 0, -1000, 5000),
+    _modifier("food_security_flat", sod_center_modifier_food_security_flat, "population_health_food", "Food Security", CENTER_MODIFIER_FLAT, 0, -500, 500),
+    _modifier("cattle_growth_flat", sod_center_modifier_cattle_growth_flat, "population_health_food", "Cattle Growth", CENTER_MODIFIER_FLAT, 0, -50, 100),
+    _modifier("cattle_output_pct", sod_center_modifier_cattle_output_pct, "population_health_food", "Cattle Output %", CENTER_MODIFIER_PERCENT, 100, 25, 250),
+
+    _modifier("security_flat", sod_center_modifier_security_flat, "security_recovery", "Security", CENTER_MODIFIER_FLAT, 0, -100, 200),
+    _modifier("raid_resistance_pct", sod_center_modifier_raid_resistance_pct, "security_recovery", "Raid Resistance %", CENTER_MODIFIER_REDUCTION_PERCENT, 0, 0, 95),
+    _modifier("raid_recovery_flat", sod_center_modifier_raid_recovery_flat, "security_recovery", "Raid Recovery", CENTER_MODIFIER_FLAT, 0, -25, 100),
+    _modifier("threat_reduction_flat", sod_center_modifier_threat_reduction_flat, "security_recovery", "Threat Reduction", CENTER_MODIFIER_FLAT, 0, -200, 500),
+    _modifier("bandit_spawn_reduction_pct", sod_center_modifier_bandit_spawn_reduction_pct, "security_recovery", "Bandit Spawn Reduction %", CENTER_MODIFIER_REDUCTION_PERCENT, 0, 0, 95),
+    _modifier("desperation_bandit_reduction_pct", sod_center_modifier_desperation_bandit_reduction_pct, "security_recovery", "Desperation Bandit Reduction %", CENTER_MODIFIER_REDUCTION_PERCENT, 0, 0, 95),
+    _modifier("unrest_flat", sod_center_modifier_unrest_flat, "security_recovery", "Unrest", CENTER_MODIFIER_FLAT, 0, -100, 100),
+    _modifier("unrest_reduction_flat", sod_center_modifier_unrest_reduction_flat, "security_recovery", "Unrest Reduction", CENTER_MODIFIER_FLAT, 0, -100, 100),
+    _modifier("prisoner_escape_reduction_pct", sod_center_modifier_prisoner_escape_reduction_pct, "security_recovery", "Prisoner Escape Reduction %", CENTER_MODIFIER_REDUCTION_PERCENT, 0, 0, 95),
+    _modifier("warning_range_flat", sod_center_modifier_warning_range_flat, "security_recovery", "Warning Range", CENTER_MODIFIER_FLAT, 0, 0, 10),
+    _modifier("patrol_response_pct", sod_center_modifier_patrol_response_pct, "security_recovery", "Patrol Response %", CENTER_MODIFIER_PERCENT, 100, 25, 250),
+
+    _modifier("infantry_training_flat", sod_center_modifier_infantry_training_flat, "military_recruitment", "Infantry Training", CENTER_MODIFIER_FLAT, 0, 0, 10),
+    _modifier("ranged_training_flat", sod_center_modifier_ranged_training_flat, "military_recruitment", "Ranged Training", CENTER_MODIFIER_FLAT, 0, 0, 10),
+    _modifier("cavalry_training_flat", sod_center_modifier_cavalry_training_flat, "military_recruitment", "Cavalry Training", CENTER_MODIFIER_FLAT, 0, 0, 10),
+    _modifier("garrison_recovery_flat", sod_center_modifier_garrison_recovery_flat, "military_recruitment", "Garrison Recovery", CENTER_MODIFIER_FLAT, 0, 0, 100),
+    _modifier("garrison_upkeep_pct", sod_center_modifier_garrison_upkeep_pct, "military_recruitment", "Garrison Upkeep %", CENTER_MODIFIER_PERCENT, 100, 0, 250),
+    _modifier("troop_upgrade_cost_pct", sod_center_modifier_troop_upgrade_cost_pct, "military_recruitment", "Troop Upgrade Cost %", CENTER_MODIFIER_PERCENT, 100, 0, 250),
+    _modifier("recruit_count_flat", sod_center_modifier_recruit_count_flat, "military_recruitment", "Recruit Count", CENTER_MODIFIER_FLAT, 0, -25, 50),
+    _modifier("recruit_tier_bonus_flat", sod_center_modifier_recruit_tier_bonus_flat, "military_recruitment", "Recruit Tier Bonus", CENTER_MODIFIER_FLAT, 0, -5, 5),
+    _modifier("noble_recruitment_flat", sod_center_modifier_noble_recruitment_flat, "military_recruitment", "Noble Recruitment", CENTER_MODIFIER_FLAT, 0, 0, 20),
+    _modifier("faith_troop_access_flat", sod_center_modifier_faith_troop_access_flat, "military_recruitment", "Faith Troop Access", CENTER_MODIFIER_FLAT, 0, 0, 5),
+    _modifier("faith_ascension_bonus_flat", sod_center_modifier_faith_ascension_bonus_flat, "military_recruitment", "Faith Ascension Bonus", CENTER_MODIFIER_FLAT, 0, 0, 100),
+
+    _modifier("construction_speed_pct", sod_center_modifier_construction_speed_pct, "construction_admin_prestige", "Construction Speed %", CENTER_MODIFIER_PERCENT, 100, 25, 250),
+    _modifier("construction_cost_pct", sod_center_modifier_construction_cost_pct, "construction_admin_prestige", "Construction Cost %", CENTER_MODIFIER_PERCENT, 100, 0, 250),
+    _modifier("weekly_upkeep_flat", sod_center_modifier_weekly_upkeep_flat, "construction_admin_prestige", "Weekly Upkeep", CENTER_MODIFIER_FLAT, 0, 0, 100000),
+    _modifier("demesne_cost_flat", sod_center_modifier_demesne_cost_flat, "construction_admin_prestige", "Demesne Cost", CENTER_MODIFIER_FLAT, 0, -50, 50),
+    _modifier("renown_weekly_flat", sod_center_modifier_renown_weekly_flat, "construction_admin_prestige", "Weekly Renown", CENTER_MODIFIER_FLAT, 0, -100, 100),
+    _modifier("relations_weekly_flat", sod_center_modifier_relations_weekly_flat, "construction_admin_prestige", "Weekly Relations", CENTER_MODIFIER_FLAT, 0, -20, 20),
+    _modifier("administration_flat", sod_center_modifier_administration_flat, "construction_admin_prestige", "Administration", CENTER_MODIFIER_FLAT, 0, -100, 100),
+    _modifier("law_compliance_flat", sod_center_modifier_law_compliance_flat, "construction_admin_prestige", "Law Compliance", CENTER_MODIFIER_FLAT, 0, -100, 100),
+
+    _modifier("local_faith_growth_flat", sod_center_modifier_local_faith_growth_flat, "faith_culture", "Local Faith Growth", CENTER_MODIFIER_FLAT, 0, -50, 100),
+    _modifier("global_faith_growth_flat", sod_center_modifier_global_faith_growth_flat, "faith_culture", "Global Faith Growth", CENTER_MODIFIER_FLAT, 0, -50, 100),
+    _modifier("faith_stability_flat", sod_center_modifier_faith_stability_flat, "faith_culture", "Faith Stability", CENTER_MODIFIER_FLAT, 0, -100, 100),
+    _modifier("cultural_assimilation_flat", sod_center_modifier_cultural_assimilation_flat, "faith_culture", "Cultural Assimilation", CENTER_MODIFIER_FLAT, 0, -50, 100),
+)
+
+
+CENTER_MODIFIER_BY_KEY = dict((definition["key"], definition) for definition in CENTER_MODIFIER_REGISTRY)
+CENTER_MODIFIER_BY_ID = dict((definition["id"], definition) for definition in CENTER_MODIFIER_REGISTRY)
+CENTER_MODIFIER_KEYS = tuple(definition["key"] for definition in CENTER_MODIFIER_REGISTRY)
+CENTER_MODIFIER_IDS = dict((definition["key"], definition["id"]) for definition in CENTER_MODIFIER_REGISTRY)
+SUPPORTED_CENTER_MODIFIERS = CENTER_MODIFIER_KEYS
+
+
+BUILDING_EFFECT_TAG_TO_CENTER_MODIFIER = {
+    "weekly_relations": "relations_weekly_flat",
+    "weekly_loyalty": "relations_weekly_flat",
+    "weekly_prosperity": "prosperity_growth_flat",
+    "weekly_local_faith": "local_faith_growth_flat",
+    "weekly_global_faith": "global_faith_growth_flat",
+    "weekly_renown": "renown_weekly_flat",
+    "weekly_taxes_percent": "tax_efficiency_pct",
+    "demesne_cost": "demesne_cost_flat",
+    "health_cap": "health_cap_flat",
+    "prosperity_cap": "prosperity_cap_flat",
+    "population_capacity": "population_capacity_flat",
+    "weekly_population_growth": "population_growth_flat",
+    "raid_recovery": "raid_recovery_flat",
+    "loot_time_bonus_percent": "raid_resistance_pct",
+    "enemy_warning_messages": "warning_range_flat",
+    "captives_escape_chance": "prisoner_escape_reduction_pct",
+    "infantry_training": "infantry_training_flat",
+    "ranged_training": "ranged_training_flat",
+    "cavalry_training": "cavalry_training_flat",
+    "noble_assembly": "noble_recruitment_flat",
+    "faith_troop_upgrade": "faith_troop_access_flat",
+    "troop_upgrade_cost_multiplier": "troop_upgrade_cost_pct",
+    "garrison_upkeep_reduction": "garrison_upkeep_pct",
+}
+
+
+BUILDING_FIELD_TO_CENTER_MODIFIER = (
+    ("center_health_bonus", "health_cap_flat"),
+    ("prosperity_cap_bonus", "prosperity_cap_flat"),
+    ("prosperity_multiplier_bonus_percent", "prosperity_growth_pct"),
+    ("demesne_cost", "demesne_cost_flat"),
+    ("weekly_renown_bonus", "renown_weekly_flat"),
+    ("weekly_prosperity_bonus", "prosperity_growth_flat"),
+    ("weekly_income_bonus_percent", "tax_efficiency_pct"),
+    ("population_capacity_bonus", "population_capacity_flat"),
+    ("weekly_population_growth_bonus", "population_growth_flat"),
+    ("raid_recovery_bonus", "raid_recovery_flat"),
+    ("weekly_upkeep", "weekly_upkeep_flat"),
+)
+
+
+def get_center_modifier_definition(modifier):
+    if modifier in CENTER_MODIFIER_BY_KEY:
+        return CENTER_MODIFIER_BY_KEY.get(modifier)
+    return CENTER_MODIFIER_BY_ID.get(modifier)
+
+
+def get_center_modifier_id(modifier):
+    definition = get_center_modifier_definition(modifier)
+    if definition is None:
+        return sod_center_modifier_none
+    return definition["id"]
+
+
+def get_center_modifier_key(modifier):
+    definition = get_center_modifier_definition(modifier)
+    if definition is None:
+        return None
+    return definition["key"]
+
+
+def get_center_modifier_default(modifier):
+    definition = get_center_modifier_definition(modifier)
+    if definition is None:
+        return 0
+    return definition["default"]
+
+
+def clamp_center_modifier_value(modifier, value):
+    definition = get_center_modifier_definition(modifier)
+    if definition is None:
+        return value
+    if value < definition["min"]:
+        return definition["min"]
+    if value > definition["max"]:
+        return definition["max"]
+    return value
+
+
+def normalize_center_modifier_entries(entries):
+    normalized = []
+    if entries is None:
+        return ()
+    for entry in entries:
+        if len(entry) < 2:
+            continue
+        modifier_key = get_center_modifier_key(entry[0])
+        value = entry[1]
+        source_key = entry[2] if len(entry) > 2 else "manual"
+        if modifier_key is None or not isinstance(value, integer_types):
+            continue
+        normalized.append((modifier_key, value, source_key))
+    return tuple(normalized)
+
+
+def derive_building_center_modifiers(definition):
+    modifiers = []
+    seen = {}
+    for field_name, modifier_key in BUILDING_FIELD_TO_CENTER_MODIFIER:
+        value = definition.get(field_name, 0)
+        if isinstance(value, integer_types) and value:
+            if modifier_key == "prosperity_growth_pct":
+                value = int(value)
+            seen[modifier_key] = seen.get(modifier_key, 0) + int(value)
+
+    effect_tags = tuple(definition.get("effect_tags", ()))
+    effect_numbers = tuple(definition.get("effect_numbers", ()))
+    for index, tag in enumerate(effect_tags):
+        if index >= len(effect_numbers):
+            continue
+        value = effect_numbers[index]
+        if not isinstance(value, integer_types) or not value:
+            continue
+        modifier_key = BUILDING_EFFECT_TAG_TO_CENTER_MODIFIER.get(tag)
+        if modifier_key is None:
+            continue
+
+        if modifier_key == "troop_upgrade_cost_pct":
+            # Legacy tag stores the resulting cost percent, while the modifier
+            # source stores a delta around the neutral 100%.
+            value = int(value) - 100
+        elif modifier_key == "garrison_upkeep_pct":
+            value = -50 if value > 0 else 0
+        elif modifier_key == "demesne_cost_flat":
+            value = abs(int(value))
+        if modifier_key in seen:
+            continue
+        seen[modifier_key] = seen.get(modifier_key, 0) + int(value)
+
+    for modifier_key, value in sorted(seen.items()):
+        modifiers.append((modifier_key, value, "building"))
+    return tuple(modifiers)
+
+
+def validate_center_modifier_registry():
+    issues = []
+    seen_keys = {}
+    seen_ids = {}
+    for definition in CENTER_MODIFIER_REGISTRY:
+        key = definition.get("key")
+        modifier_id = definition.get("id")
+        seen_keys[key] = seen_keys.get(key, 0) + 1
+        seen_ids[modifier_id] = seen_ids.get(modifier_id, 0) + 1
+        if not key:
+            issues.append("center modifier has no key")
+        if not isinstance(modifier_id, integer_types) or modifier_id <= 0:
+            issues.append("%s: invalid modifier id %s" % (key, modifier_id))
+        if definition.get("value_type") not in (CENTER_MODIFIER_FLAT, CENTER_MODIFIER_PERCENT, CENTER_MODIFIER_REDUCTION_PERCENT):
+            issues.append("%s: unsupported value_type %s" % (key, definition.get("value_type")))
+        if definition.get("min") > definition.get("max"):
+            issues.append("%s: min is greater than max" % key)
+        if definition.get("default") < definition.get("min") or definition.get("default") > definition.get("max"):
+            issues.append("%s: default %s is outside bounds %s..%s" % (key, definition.get("default"), definition.get("min"), definition.get("max")))
+        if definition.get("value_type") == CENTER_MODIFIER_PERCENT and definition.get("default") != 100:
+            issues.append("%s: percent modifiers should default to 100" % key)
+        if definition.get("value_type") == CENTER_MODIFIER_REDUCTION_PERCENT and definition.get("default") != 0:
+            issues.append("%s: reduction percent modifiers should default to 0" % key)
+        if definition.get("min") <= -1000000 or definition.get("max") >= 1000000:
+            issues.append("%s: modifier bounds are too broad for safe runtime use" % key)
+    duplicates = [key for key, count in seen_keys.items() if count > 1]
+    if duplicates:
+        issues.append("duplicate center modifier keys: %s" % ", ".join(map(str, duplicates)))
+    duplicate_ids = [modifier_id for modifier_id, count in seen_ids.items() if count > 1]
+    if duplicate_ids:
+        issues.append("duplicate center modifier ids: %s" % ", ".join(map(str, duplicate_ids)))
+    return issues
+
 # --- building_registry.py ---
 # -*- coding: cp1254 -*-
 
 from src.constants.module_constants import *
+from src.constants.center_modifier_registry import (
+    CENTER_MODIFIER_BY_KEY,
+    BUILDING_EFFECT_TAG_TO_CENTER_MODIFIER,
+    BUILDING_FIELD_TO_CENTER_MODIFIER,
+    derive_building_center_modifiers,
+    normalize_center_modifier_entries,
+)
 
 try:
     integer_types = (int, long)
@@ -2130,6 +4285,53 @@ BUILDING_SPECIALIZATION_LABELS = {
     "defensive": "Defensive",
     "population_health": "Population Health",
 }
+
+SUPPORTED_BUILDING_ROLES = (
+    "food_security",
+    "trade_liquidity",
+    "production",
+    "population_capacity",
+    "population_growth",
+    "health_recovery",
+    "raid_recovery",
+    "security",
+    "military_training",
+    "construction_efficiency",
+    "faith_support",
+    "unrest_control",
+    "administration",
+    "noble_recruitment",
+    "prisoner_control",
+    "communications",
+    "renown",
+)
+
+BUILDING_ROLE_LABELS = {
+    "food_security": "Food Security",
+    "trade_liquidity": "Trade Liquidity",
+    "production": "Production",
+    "population_capacity": "Population Capacity",
+    "population_growth": "Population Growth",
+    "health_recovery": "Health Recovery",
+    "raid_recovery": "Raid Recovery",
+    "security": "Security",
+    "military_training": "Military Training",
+    "construction_efficiency": "Construction Efficiency",
+    "faith_support": "Faith Support",
+    "unrest_control": "Unrest Control",
+    "administration": "Administration",
+    "noble_recruitment": "Noble Recruitment",
+    "prisoner_control": "Prisoner Control",
+    "communications": "Communications",
+    "renown": "Renown",
+}
+
+LEGACY_BUILDING_SCRIPT_EFFECT_EXCEPTIONS = (
+    "badboy_decay",
+    "faith_world_drift",
+    "noble_gathering",
+    "player_message_text",
+)
 
 
 def _string_types():
@@ -2159,6 +4361,26 @@ def _normalize_tuple(value):
     return (value,)
 
 
+def _merge_center_modifier_entries(entries):
+    totals = {}
+    sources = {}
+    order = []
+    for entry in entries:
+        if len(entry) < 2:
+            continue
+        modifier_key = entry[0]
+        value = entry[1]
+        source = entry[2] if len(entry) > 2 else "building"
+        if modifier_key not in totals:
+            totals[modifier_key] = 0
+            sources[modifier_key] = []
+            order.append(modifier_key)
+        totals[modifier_key] += value
+        if source not in sources[modifier_key]:
+            sources[modifier_key].append(source)
+    return tuple((modifier_key, totals[modifier_key], "+".join(sources[modifier_key])) for modifier_key in order)
+
+
 def _normalize_text(value, fallback=""):
     if value is None:
         return fallback
@@ -2186,6 +4408,8 @@ def get_building_display_name_text(building_slot):
     display_name = building.get("display_name")
     if not display_name:
         return _build_slot_label(building.get("building_key") or building_slot)
+    if _is_string(display_name) and display_name.startswith("str_"):
+        return _build_slot_label(building.get("building_key") or display_name)
 
     return _normalize_display_text(display_name)
 
@@ -2217,6 +4441,21 @@ def get_building_specialization_label(building_slot):
     return BUILDING_SPECIALIZATION_LABELS.get(specialization, _build_slot_label(specialization))
 
 
+def get_building_roles(building_slot):
+    building = get_building_definition(building_slot)
+    if building is None:
+        return ()
+    return _normalize_tuple(building.get("building_roles"))
+
+
+def get_building_role_labels(building_slot):
+    return tuple(BUILDING_ROLE_LABELS.get(role, _build_slot_label(role)) for role in get_building_roles(building_slot))
+
+
+def building_has_role(building_slot, role):
+    return role in get_building_roles(building_slot)
+
+
 def get_building_build_duration(building_slot):
     building = get_building_definition(building_slot)
     if building is None:
@@ -2241,6 +4480,7 @@ def _build_registry_entry(
     build_days=None,
     allowed_center_types=(),
     prerequisite_buildings=(),
+    prerequisite_any_buildings=(),
     conflicts_with=(),
     effect_tags=(),
     effect_numbers=(),
@@ -2269,9 +4509,15 @@ def _build_registry_entry(
     weekly_renown_bonus=0,
     weekly_prosperity_bonus=0,
     weekly_income_bonus_percent=0,
+    population_capacity_bonus=0,
+    weekly_population_growth_bonus=0,
+    raid_recovery_bonus=0,
+    building_roles=(),
+    center_modifiers=None,
 ):
     effect_tags = tuple(effect_tags)
     effect_numbers = tuple(effect_numbers)
+    building_roles = _normalize_tuple(building_roles)
     if effect_summary is None:
         effect_summary = short_description_text if short_description_text is not None else (description_text if description_text is not None else description_string_id)
     if short_description_text is None:
@@ -2281,7 +4527,7 @@ def _build_registry_entry(
     if build_days is None and build_hours is not None:
         build_days = build_hours
 
-    return {
+    entry = {
         "building_slot": building_slot,
         "slot": building_slot,
         "building_key": building_key,
@@ -2295,6 +4541,7 @@ def _build_registry_entry(
         "build_days": build_days,
         "allowed_center_types": tuple(allowed_center_types),
         "prerequisite_buildings": tuple(prerequisite_buildings),
+        "prerequisite_any_buildings": tuple(prerequisite_any_buildings),
         "conflicts_with": tuple(conflicts_with),
         "effect_tags": effect_tags,
         "effect_numbers": effect_numbers,
@@ -2331,7 +4578,20 @@ def _build_registry_entry(
         "weekly_renown_bonus": weekly_renown_bonus,
         "weekly_prosperity_bonus": weekly_prosperity_bonus,
         "weekly_income_bonus_percent": weekly_income_bonus_percent,
+        "population_capacity_bonus": population_capacity_bonus,
+        "weekly_population_growth_bonus": weekly_population_growth_bonus,
+        "raid_recovery_bonus": raid_recovery_bonus,
+        "building_roles": building_roles,
+        "roles": building_roles,
     }
+    if center_modifiers is None:
+        center_modifiers = derive_building_center_modifiers(entry)
+    else:
+        center_modifiers = derive_building_center_modifiers(entry) + normalize_center_modifier_entries(center_modifiers)
+    center_modifiers = _merge_center_modifier_entries(center_modifiers)
+    entry["center_modifiers"] = center_modifiers
+    entry["modifiers"] = center_modifiers
+    return entry
 
 
 def _text_building(
@@ -2465,31 +4725,35 @@ def _string_id_building(
 
 
 BUILDING_REGISTRY = [
-    _text_building(slot_center_has_manor, "manor", "village_economy", ("village",), 2000, "@Manor", "@A village manor improves hospitality and logistics. Weekly Renown +3, Fief's Demesne Cost -2.", effect_tags=("weekly_renown", "demesne_cost"), effect_numbers=(3, -2), affects_village=True, specialization="civic", tier=1, weekly_upkeep=5, short_description_text="Village hospitality and logistics.", design_summary="Village hospitality and logistics.", center_health_bonus=5, prosperity_multiplier_bonus_percent=10, weekly_renown_bonus=3, demesne_cost=2),
-    _text_building(slot_center_has_mill, "mill", "village_economy", ("village",), 2500, "@Mill", "@A mill improves village income and long-term prosperity. Weekly Prosperity +1, Prosperity Cap +20, Weekly Taxes +10%.", effect_tags=("weekly_prosperity", "prosperity_cap", "weekly_taxes_percent"), effect_numbers=(1, 20, 10), affects_village=True, specialization="economic", tier=1, weekly_upkeep=10, short_description_text="Village production and prosperity.", design_summary="Village production and prosperity.", center_health_bonus=5, prosperity_multiplier_bonus_percent=20, prosperity_cap_bonus=20, weekly_prosperity_bonus=1, weekly_income_bonus_percent=10),
-    _text_building(slot_center_has_watch_tower, "watch_tower", "village_defense", ("village",), 1200, "@Watch Tower", "@A watch tower lets the villagers raise alarm earlier. The time it takes for enemies to loot the village increases by 25%. Village's Demesne Cost -1.", effect_tags=("loot_time_bonus_percent", "demesne_cost"), effect_numbers=(25, -1), affects_village=True, specialization="defensive", tier=1, weekly_upkeep=5, design_summary="Early warning and local defense.", demesne_cost=1),
-    _text_building(slot_center_has_inn, "inn", "village_civic", ("village",), 2000, "@Inn", "@An inn increases the loyalty of the villagers to you by +2 every week.", effect_tags=("weekly_loyalty",), effect_numbers=(2,), affects_village=True, specialization="civic", tier=1, weekly_upkeep=10, design_summary="A social hub for travelers and locals."),
-    _string_id_building(slot_center_has_shrine, "shrine", "faith", ("village",), 1000, "str_sod_shrine_0", "str_sod_temple_0_description", description_text="@Weekly Relations +1, Weekly Local Faith +3, Weekly Global Faith +2.", effect_tags=("weekly_relations", "weekly_local_faith", "weekly_global_faith"), effect_numbers=(1, 3, 2), affects_village=True, specialization="religious", tier=1, upgrade_to=(slot_center_has_monastery,), exclusive_group="village_religious_progression", weekly_upkeep=5, faction_flavor="Village shrine and pilgrim stop.", design_summary="A small village shrine that can later be replaced by a monastery."),
-    _string_id_building(slot_center_has_monastery, "monastery", "faith", ("village",), 2000, "str_sod_monastery_0", "str_sod_temple_0_description", description_text="@Weekly Taxes +5%, Weekly Local Faith +2, Weekly Global Faith +2.", effect_tags=("weekly_taxes_percent", "weekly_local_faith", "weekly_global_faith"), effect_numbers=(5, 2, 2), affects_village=True, specialization="religious", tier=2, prerequisite_buildings=(slot_center_has_shrine,), upgrade_from=(slot_center_has_shrine,), exclusive_group="village_religious_progression", weekly_upkeep=20, faction_flavor="Village monastic estate and spiritual center.", center_health_bonus=5, design_summary="An expanded monastic complex that supersedes a shrine."),
-    _string_id_building(slot_center_has_temple, "temple", "faith", ("town",), 2000, "str_sod_temple_0", "str_sod_temple_0_description", description_text="@Weekly Relations +1, Weekly Local Faith +5, Weekly Global Faith +4.", effect_tags=("weekly_relations", "weekly_local_faith", "weekly_global_faith"), effect_numbers=(1, 5, 4), affects_town=True, specialization="religious", tier=1, weekly_upkeep=10, design_summary="A civic religious center for a town."),
-    _string_id_building(slot_center_has_chapel, "chapel", "faith", ("castle",), 500, "str_sod_chapel_0", "str_sod_temple_0_description", description_text="@Allows upgrade of Zealots into Faith Troops, Weekly Global Faith +1.", effect_tags=("faith_troop_upgrade", "weekly_global_faith"), effect_numbers=(1, 1), affects_castle=True, specialization="religious", tier=1, weekly_upkeep=5, design_summary="A castle chapel for military faith support."),
-    _text_building(slot_center_has_barracks, "barracks", "military", ("town", "castle"), 2000, "@Barracks", "@Build it to train existing troops and recruit new infantry units. Fief's Demesne Cost -1.", effect_tags=("infantry_training", "demesne_cost"), effect_numbers=(1, -1), affects_town=True, affects_castle=True, specialization="military", tier=1, weekly_upkeep=10, short_description_text="Infantry training quarters.", design_summary="Infantry training quarters."),
-    _text_building(slot_center_has_range, "practice_range", "military", ("town", "castle"), 2000, "@Practice Range", "@Build it to train existing troops and recruit new ranged units. Fief's Demesne Cost -1.", effect_tags=("ranged_training", "demesne_cost"), effect_numbers=(1, -1), affects_town=True, affects_castle=True, specialization="military", tier=1, weekly_upkeep=10, short_description_text="Ranged training grounds.", design_summary="Ranged training grounds."),
-    _text_building(slot_center_has_stables, "stables", "military", ("town", "castle"), 2000, "@Stables", "@Build it to train cavalry. +4 Weekly Renown, Fief's Demesne Cost -1.", effect_tags=("cavalry_training", "weekly_renown", "demesne_cost"), effect_numbers=(1, 4, -1), affects_town=True, affects_castle=True, specialization="military", tier=1, weekly_upkeep=15, design_summary="Mounted troop support and horses."),
-    _string_id_building(slot_center_has_chapter, "chapter", "military", ("castle",), 4000, "str_sod_chapter_0", "str_sod_temple_0_description", description_text="@Build it to assemble nobility from your fallen motherland. Weekly Renown +5, Fief's Demesne Cost -1.", effect_summary="@Weekly Renown +5, Fief's Demesne Cost -1.", effect_tags=("weekly_renown", "noble_assembly", "demesne_cost"), effect_numbers=(5, 1, -1), affects_castle=True, specialization="military", tier=2, weekly_upkeep=20, design_summary="A noble chapterhouse for elite recruitment."),
-    _text_building(slot_center_has_blacksmith, "blacksmith", "military", ("town", "castle"), 1000, "@Blacksmith", "@Build it to reduce troop upgrade cost by 50% in this fief, and reduce garrison upkeep in castles (and towns).", effect_tags=("troop_upgrade_cost_multiplier", "garrison_upkeep_reduction"), effect_numbers=(50, 1), affects_town=True, affects_castle=True, specialization="economic", tier=1, weekly_upkeep=10, design_summary="A production building that supports war supply."),
-    _text_building(slot_center_has_messenger_post, "messenger_post", "security", ("village", "town", "castle"), 1200, "@Messenger Post", "@A messenger post lets the inhabitants send you a message whenever enemies are nearby, even if you are far away from here. Fief's Demesne Cost -1.", effect_tags=("enemy_warning_messages", "demesne_cost"), effect_numbers=(1, -1), affects_village=True, affects_town=True, affects_castle=True, specialization="civic", tier=1, weekly_upkeep=5, design_summary="Communication hub for center coordination."),
-    _text_building(slot_center_has_prisoner_tower, "prisoner_tower", "security", ("town", "castle"), 1000, "@Prison Tower", "@A prison tower reduces the chance of captives escaping. Weekly Relations +1 (Towns only).", effect_tags=("captives_escape_chance", "weekly_relations"), effect_numbers=(1, 1), affects_town=True, affects_castle=True, specialization="defensive", tier=1, weekly_upkeep=10, design_summary="Security building for prisoners and control."),
-    _text_building(slot_center_has_guild, "merchant_guild_hall", "town_economy", ("town",), 9000, "@Merchant's Guild Hall", "@Build it to please the merchant community and engage in trade enterprises. Weekly Relations +1, Weekly Prosperity +2, Fief's Demesne Cost -2, Weekly Taxes +10%.", effect_tags=("weekly_relations", "weekly_prosperity", "demesne_cost", "weekly_taxes_percent"), effect_numbers=(1, 2, -2, 10), affects_town=True, specialization="economic", tier=2, weekly_upkeep=30, design_summary="Major guild infrastructure for town commerce."),
-    _text_building(slot_center_has_university, "university", "town_civic", ("town",), 4000, "@University", "@Erect it to improve your renown, as well as people's appreciation for you. Weekly Relations +1, Weekly Renown +15.", effect_tags=("weekly_relations", "weekly_renown"), effect_numbers=(1, 15), affects_town=True, specialization="civic", tier=2, weekly_upkeep=20, center_health_bonus=10, design_summary="A scholarly civic institution."),
-    _text_building(slot_center_has_hospital, "hospital", "town_health", ("town",), 2500, "@Hospital", "@Build it to keep your people healthy. Health Cap +20 (improves long-term health recovery and reduces health decline).", effect_tags=("health_cap",), effect_numbers=(20,), affects_town=True, specialization="population_health", tier=3, prerequisite_buildings=(slot_center_has_canalization,), upgrade_from=(slot_center_has_canalization,), exclusive_group="town_health_progression", weekly_upkeep=35, faction_flavor="Advanced town medicine and treatment.", center_health_bonus=20, design_summary="A higher-tier hospital that supersedes canalization."),
-    _text_building(slot_center_has_canalization, "canalization", "town_health", ("town",), 1200, "@Canalization", "@Build it to improve sanitation. Health Cap +10 (improves long-term health recovery and reduces health decline).", effect_tags=("health_cap",), effect_numbers=(10,), affects_town=True, specialization="population_health", tier=2, upgrade_to=(slot_center_has_hospital,), exclusive_group="town_health_progression", weekly_upkeep=15, faction_flavor="Town sanitation, drains, and waste management.", center_health_bonus=10, design_summary="Sanitation works that can become a hospital."),
-    _text_building(slot_center_has_manufacture, "manufacture", "town_economy", ("town",), 2500, "@Manufacture", "@Build it to support long-term prosperity. Prosperity Cap +20 (improves long-term prosperity growth and reduces decline).", effect_tags=("prosperity_cap",), effect_numbers=(20,), affects_town=True, specialization="economic", tier=3, prerequisite_buildings=(slot_center_has_bank,), upgrade_from=(slot_center_has_bank,), exclusive_group="town_economic_progression", weekly_upkeep=45, faction_flavor="Large-scale town industry and investment.", design_summary="A major industrial building that supersedes the town bank."),
-    _text_building(slot_center_has_bank, "bank", "town_economy", ("town",), 1200, "@Bank", "@Build it to support long-term prosperity. Prosperity Cap +10 (improves long-term prosperity growth and reduces decline).", effect_tags=("prosperity_cap",), effect_numbers=(10,), affects_town=True, specialization="economic", tier=2, upgrade_to=(slot_center_has_manufacture,), exclusive_group="town_economic_progression", weekly_upkeep=15, faction_flavor="Town finance and merchant credit.", design_summary="A civic bank that can later be replaced by a manufacture."),
-    _text_building(slot_center_has_ambulatory, "ambulatory", "village_health", ("village",), 2500, "@Ambulatory", "@Build it to keep your people healthy. Health Cap +20 (improves long-term health recovery and reduces health decline).", effect_tags=("health_cap",), effect_numbers=(20,), affects_village=True, specialization="population_health", tier=2, prerequisite_buildings=(slot_center_has_water_supply,), upgrade_from=(slot_center_has_water_supply,), exclusive_group="village_health_progression", weekly_upkeep=15, faction_flavor="Basic village treatment and care.", center_health_bonus=20, design_summary="A local care facility replacing the water supply improvement."),
-    _text_building(slot_center_has_water_supply, "water_supply", "village_health", ("village",), 1200, "@Water Supply", "@Build it to improve sanitation. Health Cap +10 (improves long-term health recovery and reduces health decline).", effect_tags=("health_cap",), effect_numbers=(10,), affects_village=True, specialization="population_health", tier=1, upgrade_to=(slot_center_has_ambulatory,), exclusive_group="village_health_progression", weekly_upkeep=5, faction_flavor="Clean water and basic sanitation.", center_health_bonus=10, design_summary="Village waterworks that can later become an ambulatory."),
-    _text_building(slot_center_has_clayworks, "clayworks", "village_economy", ("village",), 2500, "@Clayworks", "@Build it to support long-term prosperity. Prosperity Cap +20 (improves long-term prosperity growth and reduces decline).", effect_tags=("prosperity_cap",), effect_numbers=(20,), affects_village=True, specialization="economic", tier=1, weekly_upkeep=10, design_summary="Village production and craft output."),
-    _text_building(slot_center_has_rustic_blacksmith, "rustic_blacksmith", "village_economy", ("village",), 1200, "@Rustic Blacksmith", "@Build it to support long-term prosperity. Prosperity Cap +10 (improves long-term prosperity growth and reduces decline).", effect_tags=("prosperity_cap",), effect_numbers=(10,), affects_village=True, specialization="economic", tier=1, weekly_upkeep=5, design_summary="A small village smithy for local production."),
+    _text_building(slot_center_has_manor, "manor", "village_economy", ("village",), 2000, "@Manor", "@A village manor improves hospitality, legal order, and work coordination. Weekly Renown +3, Fief's Demesne Cost -2.", effect_tags=("weekly_renown", "demesne_cost", "population_capacity", "weekly_population_growth"), effect_numbers=(3, -2, 100, 1), affects_village=True, specialization="civic", tier=1, weekly_upkeep=5, short_description_text="Village administration, hospitality, and household stability.", design_summary="Village administration, hospitality, work coordination, and household stability.", center_health_bonus=5, prosperity_multiplier_bonus_percent=10, weekly_renown_bonus=3, demesne_cost=2, population_capacity_bonus=100, weekly_population_growth_bonus=1, building_roles=("administration", "population_capacity", "population_growth", "renown", "construction_efficiency"), center_modifiers=(("administration_flat", 8, "manor_local_administration"), ("construction_speed_pct", 10, "manor_work_coordination"), ("migration_retention_flat", 6, "manor_household_stability"))),
+    _text_building(slot_center_has_mill, "mill", "village_economy", ("village",), 2500, "@Mill", "@A mill improves village food processing, income, and long-term prosperity. Weekly Prosperity +1, Prosperity Cap +20, Weekly Taxes +10%.", effect_tags=("weekly_prosperity", "prosperity_cap", "weekly_taxes_percent", "population_capacity"), effect_numbers=(1, 20, 10, 80), affects_village=True, specialization="economic", tier=1, weekly_upkeep=10, short_description_text="Village grain processing, food security, and prosperity.", design_summary="Village grain processing, food security, production, and prosperity.", center_health_bonus=5, prosperity_multiplier_bonus_percent=20, prosperity_cap_bonus=20, weekly_prosperity_bonus=1, weekly_income_bonus_percent=10, population_capacity_bonus=80, building_roles=("food_security", "production", "population_capacity", "trade_liquidity"), center_modifiers=(("food_security_flat", 30, "mill_food_processing"), ("food_store_capacity_flat", 120, "mill_storage"), ("goods_export_supply_pct", 10, "mill_surplus_grain"), ("trade_liquidity_flat", 20, "mill_market_flow"))),
+    _text_building(slot_center_has_watch_tower, "watch_tower", "village_defense", ("village",), 1200, "@Watch Tower", "@A watch tower lets villagers raise alarms earlier and organize raid recovery. The time it takes for enemies to loot the village increases by 25%. Village's Demesne Cost -1.", effect_tags=("loot_time_bonus_percent", "demesne_cost", "raid_recovery"), effect_numbers=(25, -1, 1), affects_village=True, specialization="defensive", tier=1, weekly_upkeep=5, design_summary="Early warning, local defense, patrol response, and faster post-raid regrouping.", demesne_cost=1, raid_recovery_bonus=1, building_roles=("security", "raid_recovery", "communications"), center_modifiers=(("security_flat", 15, "watch_tower_alarm_network"), ("threat_reduction_flat", 20, "watch_tower_scouting"), ("bandit_spawn_reduction_pct", 8, "watch_tower_visibility"), ("warning_range_flat", 1, "watch_tower_lookouts"), ("patrol_response_pct", 10, "watch_tower_signals"))),
+    _text_building(slot_center_has_inn, "inn", "village_civic", ("village",), 2000, "@Inn", "@An inn increases local loyalty, travel, migration, and market exchange. Weekly Relations +2.", effect_tags=("weekly_loyalty", "weekly_population_growth"), effect_numbers=(2, 1), affects_village=True, specialization="civic", tier=1, weekly_upkeep=10, design_summary="A social hub for travelers, locals, returning families, and small traders.", weekly_population_growth_bonus=1, building_roles=("population_growth", "trade_liquidity", "unrest_control"), center_modifiers=(("trade_liquidity_flat", 25, "inn_travel_trade"), ("migration_attraction_flat", 8, "inn_returning_families"), ("migration_retention_flat", 4, "inn_local_ties"), ("unrest_reduction_flat", 4, "inn_social_pressure"))),
+    _string_id_building(slot_center_has_shrine, "shrine", "faith", ("village",), 1000, "str_sod_shrine_0", "str_sod_temple_0_description", description_text="@Weekly Relations +1, Weekly Local Faith +3, Weekly Global Faith +2.", effect_tags=("weekly_relations", "weekly_local_faith", "weekly_global_faith"), effect_numbers=(1, 3, 2), affects_village=True, specialization="religious", tier=1, upgrade_to=(slot_center_has_monastery,), exclusive_group="village_religious_progression", weekly_upkeep=5, faction_flavor="Village shrine and pilgrim stop.", design_summary="A small village shrine that steadies faith, local order, and post-crisis morale before it can become a monastery.", building_roles=("faith_support", "unrest_control"), center_modifiers=(("faith_stability_flat", 8, "shrine_local_rites"), ("unrest_reduction_flat", 3, "shrine_moral_order"), ("migration_retention_flat", 3, "shrine_community_identity"))),
+    _string_id_building(slot_center_has_monastery, "monastery", "faith", ("village",), 2000, "str_sod_monastery_0", "str_sod_temple_0_description", description_text="@Weekly Taxes +5%, Weekly Local Faith +2, Weekly Global Faith +2.", effect_tags=("weekly_taxes_percent", "weekly_local_faith", "weekly_global_faith", "population_capacity"), effect_numbers=(5, 2, 2, 60), affects_village=True, specialization="religious", tier=2, prerequisite_buildings=(slot_center_has_shrine,), upgrade_from=(slot_center_has_shrine,), exclusive_group="village_religious_progression", weekly_upkeep=20, faction_flavor="Village monastic estate and spiritual center.", center_health_bonus=5, design_summary="An expanded monastic complex that supersedes a shrine with charity, schooling, records, and stable farm households.", population_capacity_bonus=60, building_roles=("faith_support", "population_capacity", "unrest_control", "administration"), center_modifiers=(("faith_stability_flat", 14, "monastery_spiritual_anchor"), ("health_recovery_flat", 2, "monastery_charity"), ("population_recovery_flat", 2, "monastery_refuge"), ("administration_flat", 6, "monastery_records"), ("unrest_reduction_flat", 6, "monastery_mediation"))),
+    _string_id_building(slot_center_has_temple, "temple", "faith", ("town",), 2000, "str_sod_temple_0", "str_sod_temple_0_description", description_text="@Weekly Relations +1, Weekly Local Faith +5, Weekly Global Faith +4.", effect_tags=("weekly_relations", "weekly_local_faith", "weekly_global_faith"), effect_numbers=(1, 5, 4), affects_town=True, specialization="religious", tier=1, weekly_upkeep=10, design_summary="A civic religious center for town legitimacy, mediation, charity, and faith identity.", building_roles=("faith_support", "unrest_control", "administration"), center_modifiers=(("faith_stability_flat", 12, "temple_civic_rites"), ("unrest_reduction_flat", 6, "temple_mediation"), ("migration_retention_flat", 5, "temple_community_identity"), ("law_compliance_flat", 5, "temple_public_morality"))),
+    _string_id_building(slot_center_has_chapel, "chapel", "faith", ("castle",), 500, "str_sod_chapel_0", "str_sod_temple_0_description", description_text="@Allows upgrade of Zealots into Faith Troops, Weekly Global Faith +1.", effect_tags=("faith_troop_upgrade", "weekly_global_faith"), effect_numbers=(1, 1), affects_castle=True, specialization="religious", tier=1, weekly_upkeep=5, design_summary="A castle chapel for garrison morale, faith discipline, wounded soldiers, and elite faith troop access.", building_roles=("faith_support", "military_training", "health_recovery", "unrest_control"), center_modifiers=(("faith_stability_flat", 10, "chapel_garrison_rites"), ("faith_ascension_bonus_flat", 8, "chapel_military_vows"), ("garrison_recovery_flat", 4, "chapel_morale"), ("health_recovery_flat", 2, "chapel_infirmary"), ("unrest_reduction_flat", 3, "chapel_order"))),
+    _text_building(slot_center_has_barracks, "barracks", "military", ("town", "castle"), 2000, "@Barracks", "@Build it to train existing troops and recruit new infantry units. Fief's Demesne Cost -1.", effect_tags=("infantry_training", "demesne_cost", "population_capacity"), effect_numbers=(1, -1, 70), affects_town=True, affects_castle=True, specialization="military", tier=1, weekly_upkeep=10, short_description_text="Infantry training quarters.", design_summary="Infantry training quarters, disciplined lodging, watch rotations, reserve labor, and fortress work gangs.", population_capacity_bonus=70, building_roles=("military_training", "population_capacity", "security", "construction_efficiency"), center_modifiers=(("security_flat", 12, "barracks_watch_rotations"), ("garrison_recovery_flat", 10, "barracks_mustering"), ("recruit_count_flat", 2, "barracks_drill_yard"), ("construction_speed_pct", 8, "barracks_work_crews"), ("garrison_upkeep_pct", -5, "barracks_orderly_lodging"))),
+    _text_building(slot_center_has_range, "practice_range", "military", ("town", "castle"), 2000, "@Practice Range", "@Build it to train existing troops and recruit new ranged units. Fief's Demesne Cost -1.", effect_tags=("ranged_training", "demesne_cost"), effect_numbers=(1, -1), affects_town=True, affects_castle=True, specialization="military", tier=1, weekly_upkeep=10, short_description_text="Ranged training grounds.", design_summary="Ranged training grounds, wall practice, militia confidence, and fortress missile discipline.", building_roles=("military_training", "security"), center_modifiers=(("security_flat", 10, "practice_range_watch_drill"), ("threat_reduction_flat", 14, "practice_range_visible_militia"), ("recruit_tier_bonus_flat", 1, "practice_range_basic_drill"), ("desperation_bandit_reduction_pct", 6, "practice_range_local_confidence"), ("raid_resistance_pct", 5, "practice_range_wall_coverage"))),
+    _text_building(slot_center_has_stables, "stables", "military", ("town", "castle"), 2000, "@Stables", "@Build it to train cavalry. +4 Weekly Renown, Fief's Demesne Cost -1.", effect_tags=("cavalry_training", "weekly_renown", "demesne_cost", "population_capacity"), effect_numbers=(1, 4, -1, 50), affects_town=True, affects_castle=True, specialization="military", tier=1, weekly_upkeep=15, design_summary="Mounted troop support, horses, courier movement, patrol reach, and service households.", population_capacity_bonus=50, building_roles=("military_training", "population_capacity", "renown", "communications"), center_modifiers=(("patrol_response_pct", 15, "stables_mounted_patrols"), ("warning_range_flat", 1, "stables_couriers"), ("trade_volume_pct", 5, "stables_pack_animals"), ("cattle_output_pct", 8, "stables_animal_husbandry"), ("threat_reduction_flat", 10, "stables_route_screens"))),
+    _string_id_building(slot_center_has_chapter, "chapter", "military", ("castle",), 4000, "str_sod_chapter_0", "str_sod_temple_0_description", description_text="@Build it to assemble nobility from your fallen motherland. Weekly Renown +5, Fief's Demesne Cost -1.", effect_summary="@Weekly Renown +5, Fief's Demesne Cost -1.", effect_tags=("weekly_renown", "noble_assembly", "demesne_cost"), effect_numbers=(5, 1, -1), affects_castle=True, specialization="military", tier=2, weekly_upkeep=20, design_summary="A noble chapterhouse for homeland nobles, elite recruitment, household officers, and fortress prestige.", building_roles=("noble_recruitment", "renown", "military_training", "administration"), center_modifiers=(("noble_recruitment_flat", 3, "chapter_homeland_nobles"), ("recruit_tier_bonus_flat", 1, "chapter_elite_drill"), ("administration_flat", 8, "chapter_household_officers"), ("law_compliance_flat", 6, "chapter_noble_authority"), ("garrison_recovery_flat", 6, "chapter_retinue_mustering"))),
+    _text_building(slot_center_has_blacksmith, "blacksmith", "military", ("town", "castle"), 1000, "@Blacksmith", "@Build it to reduce troop upgrade cost by 50% in this fief, and reduce garrison upkeep in castles (and towns).", effect_tags=("troop_upgrade_cost_multiplier", "garrison_upkeep_reduction"), effect_numbers=(50, 1), affects_town=True, affects_castle=True, specialization="economic", tier=1, weekly_upkeep=10, design_summary="A production building that supports war supply, tools, repairs, and construction crews.", building_roles=("production", "construction_efficiency", "military_training"), center_modifiers=(("construction_speed_pct", 14, "blacksmith_tools"), ("production_output_pct", 10, "blacksmith_repairs"), ("market_wealth_flat", 250, "blacksmith_local_sales"), ("security_flat", 5, "blacksmith_arms_maintenance"))),
+    _text_building(slot_center_has_messenger_post, "messenger_post", "security", ("village", "town", "castle"), 1200, "@Messenger Post", "@A messenger post lets the inhabitants send you a message whenever enemies are nearby, even if you are far away from here. Fief's Demesne Cost -1.", effect_tags=("enemy_warning_messages", "demesne_cost"), effect_numbers=(1, -1), affects_village=True, affects_town=True, affects_castle=True, specialization="civic", tier=1, weekly_upkeep=5, design_summary="Communication hub for alarms, labor coordination, and center-to-market messaging.", building_roles=("communications", "security", "construction_efficiency"), center_modifiers=(("security_flat", 6, "messenger_post_fast_warnings"), ("construction_speed_pct", 6, "messenger_post_work_orders"), ("trade_liquidity_flat", 8, "messenger_post_market_news"), ("patrol_response_pct", 8, "messenger_post_dispatch"))),
+    _text_building(slot_center_has_prisoner_tower, "prisoner_tower", "security", ("town", "castle"), 1000, "@Prison Tower", "@A prison tower reduces the chance of captives escaping. Weekly Relations +1 (Towns only).", effect_tags=("captives_escape_chance", "weekly_relations"), effect_numbers=(1, 1), affects_town=True, affects_castle=True, specialization="defensive", tier=1, weekly_upkeep=10, design_summary="Security building for prisoners, court authority, and visible order.", building_roles=("prisoner_control", "security", "unrest_control"), center_modifiers=(("security_flat", 12, "prisoner_tower_order"), ("unrest_reduction_flat", 5, "prisoner_tower_deterrence"), ("law_compliance_flat", 8, "prisoner_tower_courts"), ("desperation_bandit_reduction_pct", 5, "prisoner_tower_detention"))),
+    _text_building(slot_center_has_guild, "merchant_guild_hall", "town_economy", ("town",), 9000, "@Merchant's Guild Hall", "@Build it to please the merchant community and engage in trade enterprises. Weekly Relations +1, Weekly Prosperity +2, Fief's Demesne Cost -2, Weekly Taxes +10%.", effect_tags=("weekly_relations", "weekly_prosperity", "demesne_cost", "weekly_taxes_percent", "weekly_population_growth"), effect_numbers=(1, 2, -2, 10, 1), affects_town=True, specialization="economic", tier=2, weekly_upkeep=30, design_summary="Major guild infrastructure for town commerce, credit, merchant politics, and labor demand.", weekly_population_growth_bonus=1, building_roles=("trade_liquidity", "population_growth", "administration", "production"), center_modifiers=(("trade_liquidity_flat", 80, "guild_market_network"), ("trade_volume_pct", 15, "guild_trade_contracts"), ("merchant_happiness_flat", 12, "guild_representation"), ("goods_import_demand_pct", 10, "guild_warehouses"), ("goods_export_supply_pct", 10, "guild_factors"), ("market_wealth_pct", 10, "guild_credit"))),
+    _text_building(slot_center_has_university, "university", "town_civic", ("town",), 4000, "@University", "@Erect it to improve your renown, as well as people's appreciation for you. Weekly Relations +1, Weekly Renown +15.", effect_tags=("weekly_relations", "weekly_renown", "population_capacity"), effect_numbers=(1, 15, 100), affects_town=True, specialization="civic", tier=2, weekly_upkeep=20, center_health_bonus=10, design_summary="A scholarly civic institution that supports skilled urban households, administration, engineering, and law.", population_capacity_bonus=100, building_roles=("administration", "population_capacity", "renown", "construction_efficiency"), center_modifiers=(("administration_flat", 12, "university_bureaucrats"), ("construction_speed_pct", 10, "university_engineers"), ("law_compliance_flat", 8, "university_legal_training"), ("cultural_assimilation_flat", 5, "university_schools"))),
+    _text_building(slot_center_has_hospital, "hospital", "town_health", ("town",), 2500, "@Hospital", "@Build it to keep your people healthy. Health Cap +20 (improves long-term health recovery and reduces health decline).", effect_tags=("health_cap", "population_capacity", "weekly_population_growth", "raid_recovery"), effect_numbers=(20, 340, 2, 2), affects_town=True, specialization="population_health", tier=3, prerequisite_buildings=(slot_center_has_canalization,), upgrade_from=(slot_center_has_canalization,), exclusive_group="town_health_progression", weekly_upkeep=35, faction_flavor="Advanced town medicine and treatment.", center_health_bonus=20, design_summary="A higher-tier hospital that supersedes canalization with physicians, wards, quarantine, and post-raid care.", population_capacity_bonus=340, weekly_population_growth_bonus=2, raid_recovery_bonus=2, building_roles=("health_recovery", "population_capacity", "population_growth", "raid_recovery"), center_modifiers=(("health_recovery_flat", 8, "hospital_physicians"), ("disease_resistance_pct", 18, "hospital_quarantine"), ("population_recovery_flat", 6, "hospital_wards"), ("migration_retention_flat", 8, "hospital_family_security"))),
+    _text_building(slot_center_has_canalization, "canalization", "town_health", ("town",), 1200, "@Canalization", "@Build it to improve sanitation. Health Cap +10 (improves long-term health recovery and reduces health decline).", effect_tags=("health_cap", "population_capacity", "raid_recovery"), effect_numbers=(10, 180, 1), affects_town=True, specialization="population_health", tier=2, upgrade_to=(slot_center_has_hospital,), exclusive_group="town_health_progression", weekly_upkeep=15, faction_flavor="Town sanitation, drains, and waste management.", center_health_bonus=10, design_summary="Sanitation works that can become a hospital, reducing disease, crowding pressure, and food spoilage.", population_capacity_bonus=180, raid_recovery_bonus=1, building_roles=("health_recovery", "population_capacity", "raid_recovery", "food_security"), center_modifiers=(("health_recovery_flat", 4, "canalization_sanitation"), ("disease_resistance_pct", 10, "canalization_waste_control"), ("food_security_flat", 20, "canalization_clean_storage"), ("food_consumption_pct", -5, "canalization_less_spoilage"))),
+    _text_building(slot_center_has_manufacture, "manufacture", "town_economy", ("town",), 2500, "@Manufacture", "@Build it to support long-term prosperity. Prosperity Cap +20 (improves long-term prosperity growth and reduces decline).", effect_tags=("prosperity_cap", "population_capacity", "weekly_population_growth"), effect_numbers=(20, 240, 1), affects_town=True, specialization="economic", tier=3, prerequisite_buildings=(slot_center_has_bank,), upgrade_from=(slot_center_has_bank,), exclusive_group="town_economic_progression", weekly_upkeep=45, faction_flavor="Large-scale town industry and investment.", design_summary="A major industrial building that supersedes the town bank with workshops, wage labor, exports, and construction capacity.", population_capacity_bonus=240, weekly_population_growth_bonus=1, building_roles=("production", "population_capacity", "population_growth", "construction_efficiency"), center_modifiers=(("production_output_pct", 25, "manufacture_workshops"), ("goods_export_supply_pct", 18, "manufacture_finished_goods"), ("market_wealth_flat", 1500, "manufacture_wages"), ("construction_speed_pct", 12, "manufacture_material_supply"), ("tax_efficiency_pct", 8, "manufacture_assessed_output"))),
+    _text_building(slot_center_has_bank, "bank", "town_economy", ("town",), 1200, "@Bank", "@Build it to support long-term prosperity. Prosperity Cap +10 (improves long-term prosperity growth and reduces decline).", effect_tags=("prosperity_cap", "population_capacity"), effect_numbers=(10, 120), affects_town=True, specialization="economic", tier=2, upgrade_to=(slot_center_has_manufacture,), exclusive_group="town_economic_progression", weekly_upkeep=15, faction_flavor="Town finance and merchant credit.", design_summary="A civic bank that can later be replaced by a manufacture, improving credit, liquidity, and recovery financing.", population_capacity_bonus=120, building_roles=("trade_liquidity", "population_capacity", "administration"), center_modifiers=(("trade_liquidity_flat", 45, "bank_credit"), ("market_wealth_pct", 8, "bank_deposits"), ("merchant_happiness_flat", 6, "bank_letters_of_credit"), ("construction_cost_pct", -5, "bank_project_financing"), ("raid_recovery_flat", 2, "bank_reconstruction_loans"))),
+    _text_building(slot_center_has_ambulatory, "ambulatory", "village_health", ("village",), 2500, "@Ambulatory", "@Build it to keep your people healthy. Health Cap +20 (improves long-term health recovery and reduces health decline).", effect_tags=("health_cap", "population_capacity", "weekly_population_growth", "raid_recovery"), effect_numbers=(20, 180, 2, 2), affects_village=True, specialization="population_health", tier=2, prerequisite_buildings=(slot_center_has_water_supply,), upgrade_from=(slot_center_has_water_supply,), exclusive_group="village_health_progression", weekly_upkeep=15, faction_flavor="Basic village treatment and care.", center_health_bonus=20, design_summary="A local care facility replacing the water supply improvement with treatment, midwives, recovery beds, and raid aftercare.", population_capacity_bonus=180, weekly_population_growth_bonus=2, raid_recovery_bonus=2, building_roles=("health_recovery", "population_capacity", "population_growth", "raid_recovery"), center_modifiers=(("health_recovery_flat", 6, "ambulatory_treatment"), ("disease_resistance_pct", 12, "ambulatory_prevention"), ("population_recovery_flat", 4, "ambulatory_aftercare"), ("migration_retention_flat", 5, "ambulatory_family_security"))),
+    _text_building(slot_center_has_water_supply, "water_supply", "village_health", ("village",), 1200, "@Water Supply", "@Build it to improve sanitation. Health Cap +10 (improves long-term health recovery and reduces health decline).", effect_tags=("health_cap", "population_capacity", "weekly_population_growth", "raid_recovery"), effect_numbers=(10, 90, 1, 1), affects_village=True, specialization="population_health", tier=1, upgrade_to=(slot_center_has_ambulatory,), exclusive_group="village_health_progression", weekly_upkeep=5, faction_flavor="Clean water and basic sanitation.", center_health_bonus=10, design_summary="Village waterworks that can later become an ambulatory, improving sanitation, food preparation, and recovery.", population_capacity_bonus=90, weekly_population_growth_bonus=1, raid_recovery_bonus=1, building_roles=("health_recovery", "population_capacity", "population_growth", "raid_recovery", "food_security"), center_modifiers=(("health_recovery_flat", 3, "water_supply_sanitation"), ("disease_resistance_pct", 8, "water_supply_clean_water"), ("food_security_flat", 12, "water_supply_food_prep"), ("population_recovery_flat", 1, "water_supply_survival"))),
+    _text_building(slot_center_has_clayworks, "clayworks", "village_economy", ("village",), 2500, "@Clayworks", "@Build it to support construction materials, craft output, and long-term prosperity. Prosperity Cap +20 (improves long-term prosperity growth and reduces decline).", effect_tags=("prosperity_cap", "population_capacity"), effect_numbers=(20, 80), affects_village=True, specialization="economic", tier=1, weekly_upkeep=10, design_summary="Village bricks, pottery, construction materials, craft output, and seasonal labor.", population_capacity_bonus=80, building_roles=("production", "population_capacity", "construction_efficiency", "trade_liquidity"), center_modifiers=(("construction_speed_pct", 18, "clayworks_local_materials"), ("production_output_pct", 12, "clayworks_crafts"), ("goods_export_supply_pct", 8, "clayworks_trade_goods"), ("market_wealth_flat", 300, "clayworks_local_sales"))),
+    _text_building(slot_center_has_rustic_blacksmith, "rustic_blacksmith", "village_economy", ("village",), 1200, "@Rustic Blacksmith", "@Build it to support tools, repairs, construction work, and long-term prosperity. Prosperity Cap +10 (improves long-term prosperity growth and reduces decline).", effect_tags=("prosperity_cap", "population_capacity"), effect_numbers=(10, 45), affects_village=True, specialization="economic", tier=1, weekly_upkeep=5, design_summary="A small village smithy for tool repair, ploughshares, local production, and construction labor.", population_capacity_bonus=45, building_roles=("production", "construction_efficiency", "security"), center_modifiers=(("construction_speed_pct", 12, "rustic_blacksmith_tools"), ("production_output_pct", 8, "rustic_blacksmith_repairs"), ("security_flat", 5, "rustic_blacksmith_arms_repair"), ("troop_upgrade_cost_pct", -5, "rustic_blacksmith_local_arms"))),
+    _text_building(slot_center_has_militia_yard, "militia_yard", "village_defense", ("village",), 1800, "@Militia Yard", "@A militia yard gives villagers a proper muster ground, weapon racks, and drill routine. It improves local defense, recruit quality, and garrison recovery.", effect_tags=("raid_recovery", "population_capacity"), effect_numbers=(1, 60), affects_village=True, specialization="military", tier=1, weekly_upkeep=10, design_summary="A village muster yard with drills, racks, levy rolls, and enough discipline to make raiders pay for every lane.", population_capacity_bonus=60, raid_recovery_bonus=1, building_roles=("security", "military_training", "raid_recovery", "population_capacity"), center_modifiers=(("garrison_recovery_flat", 10, "militia_yard_muster_rolls"), ("recruit_count_flat", 1, "militia_yard_drill_call"), ("recruit_tier_bonus_flat", 1, "militia_yard_basic_drill"), ("security_flat", 8, "militia_yard_watch_rotations"), ("raid_resistance_pct", 8, "militia_yard_local_defense"))),
+    _text_building(slot_center_has_beacon_hill, "beacon_hill", "village_defense", ("village",), 1400, "@Beacon Hill", "@A beacon hill gives the village a prepared signal site and scout watch. It improves warning range, patrol response, and local threat reduction.", effect_tags=("enemy_warning_messages", "raid_recovery"), effect_numbers=(1, 1), affects_village=True, specialization="defensive", tier=1, weekly_upkeep=5, design_summary="A maintained signal hill, lookout post, and runner path that makes raids harder to hide and easier to answer.", raid_recovery_bonus=1, building_roles=("security", "communications", "raid_recovery"), center_modifiers=(("warning_range_flat", 1, "beacon_hill_signal_fire"), ("patrol_response_pct", 12, "beacon_hill_runner_paths"), ("security_flat", 4, "beacon_hill_watch"), ("threat_reduction_flat", 8, "beacon_hill_scouting"), ("bandit_spawn_reduction_pct", 4, "beacon_hill_visibility"))),
+    _text_building(slot_center_has_granary, "granary", "village_economy", ("village",), 2200, "@Granary", "@A granary stores reserve grain, reduces famine pressure, and helps the village recover after raids or poor harvests.", effect_tags=("population_capacity", "raid_recovery", "weekly_population_growth"), effect_numbers=(120, 1, 1), affects_village=True, specialization="economic", tier=1, weekly_upkeep=10, design_summary="A defended village grain store for lean months, seed reserves, food distribution, and recovery after raids.", population_capacity_bonus=120, weekly_population_growth_bonus=1, raid_recovery_bonus=1, building_roles=("food_security", "population_capacity", "population_growth", "raid_recovery"), center_modifiers=(("food_store_capacity_flat", 180, "granary_reserve_bins"), ("food_security_flat", 25, "granary_seed_reserve"), ("raid_recovery_flat", 1, "granary_emergency_stores"), ("population_recovery_flat", 1, "granary_lean_months"), ("migration_retention_flat", 4, "granary_winter_confidence"))),
+    _text_building(slot_center_has_militia_armory, "militia_armory", "village_defense", ("village",), 1600, "@Militia Armory", "@A militia armory stores spears, shields, bows, repair tools, and levy gear. It slightly improves militia quality, but raiders may steal arms if they break the village.", effect_tags=("raid_recovery", "population_capacity"), effect_numbers=(1, 40), affects_village=True, specialization="military", tier=1, weekly_upkeep=8, prerequisite_any_buildings=(slot_center_has_rustic_blacksmith, slot_center_has_manor), design_summary="A local arms store for levy gear and repair tools. It gives defenders better equipment, but a clean raider victory can arm bandits for a short time.", population_capacity_bonus=40, raid_recovery_bonus=1, building_roles=("security", "military_training", "raid_recovery", "population_capacity"), center_modifiers=(("recruit_tier_bonus_flat", 1, "militia_armory_levy_gear"), ("garrison_recovery_flat", 4, "militia_armory_repair_tools"), ("security_flat", 5, "militia_armory_stored_arms"), ("raid_resistance_pct", 4, "militia_armory_better_armed_watch"))),
 ]
 
 class BuildingRegistry(dict):
@@ -2647,6 +4911,23 @@ def get_building_balance_value(building_slot, field_name, default=0):
     return value
 
 
+def get_building_center_modifiers(building_slot):
+    building = get_building_definition(building_slot)
+    if building is None:
+        return ()
+    return _normalize_tuple(building.get("center_modifiers"))
+
+
+def get_building_center_modifier_value(building_slot, modifier_key):
+    total = 0
+    for entry in get_building_center_modifiers(building_slot):
+        if len(entry) < 2:
+            continue
+        if entry[0] == modifier_key:
+            total += entry[1]
+    return total
+
+
 def get_building_center_health_bonus(building_slot):
     return get_building_balance_value(building_slot, "center_health_bonus", 0)
 
@@ -2675,6 +4956,18 @@ def get_building_weekly_income_bonus_percent(building_slot):
     return get_building_balance_value(building_slot, "weekly_income_bonus_percent", 0)
 
 
+def get_building_population_capacity_bonus(building_slot):
+    return get_building_balance_value(building_slot, "population_capacity_bonus", 0)
+
+
+def get_building_weekly_population_growth_bonus(building_slot):
+    return get_building_balance_value(building_slot, "weekly_population_growth_bonus", 0)
+
+
+def get_building_raid_recovery_bonus(building_slot):
+    return get_building_balance_value(building_slot, "raid_recovery_bonus", 0)
+
+
 def get_building_faction_requirements(building_slot):
     building = get_building_definition(building_slot)
     if building is None:
@@ -2691,6 +4984,17 @@ def get_building_faction_flavor(building_slot):
 
 def get_buildings_for_center_type(center_type):
     return [definition for definition in BUILDING_REGISTRY if center_type in definition["allowed_center_types"]]
+
+
+def get_buildings_with_role(role, center_type=None):
+    result = []
+    for definition in BUILDING_REGISTRY:
+        if role not in definition.get("building_roles", ()):
+            continue
+        if center_type is not None and center_type not in definition.get("allowed_center_types", ()):
+            continue
+        result.append(definition)
+    return result
 
 
 def get_building_slots_for_center_type(center_type):
@@ -2766,6 +5070,14 @@ def validate_building_registry():
             issues.append("%s: effect_numbers must be a tuple or list" % slot_name)
         if isinstance(effect_tags, (tuple, list)) and isinstance(effect_numbers, (tuple, list)) and len(effect_tags) != len(effect_numbers):
             issues.append("%s: effect_tags and effect_numbers must have the same length" % slot_name)
+        if isinstance(effect_tags, (tuple, list)):
+            for effect_tag in effect_tags:
+                if effect_tag not in BUILDING_EFFECT_TAG_TO_CENTER_MODIFIER:
+                    issues.append("%s: effect tag %s must map to a center modifier before adding scripted behavior" % (slot_name, effect_tag))
+        for field_name, _modifier_key in BUILDING_FIELD_TO_CENTER_MODIFIER:
+            field_value = definition.get(field_name, 0)
+            if field_value and not definition.get("center_modifiers"):
+                issues.append("%s: field %s must derive or define center_modifiers" % (slot_name, field_name))
 
         tier = definition.get("tier", 0)
         if tier is None:
@@ -2793,7 +5105,35 @@ def validate_building_registry():
         if not isinstance(faction_requirements, (tuple, list)):
             issues.append("%s: faction_requirements must be a tuple or list" % slot_name)
 
+        building_roles = definition.get("building_roles", ())
+        if building_roles is None:
+            building_roles = ()
+        if not isinstance(building_roles, (tuple, list)):
+            issues.append("%s: building_roles must be a tuple or list" % slot_name)
+        else:
+            for role in building_roles:
+                if role not in SUPPORTED_BUILDING_ROLES:
+                    issues.append("%s: building role %s is not supported" % (slot_name, role))
+
+        center_modifiers = definition.get("center_modifiers", ())
+        if center_modifiers is None:
+            center_modifiers = ()
+        if not isinstance(center_modifiers, (tuple, list)):
+            issues.append("%s: center_modifiers must be a tuple or list" % slot_name)
+        else:
+            for modifier_entry in center_modifiers:
+                if not isinstance(modifier_entry, (tuple, list)) or len(modifier_entry) < 2:
+                    issues.append("%s: center modifier entry must be a tuple/list with at least key and value" % slot_name)
+                    continue
+                modifier_key = modifier_entry[0]
+                modifier_value = modifier_entry[1]
+                if modifier_key not in CENTER_MODIFIER_BY_KEY:
+                    issues.append("%s: center modifier %s is not supported" % (slot_name, modifier_key))
+                if not _is_integer(modifier_value):
+                    issues.append("%s: center modifier %s value must be an integer" % (slot_name, modifier_key))
+
         _check_reference_slot_exists(issues, slot_name, "prerequisite_buildings", definition.get("prerequisite_buildings"))
+        _check_reference_slot_exists(issues, slot_name, "prerequisite_any_buildings", definition.get("prerequisite_any_buildings"))
         _check_reference_slot_exists(issues, slot_name, "upgrade_from", definition.get("upgrade_from"))
         _check_reference_slot_exists(issues, slot_name, "upgrade_to", definition.get("upgrade_to"))
         _check_reference_slot_exists(issues, slot_name, "conflicts_with", definition.get("conflicts_with"))

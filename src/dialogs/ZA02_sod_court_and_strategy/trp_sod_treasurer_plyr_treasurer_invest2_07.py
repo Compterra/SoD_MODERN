@@ -9,7 +9,7 @@ DIALOGS = [
     (val_add, "$g_sod_invested_day", 5),
     (store_troop_gold, ":gold", "trp_player"),
     (assign, "$g_sod_invested_gold", ":gold"),
-    (troop_remove_gold, "trp_player", ":gold"),
+    (call_script, "script_sod_player_charge_gold", ":gold"),
     (play_sound, "snd_money_paid"),
   ]],
 ]

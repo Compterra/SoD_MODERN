@@ -1,0 +1,27 @@
+SCRIPTS = [
+("sod_degrade_troop_equipped_items_after_battle",
+ [
+   (store_script_param_1, ":troop_no"),
+   (store_script_param_2, ":chance"),
+
+   (assign, ":damaged_count", 0),
+   (val_clamp, ":chance", 0, 101),
+   (try_begin),
+     (gt, ":troop_no", 0),
+     (gt, ":chance", 0),
+     (try_for_range, ":slot_no", ek_item_0, ek_food),
+       (troop_get_inventory_slot, ":item_no", ":troop_no", ":slot_no"),
+       (ge, ":item_no", 0),
+       (troop_get_inventory_slot_modifier, ":imod", ":troop_no", ":slot_no"),
+       (call_script, "script_sod_get_degraded_imod_for_item", ":item_no", ":imod"),
+       (assign, ":new_imod", reg0),
+       (neq, ":new_imod", ":imod"),
+       (store_random_in_range, ":roll", 0, 100),
+       (lt, ":roll", ":chance"),
+       (troop_set_inventory_slot_modifier, ":troop_no", ":slot_no", ":new_imod"),
+       (val_add, ":damaged_count", 1),
+     (try_end),
+   (try_end),
+   (assign, reg0, ":damaged_count"),
+ ]),
+]

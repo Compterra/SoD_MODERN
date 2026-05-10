@@ -2,7 +2,7 @@
 SCRIPTS = [
 ("sod_artifact_init_registry",
  [
-   (try_for_range, ":item_no", "itm_blacksmith_adenian_armor", "itm_blacksmith_zerrikanian_bow"),
+   (try_for_range, ":item_no", "itm_blacksmith_adenian_armor", "itm_items_end"),
      (item_set_slot, ":item_no", slot_item_artifact_flags, 0),
    (try_end),
 

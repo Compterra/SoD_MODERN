@@ -1,3 +1,4 @@
 DIALOGS = [
-[trp_kidnapped_girl, "kidnapped_girl_chat_2", [], "I can't wait to get back. I've missed my family so much, I'd give anything to see them again.", "close_window", []],
+[trp_kidnapped_girl, "kidnapped_girl_chat_2", [], "I keep thinking I hear my family at every bend in the road.\
+ Please, {sir/madam}, get me home before courage leaves me.", "close_window", []],
 ]

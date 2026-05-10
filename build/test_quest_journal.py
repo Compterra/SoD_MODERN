@@ -327,13 +327,13 @@ def make_journal(active_runtimes: list[Any], capacity: int = 5) -> Any:
 
 class QuestJournalContractTests(unittest.TestCase):
     def test_reports_menu_routes_to_quest_journal_report(self) -> None:
-        text = lower_source("src/menus/camp/reports.py")
+        text = lower_source("src/menus/0000_hardcoded_mb1011/reports.py")
         self.assertIn("view_quest_journal_report", text)
         self.assertIn("mnu_quest_journal_report", text)
         self.assertIn("jump_to_menu", text)
 
     def test_journal_report_menu_uses_canonical_describe_script(self) -> None:
-        text = lower_source("src/menus/camp/quest_journal_report.py")
+        text = lower_source("src/menus/reports/quest_journal_report.py")
         self.assertIn("mnu_quest_journal_report", text)
         self.assertIn("script_sod_quest_journal_describe_to_s2", text)
         self.assertIn("script_sod_quest_chain_describe_to_s2", text)
@@ -545,3 +545,5 @@ class QuestJournalContractTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+

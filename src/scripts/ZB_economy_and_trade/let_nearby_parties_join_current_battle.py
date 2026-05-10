@@ -13,6 +13,7 @@ SCRIPTS = [
         (lt, ":opponent", 0), #party is not itself involved in a battle
         (party_get_attached_to, ":attached_to", ":party_no"),
         (lt, ":attached_to", 0), #party is not attached to another party
+        (neg|party_slot_eq, ":party_no", slot_party_type, spt_companion_retinue),
         (get_party_ai_behavior, ":behavior", ":party_no"),
         (neq, ":behavior", ai_bhvr_in_town),
 		(neg|is_between, ":party_no", "p_bridge_1", "p_sod_merc_1"),

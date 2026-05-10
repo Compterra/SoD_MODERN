@@ -5,6 +5,7 @@ DIALOGS = [
  If you can teach us how to defend ourselves, I promise you'll receive everything we can give you in return for your efforts.", "close_window",
    [
      (assign, "$g_leave_encounter", 1),
+     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_train_troops, 2),
      #TODO: Change this value
      (call_script, "script_change_player_relation_with_center", "$current_town", 3),
      (call_script, "script_start_quest", "$random_quest_no", "$g_talk_troop"),

@@ -1,12 +1,10 @@
 SIMPLE_TRIGGERS = [
-(24,
+(6,
    [
     (try_for_range, ":cur_center", walled_centers_begin, walled_centers_end),
 		(party_slot_eq, ":cur_center", slot_town_lord, "trp_player"),
 		(party_get_slot, ":trainers", ":cur_center", slot_center_trainers),
 		(gt, ":trainers", 0),
-		
-		(val_mul, ":trainers", 4),
 		
 		(party_get_num_companion_stacks, ":num_stacks", ":cur_center"),
 		(try_for_range_backwards, ":i_stack", 0, ":num_stacks"),

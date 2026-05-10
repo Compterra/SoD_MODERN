@@ -17,13 +17,13 @@ MENUS = [
       (eq, "$g_sod_autoresolve", 1),
 
       # grab party strengths and weight for attackers and defenders
-      (call_script, "script_kt_party_calculate_strength_with_attachments", "p_main_party", 1, 1), # skip player and is_siege
+      (call_script, "script_kt_party_calculate_strength_with_attachments", "p_main_party", 1, 2), # skip player; siege attacker context
       (assign, ":p_str", reg0),
       (assign, ":p_def", reg1),
       (val_mul, ":p_str", 3),
       (val_div, ":p_str", 4), # attacker strength penalty
             
-      (call_script, "script_kt_party_calculate_strength_with_attachments", "$g_encountered_party", 0, 1),
+      (call_script, "script_kt_party_calculate_strength_with_attachments", "$g_encountered_party", 0, 1), # siege defender context
       (assign, ":e_str", reg0),
       (assign, ":e_def", reg1),
       (val_mul, ":e_str", 3),
@@ -39,11 +39,6 @@ MENUS = [
       # attacking a castle goes faster than overland battles.
       (val_div, ":e_str", 10),
       (val_div, ":p_str", 10),
-      
-      # debughax
-      (assign, reg0, ":e_str"),
-      (assign, reg1, ":p_str"),
-      (display_message, "@going to solver:  e_str:  {reg0}, p_str:  {reg1}", 0xFFFFFF00),
       
       # hurt both sides
       (inflict_casualties_to_party_group, "p_main_party", ":e_str", "p_temp_casualties"),

@@ -45,6 +45,8 @@ common_battle_mission_start = (
     (team_set_relation, 0, 2, 1),
     (team_set_relation, 1, 3, 1),
     (call_script, "script_change_banners_and_chest"),
+    (call_script, "script_sod_battle_initialize_morale_context"),
+    (call_script, "script_sod_company_dialogue_process_battle_start_morale"),
     ])
 	
 common_battle_horse_health = (
@@ -568,11 +570,34 @@ formations_1 = (0, 0, 0, [(key_clicked, key_2), (assign, "$formation", grc_infan
 formations_2 = (0, 0, 0, [(key_clicked, key_3), (assign, "$formation", grc_archers), ], [])
 formations_3 = (0, 0, 0, [(key_clicked, key_4), (assign, "$formation", grc_cavalry), ], [])
 
+# 1 - native everyone selection also releases scripted formation movement.
+# This keeps normal orders from inheriting stale scripted destinations.
+formations_0 = (0, 0, 0,
+    [
+      (neq, "$g_disable_formations", 1),
+      (key_clicked, key_1),
+      (get_player_agent_no, ":player"),
+      (agent_get_team, reg0, ":player"),
+      (assign, reg1, grc_infantry),
+      (call_script, "script_formation_end"),
+      (assign, reg1, grc_archers),
+      (call_script, "script_formation_end"),
+      (assign, reg1, grc_cavalry),
+      (call_script, "script_formation_end"),
+      (assign, "$infantryformationtype", 0),
+      (assign, "$archerformationtype", 0),
+      (assign, "$cavalryformationtype", 0),
+    ],
+    []
+  )
+
 # J - ranks
 formations_j =  (0, 0, 0,
     [
       (neq, "$g_disable_formations", 1),
       (key_clicked, key_j),
+      (neg|key_is_down, key_left_control),
+      (neg|key_is_down, key_right_control),
       (get_player_agent_no, ":player"),
       (agent_get_team, reg0, ":player"),
       (assign, reg1, "$formation"),
@@ -651,7 +676,6 @@ formations_u = (0, 0, 0,
       (agent_get_team, reg0, ":player"),
       (assign, reg1, "$formation"),
       (call_script, "script_formation_end"),
-      (call_script, "script_cf_formation"),
       (try_begin),
         (eq, "$formation", grc_infantry),
         (assign, "$infantryformationtype", 0),
@@ -715,16 +739,10 @@ formations_ai_dismount =  (5.0, 0, 0,
       (assign, ":ratio", ":infantry"),
       (val_max, ":cavalry", 1),
       (val_div, ":ratio", ":cavalry"),
-      (try_begin),
-        (gt, ":ratio", 2),
-        (lt, ":cavalry", 10),
-        (team_give_order, reg0, grc_everyone, mordr_dismount),
-      (else_try),
-        (team_give_order, reg0, grc_everyone, mordr_mount),
-      (end_try),
-    ],
-    []
-  )
+        (team_give_order, reg0, grc_cavalry, mordr_mount),
+      ],
+      []
+    )
 
 # stop moving units into formations
 formations_end = (5.0, 0, 0,
@@ -1077,6 +1095,11 @@ commander_duel_init = (ti_before_mission_start, 0, 0, [],
       (assign, "$ponavosa_duel_cooldown_until", 90),
       (assign, "$ponavosa_duel_player_involved", 0),
       (assign, "$ponavosa_duel_camera_active", 0),
+      (assign, "$ponavosa_duel_nemesis", 0),
+      (assign, "$g_sod_battle_ally_duel_momentum", 0),
+      (assign, "$g_sod_battle_enemy_duel_momentum", 0),
+      (assign, "$g_sod_battle_player_morale_wavered", 0),
+      (assign, "$g_sod_battle_player_morale_collapsed", 0),
     ]
   )
 
@@ -1119,7 +1142,30 @@ commander_duel_ai_challenge = (15, 0, 30,
       (store_mission_timer_a, ":now"),
       (ge, ":now", "$ponavosa_duel_cooldown_until"),
       (store_random_in_range, ":roll", 0, 100),
-      (lt, ":roll", 18),
+      (assign, ":challenge_chance", 18),
+      (try_begin),
+        (eq, "$g_sod_nemesis_actor_type", sod_nemesis_actor_lord),
+        (ge, "$g_sod_nemesis_state", sod_nemesis_state_hunting),
+        (is_between, "$g_sod_nemesis_last_troop", kingdom_heroes_begin, kingdom_heroes_end),
+        (assign, ":nemesis_present", 0),
+        (try_for_agents, ":nemesis_agent"),
+          (agent_is_alive, ":nemesis_agent"),
+          (agent_is_human, ":nemesis_agent"),
+          (neg|agent_is_ally, ":nemesis_agent"),
+          (agent_get_troop_id, ":nemesis_troop", ":nemesis_agent"),
+          (eq, ":nemesis_troop", "$g_sod_nemesis_last_troop"),
+          (assign, ":nemesis_present", 1),
+        (try_end),
+        (eq, ":nemesis_present", 1),
+        (troop_get_slot, ":duel_pressure", "$g_sod_nemesis_last_troop", slot_troop_sod_nemesis_duel_pressure),
+        (troop_get_slot, ":defeats", "$g_sod_nemesis_last_troop", slot_troop_sod_nemesis_defeats),
+        (val_mul, ":duel_pressure", 5),
+        (val_mul, ":defeats", 3),
+        (val_add, ":challenge_chance", ":duel_pressure"),
+        (val_add, ":challenge_chance", ":defeats"),
+        (val_min, ":challenge_chance", 65),
+      (try_end),
+      (lt, ":roll", ":challenge_chance"),
       (call_script, "script_ponavosa_duel_find_commander_pair", 0),
       (eq, reg0, 1),
     ],
@@ -1212,6 +1258,29 @@ formations_update_route = (5, 0, 3,
     [
       (call_script, "script_coherence"),
       (call_script, "script_rout_check"),
+    ]
+  )
+
+# Siege wall assaults use limited morale pressure. The attacker can waver on
+# the approach, but defenders should not be routed through siege walls.
+common_siege_attacker_morale_pressure = (15, 0, 10,
+    [
+      (neq, "$g_disable_morale", 1),
+    ],
+    [
+      (call_script, "script_coherence"),
+      (try_begin),
+        (lt, "$allies_coh", 450),
+        (store_random_in_range, ":routed", 1, 101),
+        (assign, ":chance_ply", 91),
+        (assign, ":allymod", "$allies_coh"),
+        (val_div, ":allymod", 5),
+        (val_sub, ":chance_ply", ":allymod"),
+        (le, ":routed", ":chance_ply"),
+        (display_message, "@Your assault wavers under the walls!", red),
+        (assign, "$g_sod_battle_player_morale_wavered", 1),
+        (call_script, "script_flee_allies"),
+      (try_end),
     ]
   )
 

@@ -292,11 +292,11 @@ def _generic_battle_line(
     action_phrase = _action_phrase(action_kind, target)
 
     if phase == "pre":
-        return f"Before this begins, {action_phrase} for {quest_label}."
+        return f"Before steel is drawn, remember this: {action_phrase} for {quest_label}."
     if phase == "mid":
-        return f"While the fight is on, stay focused on {action_phrase}."
+        return f"Keep your head and {action_phrase}; the {quest_label} still hangs in the balance."
     if phase == "post":
-        return f"That part is done; {action_phrase} for {quest_label} is over now."
+        return f"With the clash finished, the need to {action_phrase} for {quest_label} has passed."
 
     location_label = _coerce_text(
         _first_non_empty(
@@ -305,10 +305,10 @@ def _generic_battle_line(
         )
     )
     if location_label:
-        return f"{quest_label} at {location_label} needs you to {action_phrase}."
+        return f"{quest_label} at {location_label} still asks you to {action_phrase}."
     if stage_label:
-        return f"{stage_label} asks you to {action_phrase}."
-    return f"{quest_label} asks you to {action_phrase}."
+        return f"{stage_label} still asks you to {action_phrase}."
+    return f"{quest_label} still asks you to {action_phrase}."
 
 
 def resolve_quest_battle_line(*args: Any, **kwargs: Any) -> str:
@@ -393,7 +393,7 @@ SCRIPTS = [
     (
         "sod_quest_dialogue_describe_battle_line",
         [
-            (str_store_string, s4, "@The battle is tied to unfinished business."),
+            (str_store_string, s4, "@This clash still belongs to unfinished business."),
             (assign, reg0, 1),
         ],
     )

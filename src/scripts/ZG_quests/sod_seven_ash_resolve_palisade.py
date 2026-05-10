@@ -1,0 +1,31 @@
+SCRIPTS = [
+("sod_seven_ash_resolve_palisade",
+    [
+      (store_script_param, ":palisade_result", 1),
+      (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_palisade_result, ":palisade_result"),
+
+      (try_begin),
+        (eq, ":palisade_result", sod_seven_ash_siege_result_held),
+        (quest_get_slot, ":pressure", "qst_seven_ash_ultimatum", slot_quest_seven_ash_wulfred_pressure),
+        (val_sub, ":pressure", 10),
+        (val_max, ":pressure", 0),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_wulfred_pressure, ":pressure"),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_palisade_breach_pressure, 1),
+      (else_try),
+        (eq, ":palisade_result", sod_seven_ash_siege_result_bloodied),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_palisade_breach_pressure, 2),
+      (else_try),
+        (eq, ":palisade_result", sod_seven_ash_siege_result_lost),
+        (quest_get_slot, ":fortification", "qst_seven_ash_ultimatum", slot_quest_seven_ash_fortification),
+        (val_sub, ":fortification", 15),
+        (val_max, ":fortification", 0),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_fortification, ":fortification"),
+        (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_palisade_breach_pressure, 3),
+      (try_end),
+
+      (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_siege_phase_active, sod_seven_ash_siege_phase_breach),
+      (setup_quest_text, "qst_seven_ash_breach"),
+      (str_store_string, s2, "@The palisade phase is resolved. Halvorn Pike presses toward the gate and breach with whatever strength the ditch failed to spend."),
+      (call_script, "script_sod_quest_chain_branch_success", "qst_seven_ash_palisade", "qst_seven_ash_breach"),
+  ]),
+]

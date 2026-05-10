@@ -5,7 +5,7 @@ SIMPLE_TRIGGERS = [
 	(troop_get_slot, ":flag_icon", "trp_player", slot_troop_custom_banner_map_flag_type),
 	(val_max, ":flag_icon", 0),
 	(val_add, ":flag_icon", custom_banner_map_icons_begin),
-	(party_set_banner_icon, "p_main_party", ":flag_icon"),
+	(call_script, "script_sod_apply_player_banner_map_icon", ":flag_icon"),
 	(try_for_parties, ":cur_party"),
 		(call_script, "script_cf_is_patrol", ":cur_party"),
 		(eq, reg0, 0),

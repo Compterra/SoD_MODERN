@@ -1,5 +1,9 @@
 DIALOGS = [
-[anyone|plyr, "kidnapped_girl_quest_brief", [],
+[anyone|plyr, "kidnapped_girl_quest_brief", [
+      (quest_get_slot, ":quest_target_center", "qst_kidnapped_girl", slot_quest_target_center),
+      (party_is_active, ":quest_target_center"),
+      (party_is_active, "$g_encountered_party"),
+      ],
       "Alright. I will take the ransom money to the bandits and bring back the girl.",
    "kidnapped_girl_quest_taken", [(set_spawn_radius, 4),
                                  (quest_get_slot, ":quest_target_center", "qst_kidnapped_girl", slot_quest_target_center),

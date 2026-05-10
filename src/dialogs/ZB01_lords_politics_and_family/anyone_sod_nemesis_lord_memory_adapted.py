@@ -1,0 +1,20 @@
+DIALOGS = [
+[anyone, "sod_nemesis_lord_memory", [
+    (troop_get_slot, reg21, "$g_talk_troop", slot_troop_sod_nemesis_adaptation_count),
+    (gt, reg21, 0),
+    (troop_get_slot, ":adaptation", "$g_talk_troop", slot_troop_sod_nemesis_adaptation),
+    (try_begin),
+      (eq, ":adaptation", sod_nemesis_adaptation_anti_cavalry),
+      (str_store_string, s21, "@your horsemen"),
+    (else_try),
+      (eq, ":adaptation", sod_nemesis_adaptation_anti_ranged),
+      (str_store_string, s21, "@your arrows"),
+    (else_try),
+      (eq, ":adaptation", sod_nemesis_adaptation_anti_duel),
+      (str_store_string, s21, "@your duels"),
+    (else_try),
+      (str_store_string, s21, "@your close work"),
+    (try_end),
+  ],
+  "I remember enough to drill against {s21}. You taught me how you win, {playername}; I have been teaching my hands how you bleed.", "lord_pretalk", []],
+]

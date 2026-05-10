@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone, "do_regular_member_view_char", [], "Anything else?", "regular_member_talk", []],
+[anyone, "do_regular_member_view_char", [], "You have seen the measure of me. What else do you require?", "regular_member_talk", []],
 ]

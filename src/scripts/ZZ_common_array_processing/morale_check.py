@@ -14,6 +14,7 @@ SCRIPTS = [
                           (try_begin),
                             (le, ":routed", ":chance_ply"),
                             (display_message, "@Morale of your troops wavers!", red),
+                            (assign, "$g_sod_battle_player_morale_wavered", 1),
                             (call_script, "script_flee_allies"),
                           (try_end),
                         (try_end),

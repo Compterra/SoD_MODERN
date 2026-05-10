@@ -1,7 +1,5 @@
 DIALOGS = [
-[anyone,"start", [
-					(store_relation, ":rel", "fac_player_faction", "$g_talk_troop_faction"),
-					(talk_info_set_relation_bar, ":rel"),(eq,"$g_talk_troop", black_army_guild_master),(store_troop_faction, "$g_talk_troop_faction", "$g_talk_troop"),
+[anyone,"start", [(eq,"$g_talk_troop", black_army_guild_master),(store_troop_faction, "$g_talk_troop_faction", "$g_talk_troop"),
   (try_begin),
     (eq, "$g_sod_country", cb_antares),
 	(str_store_string, s1, "@Empire of Antares"),

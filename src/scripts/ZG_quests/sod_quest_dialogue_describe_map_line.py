@@ -343,16 +343,16 @@ def _generic_map_line(
 
     if event_kind == "abandon" or "quest_abandoned" in _memory_tags(memory_context):
         if location_label:
-            return f"You left {quest_label} hanging at {location_label}."
-        return f"You walked away from {quest_label}, and the trail is still there."
+            return f"You left {quest_label} hanging at {location_label}; that place still remembers."
+        return f"You walked away from {quest_label}, and the trail still waits for you."
     if availability in {"available", "open", "ready", "active"}:
         if location_label:
             return f"{quest_label} is open again at {location_label}."
         return f"{quest_label} is open again."
     if availability in {"locked", "closed", "unavailable", "inactive", "expired"}:
         if location_label:
-            return f"{quest_label} is not open at {location_label} right now."
-        return f"{quest_label} is not open right now."
+            return f"{quest_label} is closed to you at {location_label} for now."
+        return f"{quest_label} is closed to you for now."
     if event_kind in {"complete", "completed", "quest_completed"}:
         if location_label:
             return f"The work tied to {location_label} is finished."
@@ -459,7 +459,7 @@ SCRIPTS = [
     (
         "sod_quest_dialogue_describe_map_line",
         [
-            (str_store_string, s4, "@The road ahead is tied to unfinished business."),
+            (str_store_string, s4, "@The road ahead still carries unfinished business."),
             (assign, reg0, 1),
         ],
     )

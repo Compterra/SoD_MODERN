@@ -2,6 +2,7 @@ DIALOGS = [
 [anyone, "event_triggered", [
                      (store_conversation_troop, "$map_talk_troop"),
                      (eq, "$map_talk_troop", "$npc_with_grievance"),
+                     (main_party_has_troop, "$map_talk_troop"),
                      (eq, "$npc_map_talk_context", slot_troop_morality_state),
 
                      (try_begin),

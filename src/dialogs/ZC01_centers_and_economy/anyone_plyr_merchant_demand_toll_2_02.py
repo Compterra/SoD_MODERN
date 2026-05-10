@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "merchant_demand_toll_2", [], "I changed my mind, I can't take your money.", "merchant_pretalk", []],
+[anyone|plyr, "merchant_demand_toll_2", [], "Keep the toll. I will not dirty this road with it today.", "merchant_pretalk", []],
 ]

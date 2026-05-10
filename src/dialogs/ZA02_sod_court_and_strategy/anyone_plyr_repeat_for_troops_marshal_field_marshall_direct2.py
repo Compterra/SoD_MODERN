@@ -14,6 +14,7 @@ DIALOGS = [
 	  (faction_set_slot, "fac_player_supporters_faction", slot_faction_marshall, ":new_marshall"),
       (call_script, "script_change_player_relation_with_troop", ":new_marshall", 5),
 	  (call_script, "script_update_titles"),
+      (assign, "$g_recalculate_ais", 1),
     ]
   ],
 ]

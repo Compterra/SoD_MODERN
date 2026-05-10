@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone, "lord_start", [],
-   "What is it?", "lord_talk", []],
+   "You have my attention. Make the matter worth the interruption.", "lord_talk", []],
 ]

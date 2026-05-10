@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone, "trainer_combat_begin", [],
-   "What do you want to know?", "trainer_talk_combat", []],
+   "Pick the lesson. A bad habit learned here follows you longer than a bruise.", "trainer_talk_combat", []],
 ]

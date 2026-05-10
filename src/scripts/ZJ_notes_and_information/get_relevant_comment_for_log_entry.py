@@ -73,7 +73,7 @@ SCRIPTS = [
 					  (store_random_in_range, ":renown_check", 100, 200),
                       (try_begin),
                         (eq, ":reputation", lrep_none),
-                        (gt, "$players_kingdom", 0),
+                        (gt, "$supported_pretender", 0),
                         (assign, ":comment", "str_comment_intro_liege_affiliated"),
                       (else_try),
                         (gt, ":plyr_renown", ":renown_check"),

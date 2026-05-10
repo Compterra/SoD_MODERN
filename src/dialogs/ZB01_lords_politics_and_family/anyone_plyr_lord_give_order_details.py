@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "lord_give_order_details",
-   [], "Never mind.", "lord_pretalk", []],
+   [], "Leave your current orders as they stand.", "lord_pretalk", []],
 ]

@@ -8,6 +8,7 @@ SCRIPTS = [
         (party_stack_get_troop_id,     ":stack_troop", ":source_party", ":stack_no"),
         (this_or_next|neg|troop_is_hero, ":stack_troop"),
         (eq, "$g_move_heroes", 1),
+        (is_between, ":stack_troop", soldiers_begin, soldiers_end),
         (party_stack_get_size, ":stack_size", ":source_party", ":stack_no"),
         (party_add_prisoners, ":target_party", ":stack_troop", ":stack_size"),
       (try_end),

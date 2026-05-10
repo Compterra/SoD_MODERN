@@ -61,13 +61,6 @@ SIMPLE_TRIGGERS = [
       (try_end),
 
       (try_begin),
-        # give renown to its owner
-        (party_get_slot, ":center_lord", ":center_no", slot_town_lord),
-        (ge, ":center_lord", 0),
-        (set_show_messages, 0),
-        (call_script, "script_change_troop_renown", ":center_lord", "$g_sod_building_stables_renown"),
-        (set_show_messages, 1),
-
         # remaining effects apply to player only
         (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
 

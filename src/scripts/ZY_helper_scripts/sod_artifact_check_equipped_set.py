@@ -5,7 +5,7 @@ SCRIPTS = [
    (store_script_param_1, ":troop_no"),
    (assign, reg0, 0),
    (assign, ":family", artifact_family_none),
-   (try_for_range, ":slot", ek_item_0, ek_head + 1),
+   (try_for_range, ":slot", ek_item_0, ek_horse + 1),
      (troop_get_inventory_slot, ":item_no", ":troop_no", ":slot"),
      (gt, ":item_no", 0),
      (item_get_slot, ":flags", ":item_no", slot_item_artifact_flags),

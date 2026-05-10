@@ -1,8 +1,6 @@
 DIALOGS = [
 [anyone,"gm_pretalk", [
-   ],"Anything else?", "gm_talk",[
-					(store_relation, ":rel", "fac_player_faction", "$g_talk_troop_faction"),
-					(talk_info_set_relation_bar, ":rel"),(faction_get_slot, ":mercs", "fac_player_faction", slot_faction_merc_pact),
+   ],"The contract table is still open. What else do you want from the company?", "gm_talk",[(faction_get_slot, ":mercs", "fac_player_faction", slot_faction_merc_pact),
 		(faction_set_slot, "fac_player_supporters_faction", slot_faction_merc_pact, ":mercs"),
 		(call_script, "script_update_faction_notes", "fac_player_supporters_faction"),
 		(call_script, "script_update_faction_notes", ":mercs"),

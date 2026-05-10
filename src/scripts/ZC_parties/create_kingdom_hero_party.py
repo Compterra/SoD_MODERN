@@ -4,9 +4,15 @@ SCRIPTS = [
       (store_script_param, ":troop_no", 1),
       (store_script_param, ":center_no", 2),
 
-      (store_troop_faction, ":troop_faction_no", ":troop_no"),
-
       (assign, "$pout_party", -1),
+      (try_begin),
+        (is_between, ":troop_no", kingdom_heroes_begin, kingdom_heroes_end),
+        (neq, ":troop_no", "trp_player"),
+        (neg|troop_slot_ge, ":troop_no", slot_troop_leaded_party, 1),
+        (neg|troop_slot_ge, ":troop_no", slot_troop_prisoner_of_party, 0),
+
+        (store_troop_faction, ":troop_faction_no", ":troop_no"),
+
       (set_spawn_radius, 0),
       (spawn_around_party, ":center_no", "pt_kingdom_hero_party"),
       (assign, "$pout_party", reg0),
@@ -92,5 +98,6 @@ SCRIPTS = [
         (try_end),
         (try_end),
         (try_end),
+      (try_end),
   ]),
 ]

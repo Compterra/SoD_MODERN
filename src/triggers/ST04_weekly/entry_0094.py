@@ -17,15 +17,6 @@ SIMPLE_TRIGGERS = [
       (this_or_next|eq, ":center_faction", "fac_player_supporters_faction"),
       (eq, ":center_faction", "fac_player_faction"),
 
-      # grant renown to the owner
-      (try_begin),
-        (party_get_slot, ":center_lord", ":center_no", slot_town_lord),
-        (ge, ":center_lord", 0), #if negative, then unowned
-        (set_show_messages, 0),
-        (call_script, "script_change_troop_renown", ":center_lord", "$g_sod_building_university_renown"),
-        (set_show_messages, 1),
-      (try_end),
-
       # Universities should also improve the underlying quality of life over time.
       (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
       (party_get_slot, ":center_prosperity", ":center_no", slot_town_prosperity),
@@ -58,15 +49,9 @@ SIMPLE_TRIGGERS = [
         (call_script, "script_change_center_prosperity", ":center_no", 1),
       (try_end),
 
-      # increase this center's relation with the player
-      # Only when the player is the center lord OR the player is the faction leader (king).
       (try_begin),
         (this_or_next|party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
         (faction_slot_eq, ":center_faction", slot_faction_leader, "trp_player"),
-        (party_get_slot, ":cur_relation", ":center_no", slot_center_player_relation),
-        (val_add, ":cur_relation", "$g_sod_building_university_reputation"),
-		(val_min, ":cur_relation", 100), # FIX: cap relation at 100 so it doesn't break dialogue trees
-        (party_set_slot, ":center_no", slot_center_player_relation, ":cur_relation"),
 
         # inform the player that their universities are paying off
         (try_begin),
@@ -93,11 +78,6 @@ SIMPLE_TRIGGERS = [
 	(try_for_range, ":center_no", centers_begin, centers_end),
 		(party_slot_eq, ":center_no", slot_center_has_inn, 1),
 		(party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
-		(party_get_slot, ":cur_relation", ":center_no", slot_center_player_relation),
-		(val_add, ":cur_relation", "$g_sod_building_inn_reputation"),
-		(val_min, ":cur_relation", 100), # FIX: cap relation at 100
-		(val_clamp, ":cur_relation", -100, 101),
-		(party_set_slot, ":center_no", slot_center_player_relation, ":cur_relation"),
 		(party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
 		(party_get_slot, ":center_prosperity", ":center_no", slot_town_prosperity),
 		(party_get_slot, ":food_store", ":center_no", slot_party_food_store),

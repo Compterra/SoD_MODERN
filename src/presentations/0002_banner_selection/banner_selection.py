@@ -61,7 +61,7 @@ PRESENTATIONS = [
           (store_mul, ":page_adder", 16, "$g_presentation_page_no"),
           (val_add, ":selected_banner", ":page_adder"),
           (store_add, ":selected_banner_map_icon", ":selected_banner", banner_map_icons_begin),
-          (party_set_banner_icon, "p_main_party", ":selected_banner_map_icon"),
+          (call_script, "script_sod_apply_player_banner_map_icon", ":selected_banner_map_icon"),
 		  (try_for_parties, ":cur_party"),
 			(this_or_next|party_slot_eq, ":cur_party", slot_party_type, spt_player_patrol),
 			(party_slot_eq, ":cur_party", slot_party_type, spt_player_mercenaries),

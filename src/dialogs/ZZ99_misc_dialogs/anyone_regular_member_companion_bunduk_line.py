@@ -1,0 +1,65 @@
+DIALOGS = [
+[anyone, "regular_member_companion_bunduk_line",
+  [
+    (try_begin),
+      (eq, "$g_sod_bunduk_line_cause", 2),
+      (str_store_string, s4, "@pay owed, bread counted twice, and promises counted as coin"),
+    (else_try),
+      (str_store_string, s4, "@bad watches, costly orders, and friends buried under clever words"),
+    (try_end),
+  ],
+  "Plainly, then: it is {s4}. Sergeant Bunduk said you might listen before the line starts speaking with its boots.",
+  "regular_member_companion_bunduk_line_choice",
+  [
+    (assign, "$g_sod_bunduk_line_witnessed", 1),
+    (quest_set_slot, "qst_companion_bunduk_men_hold_line", slot_quest_sod_runtime_progress, 50),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_food_security, 1),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc10"),
+    (display_message, "@A ranker gives Bunduk's grievance a company witness. The Men Who Hold the Line is no longer only camp talk.", 0x99CCFF),
+  ]],
+
+[anyone|plyr, "regular_member_companion_bunduk_line_choice", [],
+  "Tell Bunduk to test the line before I answer it.",
+  "regular_member_talk",
+  [
+    (display_message, "@The ranker carries the answer back: command will test the line before it judges the complaint.", 0x99CCFF),
+  ]],
+
+[anyone|plyr, "regular_member_companion_bunduk_line_choice", [],
+  "Some of it changes now. The rest waits until the campaign can afford it.",
+  "regular_member_companion_bunduk_line_compromise",
+  []],
+
+[anyone, "regular_member_companion_bunduk_line_compromise", [],
+  "That is an answer soldiers understand. Not a loved answer. But understood. I will carry it back, and they will decide whether it sounds like command or delay.",
+  "regular_member_talk",
+  [
+    (assign, "$g_sod_bunduk_line_pending", 0),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_food_security, 1),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc10", -2),
+    (try_begin),
+      (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (troop_set_slot, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
+    (else_try),
+      (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
+      (call_script, "script_sod_companion_advance_personal_quest", "trp_npc10", 0),
+    (try_end),
+    (display_message, "@A ranker carries your compromise back to the fires. Bunduk accepts the lives saved, not the delay.", 0xCC9966),
+  ]],
+
+[anyone|plyr, "regular_member_companion_bunduk_line_choice", [],
+  "The line obeys first. Complaints wait until discipline is secure.",
+  "regular_member_companion_bunduk_line_crackdown",
+  []],
+
+[anyone, "regular_member_companion_bunduk_line_crackdown", [],
+  "Aye. That answer travels fast too. Faster, maybe. Men listen close when command says the grave can wait its turn behind discipline.",
+  "regular_member_talk",
+  [
+    (assign, "$g_sod_bunduk_line_pending", 0),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_lezalit_ief_harsh, 2),
+    (call_script, "script_sod_companion_advance_personal_quest", "trp_npc10", 0),
+    (troop_set_slot, "trp_npc10", slot_troop_companion_warning_state, sod_companion_warning_pending),
+    (display_message, "@The line obeys after hearing command authority firsthand. Bunduk stays with it, but his salute looks like something nailed to a door.", 0xCC6666),
+  ]],
+]

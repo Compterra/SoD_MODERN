@@ -7,6 +7,6 @@ DIALOGS = [
                                   (try_end),
                                   (is_between, ":cur_center_no", centers_begin, centers_end),
                                   ],
-   "We are resting at {s1}.", "lord_pretalk", [(party_get_slot, ":ai_object", "$g_talk_troop_party", slot_party_ai_object),
+   "We are resting at {s1}. Men mend faster near walls, and horses remember kindness better than soldiers do.", "lord_pretalk", [(party_get_slot, ":ai_object", "$g_talk_troop_party", slot_party_ai_object),
                                               (str_store_party_name, s1, ":ai_object")]],
 ]

@@ -1,7 +1,5 @@
 DIALOGS = [
 [anyone, "start", [
-					(store_relation, ":rel", "fac_player_faction", "$g_talk_troop_faction"),
-					(talk_info_set_relation_bar, ":rel"),
 		(check_quest_active, "qst_jotnar_clan_free_clansmen"),
 		(check_quest_succeeded, "qst_jotnar_clan_free_clansmen"),
 		(quest_slot_eq, "qst_jotnar_clan_free_clansmen", slot_quest_giver_troop, "$g_talk_troop"),

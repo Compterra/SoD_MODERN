@@ -1,0 +1,25 @@
+# COST: medium
+SCRIPTS = [
+("sod_transfer_hostile_prisoners_to_player",
+ [
+   (store_script_param, ":source_party", 1),
+   (assign, reg0, 0),
+   (try_begin),
+     (gt, ":source_party", 0),
+     (party_get_num_prisoner_stacks, ":num_stacks", ":source_party"),
+     (try_for_range, ":unused", 0, ":num_stacks"),
+       (party_get_free_prisoners_capacity, ":free_capacity", "p_main_party"),
+       (gt, ":free_capacity", 0),
+       (party_get_num_prisoner_stacks, ":remaining_stacks", ":source_party"),
+       (gt, ":remaining_stacks", 0),
+       (party_prisoner_stack_get_troop_id, ":troop_id", ":source_party", 0),
+       (party_prisoner_stack_get_size, ":stack_size", ":source_party", 0),
+       (val_min, ":stack_size", ":free_capacity"),
+       (gt, ":stack_size", 0),
+       (party_remove_prisoners, ":source_party", ":troop_id", ":stack_size"),
+       (party_add_prisoners, "p_main_party", ":troop_id", ":stack_size"),
+       (val_add, reg0, ":stack_size"),
+     (try_end),
+   (try_end),
+ ]),
+]

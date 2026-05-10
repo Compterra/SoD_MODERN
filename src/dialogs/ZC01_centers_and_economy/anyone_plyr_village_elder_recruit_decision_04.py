@@ -6,5 +6,5 @@ DIALOGS = [
       (store_troop_gold, ":gold", "trp_player"),
       (ge, ":gold", 10),
     ],
-   "No, not now.", "village_elder_pretalk", []],
+   "No. Keep them with their families for now.", "village_elder_pretalk", []],
 ]

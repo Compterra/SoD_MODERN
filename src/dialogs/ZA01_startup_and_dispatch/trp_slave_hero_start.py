@@ -1,6 +1,13 @@
 DIALOGS = [
 [trp_slave_hero, "start", [
   (eq, "$prison_break", 0),
+  (neg|check_quest_active, "qst_slave_q1"),
+  (neg|check_quest_active, "qst_slave_q2"),
+  (neg|check_quest_active, "qst_slave_q3"),
+  (neg|check_quest_succeeded, "qst_slave_q1"),
+  (neg|check_quest_succeeded, "qst_slave_q2"),
+  (neg|check_quest_succeeded, "qst_slave_q3"),
+  (neg|check_quest_failed, "qst_slave_q3"),
   #(store_random_in_range, ":start", 0, 5),
   #(eq, ":start", 0),
   (assign, ":num_tries", 50),
@@ -16,5 +23,6 @@ DIALOGS = [
   (setup_quest_text, "qst_slave_q1"),
   (str_store_string, s2, "@Take Diego's message to his old friend {s13}."),
   (assign, "$prison_break", -1),
-  ], "Finally, someone who isn't Slaver scum. Psst, come here. Yes, you. Now listen to me carefully...", "prison_break_1", []],
+  ], "Keep your voice low. The slavers count chains, not shadows, and I have survived by being the latter.\
+ Come closer, and listen carefully...", "prison_break_1", []],
 ]

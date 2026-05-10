@@ -117,7 +117,6 @@ SCRIPTS = [
         (val_max, ":faction_center_value", 5),
 
         (troop_get_slot, ":readiness", ":troop_no", slot_troop_readiness_to_join_army),
-
         (assign, ":chance_to_follow_other_party", 0),
         (assign, ":target_to_follow_other_party", -1),
 
@@ -324,6 +323,40 @@ SCRIPTS = [
 		  (val_div, ":chance_to_follow_other_party", 10),
 		(try_end),
 		(try_end),  # end tr24 sod twan456 end
+
+        (call_script, "script_sod_faction_apply_posture_to_follow_chance", ":troop_no", ":chance_to_follow_other_party", ":target_to_follow_other_party", ":under_siege", ":my_center_threat_level"),
+        (assign, ":chance_to_follow_other_party", reg0),
+        (faction_get_slot, ":sod_campaign_health", ":faction_no", slot_faction_sod_campaign_health),
+        (try_begin),
+          (le, ":sod_campaign_health", 0),
+          (call_script, "script_sod_faction_update_campaign_health", ":faction_no"),
+          (assign, ":sod_campaign_health", reg0),
+        (try_end),
+        (try_begin),
+          (ge, reg1, 55),
+          (eq, ":under_siege", 0),
+          (val_div, ":chance_to_follow_other_party", 4),
+        (else_try),
+          (ge, reg1, 35),
+          (eq, ":under_siege", 0),
+          (val_div, ":chance_to_follow_other_party", 2),
+        (else_try),
+          (le, reg1, 12),
+          (ge, reg2, 75),
+          (val_mul, ":chance_to_follow_other_party", 5),
+          (val_div, ":chance_to_follow_other_party", 4),
+        (try_end),
+        (try_begin),
+          (is_between, ":sod_campaign_health", 1, 35),
+          (val_div, ":chance_to_follow_other_party", 3),
+        (else_try),
+          (is_between, ":sod_campaign_health", 35, 55),
+          (val_div, ":chance_to_follow_other_party", 2),
+        (else_try),
+          (ge, ":sod_campaign_health", 75),
+          (val_mul, ":chance_to_follow_other_party", 5),
+          (val_div, ":chance_to_follow_other_party", 4),
+        (try_end),
 		
 		(assign, ":sum_chances", ":chance_to_follow_other_party"),
 		

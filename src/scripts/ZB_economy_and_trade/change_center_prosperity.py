@@ -6,6 +6,7 @@ SCRIPTS = [
 
           #SOD: castles don't have prosperity, period!
           (try_begin),
+            (is_between, ":center_no", centers_begin, centers_end),
             (neg|is_between, ":center_no", castles_begin, castles_end),
 
             # only update it if it actually changes

@@ -23,6 +23,22 @@ __pycache__/
 /build_last_run.txt
 /_build_log_summary.txt
 /docs/reports/
+!/docs/reports/
+/docs/reports/*
+!/docs/reports/non_hero_troop_audit.md
+!/docs/reports/kt0_autoresolve_audit.md
+!/docs/reports/armor_audit.md
+!/docs/reports/mount_audit.md
+!/docs/reports/melee_weapon_audit.md
+!/docs/reports/shield_audit.md
+!/docs/reports/ranged_weapon_audit.md
+!/docs/reports/ammo_audit.md
+!/docs/reports/generated_item_price_rebalance.md
+!/docs/reports/troop_loadout_audit.md
+!/docs/reports/item_value_availability_audit.md
+!/docs/reports/imod_compatibility_audit.md
+!/docs/reports/goods_food_audit.md
+!/docs/reports/special_item_audit.md
 
 # Generated root IDs
 /ID_*.py

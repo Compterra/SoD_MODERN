@@ -154,7 +154,7 @@ The quest framework is already touched by many gameplay systems. These are the k
 
 ### Menus
 
-#### `src/menus/village/village_bandits_defeated_accept_03.py`
+#### `src/menus/centers/village/village_bandits_defeated_accept_03.py`
 - Quest branching and conclusion logic tied to village quests.
 
 #### `src/menus/village/cattle_herd.py`
@@ -166,13 +166,13 @@ The quest framework is already touched by many gameplay systems. These are the k
 #### `src/menus/start_game/peasant_start_practice.py`
 - Quest progress logic tied to practice or training flow.
 
-#### `src/menus/other/approach_gates.py`
+#### `src/menus/centers/common/approach_gates.py`
 - Encounter and travel gating based on quest state.
 
 #### `src/menus/other/continue_23.py`
 - Quest-related encounter and consequence branching.
 
-#### `src/menus/encounter/encounter_attack.py`
+#### `src/menus/0000_hardcoded_mb1011/simple_encounter.py`
 - Quest-aware encounter gating and combat interaction control.
 
 ### Dialogues
@@ -208,6 +208,7 @@ Representative quest/dialogue touchpoints include:
 #### Quest-like helper workflows
 - `src/scripts/ZY_helper_scripts/sod_threat_board_generate_offers.py`
 - `src/scripts/ZY_helper_scripts/sod_threat_board_accept_contract.py`
+- `src/scripts/ZY_helper_scripts/sod_threat_board_normalize_center.py`
 - `src/scripts/ZY_helper_scripts/sod_threat_board_spawn_target.py`
 - `src/scripts/ZY_helper_scripts/sod_threat_board_note_party_defeated.py`
 - `src/scripts/ZY_helper_scripts/sod_threat_board_complete_contract.py`
@@ -489,7 +490,7 @@ The most valuable places to integrate the new system first are:
 6. `src/triggers/ST02_every_hour/entry_0084.py`
 7. `src/triggers/ST03_daily/entry_0075.py`
 8. `src/triggers/ST03_daily/entry_0151.py`
-9. `src/menus/encounter/encounter_attack.py`
+9. `src/menus/0000_hardcoded_mb1011/simple_encounter.py`
 10. `src/mission_templates/0042_jotnar_clan_arena/jotnar_clan_arena.py`
 11. quest-accept dialogue nodes
 12. quest-turn-in dialogue nodes
@@ -510,3 +511,5 @@ But it is still missing the one thing that turns a framework into an engine:
 - one coherent authoritative quest lifecycle that all gameplay systems obey.
 
 This audit is the baseline for the rebuild.
+
+

@@ -9,6 +9,8 @@ SCRIPTS = [
         (party_prisoner_stack_get_troop_id, ":stack_troop", "p_encountered_party_backup", ":stack_no"),
         (troop_is_hero, ":stack_troop"),
         (party_prisoner_stack_get_troop_dna, ":stack_troop_dna", "p_encountered_party_backup", ":stack_no"),
+        (store_troop_faction, ":freed_faction", ":stack_troop"),
+        (call_script, "script_sod_diplomacy_record_event", ":freed_faction", sod_diplomacy_memory_captive_freed, 1),
         (store_add, "$last_freed_hero", ":stack_no", 1),
         (assign, "$talk_context", tc_hero_freed),
         (call_script, "script_setup_troop_meeting", ":stack_troop", ":stack_troop_dna"),

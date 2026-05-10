@@ -35,7 +35,8 @@
 # Everything lives inside QUESTS so build/build_quests.py copies a self-contained
 # payload into compile/module_quests.py.
 #
-# The terminal quests_end sentinel stays in the final fragment so quest ids remain stable.
+# The terminal quests_end sentinel stays in src/quests/9999_quests_end.py so
+# all authored quest content loads before the terminal transition target.
 
 # NOTE: Registry setup.
 # The registry gives authors named, reusable building blocks. This sample keeps

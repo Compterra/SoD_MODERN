@@ -1,3 +1,5 @@
+# Simple trigger order is execution order. Keep frequency groups and numeric
+# entry order stable unless the campaign-side timing dependencies are audited.
 ST00_engine_events/entry_0001.py
 ST00_engine_events/entry_0002.py
 ST02_every_hour/entry_0003.py
@@ -131,6 +133,7 @@ ST03_daily/entry_0129.py
 ST01_every_frame/entry_0130.py
 ST04_weekly/entry_0131.py
 ST04_weekly/entry_0132.py
+ST04_weekly/entry_0132_five_faith_drift.py
 ST02_every_hour/entry_0133.py
 ST03_daily/entry_0134.py
 ST99_other/entry_0135.py
@@ -148,9 +151,25 @@ ST02_every_hour/entry_0146.py
 ST99_other/entry_0147.py
 ST03_daily/entry_0148.py
 ST03_daily/entry_0149.py
-ST04_weekly/entry_0150.py
+ST03_daily/entry_0150.py
 ST03_daily/entry_0151.py
 ST03_daily/entry_0152.py
 ST04_weekly/entry_0153.py
 ST03_daily/entry_0154.py
 ST03_daily/entry_0155.py
+ST03_daily/entry_0156.py
+ST03_daily/entry_0157.py
+ST03_daily/entry_0158.py
+ST02_every_hour/entry_0159.py
+ST04_weekly/entry_0160.py
+ST03_daily/entry_0161.py
+ST04_weekly/entry_0162.py
+ST02_every_hour/entry_0163.py
+ST02_every_hour/entry_0164.py
+ST03_daily/entry_0165.py
+ST03_daily/entry_0166.py
+ST03_daily/entry_0167.py
+ST02_every_hour/entry_0168.py
+ST01_every_frame/entry_0169.py
+ST04_weekly/entry_0170.py
+ST03_daily/entry_0171.py

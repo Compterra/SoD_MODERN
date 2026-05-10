@@ -9,7 +9,7 @@ MENUS = [
       (store_random_in_range, ":random_loss", 40, 100),
       (val_add, ":gold_loss", ":random_loss"),
       (val_min, ":gold_loss", ":total_gold"),
-      (troop_remove_gold, "trp_player", ":gold_loss"),
+      (call_script, "script_sod_player_charge_gold", ":gold_loss"),
       (party_set_slot, "$current_town", slot_center_has_bandits, 0),
       (party_get_num_companions, ":num_companions", "p_main_party"),
       (str_store_string, s4, "@The assasins beat you down and leave you for dead. ."),

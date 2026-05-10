@@ -1,7 +1,5 @@
 DIALOGS = [
 [anyone, "start", [
-					(store_relation, ":rel", "fac_player_faction", "$g_talk_troop_faction"),
-					(talk_info_set_relation_bar, ":rel"),
 		(check_quest_active, "qst_serpent_host_free_spy"),
 		(quest_slot_eq, "qst_serpent_host_free_spy", slot_quest_current_state, 1),
         (main_party_has_troop, "trp_sh_spy"),

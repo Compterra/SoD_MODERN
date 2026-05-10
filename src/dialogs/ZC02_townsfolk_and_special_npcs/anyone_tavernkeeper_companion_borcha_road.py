@@ -1,0 +1,27 @@
+DIALOGS = [
+[anyone, "tavernkeeper_companion_borcha_road",
+    [
+        (try_begin),
+            (is_between, "$g_sod_borcha_road_destination_center", villages_begin, villages_end),
+            (str_store_party_name_link, s4, "$g_sod_borcha_road_destination_center"),
+        (else_try),
+            (str_store_string, s4, "@the low village road"),
+        (try_end),
+        (try_begin),
+            (eq, "$g_sod_borcha_road_cause", 2),
+            (str_store_string, s5, "@men buying cheap horses, asking which caravans travel fat and guarded thin"),
+        (else_try),
+            (str_store_string, s5, "@caravan hands who arrived without dust on their boots and fear on their faces"),
+        (try_end),
+    ],
+    "Your road man has the eye. Toward {s4}, I saw {s5}. One hand said the track was clear because somebody wanted it clear.",
+    "tavernkeeper_talk",
+    [
+        (assign, "$g_sod_borcha_road_witnessed", 1),
+        (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_progress, 50),
+        (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_last_center, "$g_sod_borcha_road_destination_center"),
+        (call_script, "script_sod_companion_apply_player_action", sod_companion_action_safe_roadcraft, 1),
+        (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
+        (display_message, "@A tavernkeeper confirms Borcha's side-road warning. The Road Keeps Its Own now has a road witness.", 0x99CCFF),
+    ]],
+]

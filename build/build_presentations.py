@@ -142,10 +142,12 @@ def extract_list_block(raw: str, var_name: str) -> tuple[str, int, int]:
 
     raise ValueError(f"Unclosed list bracket for {var_name}.")
 
-def extract_first_id(raw: str) -> str:
-    # match ("id",
-    m = re.search(r'\(\s*"([^"]+)"\s*,', raw)
-    return m.group(1) if m else ""
+def extract_ids(raw: str) -> List[str]:
+    # Match each presentation tuple opening: ("id",
+    return [
+        match.group(1)
+        for match in re.finditer(r'^\s*\(\s*"([^"]+)"\s*,', raw, re.MULTILINE)
+    ]
 
 
 def load_preamble_lines() -> List[str]:
@@ -169,11 +171,16 @@ def read_order() -> List[Path]:
     if not ORDER_FILE.exists():
         raise SystemExit(f"Missing presentations order file: {ORDER_FILE}")
     files: List[Path] = []
+    seen: set[str] = set()
     for ln in ORDER_FILE.read_text(encoding="utf-8", errors="replace").splitlines():
         ln = ln.strip()
         if not ln or ln.startswith("#"):
             continue
-        p = SRC / ln.replace("\\", "/")
+        rel = ln.replace("\\", "/")
+        if rel in seen:
+            raise SystemExit(f"Duplicate entry in presentations order file: {rel}")
+        seen.add(rel)
+        p = SRC / rel
         if not p.exists():
             raise SystemExit(f"Presentation fragment listed but missing: {p}")
         files.append(p)
@@ -215,11 +222,12 @@ def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
         if "PRESENTATIONS" not in raw:
             continue
         inner, start_ln, end_ln = extract_list_block(raw, "PRESENTATIONS")
-        pid = extract_first_id(inner)
-        if pid:
+        ids = extract_ids(inner)
+        for pid in ids:
             if pid in seen:
                 raise SystemExit(f"Duplicate presentation '{pid}':\n  {seen[pid]}\n  {fp}")
             seen[pid] = fp
+        pid = ids[0] if ids else ""
         block = inner.rstrip()
         if block and not block.rstrip().endswith(","):
             block += ","

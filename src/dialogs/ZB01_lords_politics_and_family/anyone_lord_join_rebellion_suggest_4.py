@@ -42,7 +42,10 @@ DIALOGS = [
         (store_random_in_range, ":consistency", 1, 5),
         (assign, reg10, ":consistency"),
         (assign, reg11, ":arguments_used"),
-        (display_message, "@Consistency check: {reg10}/{reg11}", debug_color),
+        (try_begin),
+          (eq, "$cheat_mode", 1),
+          (display_message, "@Consistency check: {reg10}/{reg11}", debug_color),
+        (try_end),
         (lt, ":consistency", ":arguments_used"),
 
 ], "Hmm. Do you perhaps tell each lord something different, depending on what you think he most wants to hear?", "lord_join_rebellion_suggest_4",

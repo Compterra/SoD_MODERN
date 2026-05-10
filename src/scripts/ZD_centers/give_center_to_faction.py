@@ -17,6 +17,7 @@ SCRIPTS = [
       (try_end),
       (store_faction_of_party, ":old_faction", ":center_no"),
       (call_script, "script_give_center_to_faction_aux", ":center_no", ":faction_no"),
+      (call_script, "script_sod_handle_center_faction_change_castle_patrols", ":center_no", ":old_faction", ":faction_no"),
       (call_script, "script_update_village_market_towns"),
 
       (try_for_range, ":cur_faction", kingdoms_begin, kingdoms_end),

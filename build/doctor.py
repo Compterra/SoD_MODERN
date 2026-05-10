@@ -182,6 +182,23 @@ def _iter_py_files(base: Path) -> List[Path]:
     files.sort(key=lambda x: str(x).lower())
     return files
 
+def _check_compile_id_shadow_artifacts(errors: List[str]) -> None:
+    """Generated ID modules must only live under compile/ids.
+
+    The build wrapper runs process scripts with compile/process at the front of
+    sys.path. A stray ID_*.py in compile/process can silently shadow the fresh
+    compile/ids module and export shifted numeric IDs.
+    """
+    shadow_roots = (ROOT / "compile", ROOT / "compile" / "process")
+    for shadow_root in shadow_roots:
+        if not shadow_root.exists():
+            continue
+        for path in sorted(shadow_root.glob("ID_*.py"), key=lambda p: p.name.lower()):
+            errors.append(
+                "[COMPILE] Generated ID file is in a shadow-prone folder; "
+                f"delete it and keep generated IDs under compile/ids only: {path.relative_to(ROOT).as_posix()}"
+            )
+
 def _iter_all_src_py_files() -> List[Path]:
     """All *.py under src/, excluding __pycache__."""
     if not SRC_ROOT.exists():
@@ -303,6 +320,7 @@ def _check_sod_threat_board_registry(
         "sod_threat_board_init_registry.py",
         "sod_threat_board_generate_offers.py",
         "sod_threat_board_accept_contract.py",
+        "sod_threat_board_normalize_center.py",
         "sod_threat_board_spawn_target.py",
         "sod_threat_board_complete_contract.py",
         "sod_threat_board_fail_contract.py",
@@ -339,7 +357,7 @@ def _check_sod_threat_board_registry(
     menu_raw = "\n".join(_read_text(p) for p in menu_files)
     if "regional_threat_board" not in menu_raw:
         errors.append("Regional threat board menu is missing")
-    if "Review regional threats" not in menu_raw:
+    if "Check the job board." not in menu_raw:
         errors.append("Regional threat board is not exposed from center menus")
 
     trigger_raw = "\n".join(_read_text(p) for p in trigger_files)
@@ -1586,6 +1604,156 @@ def _check_quest_engine_integration(
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _check_modernization_tooling_guards(
+    script_files: List[Path],
+    dialog_files: List[Path],
+    menu_files: List[Path],
+    trigger_files: List[Path],
+    presentation_files: List[Path],
+    mission_template_files: List[Path],
+    errors: List[str],
+    warnings: List[str],
+) -> None:
+    """Pin the modernization-era safety checks in Doctor output.
+
+    The focused static tests remain the detailed graph walker. Doctor owns the
+    build-facing contract: key guard helpers, order-file coverage, unsafe exit
+    patterns, callback compatibility, and high-frequency party-id hazards must
+    stay visible during normal builds.
+    """
+    script_raw = "\n".join(_read_text(p) for p in script_files)
+    dialog_raw = "\n".join(_read_text(p) for p in dialog_files)
+    menu_raw = "\n".join(_read_text(p) for p in menu_files)
+    trigger_raw = "\n".join(_read_text(p) for p in trigger_files)
+    presentation_raw = "\n".join(_read_text(p) for p in presentation_files)
+    mission_raw = "\n".join(_read_text(p) for p in mission_template_files)
+    all_raw = "\n".join((script_raw, dialog_raw, menu_raw, trigger_raw, presentation_raw, mission_raw))
+
+    required_tokens = {
+        "dialogue graph safety static guard": "test_dialogue_outputs_have_matching_inputs_or_safe_terminals",
+        "unsafe post-mission return static guard": "test_generic_continue_menus_do_not_only_change_screen_return",
+        "high-frequency party safety static guard": "test_high_frequency_ai_scripts_do_not_use_unguarded_global_party_ops",
+        "camp/report fallback static guard": "test_report_menus_call_description_scripts_and_use_fallbacks",
+        "quest sentinel/order static guard": "test_quest_end_sentinel_is_isolated_and_last",
+        "M&B 1.011 callback static guard": "test_warband_presentation_callbacks_are_absent_for_mb1011",
+    }
+    modernization_static_path = ROOT / "build" / "test_modernization_static.py"
+    modernization_static = _read_text(modernization_static_path) if modernization_static_path.exists() else ""
+    if not modernization_static:
+        errors.append("[MODERNIZATION] Missing build/test_modernization_static.py top-level guard.")
+    for label, token in required_tokens.items():
+        if token not in modernization_static:
+            errors.append(f"[MODERNIZATION] Missing {label}: {token}")
+
+    required_runtime_tokens = {
+        "safe encounter cleanup helper": "script_sod_safe_leave_encounter",
+        "safe active party helper": "sod_party_is_safe_active_to_reg",
+        "center fallback helper": "script_sod_store_center_name_or_fallback_to_s21",
+        "company incident focus helper": "script_sod_company_dialogue_store_incident_focus",
+        "trade route pressure helper": "script_sod_trade_network_get_route_pressure_to_regs",
+    }
+    for label, token in required_runtime_tokens.items():
+        if token not in all_raw:
+            errors.append(f"[MODERNIZATION] Missing {label}: {token}")
+
+    presentations_order_path = ROOT / "src" / "presentations" / "_order_presentations.txt"
+    presentations_order = _read_text(presentations_order_path) if presentations_order_path.exists() else ""
+    presentation_ids_path = ROOT / "compile" / "ids" / "ID_presentations.py"
+    presentation_ids = _read_text(presentation_ids_path) if presentation_ids_path.exists() else ""
+    presentation_stub_rel = "9999_mb1011_game_presentation_stubs/game_presentation_stubs.py"
+    presentation_stub_path = ROOT / "src" / "presentations" / presentation_stub_rel
+    presentation_raw = "\n".join(_read_text(p) for p in presentation_files)
+    if "0000_game_hardcoded_callbacks" in presentations_order:
+        errors.append("[MODERNIZATION] M&B 1.011 should not register Warband-only game_start/game_escape presentation callbacks.")
+    if presentation_stub_rel in presentations_order or presentation_stub_path.exists():
+        errors.append("[MODERNIZATION] Remove the old inert prsnt_game_start/prsnt_game_escape tail stub; M&B 1.011 logs UNABLE TO MAP when these callbacks are exported.")
+    if '"game_start"' in presentation_raw or '"game_escape"' in presentation_raw:
+        errors.append("[MODERNIZATION] Warband-only prsnt_game_start/prsnt_game_escape callbacks must stay absent from M&B 1.011 presentations.")
+    if presentation_ids and (
+        "prsnt_game_credits = 0" not in presentation_ids
+        or "prsnt_banner_selection = 1" not in presentation_ids
+    ):
+        warnings.append("[MODERNIZATION] Generated presentation IDs do not yet reflect Original SoD presentation order; rebuild export and run static callback tests.")
+    if presentation_ids and (
+        "prsnt_game_start" in presentation_ids
+        or "prsnt_game_escape" in presentation_ids
+        or "prsnt_game_credits = 0" not in presentation_ids
+        or "prsnt_banner_selection = 1" not in presentation_ids
+    ):
+        errors.append("[MODERNIZATION] Original SoD presentation order must keep prsnt_game_credits = 0, prsnt_banner_selection = 1, and omit Warband-only game_start/game_escape callbacks.")
+
+    if "game_check_party_sees_party" not in script_raw or "game_get_party_speed_multiplier" not in script_raw:
+        errors.append("[MODERNIZATION] M&B 1.011 hardcoded game script compatibility fragments are missing.")
+
+    unsafe_continue_menus: List[str] = []
+    for path in menu_files:
+        raw = _read_text(path)
+        if (
+            "change_screen_return" in raw
+            and ("finish_mission" in raw or "start_mission" in raw)
+            and "jump_to_menu" not in raw
+            and "change_screen_map" not in raw
+        ):
+            unsafe_continue_menus.append(path.relative_to(ROOT).as_posix())
+    if unsafe_continue_menus:
+        errors.append(
+            "[MODERNIZATION] Menu fragment(s) use change_screen_return without explicit menu/map exit: "
+            + ", ".join(unsafe_continue_menus[:20])
+        )
+
+    party_hazard_tokens = (
+        "store_distance_to_party_from_party",
+        "store_faction_of_party",
+        "$g_encountered_party",
+        "$g_enemy_party",
+        "$g_talk_troop_party",
+    )
+    if any(token in all_raw for token in party_hazard_tokens) and "sod_party_is_safe_active_to_reg" not in all_raw:
+        errors.append("[MODERNIZATION] Party-id hazard operations exist without the safe active party helper.")
+
+    report_path = DOCS_REPORTS / "builder_doctor_tooling_audit.md"
+    DOCS_REPORTS.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "# Builder, Doctor, And Tooling Audit",
+        "",
+        "## Doctor Coverage",
+        "",
+        "- Dialogue graph input/output validity is pinned through `build/test_modernization_static.py` and surfaced by Doctor as a required modernization guard.",
+        "- Unsafe post-mission `change_screen_return` patterns are checked in static coverage and Doctor flags source menu fragments that rely on return without explicit menu/map exits.",
+        "- High-frequency party operations are guarded by the shared active-party helper and static coverage.",
+        "- M&B 1.011 hardcoded callback compatibility is pinned by Original SoD presentation order and static coverage.",
+        "- Stale order-file entries remain hard Doctor errors through manifest completeness checks.",
+        "- Duplicate top-level IDs and duplicate dialogue heads remain Doctor-owned checks.",
+        "",
+        "## Static Coverage",
+        "",
+    ]
+    for label, token in required_tokens.items():
+        status = "present" if token in modernization_static else "missing"
+        lines.append(f"- {status}: {label} (`{token}`)")
+    lines.extend(
+        [
+            "",
+            "## Runtime Helper Coverage",
+            "",
+        ]
+    )
+    for label, token in required_runtime_tokens.items():
+        status = "present" if token in all_raw else "missing"
+        lines.append(f"- {status}: {label} (`{token}`)")
+    lines.extend(
+        [
+            "",
+            "## Manual QA",
+            "",
+            "- [ ] Run Doctor after deleting a listed order-file fragment and confirm the stale manifest error is clear.",
+            "- [ ] Run Doctor after adding an unsafe `change_screen_return`-only menu fragment and confirm the modernization error is clear.",
+            "- [ ] Run Doctor after registering `prsnt_game_start` or `prsnt_game_escape` and confirm M&B 1.011 callback coverage catches it.",
+        ]
+    )
+    report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def _check_quest_battle_integration(
     script_files: List[Path],
     mission_template_files: List[Path],
@@ -1718,8 +1886,8 @@ def _check_quest_journal_integration(
         if const_name not in constants_raw:
             errors.append(f"Quest journal integration missing constant: {const_name}")
 
-    quest_menu_path = SRC_MENUS / "camp" / "quest_journal_report.py"
-    reports_menu_path = SRC_MENUS / "camp" / "reports.py"
+    quest_menu_path = SRC_MENUS / "reports" / "quest_journal_report.py"
+    reports_menu_path = SRC_MENUS / "0000_hardcoded_mb1011" / "reports.py"
     update_path = SRC_SCRIPTS / "ZG_quests" / "sod_quest_journal_update.py"
     describe_path = SRC_SCRIPTS / "ZG_quests" / "sod_quest_journal_describe_to_s2.py"
 
@@ -1781,7 +1949,7 @@ def _check_quest_journal_integration(
         "presentation section headings",
         describe_path,
         describe_raw,
-        ("Active Quests", "Completed Archive", "Failed Archive"),
+        ("Companion Personal Arcs", "Active Quests", "Completed Archive", "Failed Archive"),
     )
     record_check(
         "runtime summary refresh",
@@ -3428,6 +3596,7 @@ def run_doctor(
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
     DOCS_EDIT.mkdir(parents=True, exist_ok=True)
     DOCS_REPORTS.mkdir(parents=True, exist_ok=True)
+    _check_compile_id_shadow_artifacts(errors)
     # Gather files (exclude _preamble folders from fragment validation)
     script_files_all = _iter_py_files(SRC_SCRIPTS)
     menu_files_all = _iter_py_files(SRC_MENUS)
@@ -3606,6 +3775,19 @@ def run_doctor(
     _check_empty_src_folders(warnings)
 
     if check_feature_integrations:
+        run_timed(
+            "modernization_tooling_guards",
+            lambda: _check_modernization_tooling_guards(
+                script_files_all,
+                dialog_files_all,
+                menu_files_all,
+                trigger_files_all,
+                pres_files_all,
+                mt_files_all,
+                errors,
+                warnings,
+            ),
+        )
         run_timed(
             "sod_doctrine_registry",
             lambda: _check_sod_doctrine_registry(script_files_all, constant_files, warnings, errors),

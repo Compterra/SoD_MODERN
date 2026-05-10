@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone, "start", [(eq, "$talk_context", tc_castle_commander)],
-   "What do you want?", "player_siege_castle_commander_1", []],
+   "The walls are awake and every ladder has a shadow. Give your order, commander.", "player_siege_castle_commander_1", []],
 ]

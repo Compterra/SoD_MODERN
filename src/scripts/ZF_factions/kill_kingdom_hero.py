@@ -3,6 +3,11 @@ SCRIPTS = [
         [
           (store_script_param_1, ":troop"),
 
+          (try_begin),
+            (is_between, ":troop", heroes_begin, heroes_end),
+            (call_script, "script_remove_troop_from_prison", ":troop"),
+          (try_end),
+          (call_script, "script_sod_runtime_trace_event", 5, "$g_enemy_party", ":troop"),
           (troop_set_slot, ":troop", slot_troop_occupation, slto_dead),
           (troop_set_slot, ":troop", slot_troop_leaded_party, -1),
 
@@ -10,11 +15,17 @@ SCRIPTS = [
           (store_current_day, ":cur_day"),
           (troop_set_slot, ":troop", slot_troop_death_day, ":cur_day"),
           (store_troop_faction, ":troop_faction", ":troop"),
+          (try_begin),
+            (eq, ":troop_faction", "fac_kingdom_6"),
+            (call_script, "script_sod_strategy_advisor_record_centurion_death", ":troop"),
+          (try_end),
           (faction_get_slot, ":leader", ":troop_faction", slot_faction_leader),
           (troop_set_slot, ":troop", slot_troop_d_leader, ":leader"),
           (call_script, "script_update_troop_notes", ":troop"),
           (troop_get_type, reg1, ":troop"),
-          (add_troop_note_from_sreg, ":troop", 2, "@{reg1?She:He} is dead.", 1),
+          (str_store_string, s49, "@{reg1?She:He} is dead."),
+
+          (add_troop_note_from_sreg, ":troop", 2, s49, 1),
 
           # start with the assumption that the fief should return to its faction for redistribution
           (assign, ":fief_faction", ":troop_faction"),
@@ -24,28 +35,18 @@ SCRIPTS = [
           (try_begin),
             # handle executing the King!
             (faction_slot_eq, ":troop_faction", slot_faction_leader, ":troop"),
-			(troop_get_slot, ":cur_banner", ":troop", slot_troop_banner_scene_prop),
 
             # find best candidate to become king
             (try_begin),
               (assign, ":best_troop", -1),
-              (try_for_range, ":pretender", pretenders_begin, pretenders_end),
-                (troop_slot_eq, ":pretender", slot_troop_pretender, 1),
-                (troop_slot_eq, ":pretender", slot_troop_original_faction, ":troop_faction"),
-                (store_random_in_range, ":roll", 0, 100),
-                (lt, ":roll", 40),
-                (troop_set_slot, ":pretender", slot_troop_pretender, 0),
-				(troop_set_slot, ":pretender", slot_troop_occupation, slto_kingdom_hero),
-				(troop_set_faction, ":pretender", ":troop_faction"),
-                (assign, ":best_troop", ":pretender"),
-				(faction_set_slot, ":troop_faction", slot_faction_leader, ":best_troop"),
-				(troop_set_slot, ":pretender", slot_troop_banner_scene_prop, ":cur_banner"),
-              (try_end),
+              # Claimants should not inherit by random chance when a king dies.
+              # They remain a rebellion path; ordinary succession picks from active lords.
               (try_begin),
                 (eq, ":best_troop", -1),
                 (assign, ":best_renown", -1),
                 (try_for_range, ":candidat", kingdom_heroes_begin, kingdom_heroes_end),
                   (neg|troop_slot_eq, ":candidat", slot_troop_occupation, slto_dead),  #can't choose a dead hero!
+                  (neg|is_between, ":candidat", pretenders_begin, pretenders_end),
                   (store_troop_faction, ":faction", ":candidat"),
                   (eq, ":faction", ":troop_faction"),
                   (troop_slot_eq, ":candidat", slot_troop_occupation, slto_kingdom_hero),  #only other heros of this faction may become the king

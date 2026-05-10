@@ -2,7 +2,7 @@ SIMPLE_TRIGGERS = [
 (72,
    [(call_script, "script_update_mercenary_units_of_towns"),
     #NPC changes begin
-    # removes   (call_script, "script_update_companion_candidates_in_taverns"),
+    (call_script, "script_update_companion_candidates_in_taverns"),
     #NPC changes end
     (call_script, "script_update_ransom_brokers"),
     (call_script, "script_update_tavern_travelers"),

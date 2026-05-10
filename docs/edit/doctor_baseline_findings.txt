@@ -7,12 +7,12 @@
 [stub] src/dialogs/zc01_centers_and_economy/anyone_plyr_merchant_talk_03.py:2 [dialogs #1] stub marker with empty/no-op consequences *
 [stub] found 7 suspected stub/empty fragment record(s).
 [stub] src/menus/other/auto_return_to_map.py:2 [menus #1] stub marker with empty/no-op options *
-[stub] src/menus/other/captivity_castle_check.py:2 [menus #1] stub marker with empty/no-op options *
-[stub] src/menus/other/captivity_start_castle_defeat.py:2 [menus #1] stub marker with empty/no-op options *
-[stub] src/menus/other/captivity_start_castle_surrender.py:2 [menus #1] stub marker with empty/no-op options *
-[stub] src/menus/other/captivity_start_wilderness.py:2 [menus #1] stub marker with empty/no-op options *
-[stub] src/menus/other/captivity_start_wilderness_surrender.py:2 [menus #1] stub marker with empty/no-op options *
-[stub] src/menus/other/captivity_wilderness_check.py:2 [menus #1] stub marker with empty/no-op options *
+[stub] src/menus/captivity/captivity_castle_check.py:2 [menus #1] stub marker with empty/no-op options *
+[stub] src/menus/captivity/captivity_start_castle_defeat.py:2 [menus #1] stub marker with empty/no-op options *
+[stub] src/menus/captivity/captivity_start_castle_surrender.py:2 [menus #1] stub marker with empty/no-op options *
+[stub] src/menus/captivity/captivity_start_wilderness.py:2 [menus #1] stub marker with empty/no-op options *
+[stub] src/menus/captivity/captivity_start_wilderness_surrender.py:2 [menus #1] stub marker with empty/no-op options *
+[stub] src/menus/captivity/captivity_wilderness_check.py:2 [menus #1] stub marker with empty/no-op options *
 [stub] found 2 suspected stub/empty fragment record(s).
 [stub] src/presentations/0024_sod_6_reserved/sod_6_reserved.py:2 [presentations #1] empty trigger list *
 [stub] src/presentations/0025_sod_7_reserved/sod_7_reserved.py:2 [presentations #1] empty trigger list *
@@ -25,3 +25,4 @@
 [dialog-dup] anyone::start->close_window *
 [dialog-dup] anyone::start->gm_pretalk *
 [dialog-dup] ...and 9 more signature(s)
+

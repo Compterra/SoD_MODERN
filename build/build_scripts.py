@@ -38,6 +38,11 @@ CACHE_FILE = CACHE_DIR / "scripts_manifest.json"
 PREAMBLE_DIR = SRC / "_preamble"
 
 ZA_ORDER_FILE = SRC / "ZA_hardcoded_game_scripts" / "_order_za_scripts.txt"
+SCRIPT_GENERATOR_DEPENDENCIES = [
+    ROOT / "src" / "constants" / "building_registry.py",
+    ROOT / "src" / "constants" / "center_modifier_registry.py",
+    ROOT / "src" / "constants" / "module_constants.py",
+]
 
 # ----------------------------
 # Helpers: folder tags -> banners / index
@@ -271,6 +276,15 @@ def _sig_for(path: Path) -> Dict[str, object]:
     }
 
 
+def _sig_for_dependency(path: Path) -> Dict[str, object]:
+    st = path.stat()
+    return {
+        "rel": path.relative_to(ROOT).as_posix(),
+        "mtime_ns": int(getattr(st, "st_mtime_ns", int(st.st_mtime * 1e9))),
+        "size": int(st.st_size),
+    }
+
+
 def _load_cache() -> Optional[dict]:
     if not CACHE_FILE.exists():
         return None
@@ -434,13 +448,15 @@ def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
             "fragments": [_sig_for(p) for p in all_files],
             "preamble": [_sig_for(p) for p in preamble_files],
             "za_order": za_sig,
+            "generator_dependencies": [_sig_for_dependency(p) for p in SCRIPT_GENERATOR_DEPENDENCIES if p.exists()],
         }
         prev = _load_cache()
         if prev == current:
             print("[build_scripts] Up-to-date; skipped (cache)")
             return
 
-    # Fast-fail syntax checks + duplicate detection by script name
+    # Fast-fail syntax checks + duplicate detection by script name. Check every
+    # exported script tuple, not just the first tuple in a fragment.
     script_to_path: Dict[str, Path] = {}
     fragment_preamble_lines: List[str] = []
     for fp in all_files:
@@ -456,12 +472,26 @@ def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
             )
             fragment_preamble_lines.append("")
 
-        name = extract_script_name_from_fragment(raw)
-        if not name:
+        if "SCRIPTS" not in raw:
             continue
-        if name in script_to_path:
-            raise SystemExit(f"Duplicate script fragment for '{name}':\n  {script_to_path[name]}\n  {fp}")
-        script_to_path[name] = fp
+        inner, base_line = extract_list_block_span(raw, "SCRIPTS")
+        chunks = _split_script_entries(inner, base_line)
+        if chunks:
+            for _chunk_text, s_line, _e_line, script_id in chunks:
+                if script_id in script_to_path:
+                    raise SystemExit(
+                        f"Duplicate script fragment for '{script_id}':\n"
+                        f"  {script_to_path[script_id]}\n"
+                        f"  {fp}:{s_line}"
+                    )
+                script_to_path[script_id] = fp
+        else:
+            name = extract_script_name_from_fragment(raw)
+            if not name:
+                continue
+            if name in script_to_path:
+                raise SystemExit(f"Duplicate script fragment for '{name}':\n  {script_to_path[name]}\n  {fp}")
+            script_to_path[name] = fp
 
     # Header + preamble imports
     preamble = load_preamble_lines()
@@ -562,6 +592,7 @@ def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
             "fragments": [_sig_for(p) for p in all_files],
             "preamble": [_sig_for(p) for p in preamble_files],
             "za_order": za_sig,
+            "generator_dependencies": [_sig_for_dependency(p) for p in SCRIPT_GENERATOR_DEPENDENCIES if p.exists()],
         }
         _write_cache(payload)
 

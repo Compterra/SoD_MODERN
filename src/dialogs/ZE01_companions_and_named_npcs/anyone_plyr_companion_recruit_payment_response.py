@@ -11,7 +11,7 @@ DIALOGS = [
       ], "{s6}", "companion_recruit_signup_confirm", [
                     (troop_get_slot, ":amount_requested", "$g_talk_troop", slot_troop_payment_request), #
                     (gt, ":amount_requested", 0), #
-                    (troop_remove_gold, "trp_player", ":amount_requested"),  #
+                    (call_script, "script_sod_player_charge_gold", ":amount_requested"),  #
                     (play_sound, "snd_money_paid"),
                     (troop_set_slot, "$g_talk_troop", slot_troop_payment_request, 0), #
           ]],

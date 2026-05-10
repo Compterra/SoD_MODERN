@@ -1,0 +1,26 @@
+# COST: town scan
+SCRIPTS = [
+("sod_find_castle_patrol_route_endpoint",
+ [
+   (store_script_param, ":origin_castle", 1),
+   (store_script_param, ":faction_no", 2),
+   (assign, ":best_town", ":origin_castle"),
+   (assign, ":best_score", 100000),
+   (try_for_range, ":town_no", towns_begin, towns_end),
+     (store_distance_to_party_from_party, ":dist", ":origin_castle", ":town_no"),
+     (store_faction_of_party, ":town_faction", ":town_no"),
+     (assign, ":score", ":dist"),
+     (try_begin),
+       (neq, ":town_faction", ":faction_no"),
+       (store_relation, ":relation", ":faction_no", ":town_faction"),
+       (lt, ":relation", 0),
+       (val_add, ":score", 50),
+     (try_end),
+     (lt, ":score", ":best_score"),
+     (assign, ":best_score", ":score"),
+     (assign, ":best_town", ":town_no"),
+   (try_end),
+   (assign, reg0, ":best_town"),
+   (assign, reg1, ":best_score"),
+ ]),
+]

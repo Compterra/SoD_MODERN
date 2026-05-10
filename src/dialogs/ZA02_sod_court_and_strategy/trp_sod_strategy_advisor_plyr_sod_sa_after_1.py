@@ -1,3 +1,3 @@
 DIALOGS = [
-[trp_sod_strategy_advisor|plyr, "sod_sa_after_1", [], "I cannot believe you are still standing after that last hit you took.  Are you ok?", "sod_sa_after_2", []],
+[trp_sod_strategy_advisor|plyr, "sod_sa_after_1", [], "Cassian, that was not just a cough. You have carried me through too many battles to lie badly now.", "sod_sa_after_2", []],
 ]

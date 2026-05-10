@@ -5,6 +5,9 @@ SCRIPTS = [
    (store_script_param_1, ":threat_type"),
    (store_script_param_2, ":sponsor_center"),
 
+   (call_script, "script_sod_threat_board_normalize_center", ":sponsor_center"),
+   (assign, ":sponsor_center", reg0),
+
    (call_script, "script_sod_threat_board_apply_economy_effect", ":threat_type", ":sponsor_center", -1),
 
    (try_begin),

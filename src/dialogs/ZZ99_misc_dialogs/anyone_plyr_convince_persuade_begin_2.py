@@ -22,7 +22,6 @@ DIALOGS = [
 
         (store_sub, "$persuasion_strength", ":rand", ":persuasion_difficulty"),
         (val_mul, "$persuasion_strength", 20),
-        (assign, reg5, "$persuasion_strength"),
         (val_sub, "$convince_value", "$persuasion_strength"),
         (quest_set_slot, "$g_convince_quest", slot_quest_convince_value, "$convince_value"),
         (call_script, "script_store_troop_name", s50, "$g_talk_troop"),
@@ -42,6 +41,6 @@ DIALOGS = [
         (else_try),
           (str_store_string, s5, "str_persuasion_summary_very_good"),
         (try_end),
-        (dialog_box, "@{s5} (Persuasion strength: {reg5})", "@Persuasion Attempt"),
+        (dialog_box, "@{s5}", "@Persuasion Attempt"),
   ]],
 ]

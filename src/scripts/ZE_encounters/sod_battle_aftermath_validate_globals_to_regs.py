@@ -1,0 +1,28 @@
+# COST: light
+SCRIPTS = [
+("sod_battle_aftermath_validate_globals_to_regs",
+ [
+   (assign, reg0, 0),
+   (assign, reg1, 0),
+   (assign, reg2, 0),
+   (try_begin),
+     (gt, "$g_enemy_party", 0),
+     (party_is_active, "$g_enemy_party"),
+     (assign, reg0, 1),
+   (else_try),
+     (assign, "$g_enemy_party", -1),
+   (try_end),
+   (try_begin),
+     (gt, "$g_ally_party", 0),
+     (party_is_active, "$g_ally_party"),
+     (assign, reg1, 1),
+   (try_end),
+   (try_begin),
+     (gt, "$g_encountered_party", 0),
+     (party_is_active, "$g_encountered_party"),
+     (assign, reg2, 1),
+   (else_try),
+     (assign, "$g_encountered_party", -1),
+   (try_end),
+ ]),
+]

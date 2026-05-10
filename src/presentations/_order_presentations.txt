@@ -1,3 +1,5 @@
+# Presentation order is generated ID order. Keep Original SoD's visible
+# presentation IDs first. Do not add Warband-only game_start/game_escape callbacks.
 0001_game_credits/game_credits.py
 0002_banner_selection/banner_selection.py
 0003_custom_banner/custom_banner.py

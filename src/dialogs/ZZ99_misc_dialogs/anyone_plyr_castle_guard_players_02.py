@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "castle_guard_players", [],
-   "Never mind.", "close_window", []],
+   "No order. Keep your watch.", "close_window", []],
 ]

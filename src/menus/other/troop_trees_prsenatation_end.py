@@ -1,6 +1,6 @@
 MENUS = [
 ("troop_trees_prsenatation_end", 0,
-	"Strategy advisor pulls a book from his sack.",
+	"Cassian Varro closes the campaign ledger.",
 	"none", [
 	(try_begin),
 		(eq, "$g_sod_sa_in_court", 0),

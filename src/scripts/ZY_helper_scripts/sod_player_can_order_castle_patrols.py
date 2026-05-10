@@ -1,0 +1,27 @@
+# COST: low
+SCRIPTS = [
+("sod_player_can_order_castle_patrols",
+ [
+   (store_script_param, ":castle_no", 1),
+   (assign, reg0, 0),
+   (try_begin),
+     (is_between, ":castle_no", castles_begin, castles_end),
+     (store_faction_of_party, ":castle_faction", ":castle_no"),
+     (party_get_slot, ":lord", ":castle_no", slot_town_lord),
+     (try_begin),
+       (eq, ":lord", "trp_player"),
+       (assign, reg0, 1),
+     (else_try),
+       (gt, "$players_kingdom", 0),
+       (eq, ":castle_faction", "$players_kingdom"),
+       (faction_slot_eq, "$players_kingdom", slot_faction_marshall, "trp_player"),
+       (assign, reg0, 1),
+     (else_try),
+       (gt, "$players_kingdom", 0),
+       (eq, ":castle_faction", "$players_kingdom"),
+       (faction_slot_eq, "$players_kingdom", slot_faction_leader, "trp_player"),
+       (assign, reg0, 1),
+     (try_end),
+   (try_end),
+ ]),
+]

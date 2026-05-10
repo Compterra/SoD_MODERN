@@ -17,7 +17,7 @@ SIMPLE_TRIGGERS = [
       (set_show_messages, 0),
     (try_end),
 	
-	#SoD - Kuba, start spawning legion mercenaries 3 months before the invasion
+	#SoD - Kuba, start spawning dedicated Legion auxiliaries 3 months before the invasion.
 	(try_begin),
 		(eq, ":delta", 90),
 		(faction_set_slot, "fac_kingdom_6_mercenaries", slot_faction_state, sfs_active),
@@ -104,6 +104,7 @@ SIMPLE_TRIGGERS = [
       (call_script, "script_diplomacy_start_war_between_kingdoms", "fac_kingdom_6", "fac_player_supporters_faction", 3),
       (set_show_messages, 1),
 
+        (call_script, "script_sod_imperial_expedition_enforce_total_war"),
         (call_script, "script_set_faction_offensive_objective", "fac_kingdom_6"),
 	    (call_script, "script_free_lords_estimate_their_situation"), #twan453
 	  

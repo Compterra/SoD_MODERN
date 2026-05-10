@@ -51,6 +51,8 @@ MISSION_TEMPLATES = [
 
       formations_init_kill_count,
       formations_update_kill_count,
+      formations_start_coherence,
+      common_siege_attacker_morale_pressure,
 
     ],
   ),

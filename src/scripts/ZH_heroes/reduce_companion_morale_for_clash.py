@@ -5,11 +5,17 @@ SCRIPTS = [
           (store_script_param, ":companion_2", 2),
           (store_script_param, ":slot_for_clash_state", 3),
 
-          (troop_get_slot, ":clash_state", ":companion_1", ":slot_for_clash_state"),
-          (troop_get_slot, ":grievance_1", ":companion_1", slot_troop_personalityclash_penalties),
-          (troop_get_slot, ":grievance_2", ":companion_2", slot_troop_personalityclash_penalties),
-          (troop_get_slot, ":cohesion_1", ":companion_1", slot_troop_companion_cohesion),
-          (troop_get_slot, ":cohesion_2", ":companion_2", slot_troop_companion_cohesion),
+          (try_begin),
+            (is_between, ":companion_1", companions_begin, companions_end),
+            (is_between, ":companion_2", companions_begin, companions_end),
+            (main_party_has_troop, ":companion_1"),
+            (main_party_has_troop, ":companion_2"),
+
+            (troop_get_slot, ":clash_state", ":companion_1", ":slot_for_clash_state"),
+            (troop_get_slot, ":grievance_1", ":companion_1", slot_troop_personalityclash_penalties),
+            (troop_get_slot, ":grievance_2", ":companion_2", slot_troop_personalityclash_penalties),
+            (troop_get_slot, ":cohesion_1", ":companion_1", slot_troop_companion_cohesion),
+            (troop_get_slot, ":cohesion_2", ":companion_2", slot_troop_companion_cohesion),
 
           (troop_get_slot, ":match_1", ":companion_1", slot_troop_personalitymatch_object),
           (troop_get_slot, ":match_2", ":companion_2", slot_troop_personalitymatch_object),
@@ -104,9 +110,10 @@ SCRIPTS = [
           (val_clamp, "$g_companion_recent_resentment", 0, 100),
           (val_clamp, "$g_companion_clash_chain", 0, 5),
 
-          (troop_set_slot, ":companion_1", slot_troop_personalityclash_penalties, ":grievance_1"),
-          (troop_set_slot, ":companion_2", slot_troop_personalityclash_penalties, ":grievance_2"),
-          (troop_set_slot, ":companion_1", slot_troop_companion_cohesion, ":cohesion_1"),
-          (troop_set_slot, ":companion_2", slot_troop_companion_cohesion, ":cohesion_2"),
+            (troop_set_slot, ":companion_1", slot_troop_personalityclash_penalties, ":grievance_1"),
+            (troop_set_slot, ":companion_2", slot_troop_personalityclash_penalties, ":grievance_2"),
+            (troop_set_slot, ":companion_1", slot_troop_companion_cohesion, ":cohesion_1"),
+            (troop_set_slot, ":companion_2", slot_troop_companion_cohesion, ":cohesion_2"),
+          (try_end),
       ]),
 ]

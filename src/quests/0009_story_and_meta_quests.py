@@ -14,9 +14,9 @@ QUESTS = [
   quests=(
    quest_template_spec(
     "regional_threat_contract",
-    "Regional Threat Contract",
+    "Job Board Contract",
     qf_random_quest,
-    "You accepted a regional threat-board contract. Track down the marked warband, defeat it, and return to any threat board to claim the posted reward.",
+    "You accepted a job board contract. Track down the marked warband, defeat it, and return to any job board to claim the posted reward.",
     stages=(
      quest_stage_spec(
       "stage_1",
@@ -30,7 +30,7 @@ QUESTS = [
       actions=(
        "travel to marked target",
        "defeat warband",
-       "return to threat board",
+       "return to job board",
       ),
       rewards=(
        "posted reward",
@@ -64,17 +64,6 @@ QUESTS = [
     metadata={
      "category": "story",
      "authoring": "schema",
-    },
-   ),
-   quest_template_spec(
-    "quests_end",
-    "Quests End",
-    0,
-    ".",
-    metadata={
-     "category": "meta",
-     "authoring": "schema",
-     "sentinel": True,
     },
    ),
   ),

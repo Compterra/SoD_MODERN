@@ -19,7 +19,9 @@ SCRIPTS = [
         (try_begin),
           (quest_slot_ge, ":quest_no", slot_quest_expiration_days, 1),
           (quest_get_slot, reg0, ":quest_no", slot_quest_expiration_days),
-          (add_quest_note_from_sreg, ":quest_no", 7, "@You have {reg0} days to finish this quest.", 0),
+          (str_store_string, s49, "@You have {reg0} days to finish this quest."),
+
+          (add_quest_note_from_sreg, ":quest_no", 7, s49, 0),
         (try_end),
 
         #Adding dont_give_again_for_days value

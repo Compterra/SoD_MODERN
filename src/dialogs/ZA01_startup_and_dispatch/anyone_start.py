@@ -42,11 +42,10 @@ DIALOGS = [
 
                      (assign, "$g_comment_found", 0),
 
-                     (try_begin),
-                       (troop_is_hero, "$g_talk_troop"),
-                       (talk_info_show, 1),
-                       (call_script, "script_setup_talk_info"),
-                     (try_end),
+                     # M&B 1.011 is fragile around the Warband-style talk info
+                     # panel ops. They run before every hero conversation and
+                     # can crash map encounters before any dialog line appears.
+                     # Keep normal dialog working and leave the side panel off.
 
                      (try_begin),
                        (is_between, "$g_talk_troop", kingdom_heroes_begin, kingdom_heroes_end),

@@ -16,6 +16,7 @@ SCRIPTS = [
       (party_get_num_companion_stacks, ":num_stacks", ":source_party"),
       (try_for_range_backwards, ":stack_no", 0, ":num_stacks"),
         (party_stack_get_troop_id,     ":stack_troop", ":source_party", ":stack_no"),
+        (neg|troop_is_hero, ":stack_troop"),
         (party_stack_get_size,    ":stack_size", ":source_party", ":stack_no"),
         (store_mul, ":number_to_move", ":stack_size", "$pin_number"),
         (val_div, ":number_to_move", 1000),

@@ -1,4 +1,4 @@
 DIALOGS = [
-[trp_fugitive, "fugitive_2", [], "I do not know what you are talking about {sir/madam}.\
- I assure you, I am just one of the dwellers here.", "fugitive_3", []],
+[trp_fugitive, "fugitive_2", [], "That name gets men killed when spoken too loudly, {sir/madam}.\
+ You have the wrong face, the wrong street, and the wrong hour.", "fugitive_3", []],
 ]

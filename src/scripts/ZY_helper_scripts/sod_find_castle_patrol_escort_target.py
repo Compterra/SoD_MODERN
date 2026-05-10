@@ -1,0 +1,27 @@
+# COST: party scan
+SCRIPTS = [
+("sod_find_castle_patrol_escort_target",
+ [
+   (store_script_param, ":patrol_party", 1),
+   (assign, ":best_target", -1),
+   (assign, ":best_dist", 100000),
+   (store_faction_of_party, ":patrol_faction", ":patrol_party"),
+   (try_for_parties, ":cur_party"),
+     (store_distance_to_party_from_party, ":dist", ":patrol_party", ":cur_party"),
+     (le, ":dist", 10),
+     (store_faction_of_party, ":party_faction", ":cur_party"),
+     (store_relation, ":relation", ":patrol_faction", ":party_faction"),
+     (ge, ":relation", 0),
+     (party_get_template_id, ":template", ":cur_party"),
+     (this_or_next|eq, ":template", "pt_prisoner_train_party"),
+     (this_or_next|eq, ":template", "pt_kingdom_caravan_party"),
+     (this_or_next|eq, ":template", "pt_merchant_caravan"),
+     (eq, ":template", "pt_black_army_caravan"),
+     (lt, ":dist", ":best_dist"),
+     (assign, ":best_dist", ":dist"),
+     (assign, ":best_target", ":cur_party"),
+   (try_end),
+   (assign, reg0, ":best_target"),
+   (assign, reg1, ":best_dist"),
+ ]),
+]

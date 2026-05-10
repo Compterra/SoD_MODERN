@@ -1,0 +1,25 @@
+DIALOGS = [
+[anyone, "deserter_recruit_offer", [
+    (party_get_num_companions, ":enemy_size", "$g_encountered_party"),
+    (party_get_num_companions, ":player_size", "p_main_party"),
+    (store_mul, ":needed", ":enemy_size", 2),
+    (ge, ":player_size", ":needed"),
+    (party_get_free_companions_capacity, ":free_capacity", "p_main_party"),
+    (gt, ":free_capacity", 0),
+    (store_skill_level, ":leadership", "skl_leadership", "trp_player"),
+    (store_skill_level, ":persuasion", "skl_persuasion", "trp_player"),
+    (val_add, ":leadership", ":persuasion"),
+    (ge, ":leadership", 6),
+    (assign, reg5, ":free_capacity"),
+    (val_min, reg5, 4),
+  ],
+  "Some of us are tired enough to believe you. We join for pay, food, and no more doomed orders.",
+  "close_window",
+  [
+    (assign, ":joiners", reg5),
+    (party_add_members, "p_main_party", "trp_watchman", ":joiners"),
+    (call_script, "script_change_player_party_morale", -8),
+    (call_script, "script_sod_note_hostile_reputation", 2),
+    (call_script, "script_sod_resolve_hostile_party_noncombat", "$g_encountered_party"),
+  ]],
+]

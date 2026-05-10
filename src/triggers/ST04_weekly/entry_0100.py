@@ -57,6 +57,7 @@ SIMPLE_TRIGGERS = [
         # inform the player that his lack of a religious building has an impact...
         (try_begin),
           (eq, "$g_sod_hide_messages", 0),
+          (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
           (str_store_party_name_link, s1, ":center_no"),
           (store_add, reg0, "str_sod_faith_lacking_0", "$g_sod_faith"),
           (str_store_string, s1, reg0),

@@ -673,21 +673,46 @@ def _build_snapshot(args: Tuple[Any, ...], kwargs: Mapping[str, Any]) -> QuestMe
 
 
 def _summary_text(snapshot: QuestMemorySnapshot) -> str:
-    quest_part = f"quest {snapshot.quest_id}" if snapshot.quest_id else "quest unknown"
-    stage_part = f"stage {snapshot.stage_id}" if snapshot.stage_id else "stage unknown"
-    event_part = _normalize_event_kind(snapshot.event_kind) or _normalize_text(snapshot.event_kind, "event unknown")
-    actor_part = f"actor {snapshot.actor_no}" if snapshot.actor_no else "actor unknown"
-    outcome_part = _normalize_state_label(snapshot.outcome) or _normalize_text(snapshot.outcome, "") or snapshot.classification
-    day_part = f"day {snapshot.day}" if snapshot.day else "day unknown"
-    interaction_part = f"interactions {snapshot.interaction_count}" if snapshot.interaction_count else "interactions 0"
-    freshness_bits = [snapshot.freshness]
+    quest_label = f"quest {snapshot.quest_id}" if snapshot.quest_id else "the matter at hand"
+    stage_label = f"stage {snapshot.stage_id}" if snapshot.stage_id else ""
+    event_kind = _normalize_event_kind(snapshot.event_kind)
+    state_phrases = {
+        "completed": "is remembered as complete",
+        "failed": "is remembered as a setback",
+        "aborted": "was cut short",
+        "abandoned": "was left unfinished",
+        "stale": "has gone quiet",
+    }
+    event_phrases = {
+        "accept": "has been taken up",
+        "update": "has moved forward",
+        "complete": "has been brought to a close",
+        "fail": "has gone badly",
+        "abort": "has been cut short",
+        "abandon": "has been left unfinished",
+        "repeat": "has returned to mind",
+    }
+    opening = state_phrases.get(snapshot.classification, event_phrases.get(event_kind, "still stirs in memory"))
+    parts = [f"{quest_label} {opening}"]
+    if stage_label:
+        parts.append(f"at {stage_label}")
+    outcome_label = _normalize_state_label(snapshot.outcome) or _normalize_text(snapshot.outcome, "")
+    if outcome_label and outcome_label not in {"active", "unknown"}:
+        parts.append(f"outcome {outcome_label}")
+    if snapshot.day:
+        parts.append(f"last noted on day {snapshot.day}")
     if snapshot.memory_age is not None:
-        freshness_bits.append(f"age {snapshot.memory_age}")
-    freshness_text = ", ".join(freshness_bits)
-    return (
-        f"{snapshot.classification} memory | {quest_part} | {stage_part} | {event_part} | "
-        f"{actor_part} | outcome {outcome_part} | {day_part} | {freshness_text} | {interaction_part}"
-    )
+        if snapshot.memory_age == 0:
+            parts.append("still fresh")
+        elif snapshot.memory_age == 1:
+            parts.append("remembered from yesterday")
+        else:
+            parts.append(f"remembered {snapshot.memory_age} days ago")
+    else:
+        parts.append(snapshot.freshness.replace("_", " "))
+    if snapshot.interaction_count:
+        parts.append(f"spoken of {snapshot.interaction_count} times")
+    return ", ".join(parts) + "."
 
 
 def _apply_registers(target: Any, values: Mapping[str, Any]) -> None:
@@ -949,41 +974,58 @@ def _resolve_summary(memory: Mapping[str, Any]) -> str:
 def _format_summary(memory: Mapping[str, Any]) -> str:
     quest_id = _normalize_text(memory.get("quest_id"))
     stage_id = _normalize_text(memory.get("stage_id"))
-    event_type = _normalize_text(memory.get("event_type") or memory.get("event_kind"))
-    actor_id = _normalize_text(memory.get("actor_id") or memory.get("actor_no"))
-    chain_id = _normalize_text(memory.get("chain_id"))
+    event_kind = _normalize_event_kind(memory.get("event_kind"))
+    classification = _normalize_text(memory.get("classification"), "").lower()
+    outcome = _normalize_state_label(memory.get("outcome")) or _normalize_text(memory.get("outcome"), "")
     day = _coerce_int(memory.get("day"))
     raw_age = memory.get("age_days")
     if raw_age is None:
         raw_age = memory.get("memory_age")
     age_days = None if raw_age is None else _coerce_int(raw_age, 0)
     freshness = _normalize_text(memory.get("freshness"))
-    tags = _normalize_tag_values(memory.get("tags") or memory.get("memory_tags"))
+    interaction_count = _coerce_int(memory.get("interaction_count"), 0)
 
-    parts: list[str] = []
-    if quest_id and stage_id:
-        parts.append(f"{quest_id}:{stage_id}")
-    elif quest_id:
-        parts.append(quest_id)
-    elif stage_id:
-        parts.append(stage_id)
+    state_phrases = {
+        "completed": "is remembered as complete",
+        "failed": "is remembered as a setback",
+        "aborted": "was cut short",
+        "abandoned": "was left unfinished",
+        "stale": "has gone quiet",
+    }
+    event_phrases = {
+        "accept": "has been taken up",
+        "update": "has moved forward",
+        "complete": "has been brought to a close",
+        "fail": "has gone badly",
+        "abort": "has been cut short",
+        "abandon": "has been left unfinished",
+        "repeat": "has returned to mind",
+    }
 
-    if event_type:
-        parts.append(event_type)
-    if actor_id:
-        parts.append(f"by {actor_id}")
-    if day is not None:
-        parts.append(f"day {day}")
-    if chain_id:
-        parts.append(f"chain {chain_id}")
+    quest_label = f"quest {quest_id}" if quest_id else "the matter at hand"
+    stage_label = f"stage {stage_id}" if stage_id else ""
+    opening = state_phrases.get(classification, event_phrases.get(event_kind, "still stirs in memory"))
+
+    parts: list[str] = [f"{quest_label} {opening}"]
+    if stage_label:
+        parts.append(f"at {stage_label}")
+    if outcome and outcome not in {"active", "unknown"}:
+        parts.append(f"outcome {outcome}")
+    if day:
+        parts.append(f"last noted on day {day}")
     if age_days is not None:
-        parts.append(f"age {age_days}")
-    if freshness:
-        parts.append(f"freshness {freshness}")
-    if tags:
-        parts.append(f"tags {', '.join(tags)}")
+        if age_days == 0:
+            parts.append("still fresh")
+        elif age_days == 1:
+            parts.append("remembered from yesterday")
+        else:
+            parts.append(f"remembered {age_days} days ago")
+    elif freshness:
+        parts.append(freshness.replace("_", " "))
+    if interaction_count:
+        parts.append(f"spoken of {interaction_count} times")
 
-    return " | ".join(parts).strip()
+    return ", ".join(parts) + "."
 
 
 def _resolve_memory_snapshot(npc_state_or_snapshot: Any, *, context: Mapping[str, Any] | None = None, world_context: Any = None) -> Dict[str, Any]:
@@ -1259,11 +1301,11 @@ def script_sod_quest_dialogue_read_memory(*args: Any, **kwargs: Any) -> Dict[str
 
 SCRIPT = script_sod_quest_dialogue_read_memory
 SCRIPTS = [
-    (
-        "sod_quest_dialogue_read_memory",
-        [
-            (str_store_string, s4, "@I remember the matter at hand."),
-            (assign, reg0, 1),
-        ],
-    )
+        (
+            "sod_quest_dialogue_read_memory",
+            [
+                (str_store_string, s4, "@The matter at hand still stirs in memory."),
+                (assign, reg0, 1),
+            ],
+        )
 ]

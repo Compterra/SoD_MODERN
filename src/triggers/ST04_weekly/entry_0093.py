@@ -21,15 +21,6 @@ SIMPLE_TRIGGERS = [
       # ensure that this center has a chapter
       (party_slot_eq, ":center_no", slot_center_has_chapter, 1),
 
-      # give renown to its owner
-      (try_begin),
-        (party_get_slot, ":center_lord", ":center_no", slot_town_lord),
-        (ge, ":center_lord", 0),
-        (set_show_messages, 0),
-        (call_script, "script_change_troop_renown", ":center_lord", "$g_sod_building_chapter_renown"),
-        (set_show_messages, 1),
-      (try_end),
-
       # Chapters should also provide a little civic order and charitable stability.
       (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
       (party_get_slot, ":center_prosperity", ":center_no", slot_town_prosperity),

@@ -55,7 +55,7 @@ SCRIPTS = [
 
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_deserter_troop, "trp_sod_ant_regular"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_guard_troop, "trp_sod_ant_veteran"),
-                (faction_set_slot, "fac_player_supporters_faction", slot_faction_messenger_troop, "trp_sod_ant_scout"),
+                (faction_set_slot, "fac_player_supporters_faction", slot_faction_messenger_troop, "trp_sod_ant_messenger"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_prison_guard_troop, "trp_sod_ant_veteran"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_castle_guard_troop, "trp_sod_ant_elite"),
                 (faction_set_slot, "fac_player_supporters_faction",  slot_faction_reinforcements_a, "pt_sod_1_reinforcements_a"),
@@ -73,7 +73,7 @@ SCRIPTS = [
 
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_deserter_troop, "trp_sod_mar_conscript"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_guard_troop, "trp_sod_mar_regular"),
-                (faction_set_slot, "fac_player_supporters_faction", slot_faction_messenger_troop, "trp_sod_mar_scout"),
+                (faction_set_slot, "fac_player_supporters_faction", slot_faction_messenger_troop, "trp_sod_mar_messenger"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_prison_guard_troop, "trp_sod_mar_regular"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_castle_guard_troop, "trp_sod_mar_elite"),
                 (faction_set_slot, "fac_player_supporters_faction",  slot_faction_reinforcements_a, "pt_sod_2_reinforcements_a"),
@@ -91,7 +91,7 @@ SCRIPTS = [
 
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_deserter_troop, "trp_sod_ade_regular"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_guard_troop, "trp_sod_ade_veteran"),
-                (faction_set_slot, "fac_player_supporters_faction", slot_faction_messenger_troop, "trp_sod_ade_light"),
+                (faction_set_slot, "fac_player_supporters_faction", slot_faction_messenger_troop, "trp_sod_ade_messenger"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_prison_guard_troop, "trp_sod_ade_veteran"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_castle_guard_troop, "trp_sod_ade_elite"),
                 (faction_set_slot, "fac_player_supporters_faction",  slot_faction_reinforcements_a, "pt_sod_3_reinforcements_a"),
@@ -109,7 +109,7 @@ SCRIPTS = [
 
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_deserter_troop, "trp_sod_vil_regular"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_guard_troop, "trp_sod_vil_veteran"),
-                (faction_set_slot, "fac_player_supporters_faction", slot_faction_messenger_troop, "trp_sod_vil_scout"),
+                (faction_set_slot, "fac_player_supporters_faction", slot_faction_messenger_troop, "trp_sod_vil_messenger"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_prison_guard_troop, "trp_sod_vil_veteran"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_castle_guard_troop, "trp_sod_vil_elite"),
                 (faction_set_slot, "fac_player_supporters_faction",  slot_faction_reinforcements_a, "pt_sod_4_reinforcements_a"),
@@ -127,7 +127,7 @@ SCRIPTS = [
 
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_deserter_troop, "trp_sod_zer_1_infantry"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_guard_troop, "trp_sod_zer_2_infantry"),
-                (faction_set_slot, "fac_player_supporters_faction", slot_faction_messenger_troop, "trp_sod_zer_1_cavalry"),
+                (faction_set_slot, "fac_player_supporters_faction", slot_faction_messenger_troop, "trp_sod_zer_messenger"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_prison_guard_troop, "trp_sod_zer_2_infantry"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_castle_guard_troop, "trp_sod_zer_2_infantry"),
                 (faction_set_slot, "fac_player_supporters_faction",  slot_faction_reinforcements_a, "pt_sod_5_reinforcements_a"),

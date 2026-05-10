@@ -247,7 +247,8 @@ from src.quests.quest_runtime import (
 # Everything lives inside QUESTS so build/build_quests.py copies a self-contained
 # payload into compile/module_quests.py.
 #
-# The terminal quests_end sentinel stays in the final fragment so quest ids remain stable.
+# The terminal quests_end sentinel stays in src/quests/9999_quests_end.py so
+# all authored quest content loads before the terminal transition target.
 
 # NOTE: Registry setup.
 # The registry gives authors named, reusable building blocks. This sample keeps
@@ -410,6 +411,36 @@ SAMPLE_MOTIF_DOT = quest_graph_dot(SAMPLE_MOTIF_CHAIN)
 # objects above are intentionally included through metadata snapshots so the
 # compiler receives the same tuple shape while the framework still exercises
 # richer authoring/reporting features.
+
+# [ src/quests/0011_road_to_crown_quests.py ]
+# -*- coding: utf-8 -*-
+# The Road to the Crown campaign quest slice.
+# Keep quest definitions in numbered fragments and rebuild with build/build_quests.py.
+#
+# This first fragment intentionally implements the framework-facing quest records
+# before live menu/dialogue wiring. The campaign design and implementation
+# checklist track the later gameplay hooks.
+
+# [ src/quests/0012_companion_personal_quests.py ]
+# -*- coding: utf-8 -*-
+# Companion personal quest framework identities.
+#
+# The companion-depth troop slots remain the live compatibility layer for
+# campfire, direct dialogue, reports, and role payoffs. These quest records are
+# deliberately dormant at game start: they must not use qf_random_quest or any
+# startup-visible flag, because they should enter the journal only after a
+# companion earns trust and script_sod_companion_sync_personal_quest_framework
+# accepts the matching arc.
+# Live stage ownership stays on slot_troop_companion_personal_quest_stage.
+
+# [ src/quests/0013_seven_oaths_of_ash_quests.py ]
+# -*- coding: utf-8 -*-
+# The Seven Oaths of Ash campaign quest foundation.
+# This fragment establishes the executable quest records before live scene wiring.
+
+# [ src/quests/9999_quests_end.py ]
+# Keep the terminal quest sentinel in its own final fragment.
+# Several quest-chain helpers use "quests_end" as the terminal transition target.
 
 quests = [
 
@@ -941,9 +972,9 @@ quests = [
   quests=(
    quest_template_spec(
     "regional_threat_contract",
-    "Regional Threat Contract",
+    "Job Board Contract",
     qf_random_quest,
-    "You accepted a regional threat-board contract. Track down the marked warband, defeat it, and return to any threat board to claim the posted reward.",
+    "You accepted a job board contract. Track down the marked warband, defeat it, and return to any job board to claim the posted reward.",
     stages=(
      quest_stage_spec(
       "stage_1",
@@ -957,7 +988,7 @@ quests = [
       actions=(
        "travel to marked target",
        "defeat warband",
-       "return to threat board",
+       "return to job board",
       ),
       rewards=(
        "posted reward",
@@ -991,17 +1022,6 @@ quests = [
     metadata={
      "category": "story",
      "authoring": "schema",
-    },
-   ),
-   quest_template_spec(
-    "quests_end",
-    "Quests End",
-    0,
-    ".",
-    metadata={
-     "category": "meta",
-     "authoring": "schema",
-     "sentinel": True,
     },
    ),
   ),
@@ -2634,6 +2654,1362 @@ quests = [
     "repeatable_stage": SAMPLE_DSL_REPEATABLE_STAGE.to_snapshot(),
    },
   },
+ ).as_legacy_tuples(),
+
+# [ src/quests/0011_road_to_crown_quests.py ]
+
+ *quest_chain_from_specs(
+  "campaign_road_to_the_crown",
+  "The Road to the Crown",
+  entry_quest_id="rtc_last_smoke",
+  quests=(
+   quest_template_spec(
+    "rtc_last_smoke",
+    "The Last Smoke",
+    qf_random_quest,
+    "The road behind you is smoke. Gather survivors, decide what can still be saved, and reach the refugee camp before Imperial scouts overrun the road.",
+    stages=(
+     quest_stage_spec(
+      "rtc_last_smoke_find_survivors",
+      "Find the Survivors",
+      "Search the burned road for survivors.",
+      description="The player finds scattered survivors on the road out of the burned homeland.",
+      conditions=(
+       "campaign_road_to_the_crown active",
+       "act_01_ashes active",
+      ),
+      actions=(
+       "locate survivors",
+       "mark survivor group for escort",
+      ),
+      metadata={
+       "act": "act_01_ashes",
+       "chapter": "rtc_01_last_smoke",
+       "phase": "opening",
+      },
+     ),
+     quest_stage_spec(
+      "rtc_last_smoke_choose_salvage",
+      "Choose What Can Be Saved",
+      "Choose whether to save wounded refugees, baggage, or military papers.",
+      description="The player chooses the first remembered Act I outcome.",
+      conditions=(
+       "survivors found",
+      ),
+      actions=(
+       "set act_01_choice_saved_wounded or act_01_choice_saved_baggage or act_01_choice_saved_papers",
+       "record first mercy, supply, or intelligence bias",
+      ),
+      rewards=(
+       "opening route memory",
+      ),
+      failures=(
+       "abandon road fight sets companion_wary_mercy",
+      ),
+      metadata={
+       "act": "act_01_ashes",
+       "chapter": "rtc_01_last_smoke",
+       "branch_point": "first_salvage_choice",
+      },
+     ),
+     quest_stage_spec(
+      "rtc_last_smoke_reach_camp",
+      "Reach the Refugee Camp",
+      "Escort the survivors to the refugee camp.",
+      description="The player reaches the first safe camp and can continue even after a soft failure.",
+      conditions=(
+       "salvage choice resolved",
+      ),
+      actions=(
+       "advance to rtc_borrowed_names",
+      ),
+      rewards=(
+       "stop_act_01_survived",
+      ),
+      failures=(
+       "stop_act_01_poor_start",
+      ),
+      metadata={
+       "act": "act_01_ashes",
+       "chapter": "rtc_01_last_smoke",
+       "stop_success": "stop_act_01_survived",
+       "stop_failure": "stop_act_01_poor_start",
+      },
+     ),
+    ),
+    metadata={
+     "category": "campaign",
+     "campaign": "campaign_road_to_the_crown",
+     "act": "act_01_ashes",
+     "chapter": "rtc_01_last_smoke",
+     "authoring": "schema",
+     "design_doc": "docs/campaigns/the_road_to_the_crown.md",
+     "checklist": "docs/campaigns/the_road_to_the_crown_implementation_checklist.md",
+    },
+   ),
+   quest_template_spec(
+    "rtc_borrowed_names",
+    "The Camp of Borrowed Names",
+    qf_random_quest,
+    "In the refugee camp, Lysara Veyne asks what name should be written beside yours. Choose the public identity Calradia will hear first.",
+    stages=(
+     quest_stage_spec(
+      "rtc_borrowed_names_stabilize_camp",
+      "Stabilize the Camp",
+      "Speak with the camp witnesses and steady the refugees.",
+      description="The player meets the first campaign witnesses and prepares to choose a public identity.",
+      conditions=(
+       "rtc_last_smoke resolved",
+      ),
+      actions=(
+       "speak to Garran Ashwake",
+       "speak to Lysara Veyne",
+       "speak to Brother Odran",
+      ),
+      metadata={
+       "act": "act_01_ashes",
+       "chapter": "rtc_02_borrowed_names",
+       "phase": "camp",
+      },
+     ),
+     quest_stage_spec(
+      "rtc_borrowed_names_choose_identity",
+      "Choose a Public Name",
+      "Choose whether Calradia first knows you as noble, captain, trader, refugee, or avenger.",
+      description="This stage stores the first public reputation flag.",
+      conditions=(
+       "camp stabilized",
+      ),
+      actions=(
+       "set one reputation flag",
+       "record witness reactions",
+       "advance to rtc_hound_sign",
+      ),
+      rewards=(
+       "reputation_foreign_noble or reputation_free_captain or reputation_trade_operator or reputation_refugee or reputation_avenger",
+      ),
+      metadata={
+       "act": "act_01_ashes",
+       "chapter": "rtc_02_borrowed_names",
+       "branch_point": "public_identity_choice",
+      },
+     ),
+    ),
+    metadata={
+     "category": "campaign",
+     "campaign": "campaign_road_to_the_crown",
+     "act": "act_01_ashes",
+     "chapter": "rtc_02_borrowed_names",
+     "authoring": "schema",
+    },
+   ),
+   quest_template_spec(
+    "rtc_hound_sign",
+    "Hound Sign",
+    qf_random_quest,
+    "Investigate the first proof that Legate Gaius Marius, the Imperial Hound, is moving toward Calradia.",
+    stages=(
+     quest_stage_spec(
+      "rtc_hound_sign_find_evidence",
+      "Find Imperial Evidence",
+      "Find a courier seal, burned route map, survivor testimony, ration token, or coded pacification order.",
+      description="The player gathers the first evidence of Imperial pressure.",
+      conditions=(
+       "rtc_borrowed_names resolved",
+      ),
+      actions=(
+       "investigate road evidence",
+       "record evidence type",
+      ),
+      metadata={
+       "act": "act_01_ashes",
+       "chapter": "rtc_03_hound_sign",
+       "phase": "investigation",
+      },
+     ),
+     quest_stage_spec(
+      "rtc_hound_sign_interpret_warning",
+      "Interpret the Warning",
+      "Use honor, intrigue, counsel, or trade knowledge to understand the Imperial threat.",
+      description="The player earns a method seed or continues with weak evidence.",
+      conditions=(
+       "imperial evidence found or missed",
+      ),
+      actions=(
+       "set imperial_pressure_low",
+       "set method seed when evidence is strong",
+       "advance to Act II",
+      ),
+      rewards=(
+       "imperial_pressure_low",
+      ),
+      failures=(
+       "weak evidence delays later preparation but campaign continues",
+      ),
+      metadata={
+       "act": "act_01_ashes",
+       "chapter": "rtc_03_hound_sign",
+       "stop_success": "stop_act_01_survived",
+       "stop_failure": "stop_act_01_poor_start",
+      },
+     ),
+    ),
+    metadata={
+     "category": "campaign",
+     "campaign": "campaign_road_to_the_crown",
+     "act": "act_01_ashes",
+     "chapter": "rtc_03_hound_sign",
+     "authoring": "schema",
+   },
+  ),
+  quest_template_spec(
+   "rtc_door_into_calradia",
+   "A Door Into Calradia",
+   qf_random_quest,
+   "The refugee road reaches Calradia, but arrival is not acceptance. Choose the first door you try to open: court, contract, command, village, or road.",
+   stages=(
+    quest_stage_spec(
+     "rtc_door_into_calradia_choose_contact",
+     "Choose a First Contact",
+     "Approach a noble patron, guild contact, gate captain, village representative, or road scout.",
+     description="The player chooses the first social access route into Calradia.",
+     conditions=(
+      "act_02_choice active",
+      "rtc_hound_sign resolved",
+     ),
+     actions=(
+      "choose first Calradian contact",
+      "set noble, merchant, commoner, or route trust",
+     ),
+     metadata={
+      "act": "act_02_choice",
+      "chapter": "rtc_04_door_into_calradia",
+      "branch_point": "first_calradian_contact",
+     },
+    ),
+    quest_stage_spec(
+     "rtc_door_into_calradia_secure_witness",
+     "Secure a Witness",
+     "Gain a first witness who can explain what you are in Calradia.",
+     description="The selected contact becomes the first Act II social witness.",
+     conditions=(
+      "first contact chosen",
+     ),
+     actions=(
+      "record first social witness",
+      "advance to rtc_price_of_bread",
+     ),
+     rewards=(
+      "social access established",
+     ),
+     failures=(
+      "unproven social entry",
+     ),
+     metadata={
+      "act": "act_02_choice",
+      "chapter": "rtc_04_door_into_calradia",
+      "stop_success": "stop_act_02_social_entry_seeded",
+     },
+    ),
+   ),
+   metadata={
+    "category": "campaign",
+    "campaign": "campaign_road_to_the_crown",
+    "act": "act_02_choice",
+    "chapter": "rtc_04_door_into_calradia",
+    "authoring": "schema",
+   },
+  ),
+  quest_template_spec(
+    "rtc_price_of_bread",
+    "The Price of Bread",
+    qf_random_quest,
+    "Refugees need grain, but the local village is hungry too. Resolve the dispute before hunger becomes violence.",
+    stages=(
+     quest_stage_spec(
+      "rtc_price_of_bread_hear_dispute",
+      "Hear the Grain Dispute",
+      "Speak with Tamsin Reedhand, Celeste di Marina, and Brother Odran about the grain crisis.",
+      description="The first Act II pressure test reads the Act I state and presents a resource conflict.",
+      conditions=(
+       "act_02_choice active",
+      ),
+      actions=(
+       "hear village position",
+       "hear merchant position",
+       "hear mercy position",
+      ),
+      metadata={
+       "act": "act_02_choice",
+       "chapter": "rtc_05_price_of_bread",
+       "phase": "pressure_test",
+       "world_target": "nearest hungry village or first Act II village witness",
+       "world_action": "hear local, merchant, and mercy accounts of the grain crisis",
+       "witness": "Tamsin Reedhand, Celeste di Marina, and Brother Odran",
+       "failure_mode": "witnesses disagree or crisis advances without enough trust",
+       "cleanup": "clear temporary speaker pressure after resolution",
+       "result_grade": "unresolved until grain resolution is chosen",
+      },
+     ),
+     quest_stage_spec(
+      "rtc_price_of_bread_resolve",
+      "Resolve the Price of Bread",
+      "Pay fairly, negotiate labor, expose hoarding, requisition by force, or raid bandit stores.",
+      description="The resolution sets the first commoner, merchant, noble, or fear pressure flags.",
+      conditions=(
+       "grain dispute heard",
+      ),
+      actions=(
+       "set commoner_trust_high or commoner_trust_low",
+       "set merchant_trust_high or merchant_trust_low",
+       "set village_fear if requisitioned by force",
+       "record hunger pressure on failure",
+      ),
+      rewards=(
+       "trust profile established",
+      ),
+      failures=(
+       "hunger pressure remains",
+      ),
+      metadata={
+       "act": "act_02_choice",
+       "chapter": "rtc_05_price_of_bread",
+       "branch_point": "grain_resolution",
+       "world_target": "grain village, merchant broker, or bandit stores target",
+       "world_action": "pay, bargain, expose hoarding, requisition, raid stores, or move on hungry",
+       "witness": "local hunger, merchant logistics, and mercy witness",
+       "failure_mode": "hunger pressure remains, village fear rises, or a later physical bandit target escapes",
+       "cleanup": "copy trust/pressure flags forward and clear or resolve any grain target party",
+       "result_grade": "poor for hunger/force, standard for fair pay or hoarding exposure, ideal for balanced labor or successful bandit-store relief",
+      },
+     ),
+    ),
+    metadata={
+     "category": "campaign",
+     "campaign": "campaign_road_to_the_crown",
+     "act": "act_02_choice",
+     "chapter": "rtc_05_price_of_bread",
+     "authoring": "schema",
+   },
+  ),
+  quest_template_spec(
+    "rtc_three_offers",
+    "Three Offers",
+    qf_random_quest,
+    "After the first Calradian tests, three public offers and one hidden road try to shape what your claim will become.",
+    stages=(
+     quest_stage_spec(
+      "rtc_three_offers_hear_terms",
+      "Hear the Offers",
+      "Hear noble protection, paid steel, the people's road, a hard claim, and the quiet ledger.",
+      description="The player sees the first Act III route seeds opened by early reputation and trust.",
+      conditions=(
+       "rtc_price_of_bread resolved",
+      ),
+      actions=(
+       "evaluate noble, mercenary, coalition, conquest, and hidden offers",
+       "gate offers by reputation, trust, social contact, method seed, and fear where implementation supports it",
+      ),
+      metadata={
+       "act": "act_03_standing",
+       "chapter": "rtc_07_three_offers",
+       "phase": "route_seed",
+      },
+     ),
+     quest_stage_spec(
+      "rtc_three_offers_choose_route",
+      "Choose the First Route",
+      "Choose the first route seed for the claim.",
+      description="The selected offer sets exactly one primary branch seed and may set a modifier flag.",
+      conditions=(
+       "offers heard",
+      ),
+      actions=(
+       "set branch_legitimacy or branch_mercenary or branch_conquest or branch_coalition",
+       "optionally set branch_reform, branch_betrayal, or branch_hidden_regime_maker",
+       "advance to rtc_companions_take_sides",
+      ),
+      rewards=(
+       "primary route seed",
+      ),
+      failures=(
+       "fractured claim if no offer can hold",
+      ),
+      metadata={
+       "act": "act_03_standing",
+       "chapter": "rtc_07_three_offers",
+       "branch_point": "act_03_primary_route_seed",
+      },
+     ),
+    ),
+    metadata={
+     "category": "campaign",
+     "campaign": "campaign_road_to_the_crown",
+     "act": "act_03_standing",
+     "chapter": "rtc_07_three_offers",
+     "authoring": "schema",
+   },
+  ),
+  quest_template_spec(
+    "rtc_companions_take_sides",
+    "Companions Take Sides",
+    qf_random_quest,
+    "The company reacts to the route you have chosen. Some companions see a future; others see the first crack before a crown.",
+    stages=(
+     quest_stage_spec(
+      "rtc_companions_take_sides_campfire",
+      "Hold the Campfire",
+      "Let companions answer the chosen route seed.",
+      description="Companions approve, warn, or near-fracture based on the selected route and their approval state.",
+      conditions=(
+       "rtc_three_offers route seeded",
+      ),
+      actions=(
+       "record at least one approval reaction",
+       "record at least one warning reaction",
+       "record near-fracture condition when trust is low",
+      ),
+      metadata={
+       "act": "act_03_standing",
+       "chapter": "rtc_08_companions_take_sides",
+       "phase": "company_reaction",
+      },
+     ),
+    ),
+    metadata={
+     "category": "campaign",
+     "campaign": "campaign_road_to_the_crown",
+     "act": "act_03_standing",
+     "chapter": "rtc_08_companions_take_sides",
+     "authoring": "schema",
+   },
+  ),
+  quest_template_spec(
+    "rtc_first_recognition",
+    "First Recognition",
+    qf_random_quest,
+    "Calradia gives the claim its first public name: lawful claimant, free captain, trade power, people's defender, dangerous warlord, or shadow operator.",
+    stages=(
+     quest_stage_spec(
+      "rtc_first_recognition_name_claim",
+      "Name the Claim",
+      "Resolve how the first outside witnesses describe your route.",
+      description="The campaign converts the seeded route into a first public recognition label.",
+      conditions=(
+       "companions_take_sides resolved",
+      ),
+      actions=(
+       "recognize lawful claimant, free captain, trade power, people's defender, dangerous warlord, or shadow operator",
+       "prepare route lock for Crown Council",
+      ),
+      metadata={
+       "act": "act_03_standing",
+       "chapter": "rtc_09_first_recognition",
+       "phase": "public_recognition",
+      },
+     ),
+    ),
+    metadata={
+     "category": "campaign",
+     "campaign": "campaign_road_to_the_crown",
+     "act": "act_03_standing",
+     "chapter": "rtc_09_first_recognition",
+     "authoring": "schema",
+   },
+  ),
+  quest_template_spec(
+    "rtc_crown_council",
+    "Crown Council",
+    qf_random_quest,
+    "Gather witnesses and answer the first direct challenge to your authority. The council can lock a crown route or fracture the claim before Act V.",
+    stages=(
+     quest_stage_spec(
+      "rtc_crown_council_gather_witnesses",
+      "Gather the Witnesses",
+      "Bring or simulate noble, commoner, company, and fourth witnesses before the council.",
+      description="The council checks whether the claim has enough support categories to survive public challenge.",
+      conditions=(
+       "first recognition resolved",
+      ),
+      actions=(
+       "require noble or faction witness",
+       "require commoner or village witness",
+       "require companion or company witness",
+       "require faith, scholar, merchant, or military witness",
+      ),
+      metadata={
+       "act": "act_04_crown",
+       "chapter": "rtc_10_crown_council",
+       "phase": "witness_check",
+      },
+     ),
+     quest_stage_spec(
+      "rtc_crown_council_answer_challenge",
+      "Answer Maeron's Challenge",
+      "Answer Maeron Vald, Septima Varro, and Vaska without losing the route.",
+      description="The council turns the Act III route seed into an Act IV route lock or a fractured-claim failure.",
+      conditions=(
+       "witnesses gathered",
+      ),
+      actions=(
+       "lock legitimacy, mercenary, conquest, coalition, restoration, imperial, or hidden regime-maker branch",
+       "fail into fractured claim when witness support is too weak",
+      ),
+      rewards=(
+       "stop_act_04_branch_locked",
+      ),
+      failures=(
+       "stop_act_04_fractured_claim",
+      ),
+      metadata={
+       "act": "act_04_crown",
+       "chapter": "rtc_10_crown_council",
+       "branch_point": "act_04_route_lock",
+      },
+     ),
+    ),
+    metadata={
+     "category": "campaign",
+     "campaign": "campaign_road_to_the_crown",
+     "act": "act_04_crown",
+     "chapter": "rtc_10_crown_council",
+     "authoring": "schema",
+   },
+  ),
+  quest_template_spec(
+    "rtc_hounds_terms",
+    "The Hound's Terms",
+    qf_random_quest,
+    "The Imperial Hound sends terms after the Crown Council. Accept, reject, delay, or let the talks collapse.",
+    stages=(
+     quest_stage_spec(
+      "rtc_hounds_terms_receive",
+      "Receive the Terms",
+      "Hear the terms Marius or Septima offers according to the locked branch.",
+      description="The first Act V crisis reads the Act IV branch lock and Imperial pressure.",
+      conditions=(
+       "crown council route locked",
+      ),
+      actions=(
+       "show Marius or Septima terms by branch",
+       "carry locked route into Act V",
+      ),
+      metadata={
+       "act": "act_05_shadow",
+       "chapter": "rtc_11_hounds_terms",
+       "phase": "imperial_terms",
+      },
+     ),
+     quest_stage_spec(
+      "rtc_hounds_terms_answer",
+      "Answer the Hound",
+      "Reject, negotiate delay, accept, or let talks collapse.",
+      description="The answer determines whether the campaign moves toward open Imperial conflict, accommodation, delay, or collapse.",
+      conditions=(
+       "terms received",
+      ),
+      actions=(
+       "set terms rejected, negotiated, accepted, or collapsed",
+       "raise imperial pressure",
+       "prepare Act V follow-up",
+      ),
+      rewards=(
+       "imperial resolution seed",
+      ),
+      failures=(
+       "talks collapse into fractured claim pressure",
+      ),
+      metadata={
+       "act": "act_05_shadow",
+       "chapter": "rtc_11_hounds_terms",
+       "branch_point": "imperial_terms_answer",
+      },
+     ),
+    ),
+    metadata={
+     "category": "campaign",
+     "campaign": "campaign_road_to_the_crown",
+     "act": "act_05_shadow",
+     "chapter": "rtc_11_hounds_terms",
+     "authoring": "schema",
+   },
+  ),
+  quest_template_spec(
+    "rtc_war_of_witnesses",
+    "War of Witnesses",
+    qf_random_quest,
+    "Marius turns from terms to witnesses. Protect, exploit, sacrifice, or redirect the people whose support made the crown possible.",
+    stages=(
+     quest_stage_spec(
+      "rtc_war_of_witnesses_choose_target",
+      "Choose the Witness War",
+      "Identify which witness target the Empire threatens according to the locked route.",
+      description="The witness war presents route-specific targets: court witnesses, payroll roads, vanguards, allies, homeland survivors, Imperial loyalty tests, or ledger witnesses.",
+      conditions=(
+       "hounds terms answered",
+      ),
+      actions=(
+       "select witness protection target",
+       "frame route-specific target variant",
+      ),
+      metadata={
+       "act": "act_05_shadow",
+       "chapter": "rtc_12_war_of_witnesses",
+       "phase": "witness_war",
+      },
+     ),
+     quest_stage_spec(
+      "rtc_war_of_witnesses_resolve",
+      "Resolve the Witness War",
+      "Protect witnesses, use the route's strongest answer, hand off to the Last Banner of the East, or sacrifice a witness.",
+      description="The result determines whether witness legitimacy survives into the final road.",
+      conditions=(
+       "witness target selected",
+      ),
+      actions=(
+       "protect witness",
+       "sacrifice witness",
+       "apply route-specific target variant",
+       "record side-crisis handoff",
+      ),
+      rewards=(
+       "witnesses preserved or route strengthened",
+      ),
+      failures=(
+       "witness sacrificed and trust damaged",
+      ),
+      metadata={
+       "act": "act_05_shadow",
+       "chapter": "rtc_12_war_of_witnesses",
+       "branch_point": "witness_survival",
+      },
+     ),
+    ),
+    metadata={
+     "category": "campaign",
+     "campaign": "campaign_road_to_the_crown",
+     "act": "act_05_shadow",
+     "chapter": "rtc_12_war_of_witnesses",
+     "authoring": "schema",
+   },
+  ),
+  quest_template_spec(
+    "rtc_last_road",
+    "The Last Road",
+    qf_random_quest,
+    "Choose the final strategy against the Imperial Hound: hold, strike, starve, expose, submit, or collapse.",
+    stages=(
+     quest_stage_spec(
+      "rtc_last_road_choose_strategy",
+      "Choose the Final Strategy",
+      "Choose how the locked crown route answers the Imperial army.",
+      description="The final strategy converts Act V pressure into a confrontation posture.",
+      conditions=(
+       "war of witnesses resolved",
+      ),
+      actions=(
+       "choose hold the line, strike the Hound, starve the Empire, break the seal, accept the collar, or catastrophic loss",
+      ),
+      metadata={
+       "act": "act_05_shadow",
+       "chapter": "rtc_13_last_road",
+       "phase": "final_strategy",
+      },
+     ),
+     quest_stage_spec(
+      "rtc_last_road_resolve_strategy",
+      "Resolve the Last Road",
+      "Record the final strategy that will shape the confrontation with Marius.",
+      description="The result sets final confrontation posture or fails into catastrophic loss.",
+      conditions=(
+       "final strategy chosen",
+      ),
+      actions=(
+       "record final strategy seed",
+       "adjust imperial pressure",
+       "prepare final confrontation",
+      ),
+      rewards=(
+       "final confrontation seed",
+      ),
+      failures=(
+       "catastrophic loss",
+      ),
+      metadata={
+       "act": "act_05_shadow",
+       "chapter": "rtc_13_last_road",
+       "branch_point": "final_strategy",
+      },
+     ),
+    ),
+    metadata={
+     "category": "campaign",
+     "campaign": "campaign_road_to_the_crown",
+     "act": "act_05_shadow",
+     "chapter": "rtc_13_last_road",
+     "authoring": "schema",
+   },
+  ),
+  quest_template_spec(
+    "rtc_final_confrontation",
+    "Final Confrontation",
+    qf_random_quest,
+    "Resolve Marius, the Empire, and the crown road: defeat, force back, submit, refuse personal rule, or collapse.",
+    stages=(
+     quest_stage_spec(
+      "rtc_final_confrontation_face_marius",
+      "Face Marius",
+      "Bring the final strategy to its confrontation with the Imperial Hound.",
+      description="The final confrontation reads the Last Road strategy and presents the campaign's first ending posture.",
+      conditions=(
+       "last road strategy resolved",
+      ),
+      actions=(
+       "face Marius or his command",
+       "resolve imperial pressure",
+      ),
+      metadata={
+       "act": "act_05_shadow",
+       "chapter": "rtc_14_final_confrontation",
+       "phase": "final_confrontation",
+      },
+     ),
+     quest_stage_spec(
+      "rtc_final_confrontation_resolve",
+      "Resolve the Crown",
+      "Defeat Marius, force him back, accept him as overlord, reject personal rule, or let the claim collapse.",
+      description="This closes the campaign spine, archives one primary ending, and records the follow-up arc opened by the result.",
+      conditions=(
+       "Marius confronted",
+      ),
+      actions=(
+       "record final outcome",
+       "archive final branch seed for endings",
+      ),
+      rewards=(
+       "campaign resolution seed",
+      ),
+      failures=(
+       "claim collapse",
+      ),
+      metadata={
+       "act": "act_05_shadow",
+       "chapter": "rtc_14_final_confrontation",
+       "branch_point": "final_outcome",
+      },
+     ),
+    ),
+    metadata={
+     "category": "campaign",
+     "campaign": "campaign_road_to_the_crown",
+     "act": "act_05_shadow",
+     "chapter": "rtc_14_final_confrontation",
+     "authoring": "schema",
+   },
+  ),
+  ),
+  metadata={
+   "category": "campaign",
+   "campaign": "campaign_road_to_the_crown",
+   "authoring": "schema",
+   "implementation_slice": "campaign_spine_to_endings",
+   "branch_tree": "docs/campaigns/the_road_to_the_crown.md#branch-tree-and-stop-map",
+  },
+ ).as_legacy_tuples(),
+
+# [ src/quests/0012_companion_personal_quests.py ]
+
+ *quest_chain_from_specs(
+  "companion_personal_arcs",
+ "Companion Personal Arcs",
+ quests=(
+   quest_template_spec(
+    "companion_borcha_road_keeps_own",
+    "Borcha: The Road Keeps Its Own",
+    0,
+    "Borcha is testing whether old horde roads can become safe roads under better command.",
+    stages=(
+     quest_stage_spec("borcha_road_opening", "Old Hoofbeats", "Speak with Borcha after earning enough trust to hear what the road took from him.", metadata={"companion": "trp_npc1", "phase": "opening"}),
+     quest_stage_spec("borcha_road_field_test", "A Bad Road Chosen", "Resolve a roadcraft or Black Khergit pressure incident.", rewards=("Scout payoff if the road is made safer",), failures=("hard roadcraft compromise",), metadata={"companion": "trp_npc1", "phase": "test"}),
+     quest_stage_spec("borcha_road_aftermath", "Roads Remembered", "Borcha remembers whether the road became warning, profit, or refuge.", metadata={"companion": "trp_npc1", "phase": "aftermath"}),
+    ),
+    metadata={"category": "companion", "companion": "Borcha", "depth_layer": "dragon_age_style"},
+   ),
+   quest_template_spec(
+    "companion_marnid_honest_price",
+    "Marnid: The Honest Price",
+    0,
+    "Marnid is testing whether trade can remain honest when war makes every price hungry.",
+    stages=(
+     quest_stage_spec("marnid_price_opening", "The Ledger Opens", "Speak with Marnid after earning enough trust to hear what dishonest profit cost him.", metadata={"companion": "trp_npc2", "phase": "opening"}),
+     quest_stage_spec("marnid_price_field_test", "A Bargain Under Strain", "Resolve a trade or caravan incident through honest profit or hard advantage.", rewards=("Quartermaster or Envoy payoff if trade is stabilized",), failures=("dirty-profit compromise",), metadata={"companion": "trp_npc2", "phase": "test"}),
+     quest_stage_spec("marnid_price_aftermath", "The Price Remembered", "Marnid remembers whether the books became trust or leverage.", metadata={"companion": "trp_npc2", "phase": "aftermath"}),
+    ),
+    metadata={"category": "companion", "companion": "Marnid", "depth_layer": "dragon_age_style"},
+   ),
+   quest_template_spec(
+    "companion_rolf_name_worth_wearing",
+    "Rolf: A Name Worth Wearing",
+    0,
+    "Rolf is testing whether a grand name can become earned dignity instead of only noise.",
+    stages=(
+     quest_stage_spec("rolf_name_opening", "The Claim", "Speak with Rolf after earning enough trust to press him about the name he wears.", metadata={"companion": "trp_npc4", "phase": "opening"}),
+     quest_stage_spec("rolf_name_field_test", "Witnesses to a Name", "Resolve a public honor incident by earning the name or preserving the claim.", rewards=("Envoy or Captain payoff if dignity is earned",), failures=("prestige compromise",), metadata={"companion": "trp_npc4", "phase": "test"}),
+     quest_stage_spec("rolf_name_aftermath", "The Name Remembered", "Rolf remembers whether the company made room for truth or theater.", metadata={"companion": "trp_npc4", "phase": "aftermath"}),
+    ),
+    metadata={"category": "companion", "companion": "Rolf", "depth_layer": "dragon_age_style"},
+   ),
+   quest_template_spec(
+    "companion_baheshtur_unbroken_saddle",
+    "Baheshtur: The Unbroken Saddle",
+    0,
+    "Baheshtur is testing whether loyalty can be chosen without becoming a rein.",
+    stages=(
+     quest_stage_spec("baheshtur_saddle_opening", "The Rein Refused", "Speak with Baheshtur after earning enough trust to hear why submission tastes like dust.", metadata={"companion": "trp_npc5", "phase": "opening"}),
+     quest_stage_spec("baheshtur_saddle_field_test", "Riders at the Edge", "Resolve a rider or horde incident through chosen loyalty or forced submission.", rewards=("Scout or Captain payoff if loyalty remains chosen",), failures=("submission compromise",), metadata={"companion": "trp_npc5", "phase": "test"}),
+     quest_stage_spec("baheshtur_saddle_aftermath", "The Saddle Remembered", "Baheshtur remembers whether command held reins or kept faith.", metadata={"companion": "trp_npc5", "phase": "aftermath"}),
+    ),
+    metadata={"category": "companion", "companion": "Baheshtur", "depth_layer": "dragon_age_style"},
+   ),
+   quest_template_spec(
+    "companion_deshavi_tracks_through_ash",
+    "Deshavi: Tracks Through Ash",
+    0,
+    "Deshavi is testing whether the forgotten are worth finding before victory moves on.",
+    stages=(
+     quest_stage_spec("deshavi_tracks_opening", "Smoke in the Tracks", "Speak with Deshavi after earning enough trust to hear why missing people matter to her.", metadata={"companion": "trp_npc7", "phase": "opening"}),
+     quest_stage_spec("deshavi_tracks_field_test", "Survivors or Pursuit", "Resolve a trail incident by sheltering survivors or hunting only the threat.", rewards=("Scout or Spymaster payoff if survivors are protected",), failures=("hunt-only compromise",), metadata={"companion": "trp_npc7", "phase": "test"}),
+     quest_stage_spec("deshavi_tracks_aftermath", "Ash Remembered", "Deshavi remembers whether the company read tracks as people or targets.", metadata={"companion": "trp_npc7", "phase": "aftermath"}),
+    ),
+    metadata={"category": "companion", "companion": "Deshavi", "depth_layer": "dragon_age_style"},
+   ),
+   quest_template_spec(
+    "companion_matheld_no_backward_step",
+    "Matheld: No Backward Step",
+    0,
+    "Matheld is testing whether courage can hold without wasting itself for reputation.",
+    stages=(
+     quest_stage_spec("matheld_step_opening", "Forward Only", "Speak with Matheld after earning enough trust to hear what retreat means in her tongue.", metadata={"companion": "trp_npc8", "phase": "opening"}),
+     quest_stage_spec("matheld_step_field_test", "The Shield Still Faces Forward", "Resolve a battle incident through disciplined courage or blood spent for reputation.", rewards=("Captain payoff if courage is held in discipline",), failures=("blood-price compromise",), metadata={"companion": "trp_npc8", "phase": "test"}),
+     quest_stage_spec("matheld_step_aftermath", "Courage Remembered", "Matheld remembers whether courage became strength or appetite.", metadata={"companion": "trp_npc8", "phase": "aftermath"}),
+    ),
+    metadata={"category": "companion", "companion": "Matheld", "depth_layer": "dragon_age_style"},
+   ),
+   quest_template_spec(
+    "companion_alayen_standard_self",
+    "Alayen: The Standard and the Self",
+    0,
+    "Alayen is testing whether honor means duty when prestige asks for the banner first.",
+    stages=(
+     quest_stage_spec("alayen_standard_opening", "The Banner's Weight", "Speak with Alayen after earning enough trust to hear what honor demands of him.", metadata={"companion": "trp_npc9", "phase": "opening"}),
+     quest_stage_spec("alayen_standard_field_test", "Duty Before Display", "Resolve a duty incident through responsibility or prestige.", rewards=("Envoy payoff if duty outranks vanity",), failures=("prestige compromise",), metadata={"companion": "trp_npc9", "phase": "test"}),
+     quest_stage_spec("alayen_standard_aftermath", "The Standard Remembered", "Alayen remembers whether the banner served people or pride.", metadata={"companion": "trp_npc9", "phase": "aftermath"}),
+    ),
+    metadata={"category": "companion", "companion": "Alayen", "depth_layer": "dragon_age_style"},
+   ),
+   quest_template_spec(
+    "companion_katrin_last_coin",
+    "Katrin: The Last Coin in Camp",
+    0,
+    "Katrin is testing whether practical care can survive heroic waste and empty stores.",
+    stages=(
+     quest_stage_spec("katrin_coin_opening", "The Empty Purse", "Speak with Katrin after earning enough trust to hear why waste is never abstract to her.", metadata={"companion": "trp_npc11", "phase": "opening"}),
+     quest_stage_spec("katrin_coin_field_test", "A Camp That Must Eat", "Resolve a supply incident through practical care or wasteful display.", rewards=("Quartermaster payoff if the camp is protected",), failures=("heroic-waste compromise",), metadata={"companion": "trp_npc11", "phase": "test"}),
+     quest_stage_spec("katrin_coin_aftermath", "The Coin Remembered", "Katrin remembers whether care counted before speeches.", metadata={"companion": "trp_npc11", "phase": "aftermath"}),
+    ),
+    metadata={"category": "companion", "companion": "Katrin", "depth_layer": "dragon_age_style"},
+   ),
+   quest_template_spec(
+    "companion_nizar_impossible_charge",
+    "Nizar: The Impossible Charge",
+    0,
+    "Nizar is testing whether glory is still beautiful when survivors must carry the song.",
+    stages=(
+     quest_stage_spec("nizar_charge_opening", "The Song Before Steel", "Speak with Nizar after earning enough trust to hear why he runs toward impossible moments.", metadata={"companion": "trp_npc13", "phase": "opening"}),
+     quest_stage_spec("nizar_charge_field_test", "Glory With an Exit", "Resolve a daring battle incident through survivable glory or legend paid in blood.", rewards=("Captain payoff if glory keeps survivors",), failures=("legendary-blood compromise",), metadata={"companion": "trp_npc13", "phase": "test"}),
+     quest_stage_spec("nizar_charge_aftermath", "The Charge Remembered", "Nizar remembers whether the story deserved its listeners.", metadata={"companion": "trp_npc13", "phase": "aftermath"}),
+    ),
+    metadata={"category": "companion", "companion": "Nizar", "depth_layer": "dragon_age_style"},
+   ),
+   quest_template_spec(
+    "companion_artimenner_siege_that_should",
+    "Artimenner: The Siege That Should Have Worked",
+    0,
+    "Artimenner is testing whether plans are respected before blame becomes convenient.",
+    stages=(
+     quest_stage_spec("artimenner_siege_opening", "The Failed Plan", "Speak with Artimenner after earning enough trust to hear which collapse still follows him.", metadata={"companion": "trp_npc15", "phase": "opening"}),
+     quest_stage_spec("artimenner_siege_field_test", "Design or Blame", "Resolve an engineering incident through respected design or shifted blame.", rewards=("Engineer payoff if the design is respected",), failures=("blame compromise",), metadata={"companion": "trp_npc15", "phase": "test"}),
+     quest_stage_spec("artimenner_siege_aftermath", "The Works Remembered", "Artimenner remembers whether structure mattered before reputation.", metadata={"companion": "trp_npc15", "phase": "aftermath"}),
+    ),
+    metadata={"category": "companion", "companion": "Artimenner", "depth_layer": "dragon_age_style"},
+   ),
+   quest_template_spec(
+    "companion_klethi_knife_with_name",
+    "Klethi: A Knife With a Name",
+    0,
+    "Klethi is testing whether belonging can be chosen without becoming another trap.",
+    stages=(
+     quest_stage_spec("klethi_knife_opening", "A Name on the Blade", "Speak with Klethi after earning enough trust to hear what old leverage still follows her.", metadata={"companion": "trp_npc16", "phase": "opening"}),
+     quest_stage_spec("klethi_knife_field_test", "Choice or Leverage", "Resolve a secret or old-job incident by letting Klethi choose or using the secret.", rewards=("Spymaster payoff if belonging remains chosen",), failures=("leverage compromise",), metadata={"companion": "trp_npc16", "phase": "test"}),
+     quest_stage_spec("klethi_knife_aftermath", "The Knife Remembered", "Klethi remembers whether the company gave her a place or another price tag.", metadata={"companion": "trp_npc16", "phase": "aftermath"}),
+    ),
+    metadata={"category": "companion", "companion": "Klethi", "depth_layer": "dragon_age_style"},
+   ),
+   quest_template_spec(
+    "companion_bunduk_men_hold_line",
+    "Bunduk: The Men Who Hold the Line",
+    0,
+    "Bunduk is testing whether command remembers the soldiers who make victory possible. Wages, casualties, and officer cruelty will decide his trust.",
+    stages=(
+     quest_stage_spec(
+      "bunduk_line_opening",
+      "The Line Has Names",
+      "Speak with Bunduk after earning enough trust for him to name the men behind his anger.",
+      description="Bunduk's personal arc opens when approval rises into trust.",
+      actions=("trust conversation", "record companion memory"),
+      metadata={"companion": "trp_npc10", "phase": "opening"},
+     ),
+     quest_stage_spec(
+      "bunduk_line_field_test",
+      "A Grievance in the Ranks",
+      "Resolve a soldier grievance through advocacy, compromise, or crackdown.",
+      description="The player chooses whether discipline protects ordinary soldiers or spends them.",
+      conditions=("Bunduk in party", "wages, casualties, or officer abuse creates pressure"),
+      actions=("advance from companion-depth world/menu hook",),
+      rewards=("Captain role payoff if the line is protected",),
+      failures=("Bunduk warning and hard compromise payoff if the line is silenced",),
+      metadata={"companion": "trp_npc10", "phase": "test"},
+     ),
+     quest_stage_spec(
+      "bunduk_line_aftermath",
+      "The Men Remember",
+      "Bunduk remembers whether command gave soldiers a voice or merely kept them useful.",
+      description="The company report and direct talk remember the outcome.",
+      metadata={"companion": "trp_npc10", "phase": "aftermath"},
+     ),
+    ),
+    metadata={
+     "category": "companion",
+     "companion": "Bunduk",
+     "depth_layer": "dragon_age_style",
+    },
+   ),
+   quest_template_spec(
+    "companion_jeremus_hands_triage",
+    "Jeremus: Hands That Will Not Harden",
+    0,
+    "Jeremus is testing whether a healer can remain gentle while marching with an army. Battlefield triage and civilian mercy will decide the shape of his service.",
+    stages=(
+     quest_stage_spec(
+      "jeremus_triage_opening",
+      "The Healer's Burden",
+      "Speak with Jeremus after earning enough trust for him to admit what war is doing to his hands.",
+      description="Jeremus's personal arc opens when approval rises into trust.",
+      actions=("trust conversation", "record companion memory"),
+      metadata={"companion": "trp_npc12", "phase": "opening"},
+     ),
+     quest_stage_spec(
+      "jeremus_triage_field_test",
+      "Triage After Battle",
+      "Resolve a casualty or civilian triage incident through care, prioritization, or hard necessity.",
+      description="The player chooses whether healing is protected, rationed, or hardened.",
+      conditions=("Jeremus in party", "casualties or civilians require triage"),
+      actions=("advance from companion-depth world/menu hook",),
+      rewards=("Surgeon role payoff if compassion survives triage",),
+      failures=("Jeremus warning and hard compromise payoff if care is spent too cheaply",),
+      metadata={"companion": "trp_npc12", "phase": "test"},
+     ),
+     quest_stage_spec(
+      "jeremus_triage_aftermath",
+      "What Remains Whole",
+      "Jeremus remembers whether healing remained a duty or became another instrument of command.",
+      description="The company report and direct talk remember the outcome.",
+      metadata={"companion": "trp_npc12", "phase": "aftermath"},
+     ),
+    ),
+    metadata={
+     "category": "companion",
+     "companion": "Jeremus",
+     "depth_layer": "dragon_age_style",
+    },
+   ),
+   quest_template_spec(
+    "companion_firentis_debt_restitution",
+    "Firentis: Debt of the Sword",
+    0,
+    "Firentis is testing whether service can become restitution rather than punishment. Mercy, restraint, and battlefield aftermath will decide what his sword means.",
+    stages=(
+     quest_stage_spec(
+      "firentis_debt_opening",
+      "A Debt Named Aloud",
+      "Speak with Firentis after earning enough trust for him to explain the debt he carries.",
+      description="Firentis's personal arc opens when approval rises into trust.",
+      actions=("trust conversation", "record companion memory"),
+      metadata={"companion": "trp_npc6", "phase": "opening"},
+     ),
+     quest_stage_spec(
+      "firentis_debt_field_test",
+      "Restraint Under Steel",
+      "Resolve a battle aftermath or restitution incident through repair, penance, or hard justice.",
+      description="The player chooses whether violence answers for itself or only wins.",
+      conditions=("Firentis in party", "battlefield aftermath creates a restitution choice"),
+      actions=("advance from companion-depth world/menu hook",),
+      rewards=("Captain or Envoy role payoff if restitution is protected",),
+      failures=("Firentis warning and hard compromise payoff if the debt deepens",),
+      metadata={"companion": "trp_npc6", "phase": "test"},
+     ),
+     quest_stage_spec(
+      "firentis_debt_aftermath",
+      "The Sword Accounted",
+      "Firentis remembers whether service became repair or merely another debt.",
+      description="The company report and direct talk remember the outcome.",
+      metadata={"companion": "trp_npc6", "phase": "aftermath"},
+     ),
+    ),
+    metadata={
+     "category": "companion",
+     "companion": "Firentis",
+     "depth_layer": "dragon_age_style",
+    },
+   ),
+   quest_template_spec(
+    "companion_ymira_mercy_under_arms",
+    "Ymira: Mercy Under Arms",
+    0,
+    "Ymira has asked whether mercy can survive inside an army. Captives, refugees, and Slaver cruelty will test the answer.",
+    stages=(
+     quest_stage_spec(
+      "ymira_mercy_opening",
+      "A Question of Mercy",
+      "Speak with Ymira after earning enough trust for her to name the wound behind her mercy.",
+      description="Ymira's personal arc opens when approval rises into trust.",
+      actions=("trust conversation", "record companion memory"),
+      metadata={"companion": "trp_npc3", "phase": "opening"},
+     ),
+     quest_stage_spec(
+      "ymira_mercy_field_test",
+      "Captives on the Road",
+      "Resolve a captive or refugee incident through protection, ransom, or hard expedience.",
+      description="The player chooses whether mercy is protected, compromised, or spent.",
+      conditions=("Ymira in party", "captives or refugees encountered"),
+      actions=("advance from companion-depth world/menu hook",),
+      rewards=("Surgeon role payoff if resolved mercifully",),
+      failures=("Ymira warning and hard compromise payoff if resolved harshly",),
+      metadata={"companion": "trp_npc3", "phase": "test"},
+     ),
+     quest_stage_spec(
+      "ymira_mercy_aftermath",
+      "The Names Remembered",
+      "Ymira remembers whether command made room for mercy or merely survived without it.",
+      description="The company report and direct talk remember the outcome.",
+      metadata={"companion": "trp_npc3", "phase": "aftermath"},
+     ),
+    ),
+    metadata={
+     "category": "companion",
+     "companion": "Ymira",
+     "depth_layer": "dragon_age_style",
+    },
+   ),
+   quest_template_spec(
+    "companion_lezalit_discipline_without_chains",
+    "Lezalit: Discipline Without Chains",
+    0,
+    "Lezalit is testing whether discipline must be cruel to remain strong. Imperial doctrine and battlefield command will decide how far he bends.",
+    stages=(
+     quest_stage_spec(
+      "lezalit_discipline_opening",
+      "A Soldier's Doctrine",
+      "Speak with Lezalit after earning enough trust for him to discuss order, fear, and Imperial discipline.",
+      description="Lezalit's personal arc opens when approval rises into trust.",
+      actions=("trust conversation", "record companion memory"),
+      metadata={"companion": "trp_npc14", "phase": "opening"},
+     ),
+     quest_stage_spec(
+      "lezalit_discipline_field_test",
+      "The Captured Drill",
+      "Resolve an Imperial discipline test through reform, fear, or open defiance.",
+      description="The player chooses what kind of army Lezalit should respect.",
+      conditions=("Lezalit in party", "Imperial discipline incident available"),
+      actions=("advance from companion-depth world/menu hook",),
+      rewards=("Captain role payoff if resolved through disciplined reform",),
+      failures=("Lezalit warning and hard compromise payoff if resolved through fear",),
+      metadata={"companion": "trp_npc14", "phase": "test"},
+     ),
+     quest_stage_spec(
+      "lezalit_discipline_aftermath",
+      "Order Remembered",
+      "Lezalit remembers whether strength learned restraint or merely sharpened fear.",
+      description="The company report and direct talk remember the outcome.",
+      metadata={"companion": "trp_npc14", "phase": "aftermath"},
+     ),
+    ),
+    metadata={
+     "category": "companion",
+     "companion": "Lezalit",
+     "depth_layer": "dragon_age_style",
+    },
+   ),
+   quest_template_spec(
+    "companion_cassian_last_order",
+    "Cassian Varro: The Last Order",
+    0,
+    "Cassian Varro has opened the last sealed order your father left him. The order points toward an old Imperial spy network that may still be alive.",
+    stages=(
+     quest_stage_spec(
+      "cassian_last_order_opening",
+      "The Sealed Order",
+      "Speak with Cassian Varro after you hold land or the invasion draws near.",
+      description="Cassian reveals that he still carries one sealed order from your father.",
+      actions=("direct mentor conversation", "record mentor memory"),
+      metadata={"mentor": "trp_sod_strategy_advisor", "phase": "opening"},
+     ),
+     quest_stage_spec(
+      "cassian_last_order_network",
+      "The Old Network",
+      "Choose how to use, expose, rescue, or burn Cassian's surviving Imperial network.",
+      description="The old network can become sabotage, rescue, public reckoning, or mercy through destruction.",
+      conditions=("Cassian's mentor arc is active", "focus center or cause stored"),
+      actions=("direct dialogue resolution", "quest memory update", "mentor trust outcome"),
+      rewards=("Improved mentor trust", "Legion memory", "strategic consequence"),
+      failures=("reduced trust if the network is used without conscience",),
+      metadata={"mentor": "trp_sod_strategy_advisor", "phase": "choice"},
+     ),
+     quest_stage_spec(
+      "cassian_last_order_aftermath",
+      "The Order Remembered",
+      "Cassian remembers whether the last order became conscience, weapon, reckoning, or ash.",
+      description="The mentor trust report and direct talk remember the outcome.",
+      metadata={"mentor": "trp_sod_strategy_advisor", "phase": "aftermath"},
+     ),
+    ),
+    metadata={
+     "category": "mentor",
+     "mentor": "Cassian Varro",
+     "depth_layer": "strategy_advisor_mentor",
+    },
+   ),
+  ),
+ ).as_legacy_tuples(),
+
+# [ src/quests/0013_seven_oaths_of_ash_quests.py ]
+
+ *quest_chain_from_specs(
+  "campaign_seven_oaths_of_ash",
+  "The Seven Oaths of Ash",
+  entry_quest_id="seven_ash_ultimatum",
+  quests=(
+   quest_template_spec(
+    "seven_ash_ultimatum",
+    "The Teeth in the Sack",
+    qf_random_quest,
+    "Wulfred Carr has marked Ashwick for tribute: coin, grain, and surety children. Hear the ultimatum, inspect the village, and decide how Ashwick will answer.",
+    stages=(
+     quest_stage_spec(
+      "seven_ash_ultimatum_hear_rafe",
+      "Hear Rafe's Ultimatum",
+      "Meet Wulfred's riders and hear the demand placed on Ashwick.",
+      description="Rafe Carrick delivers Wulfred's demand before the village witnesses.",
+      actions=("store ultimatum", "open Ashwick audit"),
+      metadata={"act": "act_01_teeth", "chapter": "ultimatum", "dialogue": "dlg_seven_ash_rafe_ultimatum"},
+     ),
+     quest_stage_spec(
+      "seven_ash_ultimatum_choose_posture",
+      "Choose Ashwick's First Answer",
+      "Choose whether to prepare, seek defenders, call for aid, bargain, evacuate, or kill the messengers.",
+      description="The first posture is confirmed after dialogue with Ashwick's witnesses.",
+      conditions=("Rafe has delivered the ultimatum",),
+      actions=("set method flag", "advance to village audit or branch route"),
+      metadata={"branch_point": "first_answer", "menu_confirms_after_dialogue": True},
+     ),
+    ),
+    metadata={
+     "category": "campaign",
+     "campaign": "campaign_seven_oaths_of_ash",
+     "act": "act_01_teeth",
+     "chapter": "ultimatum",
+     "design_doc": "docs/campaigns/the_seven_oaths_of_ash.md",
+     "checklist": "docs/campaigns/the_seven_oaths_of_ash_implementation_checklist.md",
+    },
+   ),
+   quest_template_spec(
+    "seven_ash_village_audit",
+    "Ashwick Laid Bare",
+    qf_random_quest,
+    "Inspect Ashwick's palisade, granary, churchyard, mill bridge, outer farms, cellars, and witnesses before committing the village's labor.",
+    stages=(
+     quest_stage_spec(
+      "seven_ash_audit_inspect_places",
+      "Inspect the Village",
+      "Walk Ashwick's weak points with Mother Hilda, Reeve Martin, Piers, and Nell.",
+      actions=("set readiness baseline", "record witness fears"),
+      metadata={"act": "act_01_teeth", "chapter": "audit", "dialogue": "dlg_seven_ash_mother_hilda_audit"},
+     ),
+     quest_stage_spec(
+      "seven_ash_audit_first_priority",
+      "Choose the First Priority",
+      "Choose one immediate preparation after the witnesses have spoken.",
+      conditions=("audit places inspected",),
+      actions=("modify readiness", "open recruitment board or preparation route"),
+      metadata={"branch_point": "first_preparation_priority"},
+     ),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_01_teeth", "chapter": "audit"},
+   ),
+   quest_template_spec(
+    "seven_ash_garric_ashbow",
+    "Garric Ashbow",
+    qf_random_quest,
+    "Find Garric at the Split Hart, hear Eda Flint's testimony, and decide whether Ashwick needs his disciplined bow line.",
+    stages=(
+     quest_stage_spec("seven_ash_garric_find_split_hart", "Find the Split Hart", "Travel to the tavern near the disputed hunting wood.", actions=("set target center",), metadata={"defender": "garric", "status": "available"}),
+     quest_stage_spec("seven_ash_garric_hear_eda", "Hear Eda Flint", "Hear the widow who knows what happened on the church roof.", conditions=("Garric found",), actions=("set witness flag",), metadata={"dialogue": "dlg_seven_ash_garric_recruit"}),
+     quest_stage_spec("seven_ash_garric_resolve_terms", "Resolve Garric's Terms", "Recruit, refuse, pay, promise, or blackmail Garric through dialogue.", conditions=("Eda testimony resolved",), actions=("set defender terminal state",), metadata={"companion_unlock_checks": "truth, covered fire, no wasted charges"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_seven_roads", "defender": "garric"},
+   ),
+   quest_template_spec(
+    "seven_ash_oswin_ditchwright",
+    "Oswin Ditchwright",
+    qf_random_quest,
+    "Find Oswin at Harrowcut Quarry, inspect the failed bridge, and decide whether Ashwick will listen to an engineer before the wall fails.",
+    stages=(
+     quest_stage_spec("seven_ash_oswin_find_quarry", "Find Harrowcut Quarry", "Travel to the quarry camp after the bridge collapse.", actions=("set target center",), metadata={"defender": "oswin", "status": "available"}),
+     quest_stage_spec("seven_ash_oswin_inspect_bridge", "Inspect the Bridge", "Question workers and test Oswin's account of the collapse.", conditions=("Oswin found",), actions=("set evidence flag",), metadata={"dialogue": "dlg_seven_ash_oswin_recruit"}),
+     quest_stage_spec("seven_ash_oswin_resolve_authority", "Resolve Oswin's Authority", "Vindicate, pay, limit, force, or refuse Oswin through dialogue.", conditions=("bridge evidence resolved",), actions=("set defender terminal state",), metadata={"companion_unlock_checks": "engineering authority, hard fieldwork sacrifice"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_seven_roads", "defender": "oswin"},
+   ),
+   quest_template_spec(
+    "seven_ash_sir_aldrik_vane",
+    "Sir Aldrik Vane",
+    qf_random_quest,
+    "Find the landless knight at Saint Cuthbert's chapel and test whether shame can become an oath Ashwick can trust.",
+    stages=(
+     quest_stage_spec("seven_ash_aldrik_find_chapel", "Find Saint Cuthbert's Chapel", "Travel to the poor wayside chapel.", actions=("set target center",), metadata={"defender": "aldrik"}),
+     quest_stage_spec("seven_ash_aldrik_hear_mara", "Hear Mara of the Bridge", "Hear the hostage witness before judging Aldrik's old surrender.", conditions=("Aldrik found",), actions=("set witness flag",), metadata={"dialogue": "dlg_seven_ash_aldrik_recruit"}),
+     quest_stage_spec("seven_ash_aldrik_resolve_oath", "Resolve Aldrik's Oath", "Let him swear, hire him, restore him, coerce him, or leave him.", conditions=("Mara testimony resolved",), actions=("set defender terminal state",), metadata={"companion_unlock_checks": "public oath, lawful mercy, civilian protection"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_seven_roads", "defender": "aldrik"},
+   ),
+   quest_template_spec(
+    "seven_ash_mirelle_voss",
+    "Mirelle Voss",
+    qf_random_quest,
+    "Find Mirelle at the Low Lantern and decide how much ugly work Ashwick can bear without losing itself.",
+    stages=(
+     quest_stage_spec("seven_ash_mirelle_find_lantern", "Find the Low Lantern", "Travel to the riverside tavern that serves deserters and boatmen.", actions=("set target center",), metadata={"defender": "mirelle"}),
+     quest_stage_spec("seven_ash_mirelle_catch_tib", "Catch Tib's Messages", "Resolve what happens to the boy carrying Wulfred's messages.", conditions=("Mirelle found",), actions=("set informant flag",), metadata={"dialogue": "dlg_seven_ash_mirelle_recruit"}),
+     quest_stage_spec("seven_ash_mirelle_resolve_secrets", "Resolve Mirelle's Secrets", "Trust, buy, leverage, threaten, or refuse Mirelle.", conditions=("informant test resolved",), actions=("set defender terminal state",), metadata={"companion_unlock_checks": "trusted dirty work, no pointless cruelty"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_seven_roads", "defender": "mirelle"},
+   ),
+   quest_template_spec(
+    "seven_ash_tomas_reed",
+    "Tomas Reed",
+    qf_random_quest,
+    "Find Tomas at the veterans' almshouse and decide where discipline ends and cruelty begins.",
+    stages=(
+     quest_stage_spec("seven_ash_tomas_find_almshouse", "Find the Almshouse", "Travel to the veterans' almshouse where Tomas mends boots.", actions=("set target center",), metadata={"defender": "tomas"}),
+     quest_stage_spec("seven_ash_tomas_hear_veterans", "Hear the Veterans", "Hear Old Jory and Matteo split the truth of Tomas's discipline.", conditions=("Tomas found",), actions=("set witness split",), metadata={"dialogue": "dlg_seven_ash_tomas_recruit"}),
+     quest_stage_spec("seven_ash_tomas_resolve_discipline", "Resolve Tomas's Discipline", "Set limits, grant harsh command, train trainers, use fear, or refuse him.", conditions=("veterans heard",), actions=("set defender terminal state",), metadata={"companion_unlock_checks": "discipline without cruelty"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_seven_roads", "defender": "tomas"},
+   ),
+   quest_template_spec(
+    "seven_ash_beren_hardhand",
+    "Beren Hardhand",
+    qf_random_quest,
+    "Find Beren in a fighting pit or outlaw camp and decide whether his violence can be given a lawful boundary.",
+    stages=(
+     quest_stage_spec("seven_ash_beren_find_pit", "Find the Fighting Pit", "Travel to the place Mirelle says holds a man ugly enough for Halvorn.", actions=("set target center",), metadata={"defender": "beren"}),
+     quest_stage_spec("seven_ash_beren_hear_ansel", "Hear Ansel Miller", "Hear the famine story behind Beren's outlaw name.", conditions=("Beren found",), actions=("set witness flag",), metadata={"dialogue": "dlg_seven_ash_beren_recruit"}),
+     quest_stage_spec("seven_ash_beren_resolve_boundary", "Resolve Beren's Boundary", "Beat, withstand, hire, unleash, or refuse Beren.", conditions=("Ansel heard",), actions=("set defender terminal state",), metadata={"companion_unlock_checks": "fair contest, lawful enemy, civilian restraint"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_seven_roads", "defender": "beren"},
+   ),
+   quest_template_spec(
+    "seven_ash_sister_elianor",
+    "Sister Elianor Grey",
+    qf_random_quest,
+    "Find Sister Elianor at Saint Ormond's refugee camp and decide whether Ashwick's defense has room for sanctuary.",
+    stages=(
+     quest_stage_spec("seven_ash_elianor_find_camp", "Find Saint Ormond's Camp", "Travel to the burned grange where Elianor keeps refugees alive.", actions=("set target center",), metadata={"defender": "elianor"}),
+     quest_stage_spec("seven_ash_elianor_inspect_refugees", "Inspect the Refugees", "Walk the camp and see who can fight, who can work, and who must be carried.", conditions=("Elianor found",), actions=("set sanctuary pressure",), metadata={"dialogue": "dlg_seven_ash_elianor_recruit"}),
+     quest_stage_spec("seven_ash_elianor_resolve_sanctuary", "Resolve Sanctuary", "Create sanctuary, limit aid, fund the camp, force labor, or refuse Elianor.", conditions=("refugee camp inspected",), actions=("set defender terminal state",), metadata={"companion_unlock_checks": "sanctuary, wounded protected, mercy under pressure"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_seven_roads", "defender": "elianor"},
+   ),
+   quest_template_spec(
+    "seven_ash_return_to_ashwick",
+    "The Road Back to Ashwick",
+    qf_random_quest,
+    "Return to Ashwick after the recruitment board closes and let the village see who came back.",
+    stages=(
+     quest_stage_spec("seven_ash_return_count_defenders", "Count the Defenders", "Mother Hilda counts beds while Reeve Martin counts days, coin, and grain.", actions=("set act2 complete", "start Act III pressure"), metadata={"dialogue": "dlg_seven_ash_return_home"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_02_return"},
+   ),
+   quest_template_spec(
+    "seven_ash_pressure_interlude",
+    "The Village Learns Fear",
+    qf_random_quest,
+    "Resolve Ashwick pressure interludes after recruitment closes.",
+    stages=(
+     quest_stage_spec("seven_ash_pressure_burned_cow", "The Burned Cow", "Answer Wulfred's first visible pressure on the outer farms.", actions=("modify pressure or strain",), metadata={"interlude": "burned_cow"}),
+     quest_stage_spec("seven_ash_pressure_marked_door", "The Knife-Marked Door", "Find or fail to find the informant marking homes for surety taking.", actions=("modify civilian safety",), metadata={"interlude": "marked_door"}),
+     quest_stage_spec("seven_ash_pressure_grain_riot", "The Grain Riot", "Settle hunger before arithmetic becomes violence.", actions=("modify food, morale, strain",), metadata={"interlude": "grain_riot"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_03_pressure"},
+   ),
+   quest_template_spec(
+    "seven_ash_oath_council",
+    "The Oath Council",
+    qf_random_quest,
+    "Gather defenders and village witnesses in the church to choose the final defense plan.",
+    stages=(
+     quest_stage_spec("seven_ash_oath_council_argue_map", "Argue Over the Map", "Let each present defender mark Ashwick by their craft.", actions=("read recruited bitmask", "read readiness"), metadata={"dialogue": "dlg_seven_ash_oath_council"}),
+     quest_stage_spec("seven_ash_oath_council_lock_plan", "Lock the Defense Plan", "Commit to palisade, depth, counterstroke, cut-head, or empty-village defense.", conditions=("map argued",), actions=("set final plan", "open sector commitment"), metadata={"branch_point": "final_defense_plan"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_04_oath_council"},
+   ),
+   quest_template_spec("seven_ash_outer_fields", "The Outer Fields", qf_random_quest, "Fight or yield the farms, roads, scouts, hayricks, and first fires.", stages=(quest_stage_spec("seven_ash_outer_fields_resolve", "Resolve the Outer Fields", "Resolve the first siege sector.", actions=("read intelligence", "apply wave allocation"), metadata={"siege_phase": "outer_fields"}),), metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_05_siege"}),
+   quest_template_spec("seven_ash_palisade", "The Ditch and Palisade", qf_random_quest, "Hold the ditch, stakes, palisade, and killing lanes.", stages=(quest_stage_spec("seven_ash_palisade_resolve", "Resolve the Palisade", "Resolve the main wall pressure.", actions=("read fortification", "apply wave allocation"), metadata={"siege_phase": "palisade"}),), metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_05_siege"}),
+   quest_template_spec("seven_ash_breach", "The Gate and Breach", qf_random_quest, "Meet Halvorn's push and decide whether the gate becomes a wound or a trap.", stages=(quest_stage_spec("seven_ash_breach_resolve", "Resolve the Breach", "Resolve the close-fighting breach phase.", actions=("read Aldrik, Beren, Tomas", "apply elite core"), metadata={"siege_phase": "breach"}),), metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_05_siege"}),
+   quest_template_spec("seven_ash_inner_streets", "The Inner Streets", qf_random_quest, "Defend homes, fire lines, routes, cellars, and the infirmary.", stages=(quest_stage_spec("seven_ash_inner_streets_resolve", "Resolve the Streets", "Resolve civilian danger and street defense.", actions=("read civilian safety", "apply fires"), metadata={"siege_phase": "inner_streets"}),), metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_05_siege"}),
+   quest_template_spec("seven_ash_churchyard_stand", "The Churchyard Stand", qf_random_quest, "Make the final stand at the stone churchyard wall.", stages=(quest_stage_spec("seven_ash_churchyard_resolve", "Resolve the Churchyard", "Resolve Wulfred's fate and Ashwick's military outcome.", actions=("set Wulfred outcome", "advance aftermath"), metadata={"siege_phase": "churchyard"}),), metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_05_siege"}),
+   quest_template_spec(
+    "seven_ash_aftermath",
+    "The Names After",
+    qf_random_quest,
+    "Count the dead, store the ending, and resolve each surviving defender's future.",
+    stages=(
+     quest_stage_spec("seven_ash_aftermath_count_cost", "Count the Cost", "Count civilians, homes, defenders, promises, prisoners, and Wulfred's fate.", actions=("set result grade", "store ending"), metadata={"dialogue": "dlg_seven_ash_aftermath"}),
+     quest_stage_spec("seven_ash_aftermath_companion_offers", "Resolve the Seven", "Offer companion, Ashwick-stay, farewell, or refusal outcomes to qualifying survivors.", conditions=("cost counted",), actions=("set companion unlock/refusal bitmasks",), metadata={"dialogue": "dlg_seven_ash_companion_offers"}),
+    ),
+    metadata={"category": "campaign", "campaign": "campaign_seven_oaths_of_ash", "act": "act_06_aftermath"},
+   ),
+  ),
+ ).as_legacy_tuples(),
+
+# [ src/quests/9999_quests_end.py ]
+
+ *quest_chain_from_specs(
+  "quest_terminal_sentinel",
+  "Quest Terminal Sentinel",
+  quests=(
+   quest_template_spec(
+    "quests_end",
+    "Quests End",
+    0,
+    ".",
+    metadata={
+     "category": "meta",
+     "authoring": "schema",
+     "sentinel": True,
+    },
+   ),
+  ),
  ).as_legacy_tuples(),
 
 ]

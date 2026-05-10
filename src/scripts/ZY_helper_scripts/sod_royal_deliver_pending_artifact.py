@@ -16,6 +16,8 @@ SCRIPTS = [
        (eq, ":has_space", 1),
        (str_store_item_name, s15, "$sod_royal_artifact"),
        (troop_add_item, "trp_player", "$sod_royal_artifact", 0),
+       (item_set_slot, "$sod_royal_artifact", slot_item_artifact_current_owner, "trp_player"),
+       (item_set_slot, "$sod_royal_artifact", slot_item_artifact_last_modifier, 0),
        (assign, "$sod_royal_artifact", 0),
        (display_message, "@The treasurer releases {s15} into your keeping.", 0x66CC66),
      (else_try),

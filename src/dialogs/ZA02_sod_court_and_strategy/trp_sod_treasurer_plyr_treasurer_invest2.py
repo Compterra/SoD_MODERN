@@ -8,7 +8,7 @@ DIALOGS = [
     (assign, "$g_sod_invested_day", ":cur_day"),
     (val_add, "$g_sod_invested_day", 5),
     (assign, "$g_sod_invested_gold", 500),
-    (troop_remove_gold, "trp_player", 500),
+    (call_script, "script_sod_player_charge_gold", 500),
     (play_sound, "snd_money_paid"),
   ]],
 ]

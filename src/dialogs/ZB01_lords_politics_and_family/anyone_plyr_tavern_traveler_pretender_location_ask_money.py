@@ -5,7 +5,7 @@ DIALOGS = [
      (ge, ":cur_gold", 30),
      ], "All right. Here is 30 denars.", "tavern_traveler_pretender_location_tell",
    [
-     (troop_remove_gold, "trp_player", 30),
+     (call_script, "script_sod_player_charge_gold", 30),
      (play_sound, "snd_money_paid"),
      ]],
 ]

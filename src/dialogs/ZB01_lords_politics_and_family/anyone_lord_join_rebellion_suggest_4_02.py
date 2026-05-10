@@ -23,9 +23,12 @@ DIALOGS = [
 
             (val_add, "$rebellion_chance", "$current_argument_value"),
 
-            (assign, reg6, "$current_argument_value", debug_color), #diagnostic only
-            (assign, reg7, "$rebellion_chance", debug_color), #diagnostic only
-            (display_message, "@Current argument effect: {reg6}, rebellion chance: {reg7}", debug_color), #diagnostic only
+            (assign, reg6, "$current_argument_value"),
+            (assign, reg7, "$rebellion_chance"),
+            (try_begin),
+              (eq, "$cheat_mode", 1),
+              (display_message, "@Current argument effect: {reg6}, rebellion chance: {reg7}", debug_color),
+            (try_end),
 
             (store_skill_level, ":persuasion_level", "skl_persuasion", "trp_player"),
             (val_mul, ":persuasion_level", 5),
@@ -61,9 +64,12 @@ DIALOGS = [
 
             (val_add, "$rebellion_chance", ":persuasion_value"),
 
-            (assign, reg6, ":persuasion_value", debug_color), #diagnostic only
-            (assign, reg7, "$rebellion_chance", debug_color), #diagnostic only
-            (display_message, "@Persuasion effect: {reg6}, rebellion chance: {reg7}", debug_color), #diagnostic only
+            (assign, reg6, ":persuasion_value"),
+            (assign, reg7, "$rebellion_chance"),
+            (try_begin),
+              (eq, "$cheat_mode", 1),
+              (display_message, "@Persuasion effect: {reg6}, rebellion chance: {reg7}", debug_color),
+            (try_end),
 
             (str_store_string, 54, "str_and_comma_2"),
             (try_begin),
@@ -93,15 +99,21 @@ DIALOGS = [
 
         (val_add, "$rebellion_chance", "$g_talk_troop_relation"),
 
-        (assign, reg6, "$g_talk_troop_relation", debug_color), #diagnostic only
-        (assign, reg7, "$rebellion_chance", debug_color), #diagnostic only
-        (display_message, "@Personal relation effect: {reg6}, rebellion chance: {reg7}", debug_color), #diagnostic only
+        (assign, reg6, "$g_talk_troop_relation"),
+        (assign, reg7, "$rebellion_chance"),
+        (try_begin),
+          (eq, "$cheat_mode", 1),
+          (display_message, "@Personal relation effect: {reg6}, rebellion chance: {reg7}", debug_color),
+        (try_end),
 
 
         (store_random_in_range, "$rebellion_check", 0, 100),
 
-        (assign, reg6, "$rebellion_check", debug_color), #diagnostic only
-        (display_message, "@Rebellion check: {reg6}", debug_color), #diagnostic only
+        (assign, reg6, "$rebellion_check"),
+        (try_begin),
+          (eq, "$cheat_mode", 1),
+          (display_message, "@Rebellion check: {reg6}", debug_color),
+        (try_end),
 
 
     ]],

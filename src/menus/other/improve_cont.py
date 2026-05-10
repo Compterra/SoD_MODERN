@@ -292,7 +292,7 @@ def _build_detail_lines(
     if build_time is None:
         build_time = get_building_build_duration(building_slot)
     if build_time is not None:
-        lines.append("Build time: %s days" % build_time)
+        lines.append("Legacy build-time value: %s days; runtime development now advances from population/workforce." % build_time)
 
     if current_buildings and upgrade_from:
         owned_sources = []
@@ -428,7 +428,7 @@ def build_center_improve_payload(*args, **kwargs):
     if build_time is None:
         build_time = get_building_build_duration(building_slot)
 
-    confirmation_text = "\n".join(detail_lines + status_lines + warnings)
+    confirmation_text = "^^".join(detail_lines + status_lines + warnings)
 
     return {
         "menu_id": "center_improve",

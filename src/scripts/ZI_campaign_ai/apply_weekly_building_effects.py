@@ -235,6 +235,36 @@ def _build_apply_weekly_building_effects_ops():
     return [
         (store_script_param, ":center_no", 1),
         (call_script, "script_get_center_building_effect_totals", ":center_no"),
+        (assign, ":weekly_relations", reg0),
+        (assign, ":weekly_prosperity", reg1),
+        (assign, ":weekly_renown", reg4),
+
+        (try_begin),
+            (neq, ":weekly_prosperity", 0),
+            (set_show_messages, 0),
+            (call_script, "script_change_center_prosperity", ":center_no", ":weekly_prosperity"),
+            (set_show_messages, 1),
+        (try_end),
+
+        (try_begin),
+            (neq, ":weekly_renown", 0),
+            (party_get_slot, ":center_lord", ":center_no", slot_town_lord),
+            (ge, ":center_lord", 0),
+            (set_show_messages, 0),
+            (call_script, "script_change_troop_renown", ":center_lord", ":weekly_renown"),
+            (set_show_messages, 1),
+        (try_end),
+
+        (try_begin),
+            (neq, ":weekly_relations", 0),
+            (store_faction_of_party, ":center_faction", ":center_no"),
+            (this_or_next|party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
+            (faction_slot_eq, ":center_faction", slot_faction_leader, "trp_player"),
+            (party_get_slot, ":cur_relation", ":center_no", slot_center_player_relation),
+            (val_add, ":cur_relation", ":weekly_relations"),
+            (val_clamp, ":cur_relation", -100, 101),
+            (party_set_slot, ":center_no", slot_center_player_relation, ":cur_relation"),
+        (try_end),
     ]
 
 

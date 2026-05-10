@@ -179,6 +179,28 @@ SCRIPTS = [
          
          (val_add, ":dist", ":dist_lord"),     # make the (non adjusted) dist lord always a little more important than other factors               
          (val_div, ":dist", 3),   
+
+         (try_begin),
+           (is_between, ":object", walled_centers_begin, walled_centers_end),
+           (store_faction_of_party, ":object_faction", ":object"),
+           (eq, ":object_faction", ":faction"),
+           (store_current_day, ":cur_day"),
+           (party_get_slot, ":protected_day", ":object", slot_center_sod_patrol_road_preference),
+           (store_sub, ":protected_age", ":cur_day", ":protected_day"),
+           (try_begin),
+             (ge, ":protected_day", 1),
+             (le, ":protected_age", 3),
+             (val_sub, ":dist", 4),
+             (val_max, ":dist", 0),
+           (try_end),
+           (party_get_slot, ":destroyed_day", ":object", slot_center_sod_patrol_recent_destroyed_day),
+           (store_sub, ":destroyed_age", ":cur_day", ":destroyed_day"),
+           (try_begin),
+             (ge, ":destroyed_day", 1),
+             (le, ":destroyed_age", 5),
+             (val_add, ":dist", 8),
+           (try_end),
+         (try_end),
          (assign, reg0, ":dist"),
          
          (try_begin),          # twan re accentuates the importance of the final number as distances tend to be medium as based on averages      

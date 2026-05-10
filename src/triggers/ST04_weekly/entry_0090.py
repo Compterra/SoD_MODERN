@@ -34,6 +34,12 @@ SIMPLE_TRIGGERS = [
       (val_add, ":faith", "$g_sod_building_shrine_local_faith"),
       (val_clamp, ":faith", -100, 201),
       (party_set_slot, ":center_no", slot_center_sod_local_faith, ":faith"),
+      (try_begin),
+        (gt, "$g_sod_faith", 0),
+        (call_script, "script_sod_change_center_faith_support", ":center_no", "$g_sod_faith", "$g_sod_building_shrine_local_faith"),
+        (call_script, "script_sod_get_center_faith_profile", ":center_no"),
+        (assign, ":faith", reg2),
+      (try_end),
       (val_add, "$g_sod_global_faith", "$g_sod_building_shrine_global_faith"),
       (val_clamp, "$g_sod_global_faith", -2000, 2001),
 
@@ -81,6 +87,7 @@ SIMPLE_TRIGGERS = [
       # let the player know that their efforts are not in vain
       (try_begin),
         (eq, "$g_sod_hide_messages", 0),
+        (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
         (str_store_party_name_link, s1, ":center_no"),
         (store_add, reg0, "str_sod_shrine_improve_0", "$g_sod_faith"),
         (str_store_string, s1, reg0),
@@ -92,6 +99,7 @@ SIMPLE_TRIGGERS = [
     (try_begin),
       (eq, "$g_sod_hide_messages", -1),
       (ge, ":count", 1),
+      (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
       (store_add, reg0, "str_sod_shrine_summary_0", "$g_sod_faith"),
       (str_store_string, s1, reg0),
       (display_message, s1, faith_color),
@@ -122,6 +130,10 @@ SIMPLE_TRIGGERS = [
       # increase the global faithful
       (val_add, "$g_sod_global_faith", "$g_sod_building_chapel_holy"),
       (val_clamp, "$g_sod_global_faith", -2000, 2001),
+      (try_begin),
+        (gt, "$g_sod_faith", 0),
+        (call_script, "script_sod_change_center_faith_support", ":center_no", "$g_sod_faith", "$g_sod_building_chapel_holy"),
+      (try_end),
 
       # Chapels should also steady garrison life and nearby order.
       (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
@@ -154,6 +166,7 @@ SIMPLE_TRIGGERS = [
       # let the player know that their efforts are not in vain
       (try_begin),
         (eq, "$g_sod_hide_messages", 0),
+        (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
         (str_store_party_name_link, s2, ":center_no"),
         (store_add, reg0, "str_sod_chapel_0", "$g_sod_faith"),
         (str_store_string, s1, reg0),
@@ -165,6 +178,7 @@ SIMPLE_TRIGGERS = [
     (try_begin),
       (eq, "$g_sod_hide_messages", -1),
       (ge, ":count", 1),
+      (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
       (store_add, reg0, "str_sod_chapel_0", "$g_sod_faith"),
       (str_store_string, s1, reg0),
       (display_message, "@The {s1}s in your castles strengthen faith across your realm.", faith_color),

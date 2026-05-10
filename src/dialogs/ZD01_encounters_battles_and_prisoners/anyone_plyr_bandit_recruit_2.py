@@ -14,7 +14,7 @@ DIALOGS = [
       (store_party_size, ":size", ":party"),
       (store_mul, ":size", ":size", 50),
       (assign, reg0, ":size"),
-      (troop_remove_gold, "trp_player", reg0),
+      (call_script, "script_sod_player_charge_gold", reg0),
       (play_sound, "snd_money_paid"),
       (val_add, "$g_sod_weekly_troops_hired", reg0), # track player expenses
       (party_join),

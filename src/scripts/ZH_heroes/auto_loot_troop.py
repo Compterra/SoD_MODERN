@@ -13,9 +13,9 @@ SCRIPTS = [
                         (try_for_range, ":i_inventory", first_inventory_slot, ":inv_cap"),
                           (troop_get_inventory_slot, ":item", ":troop", ":i_inventory"),
                           (ge, ":item", 0),
-                          (troop_get_inventory_slot_modifier, ":imod", ":troop", ":i_inventory"),
-                          (troop_add_item, ":pool", ":item", ":imod"), #put it back in the pool
-                          (troop_set_inventory_slot, ":troop", ":i_inventory", -1), # delete it
+                          (call_script, "script_sod_auto_loot_item_is_protected", ":item"),
+                          (eq, reg0, 0),
+                          (call_script, "script_sod_transfer_inventory_slot_to_free_inventory", ":troop", ":pool", ":i_inventory", 0),
                         (try_end),
 
                         # dispose of the troop's equipped items if necessary
@@ -23,52 +23,51 @@ SCRIPTS = [
                           (troop_slot_ge, ":troop", slot_troop_upgrade_wpn_0, 1),
                           (troop_get_inventory_slot, ":item", ":troop", ek_item_0),
                           (ge, ":item", 0),
-                          (troop_get_inventory_slot_modifier, ":imod", ":troop", ek_item_0),
-                          (troop_set_inventory_slot, ":troop", ek_item_0, -1), #delete it
-                          (troop_add_item, ":pool", ":item", ":imod"), # chuck it in the pool
+                          (call_script, "script_sod_auto_loot_item_is_protected", ":item"),
+                          (eq, reg0, 0),
+                          (call_script, "script_sod_transfer_inventory_slot_to_free_inventory", ":troop", ":pool", ek_item_0, 0),
                         (try_end),
 
                         (try_begin),
                           (troop_slot_ge, ":troop", slot_troop_upgrade_wpn_1, 1),
                           (troop_get_inventory_slot, ":item", ":troop", ek_item_1),
                           (ge, ":item", 0),
-                          (troop_get_inventory_slot_modifier, ":imod", ":troop", ek_item_1),
-                          (troop_set_inventory_slot, ":troop", ek_item_1, -1), #delete it
-                          (troop_add_item, ":pool", ":item", ":imod"), # chuck it in the pool
+                          (call_script, "script_sod_auto_loot_item_is_protected", ":item"),
+                          (eq, reg0, 0),
+                          (call_script, "script_sod_transfer_inventory_slot_to_free_inventory", ":troop", ":pool", ek_item_1, 0),
                         (try_end),
 
                         (try_begin),
                           (troop_slot_ge, ":troop", slot_troop_upgrade_wpn_2, 1),
                           (troop_get_inventory_slot, ":item", ":troop", ek_item_2),
                           (ge, ":item", 0),
-                          (troop_get_inventory_slot_modifier, ":imod", ":troop", ek_item_2),
-                          (troop_set_inventory_slot, ":troop", ek_item_2, -1), #delete it
-                          (troop_add_item, ":pool", ":item", ":imod"), # chuck it in the pool
+                          (call_script, "script_sod_auto_loot_item_is_protected", ":item"),
+                          (eq, reg0, 0),
+                          (call_script, "script_sod_transfer_inventory_slot_to_free_inventory", ":troop", ":pool", ek_item_2, 0),
                         (try_end),
 
                         (try_begin),
                           (troop_slot_ge, ":troop", slot_troop_upgrade_wpn_3, 1),
                           (troop_get_inventory_slot, ":item", ":troop", ek_item_3),
                           (ge, ":item", 0),
-                          (troop_get_inventory_slot_modifier, ":imod", ":troop", ek_item_3),
-                          (troop_set_inventory_slot, ":troop", ek_item_3, -1), #delete it
-                          (troop_add_item, ":pool", ":item", ":imod"), # chuck it in the pool
+                          (call_script, "script_sod_auto_loot_item_is_protected", ":item"),
+                          (eq, reg0, 0),
+                          (call_script, "script_sod_transfer_inventory_slot_to_free_inventory", ":troop", ":pool", ek_item_3, 0),
                         (try_end),
 
                         (try_for_range, ":i_inventory", ek_head, ek_food),
                           (troop_get_inventory_slot, ":item", ":troop", ":i_inventory"),
                           (ge, ":item", 0),
-                          (troop_get_inventory_slot_modifier, ":imod", ":troop", ":i_inventory"),
+                          (call_script, "script_sod_auto_loot_item_is_protected", ":item"),
+                          (eq, reg0, 0),
                           (try_begin),
                             (neq, ":upg_armor", 0), # we're uprgrading armors
                             (is_between, ":i_inventory", ek_head, ek_horse), # it's an armor slot
-                            (troop_set_inventory_slot, ":troop", ":i_inventory", -1), #delete it
-                            (troop_add_item, ":pool", ":item", ":imod"), # chuck it in the pool
+                            (call_script, "script_sod_transfer_inventory_slot_to_free_inventory", ":troop", ":pool", ":i_inventory", 0),
                           (else_try),
                             (neq, ":upg_horses", 0), # we're uprgrading horses
                             (eq, ":i_inventory", ek_horse), # it's a horse slot
-                            (troop_set_inventory_slot, ":troop", ":i_inventory", -1), #delete it
-                            (troop_add_item, ":pool", ":item", ":imod"), # chuck it in the pool
+                            (call_script, "script_sod_transfer_inventory_slot_to_free_inventory", ":troop", ":pool", ":i_inventory", 0),
                           (try_end),
                         (try_end),
 
@@ -91,6 +90,10 @@ SCRIPTS = [
                           # check if there is an item in this inventory slot
                           (troop_get_inventory_slot, ":item", ":pool", ":i_inventory"),
                           (ge, ":item", 0),
+                          (call_script, "script_sod_auto_loot_item_is_protected", ":item"),
+                          (eq, reg0, 0),
+                          (this_or_next|eq, ":require_mount_compatible", 0),
+                          (item_slot_eq, ":item", slot_item_cant_use_on_horseback, 0),
 
                           # check if this troop can use this item
                           (troop_get_inventory_slot_modifier, ":imod", ":pool", ":i_inventory"),
@@ -142,10 +145,7 @@ SCRIPTS = [
                           (ge, ":best_slot", 0),
                           (troop_get_inventory_slot, ":item", ":pool", ":best_slot"),
                           (ge, ":item", 0),
-                          (troop_get_inventory_slot_modifier, ":imod", ":pool", ":best_slot"),
-                          (troop_set_inventory_slot, ":troop", ek_head, ":item"),
-                          (troop_set_inventory_slot_modifier, ":troop", ek_head, ":imod"),
-                          (troop_set_inventory_slot, ":pool", ":best_slot", -1),
+                          (call_script, "script_sod_transfer_inventory_slot_to_slot", ":pool", ":troop", ":best_slot", ek_head, 0),
                         (try_end),
 
                         # equip best armor
@@ -154,10 +154,7 @@ SCRIPTS = [
                           (ge, ":best_slot", 0),
                           (troop_get_inventory_slot, ":item", ":pool", ":best_slot"),
                           (ge, ":item", 0),
-                          (troop_get_inventory_slot_modifier, ":imod", ":pool", ":best_slot"),
-                          (troop_set_inventory_slot, ":troop", ek_body, ":item"),
-                          (troop_set_inventory_slot_modifier, ":troop", ek_body, ":imod"),
-                          (troop_set_inventory_slot, ":pool", ":best_slot", -1),
+                          (call_script, "script_sod_transfer_inventory_slot_to_slot", ":pool", ":troop", ":best_slot", ek_body, 0),
                         (try_end),
 
                         # equip best boots
@@ -166,10 +163,7 @@ SCRIPTS = [
                           (ge, ":best_slot", 0),
                           (troop_get_inventory_slot, ":item", ":pool", ":best_slot"),
                           (ge, ":item", 0),
-                          (troop_get_inventory_slot_modifier, ":imod", ":pool", ":best_slot"),
-                          (troop_set_inventory_slot, ":troop", ek_foot, ":item"),
-                          (troop_set_inventory_slot_modifier, ":troop", ek_foot, ":imod"),
-                          (troop_set_inventory_slot, ":pool", ":best_slot", -1),
+                          (call_script, "script_sod_transfer_inventory_slot_to_slot", ":pool", ":troop", ":best_slot", ek_foot, 0),
                         (try_end),
 
                         # equip best gloves
@@ -178,10 +172,7 @@ SCRIPTS = [
                           (ge, ":best_slot", 0),
                           (troop_get_inventory_slot, ":item", ":pool", ":best_slot"),
                           (ge, ":item", 0),
-                          (troop_get_inventory_slot_modifier, ":imod", ":pool", ":best_slot"),
-                          (troop_set_inventory_slot, ":troop", ek_gloves, ":item"),
-                          (troop_set_inventory_slot_modifier, ":troop", ek_gloves, ":imod"),
-                          (troop_set_inventory_slot, ":pool", ":best_slot", -1),
+                          (call_script, "script_sod_transfer_inventory_slot_to_slot", ":pool", ":troop", ":best_slot", ek_gloves, 0),
                         (try_end),
 
                         # horse
@@ -190,10 +181,7 @@ SCRIPTS = [
                           (ge, ":best_slot", 0),
                           (troop_get_inventory_slot, ":item", ":pool", ":best_slot"),
                           (ge, ":item", 0),
-                          (troop_get_inventory_slot_modifier, ":imod", ":pool", ":best_slot"),
-                          (troop_set_inventory_slot, ":troop", ek_horse, ":item"),
-                          (troop_set_inventory_slot_modifier, ":troop", ek_horse, ":imod"),
-                          (troop_set_inventory_slot, ":pool", ":best_slot", -1),
+                          (call_script, "script_sod_transfer_inventory_slot_to_slot", ":pool", ":troop", ":best_slot", ek_horse, 0),
                         (try_end),
 
                         # shields & weapons
@@ -206,10 +194,7 @@ SCRIPTS = [
                           (neq, ":best_slot", -1), #got something
                           (troop_get_inventory_slot, ":item", ":pool", ":best_slot"), #get it
                           (ge, ":item", 0),
-                          (troop_get_inventory_slot_modifier, ":imod", ":pool", ":best_slot"),
-                          (troop_set_inventory_slot, ":pool", ":best_slot", -1), #remove from pool
-                          (troop_set_inventory_slot, ":troop", ":i_inventory", ":item"), #add to slot
-                          (troop_set_inventory_slot_modifier, ":troop", ":i_inventory", ":imod"),
+                          (call_script, "script_sod_transfer_inventory_slot_to_slot", ":pool", ":troop", ":best_slot", ":i_inventory", 0),
                         (try_end),
                       ]
                     ),

@@ -19,8 +19,19 @@ SCRIPTS = [
 
       # add civilian population (SOD only)
       (try_begin),
+        (party_slot_eq, ":center_no", slot_party_type, spt_village),
+        (call_script, "script_sod_get_center_population_capacity_profile", ":center_no"),
+        (assign, ":civilians", reg9),
+      (else_try),
         (party_slot_eq, ":center_no", slot_party_type, spt_town),
-        (party_get_slot, ":civilians", ":center_no", slot_center_sod_local_population),
+        (call_script, "script_sod_get_center_population_capacity_profile", ":center_no"),
+        (assign, ":civilians", reg9),
+      (else_try),
+        (party_slot_eq, ":center_no", slot_party_type, spt_castle),
+        (call_script, "script_sod_get_center_population_capacity_profile", ":center_no"),
+        (assign, ":civilians", reg9),
+        (val_div, ":civilians", 20),
+        (val_max, ":civilians", 10),
       (else_try),
         # consider castles to have a skeleton number of non-combatants around
         (assign, ":civilians", 10),
@@ -32,13 +43,29 @@ SCRIPTS = [
 
       # civilians are on 1/2 rations
       (store_div, ":civ_rate", ":civilians", 2),
+      (try_begin),
+        # Towns are market engines: craftsmen, visitors, workshops, and dense
+        # households consume more than rural civilian headcount alone suggests.
+        (party_slot_eq, ":center_no", slot_party_type, spt_town),
+        (val_mul, ":civ_rate", 6),
+        (val_div, ":civ_rate", 5),
+        (party_get_slot, ":prosperity", ":center_no", slot_town_prosperity),
+        (val_max, ":prosperity", 0),
+        (store_div, ":service_consumption", ":prosperity", 10),
+        (val_add, ":civ_rate", ":service_consumption"),
+      (try_end),
 
       # prisoners are on 1/4 rations
       (store_div, ":prs_rate", ":prisoners", 4),
 
       # and voila: the consumption rate (return it via reg0)
-      (store_add, reg0, ":mil_rate", ":civ_rate"),
-      (val_add, reg0, ":prs_rate"),
+      (store_add, ":food_consumption", ":mil_rate", ":civ_rate"),
+      (val_add, ":food_consumption", ":prs_rate"),
+      (call_script, "script_sod_get_center_modifier", ":center_no", sod_center_modifier_food_consumption_pct),
+      (val_mul, ":food_consumption", reg0),
+      (val_div, ":food_consumption", 100),
+      (val_max, ":food_consumption", 0),
+      (assign, reg0, ":food_consumption"),
 
       #DEBUG
       (try_begin),

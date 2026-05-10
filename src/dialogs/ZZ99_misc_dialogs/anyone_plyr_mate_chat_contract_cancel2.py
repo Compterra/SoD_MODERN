@@ -11,10 +11,10 @@ DIALOGS = [
 			(val_add, ":total_cost", ":cur_cost"),
         (try_end),
 		(store_troop_gold, ":gold", "trp_player"),
-		(gt, ":gold", ":total_cost"),
+		(ge, ":gold", ":total_cost"),
 		(assign, reg19, ":total_cost"),
-	], "Here you are, {reg19} denars.", "close_window",[
-		(troop_remove_gold, "trp_player", reg19),
+	], "Here you are, {reg19} denars. The account is closed.", "close_window",[
+		(call_script, "script_sod_player_charge_gold", reg19),
 		(call_script, "script_merc_party_change_state", "$g_encountered_party"),
 	]],
 ]

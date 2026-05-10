@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone, "lord_predemand", [], "Eh? What do you want?", "lord_demand", []],
+[anyone, "lord_predemand", [], "You ride close with demand in your eyes. Say it, then stand by the shape it takes.", "lord_demand", []],
 ]

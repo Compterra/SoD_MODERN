@@ -1,7 +1,7 @@
 DIALOGS = [
 [anyone, "lord_ask_pardon_tribue_accept", [], "Excellent, {playername}. I'll use the coin to smooth the feathers of those that can oppose your pardon, and I'm sure that word will soon spread that you are no longer an enemy of {s4}.", "close_window",
    [
-     (troop_remove_gold, "trp_player", reg16),
+     (call_script, "script_sod_player_charge_gold", reg16),
      (play_sound, "snd_money_paid"),
      (try_begin),
        (eq, "$players_kingdom", 0),

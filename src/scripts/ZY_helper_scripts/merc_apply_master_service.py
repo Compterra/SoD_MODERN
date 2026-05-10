@@ -34,7 +34,7 @@ SCRIPTS = [
    (store_troop_gold, ":gold", "trp_player"),
    (try_begin),
      (ge, ":gold", ":service_cost"),
-     (troop_remove_gold, "trp_player", ":service_cost"),
+     (call_script, "script_sod_player_charge_gold", ":service_cost"),
      (call_script, "script_change_player_relation_with_faction", ":guild_faction", -2),
 
      (try_begin),

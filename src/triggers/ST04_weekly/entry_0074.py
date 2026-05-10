@@ -13,15 +13,10 @@ SIMPLE_TRIGGERS = [
         (party_get_slot, ":lord", ":cur_village", slot_town_lord),
         (str_store_party_name_link, s3, ":cur_village"),
 
-        # Manor +5 renown / week, but only to the lord of the village
+        # Manors should provide steadier stewardship in the village itself.
         (try_begin),
           (party_slot_eq, ":cur_village", slot_center_has_manor, 1),
           (ge, ":lord", 0), #avoid unassigned issue
-          (set_show_messages, 0),
-          (call_script, "script_change_troop_renown", ":lord", "$g_sod_building_manor_renown"),
-          (set_show_messages, 1),
-
-          # Manors should also provide steadier stewardship in the village itself.
           (party_get_slot, ":village_health", ":cur_village", slot_center_sod_local_health),
           (party_get_slot, ":village_prosperity", ":cur_village", slot_town_prosperity),
           (try_begin),
@@ -44,18 +39,11 @@ SIMPLE_TRIGGERS = [
           (display_message, "@Your manor in {s3} stands as a mark of noble rule, adding to your renown each week.", renown_color),
         (try_end),
 
-        # Inn +1 relationship / week
+        # Inns should help keep village trade and daily life moving.
         (try_begin),
-          # relations affect the player even if not his fief
           (party_slot_eq, ":cur_village", slot_center_has_inn, 1),
           (val_add, ":inns", 1),
-          (party_get_slot, ":cur_relation", ":cur_village", slot_center_player_relation),
-          (lt, ":cur_relation", 100),
-          (val_add, ":cur_relation", "$g_sod_building_inn_reputation"),
-          (val_clamp, ":cur_relation", -100, 101),
-          (party_set_slot, ":cur_village", slot_center_player_relation, ":cur_relation"),
 
-          # Inns should also help keep village trade and daily life moving.
           (party_get_slot, ":village_health", ":cur_village", slot_center_sod_local_health),
           (party_get_slot, ":village_prosperity", ":cur_village", slot_town_prosperity),
           (try_begin),

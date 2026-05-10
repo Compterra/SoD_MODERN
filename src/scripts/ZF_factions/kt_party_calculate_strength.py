@@ -64,6 +64,12 @@ SCRIPTS = [
             (try_end),
          (try_end),
 
+         # KT0 autoresolve layers:
+         # 1) base offense/defense/mobility slots are generated from equipment,
+         #    proficiencies, power skills, armor, shields, ironflesh, and horses.
+         # 2) doctrine modifiers are baked into those slots during initialization.
+         # 3) this script applies role/context modifiers for open field, siege
+         #    attacker, and siege defender, then scales by surviving troop count.
          # context-specific modifiers:
          #   0 = open field
          #   1 = defending a siege

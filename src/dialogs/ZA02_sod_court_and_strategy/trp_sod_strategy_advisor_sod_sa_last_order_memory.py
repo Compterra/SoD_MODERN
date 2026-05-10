@@ -1,0 +1,20 @@
+DIALOGS = [
+[trp_sod_strategy_advisor, "sod_sa_last_order_memory", [
+    (troop_get_slot, ":memory", "trp_sod_strategy_advisor", slot_troop_sod_mentor_legion_memory),
+    (try_begin),
+      (eq, ":memory", sod_mentor_last_order_sabotage),
+      (str_store_string, s1, "@I remember making ghosts useful. It worked. That is not the same as peace."),
+    (else_try),
+      (eq, ":memory", sod_mentor_last_order_rescue),
+      (str_store_string, s1, "@I remember names becoming people again. Strategy rarely grants that kindness."),
+    (else_try),
+      (eq, ":memory", sod_mentor_last_order_exposed),
+      (str_store_string, s1, "@I remember standing in daylight with old lies in my hands. Some secrets rot when they are finally seen."),
+    (else_try),
+      (eq, ":memory", sod_mentor_last_order_burned),
+      (str_store_string, s1, "@I remember ash. I hated losing the network. I needed to lose it."),
+    (else_try),
+      (str_store_string, s1, "@I remember the seal breaking. The rest is still finding its shape."),
+    (try_end),
+], "{s1}", "sod_sa_pretalk", []],
+]

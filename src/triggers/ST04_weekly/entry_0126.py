@@ -1,6 +1,8 @@
 SIMPLE_TRIGGERS = [
 (24*7, [
-	 (try_for_range, ":cur_guild", guilds_begin, "fac_sod_merc_guild6"),
+     (call_script, "script_sod_merc_market_weekly_pulse"),
+	 (try_for_range, ":cur_guild", guilds_begin, guilds_end),
+        (call_script, "script_cf_sod_merc_guild_uses_classic_employer_rotation", ":cur_guild"),
 		(assign, ":employed", 0),
 		(try_for_range, ":employer", kingdoms_begin, kingdoms_end),
 			(faction_slot_eq, ":employer", slot_faction_merc_pact, ":cur_guild"),
@@ -14,6 +16,14 @@ SIMPLE_TRIGGERS = [
 		(eq, ":employed", 0),
 		(call_script, "script_cf_merc_guild_give_new_employer", ":cur_guild"),
 	 (try_end),
+	 (call_script, "script_sod_jotnar_spawn_world_activity"),
+	 (call_script, "script_sod_elephant_guard_spawn_world_activity"),
+	 (call_script, "script_sod_slavers_spawn_world_activity"),
+	 (call_script, "script_sod_black_khergits_spawn_or_recover_camp"),
+	 (call_script, "script_sod_black_khergits_spawn_raids"),
+	 (call_script, "script_sod_diplomacy_process_treaty_effects"),
+	 (call_script, "script_sod_diplomacy_ai_weekly_pulse"),
+	 (call_script, "script_sod_diplomacy_process_incident_events"),
 	 (call_script, "script_update_all_notes"),
   
 	 (faction_get_slot, ":mercenaries", "fac_player_faction", slot_faction_merc_pact),

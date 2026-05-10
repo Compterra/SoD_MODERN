@@ -3,9 +3,9 @@ from src.constants.module_constants import *
 SCRIPTS = [
 ("get_center_ideal_prosperity",
         [(store_script_param, ":center_no", 1),
-          (call_script, "script_get_center_building_effect_totals", ":center_no"),
-          (assign, ":building_prosperity_cap_bonus", reg7),
-          (assign, ":building_prosperity_multiplier_bonus", reg10),
+          (call_script, "script_sod_get_center_modifier_totals", ":center_no"),
+          (assign, ":building_prosperity_cap_bonus", reg9),
+          (store_sub, ":building_prosperity_multiplier_bonus", reg11, 100),
           (assign, ":ideal", 50),
           (try_begin),
             (is_between, ":center_no", villages_begin, villages_end),

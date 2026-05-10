@@ -6,7 +6,7 @@ SCRIPTS = [
 
 	(try_begin),
 		(troop_get_slot, ":title", ":troop", slot_troop_title),
-		(gt, ":title", 0),
+		(is_between, ":title", "str_sod_c1_ruler", "str_bc_random_warrior1_1"),
 		(str_store_troop_name_link, s37, ":troop"),
 		(str_store_string, s27, ":title"),
 		(call_script, "script_get_best_fief_name_of_troop", s17, ":troop"),
@@ -22,7 +22,7 @@ SCRIPTS = [
 			(str_store_string, ":string", "@{s27} {s37}{s17}"),
 		(try_end),
 	(else_try),
-		(str_store_troop_name, ":string", ":troop"),
+		(str_store_troop_name_link, ":string", ":troop"),
 	(try_end),
 	]),
 ]

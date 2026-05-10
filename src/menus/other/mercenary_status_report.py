@@ -9,6 +9,7 @@ MENUS = [
       (str_store_string, s1, "@Mercenary Contract Board^^{s63}^^{s64}^^{s65}^^{s66}^^{s67}^^Mercenary Ledger^^{s60}^^{s61}^^{s62}"),
     ],
     [
+      ("view_mercenary_market_report", [], "Read the mercenary market ledger.", [(jump_to_menu, "mnu_mercenary_market_report")]),
       ("view_guild_relations_report", [], "View guild relations report.", [(jump_to_menu, "mnu_guilds_relations_report")]),
       ("view_reports", [], "Let me see a different report...", [(jump_to_menu, "mnu_reports")]),
       ("resume_travelling", [], "Resume travelling.", [(change_screen_return)]),

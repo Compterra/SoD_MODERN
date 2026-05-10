@@ -26,12 +26,7 @@ DIALOGS = [
     "{s1}", "mate_chat_pre_talk",
     [
       (store_repeat_object, "$temp_2"),
-      (call_script, "script_party_set_ai_state", "$g_encountered_party", "$temp_1", "$temp_2"),
-      (try_begin),
-        (eq, "$temp_1", spai_holding_center),
-		(call_script, "script_change_party_template", "$g_encountered_party", "pt_player_patrol"),
-	  (else_try),
-		(call_script, "script_change_party_template", "$g_encountered_party", "pt_player_patrol_2"),
-	  (try_end),
+      (call_script, "script_sod_external_party_set_order", "$g_encountered_party", "$temp_1", "$temp_2"),
+      (assign, "$g_encountered_party", reg0),
     ]],
 ]

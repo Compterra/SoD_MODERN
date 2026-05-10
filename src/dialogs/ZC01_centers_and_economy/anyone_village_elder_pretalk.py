@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone , "village_elder_pretalk", [],
-   "Is there anything else I can do for you?", "village_elder_talk", []],
+   "The village still has ears on us, {sir/madam}. What else should I carry back to them?", "village_elder_talk", []],
 ]

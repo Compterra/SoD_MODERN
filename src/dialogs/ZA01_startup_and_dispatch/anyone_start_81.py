@@ -4,5 +4,5 @@ DIALOGS = [
                     (lt, "$g_encountered_party_relation", 0),
                     (eq, "$g_encountered_party_faction", "fac_merchants"),
                     ],
-   "What do you want? We are but simple merchants, we've no quarrel with you, so leave us alone.", "merchant_talk", []],
+   "Keep your hands where my drivers can see them. We are merchants, not soldiers, and this road has taken enough from us already.", "merchant_talk", []],
 ]

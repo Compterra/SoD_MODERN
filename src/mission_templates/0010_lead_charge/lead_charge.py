@@ -38,6 +38,8 @@ MISSION_TEMPLATES = [
          (team_set_relation, 1, 3, 1),
          (call_script, "script_place_player_banner_near_inventory_bms"),
          (call_script, "script_sod_quest_battle_mission_start"),
+         (call_script, "script_sod_battle_initialize_morale_context"),
+         (call_script, "script_sod_company_dialogue_process_battle_start_morale"),
          ]),
       quest_battle_agent_defeated,
       quest_battle_tick,
@@ -111,6 +113,7 @@ MISSION_TEMPLATES = [
       camera_trigger_8,
 
       formations_init,
+      formations_0,
       formations_1,
       formations_2,
       formations_3,

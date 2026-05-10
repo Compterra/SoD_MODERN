@@ -9,7 +9,7 @@ DIALOGS = [
 
       # reset the lord's cash to minimal.  he shouldn't be running around with a fortune!
       (store_troop_gold, ":gold", "$g_talk_troop"),
-      (troop_remove_gold, ":gold", "$g_talk_troop"),
+      (troop_remove_gold, "$g_talk_troop", ":gold"),
       (troop_add_gold, "$g_talk_troop", recruited_lord_starting_funds),
 
       (assign, "$g_sod_lord_offers_allegience", 0),

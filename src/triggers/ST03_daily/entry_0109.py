@@ -10,10 +10,20 @@ SIMPLE_TRIGGERS = [
     (assign, "$g_sod_zealot", reg3),
 
     # ultimate troops (zealots) locked behind faith: need minimum effective faith for event to fire
-    (assign, ":faith", "$g_sod_global_faith"),
-    (store_mul, ":holy", "$g_sod_holy", 10),
-    (val_sub, ":faith", ":holy"),
+    (call_script, "script_sod_troop_get_effective_faith"),
+    (assign, ":faith", reg0),
     (ge, ":faith", sod_zealot_min_faith),
+    (assign, ":religious_seats", 0),
+    (assign, ":faith_ascension_bonus", 0),
+    (try_for_range, ":center_no", walled_centers_begin, walled_centers_end),
+      (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
+      (this_or_next|party_slot_eq, ":center_no", slot_center_has_temple, 1),
+      (party_slot_eq, ":center_no", slot_center_has_chapel, 1),
+      (val_add, ":religious_seats", 1),
+      (call_script, "script_sod_get_center_recruitment_policy", ":center_no"),
+      (val_add, ":faith_ascension_bonus", reg4),
+    (try_end),
+    (gt, ":religious_seats", 0),
 
     # determine if a zealot has come to be
     (store_random_in_range, ":rand", 0, 100),
@@ -39,6 +49,10 @@ SIMPLE_TRIGGERS = [
 	#SoD Law
 	(assign, ":result", 50),
 	(val_sub, ":result", "$g_sod_holy_law_modifier"),
+    (store_mul, ":seat_bonus", ":religious_seats", sod_faith_ascension_event_bonus),
+    (val_add, ":seat_bonus", ":faith_ascension_bonus"),
+    (val_sub, ":result", ":seat_bonus"),
+    (val_max, ":result", 12),
     # upgrade the zelaot
     (gt, ":rand", ":result"),
     (jump_to_menu, "mnu_event_holy"),

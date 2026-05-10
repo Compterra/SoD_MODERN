@@ -4,6 +4,11 @@ SCRIPTS = [
  [
    (store_script_param_1, ":archetype"),
 
+   (try_begin),
+     (neg|is_between, ":archetype", sod_threat_archetypes_begin, sod_threat_archetypes_end),
+     (assign, ":archetype", sod_threat_archetype_river_pirates),
+   (try_end),
+
    (assign, ":threat_type", sod_threat_type_pirates),
    (assign, ":tier", 1),
    (assign, ":party_template", "pt_bandits"),

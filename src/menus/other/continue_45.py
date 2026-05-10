@@ -7,7 +7,7 @@ MENUS = [
       (set_background_mesh, "$g_sod_town_background"),
     ],
     [
-      ("continue", [], "Continue...", [ (assign, "$sneaked_into_town", 1), (jump_to_menu, "mnu_town"), ] ),
+      ("continue", [], "Continue...", [ (call_script, "script_sod_companion_retinue_repair_all"), (assign, "$sneaked_into_town", 1), (jump_to_menu, "mnu_town"), ] ),
     ]
   ),
 ]

@@ -18,7 +18,6 @@ SCRIPTS = [
 
    (try_begin),
      (gt, ":guild_no", 0),
-     (faction_set_slot, ":guild_no", player_debt_to_faction, 0),
      (store_current_day, ":cur_day"),
      (faction_set_slot, ":guild_no", slot_faction_pact_broken_day, ":cur_day"),
      (call_script, "script_merc_update_guild_marshal_faction", ":guild_no", "fac_commoners"),

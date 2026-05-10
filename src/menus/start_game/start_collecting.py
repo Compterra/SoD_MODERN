@@ -1,7 +1,7 @@
 MENUS = [
 (
     "collect_taxes", mnf_disable_all_keys,
-    "As the party member with the highest trade skill ({reg2}), {reg3?you expect:{s1} expects} that collecting taxes from here will take {reg4} days...",
+    "{reg3?You expect:{s1} expects} the tax collection to take {s2}.",
     "none",
     [
       (set_background_mesh, "$g_sod_town_background"),
@@ -22,6 +22,15 @@ MENUS = [
         (party_slot_eq, "$current_town", slot_party_type, spt_town),
         (assign, ":tax_quest_expected_revenue", 6000),
       (try_end),
+      (call_script, "script_sod_get_center_population_capacity_profile", "$current_town"),
+      (assign, ":tax_capacity_pct", reg3),
+      (assign, ":productive_population", reg9),
+      (val_mul, ":tax_quest_expected_revenue", ":tax_capacity_pct"),
+      (val_div, ":tax_quest_expected_revenue", 100),
+      (try_begin),
+        (gt, ":productive_population", 0),
+        (val_max, ":tax_quest_expected_revenue", 50),
+      (try_end),
 
       (try_begin),
        (quest_slot_eq, "qst_collect_taxes", slot_quest_current_state, 0),
@@ -38,6 +47,14 @@ MENUS = [
        (val_add, reg0, 20),
        (val_mul, "$qst_collect_taxes_total_hours", 20),
        (val_div, "$qst_collect_taxes_total_hours", reg0),
+       (try_begin),
+         (lt, ":tax_capacity_pct", 100),
+         (store_sub, ":tax_capacity_drag", 100, ":tax_capacity_pct"),
+         (val_div, ":tax_capacity_drag", 2),
+         (val_add, ":tax_capacity_drag", 100),
+         (val_mul, "$qst_collect_taxes_total_hours", ":tax_capacity_drag"),
+         (val_div, "$qst_collect_taxes_total_hours", 100),
+       (try_end),
 
        (quest_set_slot, "qst_collect_taxes", slot_quest_target_amount, "$qst_collect_taxes_total_hours"),
        (store_div, ":menu_begin_time", "$qst_collect_taxes_total_hours", 20), #between %5-%25
@@ -62,6 +79,18 @@ MENUS = [
       (try_end),
       (val_div, ":target_days", 24),
       (assign, reg4, ":target_days"),
+      (try_begin),
+        (le, ":target_days", 1),
+        (str_store_string, s2, "@about a day if the locals cooperate"),
+      (else_try),
+        (le, ":target_days", 3),
+        (str_store_string, s2, "@a few days"),
+      (else_try),
+        (le, ":target_days", 7),
+        (str_store_string, s2, "@most of a week"),
+      (else_try),
+        (str_store_string, s2, "@a long and unpopular week or more"),
+      (try_end),
     ],
     [
       ("start_collecting", [], "Start collecting.",

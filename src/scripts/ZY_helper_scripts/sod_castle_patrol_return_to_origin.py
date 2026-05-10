@@ -1,0 +1,28 @@
+# COST: low
+SCRIPTS = [
+("sod_castle_patrol_return_to_origin",
+ [
+   (store_script_param, ":patrol_party", 1),
+   (party_get_slot, ":origin", ":patrol_party", slot_party_sod_patrol_origin_castle),
+   (try_begin),
+     (gt, ":origin", 0),
+     (party_is_active, ":origin"),
+     (party_get_num_prisoner_stacks, ":num_stacks", ":patrol_party"),
+     (try_for_range, ":unused", 0, ":num_stacks"),
+       (party_get_num_prisoner_stacks, ":remaining_stacks", ":patrol_party"),
+       (gt, ":remaining_stacks", 0),
+       (party_prisoner_stack_get_troop_id, ":troop_id", ":patrol_party", 0),
+       (party_prisoner_stack_get_size, ":stack_size", ":patrol_party", 0),
+       (party_remove_prisoners, ":patrol_party", ":troop_id", ":stack_size"),
+       (party_add_prisoners, ":origin", ":troop_id", ":stack_size"),
+     (try_end),
+     (party_get_slot, ":status", ":patrol_party", slot_party_sod_patrol_status),
+     (try_begin),
+       (eq, ":status", sod_castle_patrol_status_active),
+       (call_script, "script_sod_castle_patrol_apply_success", ":patrol_party"),
+     (try_end),
+     (party_set_slot, ":patrol_party", slot_party_sod_patrol_status, sod_castle_patrol_status_disbanded),
+     (remove_party, ":patrol_party"),
+   (try_end),
+ ]),
+]

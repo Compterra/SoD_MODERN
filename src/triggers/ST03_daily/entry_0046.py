@@ -8,6 +8,7 @@ SIMPLE_TRIGGERS = [
         (troop_slot_eq, ":troop_no", slot_troop_occupation, slto_kingdom_hero),
         (neg|troop_slot_ge, ":troop_no", slot_troop_prisoner_of_party, 0),
         (neg|troop_slot_ge, ":troop_no", slot_troop_leaded_party, 1),
+        (neg|troop_slot_ge, ":troop_no", slot_troop_change_to_faction, 1),
 
         (store_troop_faction, ":cur_faction", ":troop_no"),
         (try_begin),
@@ -72,9 +73,25 @@ SIMPLE_TRIGGERS = [
 
             (else_try),
 
-              # (try to) choose an npc kingdom
-              (call_script, "script_cf_get_random_active_faction_except_player_faction_and_faction", ":cur_faction"),
-              (troop_set_slot, ":troop_no", slot_troop_change_to_faction, reg0),
+              # (try to) choose a realm with land, stability, and room for another lord
+              (call_script, "script_sod_lord_choose_patron_faction_to_reg", ":troop_no", ":cur_faction"),
+              (assign, ":patron_faction", reg0),
+              (assign, ":patron_score", reg1),
+              (call_script, "script_sod_claimant_choose_defection_target_to_reg", ":troop_no", ":cur_faction", ":patron_faction"),
+              (assign, ":patron_faction", reg0),
+              (try_begin),
+                (is_between, ":patron_faction", rebel_factions_begin, rebel_factions_end),
+                (assign, ":patron_score", reg1),
+              (try_end),
+              (try_begin),
+                (is_between, ":patron_faction", kingdoms_begin, kingdoms_end),
+                (neq, ":patron_faction", "fac_player_supporters_faction"),
+                (gt, ":patron_score", 35),
+                (troop_set_slot, ":troop_no", slot_troop_change_to_faction, ":patron_faction"),
+              (else_try),
+                (call_script, "script_cf_get_random_active_faction_except_player_faction_and_faction", ":cur_faction"),
+                (troop_set_slot, ":troop_no", slot_troop_change_to_faction, reg0),
+              (try_end),
 
             (try_end),
           (try_end),

@@ -199,7 +199,7 @@ SCRIPTS = [
     (
         "sod_quest_dialogue_record_event",
         [
-            (str_store_string, s4, "@The quest memory has been updated."),
+            (str_store_string, s4, "@I have set this matter down in memory."),
             (assign, reg0, 1),
         ],
     )

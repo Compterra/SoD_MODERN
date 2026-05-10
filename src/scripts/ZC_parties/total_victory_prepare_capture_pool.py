@@ -6,7 +6,7 @@ SCRIPTS = [
       (party_clear, "p_temp_party"),
       (party_clear, "p_temp_party_2"),
       (assign, "$g_move_heroes", 0),
-      (call_script, "script_party_prisoners_add_party_companions", "p_temp_party", "p_collective_enemy"),
+      (call_script, "script_party_prisoners_add_wounded_party_companions", "p_temp_party", "p_collective_enemy"),
       (call_script, "script_party_add_party_prisoners", "p_temp_party", "p_collective_enemy"),
 
       (try_begin),

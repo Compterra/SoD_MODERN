@@ -1,6 +1,8 @@
 SIMPLE_TRIGGERS = [
 (0.5,
    [
+     (map_free),
+     (eq, "$g_sod_player_world_ready", 1),
      (store_current_hours, ":cur_hours"),
      (store_mod, ":cur_hours_mod", ":cur_hours", 11),
      (store_sub, ":hour_limit", ":cur_hours", 5),

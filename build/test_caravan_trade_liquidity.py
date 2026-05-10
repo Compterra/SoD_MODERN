@@ -21,13 +21,16 @@ def main() -> int:
     assert_contains(trade, "slot_center_sod_local_population")
     assert_contains(trade, "slot_party_food_store")
     assert_contains(trade, "slot_center_accumulated_tariffs")
-    assert_contains(trade, "slot_town_wealth")
+    assert_contains(trade, "script_sod_change_center_wealth")
     assert_contains(trade, "market_liquidity")
     assert_contains(trade, "import_pressure")
     assert_contains(trade, "export_pressure")
     assert_contains(trade, "scarcity_score")
     assert_contains(trade, "abundance_score")
-    assert_contains(trade, "party_set_slot, \":center_no\", slot_town_wealth")
+    assert_contains(trade, "script_sod_get_center_goods_market_profile")
+    assert_contains(trade, "goods_liquidity_pressure")
+    assert_contains(trade, "goods_scarcity_pressure")
+    assert_contains(trade, "script_change_center_prosperity")
 
     print("[caravan_trade_liquidity] OK")
     return 0

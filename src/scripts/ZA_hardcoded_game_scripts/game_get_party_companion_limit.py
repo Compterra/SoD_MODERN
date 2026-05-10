@@ -10,6 +10,15 @@ SCRIPTS = [
         #MORDACHAI - double their effective leadership if they're king
         (faction_slot_eq, "$players_kingdom", slot_faction_leader, "trp_player"),
         (val_mul, ":skill", 2),
+      (else_try),
+        # A temporary mercenary contract should not shrink the player's host.
+        # They remain an independent company captain, not a landed vassal.
+        (gt, "$players_kingdom", 0),
+        (neq, "$players_kingdom", "fac_player_supporters_faction"),
+        (eq, "$player_has_homage", 0),
+        (store_current_day, ":cur_day"),
+        (gt, "$mercenary_service_next_renew_day", ":cur_day"),
+        (val_mul, ":skill", 2),
       (try_end),
 
       #MORDACHAI - increase troop limit by 10 x leadership skill (was 5x)

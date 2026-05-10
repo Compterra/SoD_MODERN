@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone, "merchant_quest_requested", [], "I am afraid I can't offer you a job right now.", "mayor_pretalk", []],
+[anyone, "merchant_quest_requested", [], "No contract worth your steel is ready today. The ledgers are moving, but none of them need a blade yet.", "mayor_pretalk", []],
 ]

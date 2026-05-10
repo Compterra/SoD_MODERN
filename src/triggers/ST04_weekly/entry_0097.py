@@ -12,11 +12,6 @@ SIMPLE_TRIGGERS = [
       # only for centers that have a mill
       (party_slot_eq, ":center_no", slot_center_has_mill, 1),
 
-      # increase the prosperity
-      (set_show_messages, 0),
-      (call_script, "script_change_center_prosperity", ":center_no", "$g_sod_building_mill_prosperity"),
-      (set_show_messages, 1),
-
       # Mills should also support local food processing and baseline living conditions.
       (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
       (party_get_slot, ":center_prosperity", ":center_no", slot_town_prosperity),
@@ -54,11 +49,6 @@ SIMPLE_TRIGGERS = [
       (store_faction_of_party, ":center_faction", ":center_no"),
       (this_or_next|eq, ":center_faction", "fac_player_supporters_faction"),
       (eq, ":center_faction", "fac_player_faction"),
-
-      # improve player's relationship with this village
-#      (party_get_slot, ":cur_relation", ":center_no", slot_center_player_relation),
-#      (val_add, ":cur_relation", 1),
-#      (party_set_slot, ":center_no", slot_center_player_relation, ":cur_relation"),
 
       # remaining effects apply to player only
       (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),

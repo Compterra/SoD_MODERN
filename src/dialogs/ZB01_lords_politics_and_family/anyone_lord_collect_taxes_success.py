@@ -9,7 +9,7 @@ DIALOGS = [
  If you give me {reg20} denars, you may keep the difference.\
  A good result for everyone, eh?", "lord_pretalk",
    [
-    (troop_remove_gold, "trp_player", reg20),
+    (call_script, "script_sod_player_charge_gold", reg20),
     (play_sound, "snd_money_paid"),
     (quest_set_slot, "qst_collect_taxes", slot_quest_gold_reward, 0),
     (call_script, "script_change_player_relation_with_troop", "$g_talk_troop", 4),

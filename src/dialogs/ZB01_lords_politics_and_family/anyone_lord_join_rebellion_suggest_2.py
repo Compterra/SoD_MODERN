@@ -24,11 +24,14 @@ DIALOGS = [
 
             (val_add, "$rebellion_chance", "$prior_argument_value"),
 
-            (assign, reg6, "$prior_argument_value", debug_color), #diagnostic only
+            (assign, reg6, "$prior_argument_value"),
             (assign, "$prior_argument_value", 0),
 
-            (assign, reg7, "$rebellion_chance", debug_color), #diagnostic only
-            (display_message, "@Prior argument effect: {reg6}, rebellion chance: {reg7}", debug_color), #diagnostic only
+            (assign, reg7, "$rebellion_chance"),
+            (try_begin),
+              (eq, "$cheat_mode", 1),
+              (display_message, "@Prior argument effect: {reg6}, rebellion chance: {reg7}", debug_color),
+            (try_end),
 
     ]],
 ]

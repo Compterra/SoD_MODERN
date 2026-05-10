@@ -6,7 +6,7 @@ DIALOGS = [
   ], "All right, you are hired.", "close_window", [
   (call_script, "script_party_add_party", "p_main_party", "$g_encountered_party"),
   (remove_party, "$g_encountered_party"),
-  (troop_remove_gold, "trp_player", reg1),
+  (call_script, "script_sod_player_charge_gold", reg1),
   (assign, "$g_leave_encounter", 1),
   ]],
 ]

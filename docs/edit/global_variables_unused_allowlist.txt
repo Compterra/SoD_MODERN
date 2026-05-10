@@ -16,3 +16,79 @@ sod_quest_journal_completed_count # Quest journal summary cache used by the jour
 sod_quest_journal_failed_count # Quest journal summary cache used by the journal presentation/update pipeline.
 sod_quest_journal_expiring_count # Quest journal summary cache used by the journal presentation/update pipeline.
 sod_quest_journal_capacity # Quest journal summary cache used by the journal presentation/update pipeline.
+g_sod_klethi_old_job_contacted # Companion immersion dialogue witness flag read through generated dialogue state conditions.
+g_sod_firentis_restitution_witnessed # Companion immersion dialogue witness flag read through generated dialogue state conditions.
+g_sod_bunduk_line_witnessed # Companion immersion regular-member witness flag read through generated dialogue state conditions.
+g_sod_jeremus_triage_witnessed # Companion immersion regular-member witness flag read through generated dialogue state conditions.
+g_sod_lezalit_ief_discipline_witnessed # Companion immersion regular-member witness flag read through generated dialogue state conditions.
+g_sod_baheshtur_saddle_witnessed # Companion immersion Black Khergit witness flag read through generated dialogue state conditions.
+g_sod_katrin_last_coin_witnessed # Companion immersion company-accounts witness flag read through generated menu/dialogue state conditions.
+g_sod_marnid_market_contacted # Companion immersion goods-merchant witness flag read through generated dialogue state conditions.
+g_sod_player_prisoner_train_escort # Prisoner train escort encounter state preserved for generated dialogue/menu export compatibility.
+qst_bring_back_runaway_serfs_num_parties_fleed # Legacy Native quest global retained for quest export compatibility.
+qst_follow_spy_run_away # Legacy Native quest global retained for quest export compatibility.
+qst_follow_spy_meeting_counter # Legacy Native quest global retained for quest export compatibility.
+qst_follow_spy_spy_back_in_town # Legacy Native quest global retained for quest export compatibility.
+qst_follow_spy_partner_back_in_town # Legacy Native quest global retained for quest export compatibility.
+g_sod_sa_in_court # Legacy strategy-advisor/court state retained for generated menu/dialogue compatibility.
+g_training_ground_melee_training_scene # Native training ground state retained for M&B 1.011 compatibility.
+lords # Legacy temporary/global alias retained from inherited SoD variable table.
+sod_skirmish_playertroop_health # Legacy skirmish runtime state retained for mission compatibility.
+g_sod_convince_duel_paid # Legacy duel persuasion payment state retained for dialogue compatibility.
+g_player_follow_army_warnings # Native army-follow warning state retained for campaign compatibility.
+g_player_banner_granted # Native banner grant state retained for campaign compatibility.
+training_fight_won # Native training fight state retained for training menu compatibility.
+merchant_quest_last_offerer # Native merchant quest state retained for quest compatibility.
+escort_merchant_caravan_mode # Native caravan escort state retained for quest compatibility.
+g_sod_diplomatic_difficulty # Diplomacy tuning global retained for menu/script export compatibility.
+g_sod_seven_ash_training_bonus # Seven Ash outcome telemetry retained for save-compatible act resolution/history.
+g_sod_retinue_battle_bridge_fallback_skipped # Companion retinue battle bridge telemetry retained for diagnostics.
+g_sod_retinue_battle_bridge_count # Companion retinue battle bridge telemetry retained for diagnostics.
+g_sod_initial_party_members_pending # Retired start-party setup flag retained as a save-compatible global id placeholder.
+g_sod_pending_player_banner_map_icon # Retired deferred-banner setup flag retained as a save-compatible global id placeholder.
+g_seven_ash_noble_notice # Seven Ash posture telemetry retained for save-compatible act resolution/history.
+g_sod_seven_ash_watch_platform_ready # Seven Ash defender-route telemetry retained for save-compatible act resolution/history.
+g_camp_mode # Native camp mode state retained for camp menu compatibility.
+qst_collect_taxes_hourly_income # Native collect-taxes quest state retained for quest compatibility.
+qst_collect_taxes_menu_counter # Native collect-taxes quest state retained for quest compatibility.
+qst_collect_taxes_unrest_counter # Native collect-taxes quest state retained for quest compatibility.
+sod_royal_mission_end # Legacy SoD royal mission state retained for mission/menu compatibility.
+g_sod_file_version # Legacy SoD save/version marker retained in the variable table.
+g_sod_renown_modifier # Legacy SoD building/reward tuning global retained for compatibility.
+g_sod_building_manor_renown # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_mill_prosperity # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_mill_income # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_shrine_global_faith # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_shrine_reputation # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_monastery_global_faith # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_monastery_income # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_temple_global_faith # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_temple_reputation # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_stables_renown # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_chapter_renown # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_guild_income # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_guild_reputation # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_guild_prosperity # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_university_renown # Legacy SoD building tuning global retained for compatibility.
+g_sod_building_university_reputation # Legacy SoD building tuning global retained for compatibility.
+sod_credits_shown # Legacy SoD credits state retained for menu compatibility.
+g_election_date # Legacy political/election state retained for variable-table compatibility.
+g_player_party_icon # Native/SoD party icon state retained for map compatibility.
+g_encountered_party_template # Native encounter helper retained for encounter compatibility.
+g_notification_menu_var1 # Native notification menu scratch global retained for menu compatibility.
+g_notification_menu_var2 # Native notification menu scratch global retained for menu compatibility.
+spy_quest_troop # Native spy quest state retained for quest compatibility.
+g_cur_week_half_daily_wage_payments # Native wage accounting state retained for compatibility with old reports.
+g_sod_zealot # Legacy SoD faith event state retained for compatibility.
+g_sod_last_noble # Legacy SoD noble arrival state retained for compatibility.
+temp_size # Legacy scratch global retained from inherited variable table.
+temp_party # Legacy scratch global retained from inherited variable table.
+g_companion_event_clash_severity # Companion event state retained for generated dialogue/report compatibility.
+g_sod_klethi_old_job_cause # Companion immersion cause state retained for generated dialogue/report compatibility.
+g_sod_imperial_delay_total # Imperial delay challenge state retained for generated report compatibility.
+g_sod_alayen_standard_witnessed # Companion immersion witness flag retained for generated dialogue state conditions.
+g_sod_boar_hire_cost # Boar Clan hire quote cache retained for generated dialogue/menu compatibility.
+g_sod_hostile_mercy_count # Hostile road reputation counter read by dialogue/report surfaces; checker misses generated branches.
+g_sod_hostile_informant_count # Hostile road reputation counter read by dialogue/report surfaces; checker misses generated branches.
+g_sod_hostile_paid_toll_count # Hostile road reputation counter read by dialogue/report surfaces; checker misses generated branches.
+g_sod_hostile_deserter_destroyed_count # Hostile road reputation counter read by dialogue/report surfaces; checker misses generated branches.

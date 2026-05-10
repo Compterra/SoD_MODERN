@@ -1,5 +1,8 @@
 SIMPLE_TRIGGERS = [
 (24*7, [
+	(try_for_range, ":cur_center", centers_begin, centers_end),
+		(call_script, "script_sod_advance_center_construction", ":cur_center"),
+	(try_end),
 
 	(try_for_range, ":cur_center", centers_begin, centers_end),
 		(party_get_slot, ":cur_improvement", ":cur_center", slot_center_current_improvement),
@@ -69,8 +72,10 @@ SIMPLE_TRIGGERS = [
 			(try_end),
 			(try_begin),
 				(call_script, "script_get_improvement_details", ":improvement_type"),
-				(val_div, reg0, 4),
-				(lt, ":gold", reg0),
+				(call_script, "script_sod_get_center_construction_cost", ":cur_center", ":improvement_type", reg0),
+				(assign, ":ai_affordability_cost", reg0),
+				(val_div, ":ai_affordability_cost", 4),
+				(lt, ":gold", ":ai_affordability_cost"),
 				(assign, ":improvement_type", 0),
 			(try_end),
 			(try_begin),
@@ -119,18 +124,15 @@ SIMPLE_TRIGGERS = [
 		(gt, ":improvement_type", 0),
 		(party_slot_eq, ":cur_center", ":improvement_type", 0),
 		(call_script, "script_get_improvement_details", ":improvement_type"),
-		(store_div, ":improvement_time", reg0, 200),
+		(call_script, "script_sod_get_center_construction_cost", ":cur_center", ":improvement_type", reg0),
+		(assign, ":improvement_cost", reg0),
 		
-		(party_set_slot, ":cur_center", slot_center_current_improvement, ":improvement_type"),
-        (store_current_hours, ":cur_hours"),
-        (store_mul, ":hours_takes", ":improvement_time", 24),
-        (val_add, ":hours_takes", ":cur_hours"),
-        (party_set_slot, ":cur_center", slot_center_improvement_end_hour, ":hours_takes"),
+		(call_script, "script_sod_start_center_construction", ":cur_center", ":improvement_type"),
 		
         # Antigravity: Actually subtract the AI lord's wealth for the improvement!
-        (val_div, reg0, 4), # AI pays 25% cost
+        (store_div, ":ai_improvement_cost", ":improvement_cost", 4), # AI pays 25% cost
         (troop_get_slot, ":gold", ":troop", slot_troop_wealth),
-        (val_sub, ":gold", reg0),
+        (val_sub, ":gold", ":ai_improvement_cost"),
         (troop_set_slot, ":troop", slot_troop_wealth, ":gold"),
 		
 		(this_or_next|eq, ":faction", "fac_player_supporters_faction"),

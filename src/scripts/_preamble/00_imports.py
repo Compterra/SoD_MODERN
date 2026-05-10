@@ -67,6 +67,45 @@ def kt_get_melee_skills( flags ):
 # to get aggregate values.  note that the weights given to items in a
 # list that aren't guaranteed with a tf_ flag are a guess.  i'm counting
 # no flag as a 0 value in the average which might not be correct.
+def kt_apply_doctrine_modifiers(troop_id, o_val, d_val, h_val, troop_type):
+   troop_name = troops[troop_id][0]
+
+   # Faith elites and the Imperial Expeditionary Force are meant to be exceptional,
+   # but the boost is deliberately bounded so autoresolve remains auditable.
+   if troop_name.startswith("sod_faith"):
+      o_val *= 115
+      o_val /= 100
+      d_val *= 115
+      d_val /= 100
+   elif troop_name.startswith("imperial_") or troop_name.startswith("legion_"):
+      o_val *= 110
+      o_val /= 100
+      d_val *= 110
+      d_val /= 100
+   elif (
+      troop_name.startswith("black_army_")
+      or troop_name.startswith("conquistador_")
+      or troop_name.startswith("elephant_guard_")
+      or troop_name.startswith("jotnar_")
+      or troop_name.startswith("serpent_")
+      or troop_name.startswith("boar_")
+      or troop_name.startswith("slaver")
+      or troop_name.startswith("tormenter")
+   ):
+      o_val *= 105
+      o_val /= 100
+      d_val *= 105
+      d_val /= 100
+
+   # Blunt-heavy slaver troops should capture well in played battles, but blunt
+   # damage should not make them disproportionate autoresolve killers.
+   if troop_name.startswith("slaver") or troop_name.startswith("tormenter"):
+      o_val *= 95
+      o_val /= 100
+
+   return (o_val, d_val, h_val, troop_type)
+
+
 def kt_parse_troop_items( item_list, flags, ohprof, thprof, poleprof, bowprof, xbowprof, throwprof, pstrike, pdraw, pthrow ):
    mw_value = 0 # melee weapon damage of the greater if multiple
    mw_count = 0 # never seen a guy without a weapon O_O
@@ -312,9 +351,11 @@ def kt_python_init_troop_slots():
       if troop_type in (kt_troop_type_footsoldier, kt_troop_type_cavalry):
          o_val = mw_value + rw_value / 4
       h_val = ho_value
+      (o_val, d_val, h_val, troop_type) = kt_apply_doctrine_modifiers(i_troop, o_val, d_val, h_val, troop_type)
       module_code.append( (troop_set_slot, "trp_"+troops[i_troop][0], kt_slot_troop_o_val, o_val) )
       module_code.append( (troop_set_slot, "trp_"+troops[i_troop][0], kt_slot_troop_d_val, d_val) )
       module_code.append( (troop_set_slot, "trp_"+troops[i_troop][0], kt_slot_troop_h_val, h_val) )
+      module_code.append( (troop_set_slot, "trp_"+troops[i_troop][0], kt_slot_troop_type, troop_type) )
    
       old_val = troops[i_troop][8]
       old_val >>= level_bits

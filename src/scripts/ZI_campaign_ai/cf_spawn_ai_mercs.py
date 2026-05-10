@@ -7,6 +7,7 @@ SCRIPTS = [
         (store_script_param, ":starting_size", 4),
 		(store_script_param, ":boss_faction", 5),
 
+        (is_between, ":faction", guilds_begin, guilds_end),
         (set_spawn_radius, 1),
         (assign, ":noble_units", ":starting_size"),
         (val_div, ":noble_units", 25),
@@ -45,10 +46,19 @@ SCRIPTS = [
 		
         (party_set_slot, ":mercs", slot_party_starting_size, ":starting_size"),
 
-		(faction_get_slot, ":t1_1", ":faction", slot_guild_tier_1_unit_1),
-		(faction_get_slot, ":t1_2", ":faction", slot_guild_tier_1_unit_2),
-		(faction_get_slot, ":noble", ":faction", slot_guild_noble),
-		(faction_get_slot, ":proportion", ":faction", slot_guild_troop_proportion),
+		(call_script, "script_sod_merc_guild_get_roster", ":faction"),
+		(assign, ":t1_1", reg0),
+		(assign, ":t1_2", reg1),
+		(assign, ":noble", reg2),
+		(assign, ":proportion", reg3),
+		(call_script, "script_sod_merc_market_calculate_guild_supply", ":faction"),
+		(assign, ":quality", reg2),
+        (gt, ":t1_1", 0),
+        (gt, ":t1_2", 0),
+        (gt, ":noble", 0),
+        (neq, ":t1_1", "trp_player"),
+        (neq, ":t1_2", "trp_player"),
+        (neq, ":noble", "trp_player"),
 
         (party_add_members, ":mercs", ":noble", ":noble_units"),
 
@@ -67,8 +77,9 @@ SCRIPTS = [
 			(party_add_members, ":mercs", ":t1_2", ":t1_2_units"),
 		(try_end),
 
-        (call_script, "script_store_troop_name", s5, ":troop"),
-        (party_set_name, ":mercs", "str_s5_mercs"),
+        (call_script, "script_store_troop_name", s61, ":troop"),
+        (str_store_string, s60, "@{s61}'s Mercenaries"),
+        (party_set_name, ":mercs", s60),
         (troop_get_slot, ":cur_banner", ":troop", slot_troop_banner_scene_prop),
 		(try_begin),
 			(gt, ":cur_banner", 0),
@@ -79,7 +90,8 @@ SCRIPTS = [
         (party_set_faction, ":mercs", ":boss_faction"),
 		(party_set_slot, ":mercs", slot_party_orginal_faction, ":faction"),
         (val_mul, ":starting_size", 50),
-        (try_for_range, ":unused", 0, 5),
+        (store_add, ":upgrade_passes", 3, ":quality"),
+        (try_for_range, ":unused", 0, ":upgrade_passes"),
           (call_script, "script_cf_party_upgrade_with_xp", ":mercs", ":starting_size"),
         (try_end),
         (store_current_day, ":cur_day"),
@@ -91,5 +103,6 @@ SCRIPTS = [
         (party_set_slot, ":mercs", slot_party_commander_party, ":cur_party"),
         (party_set_ai_object,":mercs",":cur_party"),
         (party_set_ai_behavior,":mercs",ai_bhvr_escort_party),
+        (assign, reg0, ":mercs"),
     ]),
 ]

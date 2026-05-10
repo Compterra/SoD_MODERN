@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "lord_suggest_follow_other_2", [],
-   "Never mind.", "lord_pretalk", []],
+   "No. I will not bind you to that banner after all.", "lord_pretalk", []],
 ]

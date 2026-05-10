@@ -51,6 +51,13 @@ SCRIPTS = [
           (eq, ":old_objective", ":center_no"),
           (val_div, ":garrison_str", 2),  
         (try_end),
+        (call_script, "script_sod_faction_get_posture_target_score", ":faction_no", ":center_no"),
+        (assign, ":failed_siege_avoidance", reg1),
+        (try_begin),
+          (gt, ":failed_siege_avoidance", 0),
+          (store_mul, ":avoidance_penalty", ":failed_siege_avoidance", 25),
+          (val_add, ":garrison_str", ":avoidance_penalty"),
+        (try_end),
     
         (party_get_slot, ":besieged_by", ":center_no", slot_center_is_besieged_by),
         (try_begin),

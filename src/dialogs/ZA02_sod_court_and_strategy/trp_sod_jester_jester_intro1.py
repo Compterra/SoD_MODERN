@@ -1,3 +1,3 @@
 DIALOGS = [
-[trp_sod_jester, "jester_intro1", [], "Now I know it's a court but the question who the HELL are You still stands.", "jester_intro2", []],
+[trp_sod_jester, "jester_intro1", [], "A court is a room where everyone lies politely. I prefer useful lies. So, before I fetch the wrong miracle, who are you today?", "jester_intro2", []],
 ]

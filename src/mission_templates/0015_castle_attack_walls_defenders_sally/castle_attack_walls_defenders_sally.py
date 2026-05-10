@@ -20,6 +20,7 @@ MISSION_TEMPLATES = [
          (team_set_relation, 0, 2, 1),
          (team_set_relation, 1, 3, 1),
          (call_script, "script_change_banners_and_chest"),
+         (call_script, "script_sod_battle_initialize_morale_context"),
          (call_script, "script_remove_siege_objects"),
          ]),
 
@@ -86,6 +87,9 @@ MISSION_TEMPLATES = [
 
       formations_init_kill_count,
       formations_update_kill_count,
+      formations_start_coherence,
+      formations_update_morale,
+      formations_update_route,
     ],
   ),
 ]

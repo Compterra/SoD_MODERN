@@ -36,6 +36,7 @@ SCRIPTS = [
 	  (try_end),
 	  (try_begin),
 		(neq, "$prison_break", 5),
+		(neq, "$prison_break", 6),
 		(eq, ":cur_scene", "scn_slavers_base_jelkala"),
         (set_visitor, 20, "trp_slave_hero"),
 	  (try_end),

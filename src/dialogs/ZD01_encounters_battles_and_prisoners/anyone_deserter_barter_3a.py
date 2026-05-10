@@ -4,7 +4,9 @@ DIALOGS = [
     (val_add, ":protected_until", 72),
     (party_set_slot, "$g_encountered_party", slot_party_ignore_player_until, ":protected_until"),
     (party_ignore_player, "$g_encountered_party", 72),
+    (call_script, "script_sod_note_hostile_reputation", 7),
 
+    (call_script, "script_sod_note_hostile_reputation", 7),
     (assign, "$g_leave_encounter", 1)
     ]],
 ]

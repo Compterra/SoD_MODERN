@@ -1,7 +1,7 @@
 SCRIPTS = [
 ("auto_loot_all",
                       [
-                        (assign, ":debug", 1),
+                        (assign, ":debug", 0),
 
                         # get count of stacks in player's party
                         (party_get_num_companion_stacks, ":num_stacks", "p_main_party"),
@@ -165,8 +165,11 @@ SCRIPTS = [
 
                         # inform the player if nothing was exchanged
                         (try_begin),
-                          (eq, ":total", 0),
-                          (str_store_string, s30, "@^^^Unfortunately, there wasn't anything left worth equiping."),
+                          (gt, ":total", 0),
+                          (assign, reg21, ":total"),
+                          (str_store_string, s30, "@^^Companions choose in party order and make two redistribution passes. {reg21} item(s) equipped:{s30}"),
+                        (else_try),
+                          (str_store_string, s30, "@^^Companions choose in party order and make two redistribution passes. Unfortunately, there wasn't anything left worth equipping."),
                         (try_end),
 
                         # Done. Now sort the remainder

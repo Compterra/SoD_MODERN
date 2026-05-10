@@ -21,26 +21,41 @@ SCRIPTS = [
 		(assign, "$cheat_mode", 0),
 
 		(assign, "$g_custom_banner", 0),
+		(assign, "$g_sod_rtc_starting_salvage_choice", sod_rtc_salvage_none),
+		(assign, "$g_sod_rtc_starting_survivors_applied", 0),
 		(assign, "$mercenary_service_next_pay_time", 0),
 		(assign, "$mercenary_service_accumulated_pay", 0),
 		(assign, "$mercenary_service_next_renew_day", 0),
 		(assign, "$g_sod_merc_weekly_paiment_not_paid_in_a_row", 0),
 		(assign, "$g_sod_merc_weekly_paiment_paid_in_a_row", 0),
+		(assign, "$g_sod_merc_market_last_pulse_day", -1),
 		(assign, "$g_mercs_to_be_paid", 0),
 
 		(try_for_range, ":pretender", pretenders_begin, pretenders_end),
 			(troop_set_slot, ":pretender", slot_troop_pretender, 1),
+			(troop_set_slot, ":pretender", slot_troop_sod_pretender_claim_pressure, 0),
+			(troop_set_slot, ":pretender", slot_troop_sod_pretender_foothold_center, 0),
+			(troop_set_slot, ":pretender", slot_troop_sod_pretender_backer_lord, 0),
+			(troop_set_slot, ":pretender", slot_troop_sod_pretender_last_action_day, 0),
+			(troop_set_slot, ":pretender", slot_troop_sod_pretender_momentum, 0),
 		(try_end),
 
 		(assign, "$g_mercenary_guild_weekly_payment", 0),
 		(assign, "$g_sod_horse_health_bar_on", 1),
 
 		(assign, "$g_sod_weekly_scoutage", 0),
+		(assign, "$g_sod_player_tax_couriers_enabled", 1),
+		(assign, "$g_sod_house_politics_active", 0),
+		(assign, "$g_sod_house_last_incident_day", 0),
+		(assign, "$g_sod_house_last_incident_troop", 0),
+		(assign, "$g_sod_house_last_advisor_warning_day", 0),
 		(assign, "$g_sod_player_asked_for_troop_tree", 0),
 		(assign, "$g_sod_sa_in_court", 0),
 		(store_random_in_range, "$g_sod_invasion_inaccuracy", 80, 121),
 		(assign, "$g_sod_wages", 0),
 		(assign, "$g_sod_times_wages_added", 0),
+		(call_script, "script_sod_company_accounts_initialize"),
+		(assign, "$g_sod_retinue_wage_shortage_policy", sod_retinue_wage_shortage_player_auto_cover),
 		
 		#initialize titles
 		(faction_set_slot, "fac_kingdom_1", slot_faction_ruler_title, "str_sod_c1_ruler"),
@@ -83,6 +98,7 @@ SCRIPTS = [
 			(store_character_level, ":current", ":cur_comp"),
 			(troop_set_slot, ":cur_comp", slot_troop_level_up, ":current"),
 		(try_end),
+        (call_script, "script_sod_companion_retinue_repair_all"),
 		
 		
       #Autoloot:
@@ -113,6 +129,8 @@ SCRIPTS = [
 
       #MORDACHAI Variable Invasion Date (approx between 9 and 12 months)
       (store_random_in_range, "$g_sod_invasion_begin", 30*9, 30*12),
+      (assign, "$g_sod_imperial_last_delay_day", 0),
+      (assign, "$g_sod_imperial_delay_total", 0),
 
       # weekly expenses (these don't kick in until you're a king)
       (assign, "$g_sod_weekly_troops_hired", 0),
@@ -138,7 +156,6 @@ SCRIPTS = [
 
 	    (assign, "$g_sod_demesne_modifier", 0), #from laws/events
 	    (assign, "$g_sod_pc_party_size_modifier", 0), #modifier from laws, modifies  player's party size
-		(assign, "$g_sod_lord_party_size_modifier", 0), #modifier from laws, modifies  kingdom lord's party size
 		(assign, "$g_sod_holy_law_modifier", 100), # 100% of holy
 		(assign, "$g_sod_village_population_modifier", 100), #100% growth
 		(assign, "$g_sod_town_population_modifier", 100), #100% growth
@@ -154,6 +171,7 @@ SCRIPTS = [
 		(assign, "$g_sod_local_town_faith_modifier", 0),
 		(assign, "$g_sod_renown_modifier", 0),
 		(call_script, "script_sod_law_initialize_all_faction_defaults"),
+		(call_script, "script_sod_diplomacy_initialize"),
 		
 #Economy Buildings
 		(assign, "$g_sod_building_manor_demesne", 2),
@@ -165,7 +183,6 @@ SCRIPTS = [
 		
 		(assign, "$g_sod_building_watchtower_demesne", 1),
 		
-		(assign, "$g_sod_building_inn_reputation", 2),
 		
 		(assign, "$g_sod_building_shrine_local_faith", 3),
 		(assign, "$g_sod_building_shrine_global_faith", 2),
@@ -750,6 +767,10 @@ SCRIPTS = [
 	  (try_end),
 
       (call_script, "script_add_merc_troops"),
+      (try_for_range, ":sod_merc_guild", guilds_begin, guilds_end),
+        (call_script, "script_sod_merc_guild_initialize_ledger", ":sod_merc_guild"),
+      (try_end),
+      (call_script, "script_sod_merc_guild_repair_ledgers"),
       #SoD - Kuba: mercenary bases and guild masters end
 
       (faction_set_slot, "fac_player_supporters_faction", slot_faction_state, sfs_inactive),
@@ -1125,10 +1146,12 @@ SCRIPTS = [
       (troop_set_slot, "trp_serpent_host_leader_1", slot_troop_banner_scene_prop, "spr_banner_n19"),
       (troop_set_slot, "trp_slaver_leader_1", slot_troop_banner_scene_prop, "spr_banner_n20"),
 
-      (store_random_in_range, ":starting_training_ground", training_grounds_begin, training_grounds_end),
-      (party_relocate_near_party, "p_main_party", ":starting_training_ground", 3),
-      (call_script, "script_store_troop_name_fief", s5, "trp_player"),
-      (party_set_name, "p_main_party", s5),
+      (assign, "$g_sod_main_party_setup_pending", 0),
+      (assign, "$g_sod_initial_party_members_pending", 0),
+      (assign, "$g_sod_pending_player_banner_map_icon", -1),
+      (assign, "$g_sod_initial_world_setup_pending", 0),
+      (assign, "$g_sod_player_world_ready", 0),
+      (assign, "$g_sod_description_return_to_reports", 0),
       (call_script, "script_update_party_creation_random_limits"),
       # Reseting player party icon
       (assign, "$g_player_party_icon", -1),
@@ -1151,6 +1174,8 @@ SCRIPTS = [
 
       #NPC companion changes begin
       (call_script, "script_initialize_npcs"),
+      (call_script, "script_sod_companion_initialize_depth"),
+      (call_script, "script_sod_strategy_advisor_initialize_mentor"),
       (assign, "$disable_npc_complaints", 0),
       #NPC companion changes end
 
@@ -1165,6 +1190,12 @@ SCRIPTS = [
       (item_set_slot, "itm_book_weapon_mastery", slot_item_intelligence_requirement, 9),
       (item_set_slot, "itm_book_engineering", slot_item_intelligence_requirement, 12),
       (item_set_slot, "itm_book_administration", slot_item_intelligence_requirement, 9),
+      (item_set_slot, "itm_book_chirurgeons_ledger", slot_item_intelligence_requirement, 9),
+      (item_set_slot, "itm_book_anatomy_of_mercy", slot_item_intelligence_requirement, 11),
+      (item_set_slot, "itm_book_drill_camp_company", slot_item_intelligence_requirement, 8),
+      (item_set_slot, "itm_book_roads_before_armies", slot_item_intelligence_requirement, 9),
+      (item_set_slot, "itm_book_quartermasters_burden", slot_item_intelligence_requirement, 8),
+      (item_set_slot, "itm_book_embassies_in_wartime", slot_item_intelligence_requirement, 10),
 
       (item_set_slot, "itm_book_wound_treatment_reference", slot_item_intelligence_requirement, 10),
       (item_set_slot, "itm_book_training_reference", slot_item_intelligence_requirement, 10),
@@ -1377,7 +1408,7 @@ SCRIPTS = [
 
           (faction_set_slot, ":faction_no", slot_faction_deserter_troop, "trp_ief_deserter"),
           (faction_set_slot, ":faction_no", slot_faction_guard_troop, "trp_ief_principes"),
-          (faction_set_slot, ":faction_no", slot_faction_messenger_troop, "trp_ief_speculatores"),
+          (faction_set_slot, ":faction_no", slot_faction_messenger_troop, "trp_ief_messenger"),
           (faction_set_slot, ":faction_no", slot_faction_prison_guard_troop, "trp_ief_principes"),
           (faction_set_slot, ":faction_no", slot_faction_castle_guard_troop, "trp_ief_principes"),
           (faction_set_slot, ":faction_no",  slot_faction_reinforcements_a, "pt_kingdom_6_reinforcements_a"),
@@ -2166,12 +2197,17 @@ SCRIPTS = [
         (troop_slot_eq, ":center_lord", slot_troop_leaded_party, 0),
         (call_script, "script_create_kingdom_hero_party", ":center_lord", ":center_no"),
         (assign, ":lords_party", "$pout_party"),
+        (gt, ":lords_party", 0),
+        (party_is_active, ":lords_party"),
         (party_attach_to_party, ":lords_party", ":center_no"),
         (party_set_slot, ":center_no", slot_town_player_odds, 1000),
       (try_end),
 
       (call_script, "script_complete_family_relations"),
       (call_script, "script_complete_family_relations"),
+      (call_script, "script_sod_initialize_house_identity"),
+      (call_script, "script_sod_initialize_claimant_civil_war_factions"),
+      (assign, "$g_sod_house_politics_active", 1),
 
       (try_for_range, ":troop_id", kingdom_ladies_begin, kingdom_ladies_end),
         (troop_set_slot, ":troop_id", slot_troop_occupation, slto_kingdom_lady),
@@ -2298,9 +2334,11 @@ SCRIPTS = [
         (try_end),
       (try_end),
 
+      (set_show_messages, 0),
       (try_for_range, ":unused", 0, 8),
         (call_script, "script_spawn_bandits"),
       (try_end),
+      (set_show_messages, 1),
       #Tavern recruitment and ale START 2/3
       (call_script, "script_add_tavern_troops"),
       #Tavern recruitment and ale END 2/3
@@ -2327,9 +2365,11 @@ SCRIPTS = [
       (try_end),
       (try_for_range, ":cur_troop", kingdom_heroes_begin, kingdom_heroes_end),
         (call_script, "script_update_troop_notes", ":cur_troop"),
+        (call_script, "script_update_troop_location_notes", ":cur_troop", 1),
       (try_end),
       (try_for_range, ":cur_center", centers_begin, centers_end),
         (call_script, "script_update_center_notes", ":cur_center"),
+        (call_script, "script_update_center_recon_notes", ":cur_center"),
       (try_end),
       (call_script, "script_update_troop_notes", "trp_player"),
 
@@ -2374,6 +2414,11 @@ SCRIPTS = [
 		  (try_end),
 	  (try_end),
 	  
+	  (try_for_range, ":kingdom_no", kingdoms_begin, kingdoms_end),
+		  (call_script, "script_update_faction_notes", ":kingdom_no"),
+		  (call_script, "script_update_faction_traveler_notes", ":kingdom_no"),
+	  (try_end),
+	  
 	  (faction_set_slot, "fac_kingdom_5", slot_faction_truce_kingdom_4, 30), # add a truce between the two weakest kingdoms 
 	  (faction_set_slot, "fac_kingdom_4", slot_faction_truce_kingdom_5, 30),
 	  
@@ -2389,8 +2434,6 @@ SCRIPTS = [
 
 	  (call_script, "script_free_lords_estimate_their_situation"),  # Init for AI end
 
-      (call_script, "script_get_player_party_morale_values"),
-      (party_set_morale, "p_main_party", reg0),
 	  (call_script, "script_ai_hire_mercenaries"),
 	  (call_script, "script_sod_quest_runtime_init_metadata"),
 	  (call_script, "script_update_titles"),

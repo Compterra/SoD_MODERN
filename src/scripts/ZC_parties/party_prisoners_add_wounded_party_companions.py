@@ -1,0 +1,17 @@
+SCRIPTS = [
+("party_prisoners_add_wounded_party_companions",
+    [
+      (store_script_param_1, ":target_party"),
+      (store_script_param_2, ":source_party"),
+      (party_get_num_companion_stacks, ":num_stacks", ":source_party"),
+      (try_for_range, ":stack_no", 0, ":num_stacks"),
+        (party_stack_get_troop_id, ":stack_troop", ":source_party", ":stack_no"),
+        (this_or_next|neg|troop_is_hero, ":stack_troop"),
+        (eq, "$g_move_heroes", 1),
+        (is_between, ":stack_troop", soldiers_begin, soldiers_end),
+        (party_stack_get_num_wounded, ":num_wounded", ":source_party", ":stack_no"),
+        (gt, ":num_wounded", 0),
+        (party_add_prisoners, ":target_party", ":stack_troop", ":num_wounded"),
+      (try_end),
+  ]),
+]

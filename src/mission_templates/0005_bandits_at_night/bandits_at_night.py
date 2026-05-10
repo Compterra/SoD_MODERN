@@ -28,7 +28,10 @@ MISSION_TEMPLATES = [
          (agent_set_team, ":agent_no", 1),
          ]),
 
-      (ti_before_mission_start, 0, 0, [], [(call_script, "script_change_banners_and_chest")]),
+      (ti_before_mission_start, 0, 0, [], [
+         (call_script, "script_change_banners_and_chest"),
+         (call_script, "script_sod_battle_initialize_morale_context"),
+      ]),
 
       common_inventory_not_available,
 
@@ -79,6 +82,7 @@ MISSION_TEMPLATES = [
         camera_trigger_8,
 
         formations_init,
+        formations_0,
         formations_1,
         formations_2,
         formations_3,
@@ -103,7 +107,6 @@ MISSION_TEMPLATES = [
         formations_update_kill_count,
         formations_t,
         formations_rally,
-        formations_v,
         formations_start_coherence,
         formations_update_morale,
         formations_update_route,

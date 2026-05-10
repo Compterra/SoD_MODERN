@@ -10,7 +10,7 @@ if not exist "%PY%" (
   where py >nul 2>nul && set "PY=py -3"
 )
 
-set "PYTHONPATH=%ROOT%;%ROOT%compile;%ROOT%compile\headers;%ROOT%compile\ids;%ROOT%compile\process"
+set "PYTHONPATH=%ROOT%;%ROOT%compile\ids;%ROOT%compile;%ROOT%compile\headers;%ROOT%compile\process"
 set "ROOT_DISPLAY=%ROOT:~0,-1%"
 
 if not exist "%ROOT%_export" mkdir "%ROOT%_export"

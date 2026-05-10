@@ -1,5 +1,8 @@
 DIALOGS = [
-[trp_sod_jester|plyr, "jester_talk", [(eq, "$g_sod_cheat_mode", 1)], "ITEM CHEAT.", "jester_cheat", [ 
+[trp_sod_jester|plyr, "jester_talk", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "Debug items.", "jester_cheat", [
 
     ]],
 ]

@@ -11,6 +11,9 @@ SIMPLE_TRIGGERS = [
 
                 (start_map_conversation, "$npc_is_quitting"),
             (else_try),
+                (is_between, "$npc_is_quitting", companions_begin, companions_end),
+                (call_script, "script_sod_companion_cleanup_departed_companion", "$npc_is_quitting"),
+            (else_try),
                 (assign, "$npc_is_quitting", 0),
             (try_end),
 
@@ -48,6 +51,7 @@ SIMPLE_TRIGGERS = [
                 #(eq, "$npc_map_talk_context", 0),
                 (troop_get_slot, ":home", ":npc", slot_troop_home),
                 (gt, ":home", 0),
+                (party_is_active, ":home"),
                 (store_distance_to_party_from_party, ":distance", ":home", "p_main_party"),
                 (lt, ":distance", 7),
                 (assign, "$npc_map_talk_context", slot_troop_home),

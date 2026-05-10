@@ -1,5 +1,5 @@
 DIALOGS = [
-[trp_sod_jester|plyr, "jester_talk", [], "Custom Battle Scenario", "jester_skirmish1", [
+[trp_sod_jester|plyr, "jester_talk", [], "Stage a custom battle.", "jester_skirmish1", [
 
     ]],
 ]

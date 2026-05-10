@@ -262,7 +262,7 @@ simple_triggers = [
          (try_end),
        (try_end),
     ]),
-# [ src/triggers/ST04_weekly/entry_0016.py:L1-L36 ] 24*7
+# [ src/triggers/ST04_weekly/entry_0016.py:L1-L103 ] 24*7
 (24*7,
    [
        (try_for_range, ":troop_no", kingdom_heroes_begin, kingdom_heroes_end),
@@ -276,28 +276,95 @@ simple_triggers = [
          #If non-player center, adding income to wealth (from population and prosperity, not thin air)
          (neg|party_slot_eq, ":center_no", slot_town_lord, "trp_player"), #center does not belong to player.
          (party_slot_ge, ":center_no", slot_town_lord, 1), #center belongs to someone.
-         (party_get_slot, ":cur_wealth", ":center_no", slot_town_wealth),
-         (party_get_slot, ":center_population", ":center_no", slot_center_sod_local_population),
-         (party_get_slot, ":prosperity", ":center_no", slot_town_prosperity),
-         (val_max, ":center_population", 0),
-         (val_max, ":prosperity", 0),
-         (store_mul, ":added_wealth", ":center_population", 2),
-         (store_mul, ":prosperity_part", ":prosperity", 10),
-         (val_add, ":added_wealth", ":prosperity_part"),
-         (val_max, ":added_wealth", 50),
          (try_begin),
            (party_slot_eq, ":center_no", slot_party_type, spt_town),
+           (party_get_slot, ":center_population", ":center_no", slot_center_sod_local_population),
+           (party_get_slot, ":prosperity", ":center_no", slot_town_prosperity),
+           (val_max, ":center_population", 0),
+           (val_max, ":prosperity", 0),
+           (call_script, "script_sod_get_town_market_profile", ":center_no"),
+           (assign, ":town_market_score", reg0),
+           (assign, ":town_rural_surplus", reg1),
+           (assign, ":town_services", reg4),
+           (assign, ":town_liquidity", reg6),
+           (assign, ":town_tax_reliability", reg9),
+           (call_script, "script_sod_get_center_tax_extraction_profile", ":center_no"),
+           (assign, ":tax_recovery_pct", reg5),
+           (assign, ":tax_wealth_drift", reg6),
+           (store_mul, ":added_wealth", ":center_population", 2),
+           (store_mul, ":prosperity_part", ":prosperity", 10),
+           (val_add, ":added_wealth", ":prosperity_part"),
+           (store_mul, ":service_wealth", ":town_services", 20),
+           (val_add, ":added_wealth", ":service_wealth"),
+           (store_mul, ":surplus_wealth", ":town_rural_surplus", 12),
+           (val_add, ":added_wealth", ":surplus_wealth"),
+           (store_mul, ":market_wealth", ":town_market_score", 15),
+           (val_add, ":added_wealth", ":market_wealth"),
+           (store_mul, ":liquidity_wealth", ":town_liquidity", 6),
+           (val_add, ":added_wealth", ":liquidity_wealth"),
            (val_mul, ":added_wealth", 3),
            (val_div, ":added_wealth", 2),
+           (val_mul, ":added_wealth", ":town_tax_reliability"),
+           (val_div, ":added_wealth", 100),
+           (val_mul, ":added_wealth", ":tax_recovery_pct"),
+           (val_div, ":added_wealth", 100),
+           (val_add, ":added_wealth", ":tax_wealth_drift"),
+           (val_max, ":added_wealth", 50),
+         (else_try),
+           # Castles are military estates: reserves come from support, bound villages,
+           # roads, stores, administration, and noble access rather than town markets.
+           (call_script, "script_sod_get_castle_support_profile", ":center_no"),
+           (assign, ":castle_support", reg0),
+           (assign, ":bound_population", reg2),
+           (assign, ":bound_villages", reg3),
+           (assign, ":food_security", reg4),
+           (assign, ":administration", reg5),
+           (assign, ":road_control", reg6),
+           (assign, ":noble_access", reg7),
+           (assign, ":military_power", reg8),
+           (assign, ":tax_reliability", reg15),
+           (call_script, "script_sod_get_center_tax_extraction_profile", ":center_no"),
+           (assign, ":tax_recovery_pct", reg5),
+           (assign, ":tax_wealth_drift", reg6),
+
+           (store_div, ":added_wealth", ":bound_population", 8),
+           (store_mul, ":support_dues", ":castle_support", 6),
+           (val_add, ":added_wealth", ":support_dues"),
+           (store_mul, ":village_dues", ":bound_villages", 75),
+           (val_add, ":added_wealth", ":village_dues"),
+           (store_mul, ":road_dues", ":road_control", 8),
+           (val_add, ":added_wealth", ":road_dues"),
+           (store_mul, ":admin_dues", ":administration", 12),
+           (val_add, ":added_wealth", ":admin_dues"),
+           (store_div, ":military_dues", ":military_power", 8),
+           (val_add, ":added_wealth", ":military_dues"),
+           (try_begin),
+             (eq, ":noble_access", 1),
+             (val_add, ":added_wealth", 150),
+           (try_end),
+           (val_mul, ":added_wealth", ":tax_reliability"),
+           (val_div, ":added_wealth", 100),
+           (val_mul, ":added_wealth", ":tax_recovery_pct"),
+           (val_div, ":added_wealth", 100),
+           (val_add, ":added_wealth", ":tax_wealth_drift"),
+
+           (try_begin),
+             (lt, ":food_security", 300),
+             (val_mul, ":added_wealth", 60),
+             (val_div, ":added_wealth", 100),
+           (else_try),
+             (lt, ":food_security", 700),
+             (val_mul, ":added_wealth", 85),
+             (val_div, ":added_wealth", 100),
+           (try_end),
+           (val_clamp, ":added_wealth", 50, 3501),
          (try_end),
-         (val_add, ":cur_wealth", ":added_wealth"),
          (call_script, "script_calculate_weekly_party_wage", ":center_no"),
-         (val_sub, ":cur_wealth", reg0),
-         (val_max, ":cur_wealth", 0),
-         (party_set_slot, ":center_no", slot_town_wealth, ":cur_wealth"),
+         (store_sub, ":net_wealth_change", ":added_wealth", reg0),
+         (call_script, "script_sod_change_center_wealth", ":center_no", ":net_wealth_change"),
        (try_end),
     ]),
-# [ src/triggers/ST03_daily/entry_0017.py:L1-L52 ] 24
+# [ src/triggers/ST03_daily/entry_0017.py:L1-L70 ] 24
 (24,
    [
        (try_for_range, ":troop_no", kingdom_heroes_begin, kingdom_heroes_end),
@@ -311,10 +378,28 @@ simple_triggers = [
        (try_for_range, ":center_no", walled_centers_begin, walled_centers_end),
          (neg|party_slot_eq, ":center_no", slot_town_lord, "trp_player"), #center does not belong to player.
          (party_slot_ge, ":center_no", slot_town_lord, 1), #center belongs to someone.
-         (party_get_slot, ":cur_wealth", ":center_no", slot_town_wealth),
+         (call_script, "script_sod_get_center_economy_profile", ":center_no"),
+         (assign, ":center_wealth", reg0),
+         (assign, ":liquidity_pct", reg3),
          (party_slot_eq, ":center_no", slot_center_is_besieged_by, -1), #center not under siege
-         (assign, ":hiring_budget", ":cur_wealth"),
+         (assign, ":hiring_budget", ":center_wealth"),
          (val_div, ":hiring_budget", 5),
+         (try_begin),
+           (lt, ":liquidity_pct", 25),
+           (val_mul, ":hiring_budget", 50),
+           (val_div, ":hiring_budget", 100),
+         (else_try),
+           (gt, ":liquidity_pct", 100),
+           (val_mul, ":hiring_budget", 120),
+           (val_div, ":hiring_budget", 100),
+         (try_end),
+         (try_begin),
+           (party_slot_eq, ":center_no", slot_party_type, spt_castle),
+           (call_script, "script_sod_get_castle_support_profile", ":center_no"),
+           (assign, ":castle_support", reg0),
+           (store_mul, ":castle_support_budget", ":castle_support", 8),
+           (val_add, ":hiring_budget", ":castle_support_budget"),
+         (try_end),
          (gt, ":hiring_budget", reinforcement_cost),
          (store_party_size, ":size_before", ":center_no"),
          (call_script, "script_cf_reinforce_party", ":center_no"),
@@ -344,8 +429,8 @@ simple_triggers = [
              (party_set_slot, ":population_center", slot_center_sod_local_population, ":center_population"),
            (try_end),
          (try_end),
-         (val_sub, ":cur_wealth", reinforcement_cost),
-         (party_set_slot, ":center_no", slot_town_wealth, ":cur_wealth"),
+         (store_sub, ":reinforcement_cost_delta", 0, reinforcement_cost),
+         (call_script, "script_sod_change_center_wealth", ":center_no", ":reinforcement_cost_delta"),
        (try_end),
     ]),
 # [ src/triggers/ST04_weekly/entry_0018.py:L1-L8 ] 24*7
@@ -355,7 +440,7 @@ simple_triggers = [
             (call_script, "script_apply_weekly_building_effects", ":center_no"),
         (try_end,),
      ]),
-# [ src/triggers/ST04_weekly/entry_0019.py:L1-L55 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0019.py:L1-L142 ] 24 * 7
 (24 * 7,
    [
     (try_for_range, ":center_no", towns_begin, towns_end),
@@ -407,6 +492,93 @@ simple_triggers = [
       (store_mul, ":consumption_extra", -1),
       (call_script, "script_center_change_trade_good_production", ":center_no", "itm_cattle_meat", ":consumption_extra", 0),
       (call_script, "script_center_change_trade_good_production", ":center_no", "itm_ale", ":consumption_extra", 0),
+
+      # Towns convert safe, liquid rural surplus into finished goods instead of only eating stock.
+      (call_script, "script_sod_get_center_goods_market_profile", ":center_no"),
+      (assign, ":goods_raw_balance", reg1),
+      (assign, ":goods_strategic_balance", reg2),
+      (assign, ":goods_scarcity_pressure", reg4),
+      (assign, ":goods_trade_willingness", reg5),
+      (assign, ":goods_liquidity_pressure", reg6),
+      (assign, ":finished_output", 0),
+      (try_begin),
+        (gt, ":goods_trade_willingness", 80),
+        (gt, ":goods_liquidity_pressure", 40),
+        (assign, ":finished_output", ":prosperity"),
+        (val_div, ":finished_output", 20),
+        (val_add, ":finished_output", 1),
+      (try_end),
+      (try_begin),
+        (lt, ":goods_raw_balance", -25),
+        (val_sub, ":finished_output", 4),
+      (else_try),
+        (gt, ":goods_raw_balance", 50),
+        (val_add, ":finished_output", 2),
+      (try_end),
+      (try_begin),
+        (lt, ":goods_strategic_balance", -20),
+        (val_sub, ":finished_output", 4),
+      (else_try),
+        (gt, ":goods_strategic_balance", 35),
+        (val_add, ":finished_output", 2),
+      (try_end),
+      (try_begin),
+        (gt, ":goods_scarcity_pressure", 150),
+        (val_sub, ":finished_output", 3),
+      (try_end),
+      (val_clamp, ":finished_output", -8, 12),
+      (call_script, "script_center_change_trade_good_production", ":center_no", "itm_tools", ":finished_output", 0),
+      (store_div, ":workshop_output", ":finished_output", 2),
+      (call_script, "script_center_change_trade_good_production", ":center_no", "itm_linen", ":workshop_output", 0),
+      (call_script, "script_center_change_trade_good_production", ":center_no", "itm_pottery", ":workshop_output", 0),
+      (try_begin),
+        (ge, ":prosperity", 70),
+        (gt, ":goods_trade_willingness", 90),
+        (gt, ":goods_liquidity_pressure", 65),
+        (assign, ":luxury_output", ":prosperity"),
+        (val_div, ":luxury_output", 25),
+        (val_clamp, ":luxury_output", 0, 6),
+        (call_script, "script_center_change_trade_good_production", ":center_no", "itm_velvet", ":luxury_output", 0),
+      (try_end),
+    (try_end),
+
+    # Castles are military consumers: they draw down food and strategic stores instead of acting like towns.
+    (try_for_range, ":center_no", castles_begin, castles_end),
+      (call_script, "script_sod_get_castle_support_profile", ":center_no"),
+      (assign, ":military_power", reg8),
+      (assign, ":food_security", reg4),
+      (call_script, "script_sod_get_center_goods_market_profile", ":center_no"),
+      (assign, ":goods_scarcity_pressure", reg4),
+      (assign, ":goods_trade_willingness", reg5),
+
+      (store_div, ":castle_food_consumption", ":military_power", 80),
+      (val_add, ":castle_food_consumption", 1),
+      (try_begin),
+        (lt, ":food_security", 40),
+        (val_add, ":castle_food_consumption", 1),
+      (try_end),
+      (val_clamp, ":castle_food_consumption", 1, 8),
+      (store_mul, ":castle_food_consumption", -1),
+      (call_script, "script_center_change_trade_good_production", ":center_no", "itm_grain", ":castle_food_consumption", 0),
+      (call_script, "script_center_change_trade_good_production", ":center_no", "itm_flour", ":castle_food_consumption", 0),
+
+      (assign, ":castle_store_consumption", 1),
+      (try_begin),
+        (gt, ":military_power", 120),
+        (val_add, ":castle_store_consumption", 1),
+      (try_end),
+      (try_begin),
+        (gt, ":goods_scarcity_pressure", 150),
+        (val_sub, ":castle_store_consumption", 1),
+      (else_try),
+        (gt, ":goods_trade_willingness", 90),
+        (val_add, ":castle_store_consumption", 1),
+      (try_end),
+      (val_clamp, ":castle_store_consumption", 0, 4),
+      (store_mul, ":castle_store_consumption", -1),
+      (call_script, "script_center_change_trade_good_production", ":center_no", "itm_salt", ":castle_store_consumption", 0),
+      (call_script, "script_center_change_trade_good_production", ":center_no", "itm_iron", ":castle_store_consumption", 0),
+      (call_script, "script_center_change_trade_good_production", ":center_no", "itm_tools", ":castle_store_consumption", 0),
     (try_end),
    ]),
 # [ src/triggers/ST02_every_hour/entry_0020.py:L1-L24 ] 6
@@ -486,9 +658,12 @@ simple_triggers = [
    [
        (call_script, "script_process_village_raids"),
     ]),
-# [ src/triggers/ST02_every_hour/entry_0024.py:L1-L7 ] 7
+# [ src/triggers/ST02_every_hour/entry_0024.py:L1-L10 ] 7
 (7,
     [
+      # Campaign AI cadence: every 7 hours. Keep this trigger as a thin
+      # dispatch layer; safety checks live in the called scripts and static
+      # modernization coverage.
       (call_script, "script_init_ai_calculation"),
       (call_script, "script_decide_kingdom_party_ais"),
       ]),
@@ -668,9 +843,11 @@ simple_triggers = [
         (try_end),
       (try_end),
       ]),
-# [ src/triggers/ST02_every_hour/entry_0027.py:L1-L6 ] 2
+# [ src/triggers/ST02_every_hour/entry_0027.py:L1-L8 ] 2
 (2,
    [
+       # Campaign AI cadence: every 2 hours. Processes already-decided party
+       # AI; high-frequency party operations are covered by modernization tests.
        (call_script, "script_process_kingdom_parties_ai"),
     ]),
 # [ src/triggers/ST02_every_hour/entry_0028.py:L1-L6 ] 3
@@ -886,114 +1063,151 @@ simple_triggers = [
         (party_set_slot, ":village_no", slot_village_player_can_not_steal_cattle, 0),
       (try_end),
     ]),
-# [ src/triggers/ST99_other/entry_0036.py:L1-L111 ] 24*15
+# [ src/triggers/ST99_other/entry_0036.py:L1-L148 ] 24*15
 (24*15,
    [
     (try_for_range, ":village_no", villages_begin, villages_end),
       (party_get_slot, ":num_cattle", ":village_no", slot_village_number_of_cattle),
-      (party_get_slot, ":village_population", ":village_no", slot_center_sod_local_population),
-      (party_get_slot, ":prosperity", ":village_no", slot_town_prosperity),
-      (party_get_slot, ":center_health", ":village_no", slot_center_sod_local_health),
+      (party_get_slot, ":land_quality", ":village_no", slot_village_land_quality),
 
-      (val_max, ":village_population", village_pop_min),
+      (call_script, "script_sod_get_village_output_profile", ":village_no"),
+      (assign, ":food_output", reg1),
+      (assign, ":cattle_output", reg2),
+      (assign, ":raw_material_output", reg3),
+      (assign, ":fragility", reg6),
+      (assign, ":coercion_pressure", reg7),
+      (assign, ":herd_delta", reg9),
 
-      (store_random_in_range, ":random_no", 0, 100),
-      (assign, ":herd_delta", 0),
+      (call_script, "script_sod_get_center_goods_market_profile", ":village_no"),
+      (assign, ":goods_food_balance", reg0),
+      (assign, ":goods_raw_balance", reg1),
+      (assign, ":goods_strategic_balance", reg2),
+      (assign, ":goods_scarcity_pressure", reg4),
+      (assign, ":goods_trade_willingness", reg5),
 
-      # Herd behavior now responds to village condition instead of being mostly flat random drift.
+      (assign, ":production_feedback_pct", 100),
       (try_begin),
-        # Distressed villages struggle to keep herds healthy.
-        (this_or_next|lt, ":prosperity", 35),
-        (lt, ":center_health", 40),
-        (try_begin),
-          (lt, ":random_no", 20),
-          (store_random_in_range, ":herd_delta", 2, 7),
-          (val_mul, ":herd_delta", -1),
-        (else_try),
-          (lt, ":random_no", 55),
-          (store_random_in_range, ":herd_delta", 1, 4),
-          (val_mul, ":herd_delta", -1),
-        (else_try),
-          (lt, ":random_no", 75),
-          (assign, ":herd_delta", 0),
-        (else_try),
-          (store_random_in_range, ":herd_delta", 1, 3),
-        (try_end),
+        (gt, ":goods_trade_willingness", 105),
+        (val_add, ":production_feedback_pct", 8),
       (else_try),
-        # Thriving villages tend to expand their herds.
-        (ge, ":prosperity", 65),
-        (ge, ":center_health", 60),
-        (try_begin),
-          (lt, ":random_no", 10),
-          (store_random_in_range, ":herd_delta", 3, 7),
-        (else_try),
-          (lt, ":random_no", 45),
-          (store_random_in_range, ":herd_delta", 1, 4),
-        (else_try),
-          (lt, ":random_no", 60),
-          (assign, ":herd_delta", 0),
-        (else_try),
-          (store_random_in_range, ":herd_delta", 1, 3),
-          (val_mul, ":herd_delta", -1),
-        (try_end),
+        (lt, ":goods_trade_willingness", 55),
+        (val_sub, ":production_feedback_pct", 15),
+      (try_end),
+      (try_begin),
+        (gt, ":goods_scarcity_pressure", 150),
+        (val_sub, ":production_feedback_pct", 12),
       (else_try),
-        # Neutral villages get gentler mixed drift.
-        (try_begin),
-          (lt, ":random_no", 5),
-          (store_random_in_range, ":herd_delta", 2, 5),
-          (val_mul, ":herd_delta", -1),
-        (else_try),
-          (lt, ":random_no", 35),
-          (store_random_in_range, ":herd_delta", 1, 3),
-          (val_mul, ":herd_delta", -1),
-        (else_try),
-          (lt, ":random_no", 65),
-          (assign, ":herd_delta", 0),
-        (else_try),
-          (store_random_in_range, ":herd_delta", 1, 4),
-        (try_end),
+        (lt, ":goods_scarcity_pressure", 60),
+        (val_add, ":production_feedback_pct", 6),
+      (try_end),
+      (try_begin),
+        (lt, ":goods_food_balance", -40),
+        (val_sub, ":production_feedback_pct", 8),
+      (try_end),
+      (try_begin),
+        (lt, ":goods_strategic_balance", -30),
+        (val_sub, ":production_feedback_pct", 5),
+      (try_end),
+      (val_clamp, ":production_feedback_pct", 60, 125),
+
+      # Keep a little livestock variance, but let the shared village profile be the driver.
+      (try_begin),
+        (gt, ":herd_delta", 0),
+        (store_random_in_range, ":herd_noise", 0, 3),
+        (val_add, ":herd_delta", ":herd_noise"),
+      (else_try),
+        (lt, ":herd_delta", 0),
+        (store_random_in_range, ":herd_noise", 0, 3),
+        (val_sub, ":herd_delta", ":herd_noise"),
       (try_end),
 
       (val_add, ":num_cattle", ":herd_delta"),
       (val_clamp, ":num_cattle", 0, 101),
       (party_set_slot, ":village_no", slot_village_number_of_cattle, ":num_cattle"),
 
-      # Reassign cattle production using herd size, available workforce, and local conditions.
-      (store_sub, ":production", ":num_cattle", 10),
-      (val_div, ":production", 2),
+      # Reassign root trade-good production from the village output profile.
+      (store_sub, ":item_to_production_slot", slot_town_trade_good_productions_begin, trade_goods_begin),
+      (store_add, ":grain_slot", "itm_grain", ":item_to_production_slot"),
+      (store_add, ":flour_slot", "itm_flour", ":item_to_production_slot"),
+      (store_add, ":cattle_slot", "itm_cattle_meat", ":item_to_production_slot"),
+      (store_add, ":wool_slot", "itm_wool", ":item_to_production_slot"),
+      (store_add, ":oil_slot", "itm_oil", ":item_to_production_slot"),
+      (store_add, ":iron_slot", "itm_iron", ":item_to_production_slot"),
 
-      (store_sub, ":pop_surplus", ":village_population", village_pop_min),
-      (val_max, ":pop_surplus", 0),
-      (store_sub, ":pop_range", village_pop_max, village_pop_min),
-      (val_max, ":pop_range", 1),
-
-      (assign, ":workforce_mod", 60),
-      (store_mul, ":tmp", ":pop_surplus", 40),
-      (val_div, ":tmp", ":pop_range"),
-      (val_add, ":workforce_mod", ":tmp"),
-
-      (assign, ":condition_mod", 100),
+      (assign, ":grain_output", ":food_output"),
+      (store_div, ":flour_output", ":food_output", 2),
+      (val_mul, ":grain_output", ":production_feedback_pct"),
+      (val_div, ":grain_output", 100),
+      (val_mul, ":flour_output", ":production_feedback_pct"),
+      (val_div, ":flour_output", 100),
       (try_begin),
-        (ge, ":prosperity", 70),
-        (val_add, ":condition_mod", 15),
+        (gt, ":fragility", 70),
+        (val_mul, ":flour_output", 70),
+        (val_div, ":flour_output", 100),
+      (try_end),
+      (party_get_slot, ":old_output", ":village_no", ":grain_slot"),
+      (store_sub, ":output_delta", ":grain_output", ":old_output"),
+      (call_script, "script_center_change_trade_good_production", ":village_no", "itm_grain", ":output_delta", 0),
+      (party_get_slot, ":old_output", ":village_no", ":flour_slot"),
+      (store_sub, ":output_delta", ":flour_output", ":old_output"),
+      (call_script, "script_center_change_trade_good_production", ":village_no", "itm_flour", ":output_delta", 0),
+      (party_get_slot, ":old_output", ":village_no", ":cattle_slot"),
+      (store_sub, ":output_delta", ":cattle_output", ":old_output"),
+      (call_script, "script_center_change_trade_good_production", ":village_no", "itm_cattle_meat", ":output_delta", 0),
+
+      (assign, ":wool_output", 0),
+      (assign, ":oil_output", 0),
+      (assign, ":iron_output", 0),
+      (try_begin),
+        (le, ":land_quality", 1),
+        (assign, ":wool_output", ":raw_material_output"),
       (else_try),
-        (lt, ":prosperity", 40),
-        (val_sub, ":condition_mod", 10),
+        (ge, ":land_quality", 4),
+        (assign, ":oil_output", ":raw_material_output"),
+      (else_try),
+        (assign, ":iron_output", ":raw_material_output"),
+      (try_end),
+      (val_mul, ":wool_output", ":production_feedback_pct"),
+      (val_div, ":wool_output", 100),
+      (val_mul, ":oil_output", ":production_feedback_pct"),
+      (val_div, ":oil_output", 100),
+      (val_mul, ":iron_output", ":production_feedback_pct"),
+      (val_div, ":iron_output", 100),
+      (try_begin),
+        (gt, ":coercion_pressure", 40),
+        (val_mul, ":wool_output", 80),
+        (val_div, ":wool_output", 100),
+        (val_mul, ":oil_output", 80),
+        (val_div, ":oil_output", 100),
+        (val_mul, ":iron_output", 80),
+        (val_div, ":iron_output", 100),
       (try_end),
       (try_begin),
-        (ge, ":center_health", 70),
-        (val_add, ":condition_mod", 10),
+        (gt, ":goods_raw_balance", 60),
+        (val_mul, ":wool_output", 95),
+        (val_div, ":wool_output", 100),
+        (val_mul, ":oil_output", 95),
+        (val_div, ":oil_output", 100),
+        (val_mul, ":iron_output", 95),
+        (val_div, ":iron_output", 100),
       (else_try),
-        (lt, ":center_health", 40),
-        (val_sub, ":condition_mod", 10),
+        (lt, ":goods_raw_balance", -30),
+        (val_mul, ":wool_output", 110),
+        (val_div, ":wool_output", 100),
+        (val_mul, ":oil_output", 110),
+        (val_div, ":oil_output", 100),
+        (val_mul, ":iron_output", 110),
+        (val_div, ":iron_output", 100),
       (try_end),
-
-      (val_mul, ":production", ":workforce_mod"),
-      (val_div, ":production", 100),
-      (val_mul, ":production", ":condition_mod"),
-      (val_div, ":production", 100),
-
-      (call_script, "script_center_change_trade_good_production", ":village_no", "itm_cattle_meat", ":production", 0),
+      (party_get_slot, ":old_output", ":village_no", ":wool_slot"),
+      (store_sub, ":output_delta", ":wool_output", ":old_output"),
+      (call_script, "script_center_change_trade_good_production", ":village_no", "itm_wool", ":output_delta", 0),
+      (party_get_slot, ":old_output", ":village_no", ":oil_slot"),
+      (store_sub, ":output_delta", ":oil_output", ":old_output"),
+      (call_script, "script_center_change_trade_good_production", ":village_no", "itm_oil", ":output_delta", 0),
+      (party_get_slot, ":old_output", ":village_no", ":iron_slot"),
+      (store_sub, ":output_delta", ":iron_output", ":old_output"),
+      (call_script, "script_center_change_trade_good_production", ":village_no", "itm_iron", ":output_delta", 0),
     (try_end),
     ]),
 # [ src/triggers/ST04_weekly/entry_0037.py:L1-L6 ] 24 * 7
@@ -1001,7 +1215,7 @@ simple_triggers = [
     [
     ]
   ),
-# [ src/triggers/ST04_weekly/entry_0038.py:L1-L248 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0038.py:L1-L258 ] 24 * 7
 (24 * 7,
     [
 	(try_for_range, ":center_no", centers_begin, centers_end),
@@ -1009,6 +1223,12 @@ simple_triggers = [
 		(neg|party_slot_eq, ":center_no", slot_party_type, spt_castle),
 
 		(assign, ":cur_rents", 0),
+		(assign, ":town_services", 0),
+		(assign, ":town_liquidity", 0),
+		(assign, ":town_tax_reliability", 100),
+		(assign, ":tax_extraction_revenue_pct", 100),
+		(assign, ":tax_extraction_pressure", 0),
+		(assign, ":tax_wealth_drift", 0),
 		(party_get_slot, ":center_population", ":center_no", slot_center_sod_local_population),
 		(str_store_party_name_link, s2, ":center_no"),
 		# Safety: population should never be negative (data corruption / bad math elsewhere).
@@ -1021,64 +1241,44 @@ simple_triggers = [
 
 			# taxes = 1x population for villages
 			(assign, ":cur_rents", ":center_population"),
-			(assign, ":ideal_population", village_pop_ideal),
 		(else_try),
 			# town
 			(party_slot_eq, ":center_no", slot_party_type, spt_town),
 
 			# taxes = 1x population for towns
 			(assign, ":cur_rents", ":center_population"),
-			(assign, ":ideal_population", town_pop_ideal),
+			(call_script, "script_sod_get_town_market_profile", ":center_no"),
+			(assign, ":town_services", reg4),
+			(assign, ":town_liquidity", reg6),
+			(assign, ":town_tax_reliability", reg9),
 		(try_end),
 
+		(call_script, "script_sod_get_center_tax_extraction_profile", ":center_no"),
+		(assign, ":tax_extraction_revenue_pct", reg0),
+		(assign, ":tax_extraction_pressure", reg1),
+		(assign, ":tax_wealth_drift", reg6),
+
 		# Productive population matters, not just raw headcount.
-		# Underpopulated centers underperform, while centers near their ideal size
-		# collect taxes more efficiently. Severe overcrowding hurts efficiency again.
+		# A shared capacity profile keeps tax behavior aligned with recruitment,
+		# construction, food, and recovery.
 		(try_begin),
 			(gt, ":cur_rents", 0),
+			(call_script, "script_sod_get_center_population_capacity_profile", ":center_no"),
+			(assign, ":tax_capacity_pct", reg3),
+			(assign, ":ideal_population", reg7),
 			(val_max, ":ideal_population", 1),
-			(store_mul, ":pop_ratio", ":center_population", 100),
-			(val_div, ":pop_ratio", ":ideal_population"),
-			(assign, ":efficiency", 100),
-
 			(try_begin),
-				(party_slot_eq, ":center_no", slot_party_type, spt_village),
-				(try_begin),
-					(lt, ":pop_ratio", 70),
-					(val_sub, ":efficiency", 20),
-				(else_try),
-					(lt, ":pop_ratio", 100),
-					(val_sub, ":efficiency", 10),
-				(else_try),
-					(gt, ":pop_ratio", 160),
-					(val_sub, ":efficiency", 10),
-				(else_try),
-					(gt, ":pop_ratio", 120),
-					(val_add, ":efficiency", 5),
-				(try_end),
-			(else_try),
-				# Towns benefit more from density, but very crowded towns lose efficiency.
-				(try_begin),
-					(lt, ":pop_ratio", 70),
-					(val_sub, ":efficiency", 20),
-				(else_try),
-					(lt, ":pop_ratio", 100),
-					(val_sub, ":efficiency", 10),
-				(else_try),
-					(gt, ":pop_ratio", 190),
-					(val_sub, ":efficiency", 10),
-				(else_try),
-					(gt, ":pop_ratio", 140),
-					(val_add, ":efficiency", 10),
-				(else_try),
-					(gt, ":pop_ratio", 110),
-					(val_add, ":efficiency", 5),
-				(try_end),
+				# Population above capacity still pays tax, but overcrowded centers
+				# are harder to administer efficiently.
+				(gt, ":center_population", ":ideal_population"),
+				(store_sub, ":overcrowding", ":center_population", ":ideal_population"),
+				(store_mul, ":overcrowding_pct", ":overcrowding", 100),
+				(val_div, ":overcrowding_pct", ":ideal_population"),
+				(store_div, ":overcrowding_tax_drag", ":overcrowding_pct", 4),
+				(val_sub, ":tax_capacity_pct", ":overcrowding_tax_drag"),
+				(val_max, ":tax_capacity_pct", 60),
 			(try_end),
-
-			# Safety: keep workforce efficiency bounded to prevent runaway income.
-			(val_clamp, ":efficiency", 50, 126),
-			(val_mul, ":cur_rents", ":efficiency"),
+			(val_mul, ":cur_rents", ":tax_capacity_pct"),
 			(val_div, ":cur_rents", 100),
 		(try_end),
 
@@ -1189,6 +1389,30 @@ simple_triggers = [
 		
 		(val_mul, ":cur_rents", ":multiplier"),
         (val_div, ":cur_rents", 100),
+		# Extractive tax policy buys short-term revenue with long-term pressure.
+		(val_mul, ":cur_rents", ":tax_extraction_revenue_pct"),
+        (val_div, ":cur_rents", 100),
+		(try_begin),
+			# Towns tax services, workshops, and liquid exchange, not just heads.
+			(party_slot_eq, ":center_no", slot_party_type, spt_town),
+			(store_mul, ":service_rents", ":town_services", 12),
+			(store_div, ":liquidity_rents", ":town_liquidity", 8),
+			(val_add, ":cur_rents", ":service_rents"),
+			(val_add, ":cur_rents", ":liquidity_rents"),
+			(val_mul, ":cur_rents", ":town_tax_reliability"),
+			(val_div, ":cur_rents", 100),
+			(store_div, ":market_wealth_growth", ":town_liquidity", 5),
+			(val_clamp, ":market_wealth_growth", 0, 1201),
+			(call_script, "script_sod_change_center_wealth", ":center_no", ":market_wealth_growth"),
+		(try_end),
+		(try_begin),
+			(neq, ":tax_wealth_drift", 0),
+			(call_script, "script_sod_change_center_wealth", ":center_no", ":tax_wealth_drift"),
+			(try_begin),
+				(gt, ":tax_extraction_pressure", 40),
+				(call_script, "script_sod_change_center_local_prosperity", ":center_no", -1),
+			(try_end),
+		(try_end),
 		  
 		#demesne size
 		(try_begin),
@@ -1248,49 +1472,27 @@ simple_triggers = [
     (try_end),
     ]
   ),
-# [ src/triggers/ST04_weekly/entry_0039.py:L1-L47 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0039.py:L1-L25 ] 24 * 7
 (24 * 7,
     [
       # Adding earnings to town lords' wealths and local operating treasuries from real taxes.
+      # Tax courier dispatch now physicalizes part of eligible NPC lord income.
       (try_for_range, ":center_no", centers_begin, centers_end),
         (party_get_slot, ":town_lord", ":center_no", slot_town_lord),
-        (neq, ":town_lord", "trp_player"),
-        (is_between, ":town_lord", kingdom_heroes_begin, kingdom_heroes_end),
-        (party_get_slot, ":accumulated_rents", ":center_no", slot_center_accumulated_rents),
-        (party_get_slot, ":accumulated_tariffs", ":center_no", slot_center_accumulated_tariffs),
-        (troop_get_slot, ":troop_wealth", ":town_lord", slot_troop_wealth),
-        (party_get_slot, ":center_wealth", ":center_no", slot_town_wealth),
-
-        # Safety: these are money amounts; never allow negative values to corrupt NPC wealth.
-        (val_max, ":accumulated_rents", 0),
-        (val_max, ":accumulated_tariffs", 0),
-        (val_max, ":troop_wealth", 0),
-        (val_max, ":center_wealth", 0),
-
-        (assign, ":total_income", ":accumulated_rents"),
-        (val_add, ":total_income", ":accumulated_tariffs"),
-
-        # Keep a real local reserve so the center has operating funds for upkeep and war recovery.
-        (assign, ":center_reserve", ":total_income"),
-        (val_div, ":center_reserve", 5),
-        (assign, ":lord_income", ":total_income"),
-        (val_sub, ":lord_income", ":center_reserve"),
-
-        (val_add, ":troop_wealth", ":lord_income"),
-        (val_add, ":center_wealth", ":center_reserve"),
-
-        # Safety: keep finances within reasonable integer bounds.
-        (val_min, ":troop_wealth", 2000000),
-        (val_min, ":center_wealth", 2000000),
-
-        (troop_set_slot, ":town_lord", slot_troop_wealth, ":troop_wealth"),
-        (party_set_slot, ":center_no", slot_town_wealth, ":center_wealth"),
-        (party_set_slot, ":center_no", slot_center_accumulated_rents, 0),
-        (party_set_slot, ":center_no", slot_center_accumulated_tariffs, 0),
         (try_begin),
-          (eq, "$cheat_mode", 1),
-          (assign, reg1, ":troop_wealth"),
-          (add_troop_note_from_sreg, ":town_lord", 1, "@Current wealth: {reg1}", 0),
+          (eq, ":town_lord", "trp_player"),
+          (call_script, "script_sod_try_dispatch_player_tax_courier_from_center", ":center_no"),
+        (else_try),
+          (is_between, ":town_lord", kingdom_heroes_begin, kingdom_heroes_end),
+          (call_script, "script_sod_try_dispatch_ai_tax_courier_from_center", ":center_no"),
+          (try_begin),
+            (eq, "$cheat_mode", 1),
+            (troop_get_slot, ":troop_wealth", ":town_lord", slot_troop_wealth),
+            (assign, reg1, ":troop_wealth"),
+            (str_store_string, s49, "@Current wealth: {reg1}"),
+
+            (add_troop_note_from_sreg, ":town_lord", 1, s49, 0),
+          (try_end),
         (try_end),
       (try_end),
     ]),
@@ -1527,7 +1729,7 @@ simple_triggers = [
       (start_map_conversation, ":leader"),
     (try_end),
     ]),
-# [ src/triggers/ST03_daily/entry_0046.py:L1-L90 ] 48
+# [ src/triggers/ST03_daily/entry_0046.py:L1-L107 ] 48
 (48,
     [
       # clear the previous attempt to join the player
@@ -1537,6 +1739,7 @@ simple_triggers = [
         (troop_slot_eq, ":troop_no", slot_troop_occupation, slto_kingdom_hero),
         (neg|troop_slot_ge, ":troop_no", slot_troop_prisoner_of_party, 0),
         (neg|troop_slot_ge, ":troop_no", slot_troop_leaded_party, 1),
+        (neg|troop_slot_ge, ":troop_no", slot_troop_change_to_faction, 1),
 
         (store_troop_faction, ":cur_faction", ":troop_no"),
         (try_begin),
@@ -1601,9 +1804,25 @@ simple_triggers = [
 
             (else_try),
 
-              # (try to) choose an npc kingdom
-              (call_script, "script_cf_get_random_active_faction_except_player_faction_and_faction", ":cur_faction"),
-              (troop_set_slot, ":troop_no", slot_troop_change_to_faction, reg0),
+              # (try to) choose a realm with land, stability, and room for another lord
+              (call_script, "script_sod_lord_choose_patron_faction_to_reg", ":troop_no", ":cur_faction"),
+              (assign, ":patron_faction", reg0),
+              (assign, ":patron_score", reg1),
+              (call_script, "script_sod_claimant_choose_defection_target_to_reg", ":troop_no", ":cur_faction", ":patron_faction"),
+              (assign, ":patron_faction", reg0),
+              (try_begin),
+                (is_between, ":patron_faction", rebel_factions_begin, rebel_factions_end),
+                (assign, ":patron_score", reg1),
+              (try_end),
+              (try_begin),
+                (is_between, ":patron_faction", kingdoms_begin, kingdoms_end),
+                (neq, ":patron_faction", "fac_player_supporters_faction"),
+                (gt, ":patron_score", 35),
+                (troop_set_slot, ":troop_no", slot_troop_change_to_faction, ":patron_faction"),
+              (else_try),
+                (call_script, "script_cf_get_random_active_faction_except_player_faction_and_faction", ":cur_faction"),
+                (troop_set_slot, ":troop_no", slot_troop_change_to_faction, reg0),
+              (try_end),
 
             (try_end),
           (try_end),
@@ -2062,7 +2281,7 @@ simple_triggers = [
          (try_end),
        (try_end),
     ]),
-# [ src/triggers/ST03_daily/entry_0051.py:L1-L75 ] 24
+# [ src/triggers/ST03_daily/entry_0051.py:L1-L82 ] 24
 (24,
    [
        (try_for_range, ":center_no", castles_begin, castles_end),
@@ -2074,13 +2293,12 @@ simple_triggers = [
          (assign, ":food_consumption", reg0),
          (party_get_slot, ":center_wealth", ":center_no", slot_town_wealth),
          (val_max, ":center_wealth", 0),
-         (assign, ":support_population", 0),
-         (try_for_range, ":village_no", villages_begin, villages_end),
-           (party_slot_eq, ":village_no", slot_village_bound_center, ":center_no"),
-           (party_get_slot, ":village_population", ":village_no", slot_center_sod_local_population),
-           (val_max, ":village_population", 0),
-           (val_add, ":support_population", ":village_population"),
-         (try_end),
+         (call_script, "script_sod_get_castle_support_profile", ":center_no"),
+         (assign, ":castle_support", reg0),
+         (assign, ":garrison", reg1),
+         (assign, ":support_population", reg2),
+         (assign, ":food_security", reg4),
+         (assign, ":road_control", reg6),
 
          # Daily replenishment should reflect actual demand rather than a flat +240.
          # Small garrisons recover slowly; large garrisons need stronger peacetime resupply.
@@ -2089,6 +2307,8 @@ simple_triggers = [
          (val_div, ":daily_restock", 2),
          (store_div, ":support_bonus", ":support_population", 80),
          (val_add, ":daily_restock", ":support_bonus"),
+         (store_div, ":castle_support_bonus", ":castle_support", 4),
+         (val_add, ":daily_restock", ":castle_support_bonus"),
 
          # If stores are badly depleted, push extra catch-up supply into the center.
          (store_div, ":quarter_limit", ":food_store_limit", 4),
@@ -2120,23 +2340,29 @@ simple_triggers = [
          (val_add, ":resupply_capacity", ":wealth_capacity"),
          (store_div, ":population_capacity", ":support_population", 35),
          (val_add, ":resupply_capacity", ":population_capacity"),
-         (val_clamp, ":resupply_capacity", 30, 481),
+         (store_div, ":garrison_capacity", ":garrison", 8),
+         (val_add, ":resupply_capacity", ":garrison_capacity"),
+         (store_div, ":road_capacity", ":road_control", 2),
+         (val_add, ":resupply_capacity", ":road_capacity"),
+         (store_div, ":food_network_capacity", ":food_security", 40),
+         (val_add, ":resupply_capacity", ":food_network_capacity"),
+         (val_clamp, ":resupply_capacity", 30, 561),
          (val_min, ":daily_restock", ":resupply_capacity"),
 
          # Safety: keep daily resupply bounded and non-negative.
-         (val_clamp, ":daily_restock", 20, 481),
+         (val_clamp, ":daily_restock", 20, 561),
 
          (store_div, ":resupply_cost", ":daily_restock", 3),
          (val_min, ":resupply_cost", ":center_wealth"),
-         (val_sub, ":center_wealth", ":resupply_cost"),
-         (party_set_slot, ":center_no", slot_town_wealth, ":center_wealth"),
+         (store_sub, ":wealth_cost", 0, ":resupply_cost"),
+         (call_script, "script_sod_change_center_wealth", ":center_no", ":wealth_cost"),
 
          (val_add, ":center_food_store", ":daily_restock"),
          (val_min, ":center_food_store", ":food_store_limit"),
          (party_set_slot, ":center_no", slot_party_food_store, ":center_food_store"),
        (try_end),
     ]),
-# [ src/triggers/ST01_every_frame/entry_0052.py:L1-L48 ] 0.5
+# [ src/triggers/ST01_every_frame/entry_0052.py:L1-L55 ] 0.5
 (0.5,
    [
        (try_for_range, ":cur_troop", heroes_begin, heroes_end),
@@ -2151,6 +2377,13 @@ simple_triggers = [
              (eq, ":ai_bhvr", ai_bhvr_avoid_party),
              (store_faction_of_party, ":party_faction", ":cur_party"),
              (party_get_slot, ":commander_party", ":cur_party", slot_party_commander_party),
+             (try_begin),
+               (le, ":commander_party", 0),
+               (assign, ":commander_party", -1),
+             (else_try),
+               (neg|party_is_active, ":commander_party"),
+               (assign, ":commander_party", -1),
+             (try_end),
              (faction_get_slot, ":faction_marshall", ":party_faction", slot_faction_marshall),
              (neq, ":faction_marshall", ":cur_troop"),
              (assign, ":continue", 1),
@@ -2183,9 +2416,11 @@ simple_triggers = [
          (try_end),
        (try_end),
     ]),
-# [ src/triggers/ST01_every_frame/entry_0053.py:L1-L50 ] 0.5
+# [ src/triggers/ST01_every_frame/entry_0053.py:L1-L52 ] 0.5
 (0.5,
    [
+     (map_free),
+     (eq, "$g_sod_player_world_ready", 1),
      (store_current_hours, ":cur_hours"),
      (store_mod, ":cur_hours_mod", ":cur_hours", 11),
      (store_sub, ":hour_limit", ":cur_hours", 5),
@@ -2232,7 +2467,7 @@ simple_triggers = [
        (try_end),
      (try_end),
     ]),
-# [ src/triggers/ST03_daily/entry_0054.py:L1-L64 ] 24
+# [ src/triggers/ST03_daily/entry_0054.py:L1-L70 ] 24
 (24,
    [
     # only consume food if the player isn't a captive
@@ -2249,6 +2484,9 @@ simple_triggers = [
     #MORDACHAI - one unit of food per 5 troops (instead of per 3 troops)
     (store_div, ":consumption_amount", ":num_men", 5),
     (val_max, ":consumption_amount", 1),
+    (call_script, "script_sod_company_accounts_adjust_food_consumption_to_reg", ":consumption_amount"),
+    (assign, ":consumption_amount", reg0),
+    (call_script, "script_sod_company_accounts_update_ration_pressure"),
 
     (assign, ":no_food_displayed", 0),
     (try_for_range, ":unused", 0, ":consumption_amount"),
@@ -2266,6 +2504,9 @@ simple_triggers = [
         (eq, ":no_food_displayed", 0),
         (display_message, "@Your party has no food left!", red),
         (call_script, "script_change_player_party_morale", -3),
+        (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_hunger, 2),
+        (call_script, "script_sod_companion_try_katrin_last_coin_incident", 1, 2),
+        (call_script, "script_sod_companion_try_deshavi_trail_warning_incident", 1, 2),
         (assign, ":no_food_displayed", 1),
         #NPC companion changes begin
         (try_begin),
@@ -2318,9 +2559,12 @@ simple_triggers = [
 (72,
    [(call_script, "script_assign_lords_to_empty_centers"),
     ]),
-# [ src/triggers/ST01_every_frame/entry_0057.py:L1-L24 ] 0
+# [ src/triggers/ST01_every_frame/entry_0057.py:L1-L27 ] 0
 (0,
-   [(troop_get_inventory_slot, ":cur_horse", "trp_player", 8), #horse slot
+   [(map_free),
+    (eq, "$g_sod_player_world_ready", 1),
+    (main_party_has_troop, "trp_player"),
+    (troop_get_inventory_slot, ":cur_horse", "trp_player", 8), #horse slot
     (assign, ":new_icon", -1),
     (try_begin),
       (eq, "$g_player_icon_state", pis_normal),
@@ -2445,7 +2689,7 @@ simple_triggers = [
 (72,
    [(call_script, "script_update_mercenary_units_of_towns"),
     #NPC changes begin
-    # removes   (call_script, "script_update_companion_candidates_in_taverns"),
+    (call_script, "script_update_companion_candidates_in_taverns"),
     #NPC changes end
     (call_script, "script_update_ransom_brokers"),
     (call_script, "script_update_tavern_travelers"),
@@ -2473,80 +2717,8 @@ simple_triggers = [
       (try_end),
     (try_end),
     ]),
-# [ src/triggers/ST02_every_hour/entry_0064.py:L1-L75 ] 1
-(1,
-   [(try_for_range, ":center_no", centers_begin, centers_end),
-      (party_get_slot, ":cur_improvement", ":center_no", slot_center_current_improvement),
-      (gt, ":cur_improvement", 0),
-      (party_get_slot, ":cur_improvement_end_time", ":center_no", slot_center_improvement_end_hour),
-      (store_current_hours, ":cur_hours"),
-      (ge, ":cur_hours", ":cur_improvement_end_time"),
-      (party_set_slot, ":center_no", ":cur_improvement", 1),
-      (party_set_slot, ":center_no", slot_center_current_improvement, 0),
-      (call_script, "script_get_improvement_details", ":cur_improvement"),
-      (try_begin),
-        (gt, "$g_sod_hide_messages", -2),
-        (party_get_slot, ":owner", ":center_no", slot_town_lord),
-		(ge, ":owner", 0),
-		(store_troop_faction, ":fac", ":owner"),
-		(this_or_next|eq, ":owner", "trp_player"),
-		(eq, ":fac", "fac_player_supporters_faction"),
-        (str_store_party_name_link, s4, ":center_no"),
-        (display_log_message, "@Work on the {s0} in {s4} has been completed.", build_color),
-      (try_end),
+# [ src/triggers/ST02_every_hour/entry_0064.py:L1-L1 ]
 
-      # Economic buildings help poor centers catch up more than rich centers snowball.
-      (try_begin),
-        (this_or_next|eq, ":cur_improvement", slot_center_has_mill),
-        (this_or_next|eq, ":cur_improvement", slot_center_has_manufacture),
-        (this_or_next|eq, ":cur_improvement", slot_center_has_bank),
-        (this_or_next|eq, ":cur_improvement", slot_center_has_rustic_blacksmith),
-        (eq, ":cur_improvement", slot_center_has_clayworks),
-        (party_get_slot, ":prosperity", ":center_no", slot_town_prosperity),
-        (assign, ":prosperity_bonus", 3),
-        (try_begin),
-          (lt, ":prosperity", 40),
-          (assign, ":prosperity_bonus", 7),
-        (else_try),
-          (lt, ":prosperity", 70),
-          (assign, ":prosperity_bonus", 5),
-        (try_end),
-        (call_script, "script_change_center_prosperity", ":center_no", ":prosperity_bonus"),
-      (try_end),
-
-      # Major medical buildings give the biggest boost where health is already strained.
-      (try_begin),
-        (this_or_next|eq, ":cur_improvement", slot_center_has_hospital),
-        (eq, ":cur_improvement", slot_center_has_ambulatory),
-        (party_get_slot, ":health", ":center_no", slot_center_sod_local_health),
-        (assign, ":health_bonus", 6),
-        (try_begin),
-          (lt, ":health", 0),
-          (assign, ":health_bonus", 15),
-        (else_try),
-          (lt, ":health", 30),
-          (assign, ":health_bonus", 10),
-        (try_end),
-        (call_script, "script_change_center_health", ":center_no", ":health_bonus"),
-      (try_end),
-
-      # Sanitation and clean water provide smaller but still state-sensitive recovery.
-      (try_begin),
-        (this_or_next|eq, ":cur_improvement", slot_center_has_canalization),
-        (eq, ":cur_improvement", slot_center_has_water_supply),
-        (party_get_slot, ":health", ":center_no", slot_center_sod_local_health),
-        (assign, ":health_bonus", 3),
-        (try_begin),
-          (lt, ":health", 0),
-          (assign, ":health_bonus", 8),
-        (else_try),
-          (lt, ":health", 30),
-          (assign, ":health_bonus", 5),
-        (try_end),
-        (call_script, "script_change_center_health", ":center_no", ":health_bonus"),
-      (try_end),
-    (try_end),
-    ]),
 # [ src/triggers/ST03_daily/entry_0065.py:L1-L103 ] 24
 (24,
    [(assign, ":num_active_tournaments", 0),
@@ -2697,11 +2869,11 @@ simple_triggers = [
     (display_message, "@You settle the cost of food, fire, and lodging for the night.", money_color),
     (try_begin),
       (ge, ":gold", ":total_cost"),
-      (troop_remove_gold, "trp_player", ":total_cost"),
+      (call_script, "script_sod_player_charge_gold", ":total_cost"),
       (play_sound, "snd_money_paid"),
     (else_try),
       (gt, ":gold", 0),
-      (troop_remove_gold, "trp_player", ":gold"),
+      (call_script, "script_sod_player_charge_gold", ":gold"),
       (play_sound, "snd_money_paid"),
     (try_end),
     ]),
@@ -2717,7 +2889,7 @@ simple_triggers = [
     [
       (call_script, "script_update_party_creation_random_limits"),
     ]),
-# [ src/triggers/ST03_daily/entry_0070.py:L1-L80 ] 24
+# [ src/triggers/ST03_daily/entry_0070.py:L1-L91 ] 24
 (24,
    [
     (assign, ":num_active_factions", 0),
@@ -2753,9 +2925,20 @@ simple_triggers = [
 			(try_for_parties, ":cur_party"),
 			  (store_faction_of_party, ":party_faction", ":cur_party"),
 			  (eq, ":party_faction", ":cur_kingdom"),
-			  (party_get_slot, ":home_center", ":cur_party", slot_party_home_center),
-			  (store_faction_of_party, ":home_center_faction", ":home_center"),
-			  (party_set_faction, ":cur_party", ":home_center_faction"),
+			  (try_begin),
+			    (party_slot_eq, ":cur_party", slot_party_type, spt_mercenary_lord_party),
+			    (party_stack_get_troop_id, ":merc_lord", ":cur_party", 0),
+			    (troop_slot_eq, ":merc_lord", slot_troop_occupation, slto_mercenary_lord),
+			    (store_troop_faction, ":merc_guild", ":merc_lord"),
+			    (is_between, ":merc_guild", guilds_begin, guilds_end),
+			    (party_set_faction, ":cur_party", ":merc_guild"),
+			  (else_try),
+			    (party_get_slot, ":home_center", ":cur_party", slot_party_home_center),
+			    (is_between, ":home_center", centers_begin, centers_end),
+			    (store_faction_of_party, ":home_center_faction", ":home_center"),
+			    (gt, ":home_center_faction", 0),
+			    (party_set_faction, ":cur_party", ":home_center_faction"),
+			  (try_end),
 			(try_end),
         (assign, ":kingdom_pretender", -1),
 			(try_for_range, ":cur_pretender", pretenders_begin, pretenders_end),
@@ -2804,7 +2987,7 @@ simple_triggers = [
        (val_sub, ":player_renown", ":renown_decrease"),
        (troop_set_slot, "trp_player", slot_troop_renown, ":player_renown"),
     ]),
-# [ src/triggers/ST02_every_hour/entry_0072.py:L1-L53 ] 1
+# [ src/triggers/ST02_every_hour/entry_0072.py:L1-L96 ] 1
 (1, [(neg|map_free),
        (gt, "$g_player_reading_book", 0),
        (player_has_item, "$g_player_reading_book"),
@@ -2814,8 +2997,26 @@ simple_triggers = [
        (item_get_slot, ":book_reading_progress", "$g_player_reading_book", slot_item_book_reading_progress),
        (item_get_slot, ":book_read", "$g_player_reading_book", slot_item_book_read),
        (eq, ":book_read", 0),
-       (val_add, ":book_reading_progress", 7),
+       (assign, ":old_book_reading_progress", ":book_reading_progress"),
+       (call_script, "script_sod_books_get_reading_pace_to_regs", "$g_player_reading_book"),
+       (val_add, ":book_reading_progress", reg24),
        (item_set_slot, "$g_player_reading_book", slot_item_book_reading_progress, ":book_reading_progress"),
+       (try_begin),
+         (lt, ":old_book_reading_progress", 250),
+         (ge, ":book_reading_progress", 250),
+         (str_store_item_name, s1, "$g_player_reading_book"),
+         (display_message, "@Book: {s1} has begun to open up. The first quarter is behind you.", 0x99CCFF),
+       (else_try),
+         (lt, ":old_book_reading_progress", 500),
+         (ge, ":book_reading_progress", 500),
+         (str_store_item_name, s1, "$g_player_reading_book"),
+         (display_message, "@Book: {s1} is half read. The hard part now is remembering what it is teaching you.", 0x99CCFF),
+       (else_try),
+         (lt, ":old_book_reading_progress", 750),
+         (ge, ":book_reading_progress", 750),
+         (str_store_item_name, s1, "$g_player_reading_book"),
+         (display_message, "@Book: {s1} is nearly finished. Its lessons are starting to settle into habit.", 0x99CCFF),
+       (try_end),
        (ge, ":book_reading_progress", 1000),
        (item_set_slot, "$g_player_reading_book", slot_item_book_read, 1),
        (str_store_item_name, s1, "$g_player_reading_book"),
@@ -2851,9 +3052,34 @@ simple_triggers = [
        (else_try),
          (eq, "$g_player_reading_book", "itm_book_administration"),
          (troop_raise_skill, "trp_player", "skl_prisoner_management", 1),
-         (str_store_string, s2, "@ Your administartion skill has increased by 1."),
+         (str_store_string, s2, "@ Your administration skill has increased by 1."),
+       (else_try),
+         (eq, "$g_player_reading_book", "itm_book_chirurgeons_ledger"),
+         (troop_raise_skill, "trp_player", "skl_wound_treatment", 1),
+         (str_store_string, s2, "@ Your wound treatment skill has increased by 1."),
+       (else_try),
+         (eq, "$g_player_reading_book", "itm_book_anatomy_of_mercy"),
+         (troop_raise_skill, "trp_player", "skl_surgery", 1),
+         (str_store_string, s2, "@ Your surgery skill has increased by 1."),
+       (else_try),
+         (eq, "$g_player_reading_book", "itm_book_drill_camp_company"),
+         (troop_raise_skill, "trp_player", "skl_trainer", 1),
+         (str_store_string, s2, "@ Your trainer skill has increased by 1."),
+       (else_try),
+         (eq, "$g_player_reading_book", "itm_book_roads_before_armies"),
+         (troop_raise_skill, "trp_player", "skl_pathfinding", 1),
+         (str_store_string, s2, "@ Your path-finding skill has increased by 1."),
+       (else_try),
+         (eq, "$g_player_reading_book", "itm_book_quartermasters_burden"),
+         (troop_raise_skill, "trp_player", "skl_inventory_management", 1),
+         (str_store_string, s2, "@ Your inventory management skill has increased by 1."),
+       (else_try),
+         (eq, "$g_player_reading_book", "itm_book_embassies_in_wartime"),
+         (troop_raise_skill, "trp_player", "skl_persuasion", 1),
+         (str_store_string, s2, "@ Your persuasion skill has increased by 1."),
        (try_end),
-       (dialog_box, "@You have finished reading {s1}.{s2}", "@Book Read"),
+       (call_script, "script_sod_books_describe_book_to_s20", "$g_player_reading_book"),
+       (dialog_box, "@You have finished reading {s1}.{s2}^^{s20}", "@Book Read"),
        (assign, "$g_player_reading_book", 0),
        ]),
 # [ src/triggers/ST02_every_hour/entry_0073.py:L1-L22 ] 12
@@ -2877,7 +3103,7 @@ simple_triggers = [
           (try_end),
         (try_end),
     ]),
-# [ src/triggers/ST04_weekly/entry_0074.py:L1-L94 ] 7 * 24
+# [ src/triggers/ST04_weekly/entry_0074.py:L1-L82 ] 7 * 24
 (7 * 24,
     [
       (assign, ":manors", 0),
@@ -2892,15 +3118,10 @@ simple_triggers = [
         (party_get_slot, ":lord", ":cur_village", slot_town_lord),
         (str_store_party_name_link, s3, ":cur_village"),
 
-        # Manor +5 renown / week, but only to the lord of the village
+        # Manors should provide steadier stewardship in the village itself.
         (try_begin),
           (party_slot_eq, ":cur_village", slot_center_has_manor, 1),
           (ge, ":lord", 0), #avoid unassigned issue
-          (set_show_messages, 0),
-          (call_script, "script_change_troop_renown", ":lord", "$g_sod_building_manor_renown"),
-          (set_show_messages, 1),
-
-          # Manors should also provide steadier stewardship in the village itself.
           (party_get_slot, ":village_health", ":cur_village", slot_center_sod_local_health),
           (party_get_slot, ":village_prosperity", ":cur_village", slot_town_prosperity),
           (try_begin),
@@ -2923,18 +3144,11 @@ simple_triggers = [
           (display_message, "@Your manor in {s3} stands as a mark of noble rule, adding to your renown each week.", renown_color),
         (try_end),
 
-        # Inn +1 relationship / week
+        # Inns should help keep village trade and daily life moving.
         (try_begin),
-          # relations affect the player even if not his fief
           (party_slot_eq, ":cur_village", slot_center_has_inn, 1),
           (val_add, ":inns", 1),
-          (party_get_slot, ":cur_relation", ":cur_village", slot_center_player_relation),
-          (lt, ":cur_relation", 100),
-          (val_add, ":cur_relation", "$g_sod_building_inn_reputation"),
-          (val_clamp, ":cur_relation", -100, 101),
-          (party_set_slot, ":cur_village", slot_center_player_relation, ":cur_relation"),
 
-          # Inns should also help keep village trade and daily life moving.
           (party_get_slot, ":village_health", ":cur_village", slot_center_sod_local_health),
           (party_get_slot, ":village_prosperity", ":cur_village", slot_town_prosperity),
           (try_begin),
@@ -2970,7 +3184,7 @@ simple_triggers = [
       (try_end),
     ]
   ),
-# [ src/triggers/ST03_daily/entry_0075.py:L1-L27 ] 24
+# [ src/triggers/ST03_daily/entry_0075.py:L1-L29 ] 24
 (24, [(try_for_range, ":cur_quest", all_quests_begin, all_quests_end),
           (try_begin),
             (check_quest_active, ":cur_quest"),
@@ -2985,7 +3199,9 @@ simple_triggers = [
               (else_try),
                 (quest_set_slot, ":cur_quest", slot_quest_expiration_days, ":exp_days"),
                 (assign, reg0, ":exp_days"),
-                (add_quest_note_from_sreg, ":cur_quest", 7, "@You have {reg0} days to finish this quest.", 0),
+                (str_store_string, s49, "@You have {reg0} days to finish this quest."),
+
+                (add_quest_note_from_sreg, ":cur_quest", 7, s49, 0),
               (try_end),
             (try_end),
           (else_try),
@@ -3387,7 +3603,7 @@ simple_triggers = [
         (assign, "$g_force_peace_faction_1", 0),
         (assign, "$g_force_peace_faction_2", 0),
        ]),
-# [ src/triggers/ST02_every_hour/entry_0086.py:L1-L59 ] 1
+# [ src/triggers/ST02_every_hour/entry_0086.py:L1-L63 ] 1
 (1,
    [
         #Resolve one issue each hour
@@ -3399,6 +3615,9 @@ simple_triggers = [
                 (neq, "$g_player_is_captive", 1),
 
                 (start_map_conversation, "$npc_is_quitting"),
+            (else_try),
+                (is_between, "$npc_is_quitting", companions_begin, companions_end),
+                (call_script, "script_sod_companion_cleanup_departed_companion", "$npc_is_quitting"),
             (else_try),
                 (assign, "$npc_is_quitting", 0),
             (try_end),
@@ -3437,6 +3656,7 @@ simple_triggers = [
                 #(eq, "$npc_map_talk_context", 0),
                 (troop_get_slot, ":home", ":npc", slot_troop_home),
                 (gt, ":home", 0),
+                (party_is_active, ":home"),
                 (store_distance_to_party_from_party, ":distance", ":home", "p_main_party"),
                 (lt, ":distance", 7),
                 (assign, "$npc_map_talk_context", slot_troop_home),
@@ -3445,7 +3665,7 @@ simple_triggers = [
         (try_end),
 
 ]),
-# [ src/triggers/ST02_every_hour/entry_0087.py:L1-L62 ] 4
+# [ src/triggers/ST02_every_hour/entry_0087.py:L1-L66 ] 4
 (4,
    [(try_for_range, ":troop_no", kingdom_heroes_begin, kingdom_heroes_end),
       (troop_slot_ge, ":troop_no", slot_troop_change_to_faction, 1),
@@ -3485,6 +3705,10 @@ simple_triggers = [
         (assign, ":continue", 1),
       (try_end),
       (eq, ":continue", 1),
+      (try_begin),
+        (is_between, ":new_faction_no", rebel_factions_begin, rebel_factions_end),
+        (call_script, "script_sod_claimant_mark_lord_open_rebel", ":troop_no", ":new_faction_no", 60),
+      (try_end),
       (call_script, "script_change_troop_faction", ":troop_no", ":new_faction_no"),
       (troop_set_slot, ":troop_no", slot_troop_change_to_faction, 0),
       (try_begin),
@@ -3506,7 +3730,7 @@ simple_triggers = [
       (try_end),
     (try_end),
   ]),
-# [ src/triggers/ST03_daily/entry_0088.py:L1-L121 ] 24
+# [ src/triggers/ST03_daily/entry_0088.py:L1-L122 ] 24
 (24,
   [
     (store_current_day, ":cur_day"),
@@ -3525,7 +3749,7 @@ simple_triggers = [
       (set_show_messages, 0),
     (try_end),
 	
-	#SoD - Kuba, start spawning legion mercenaries 3 months before the invasion
+	#SoD - Kuba, start spawning dedicated Legion auxiliaries 3 months before the invasion.
 	(try_begin),
 		(eq, ":delta", 90),
 		(faction_set_slot, "fac_kingdom_6_mercenaries", slot_faction_state, sfs_active),
@@ -3612,6 +3836,7 @@ simple_triggers = [
       (call_script, "script_diplomacy_start_war_between_kingdoms", "fac_kingdom_6", "fac_player_supporters_faction", 3),
       (set_show_messages, 1),
 
+        (call_script, "script_sod_imperial_expedition_enforce_total_war"),
         (call_script, "script_set_faction_offensive_objective", "fac_kingdom_6"),
 	    (call_script, "script_free_lords_estimate_their_situation"), #twan453
 	  
@@ -3626,7 +3851,7 @@ simple_triggers = [
     (try_end),
   ]
 ),
-# [ src/triggers/ST04_weekly/entry_0089.py:L1-L108 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0089.py:L1-L116 ] 24 * 7
 (24 * 7,
   [
   (assign, ":stop", 0),
@@ -3664,6 +3889,12 @@ simple_triggers = [
       (val_add, ":faith", "$g_sod_building_temple_local_faith"),
       (val_clamp, ":faith", -100, 201),
       (party_set_slot, ":center_no", slot_center_sod_local_faith, ":faith"),
+      (try_begin),
+        (gt, "$g_sod_faith", 0),
+        (call_script, "script_sod_change_center_faith_support", ":center_no", "$g_sod_faith", "$g_sod_building_temple_local_faith"),
+        (call_script, "script_sod_get_center_faith_profile", ":center_no"),
+        (assign, ":faith", reg2),
+      (try_end),
       (val_add, "$g_sod_global_faith", "$g_sod_building_temple_global_faith"),
       (val_clamp, "$g_sod_global_faith", -2000, 2001),
 
@@ -3711,6 +3942,7 @@ simple_triggers = [
       # indicate that the player's temples are increasing faith
       (try_begin),
         (eq, "$g_sod_hide_messages", 0),
+        (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
         (str_store_party_name_link, s1, ":center_no"),
         (store_add, reg0, "str_sod_temple_improve_0", "$g_sod_faith"),
         (str_store_string, s1, reg0),
@@ -3722,6 +3954,7 @@ simple_triggers = [
     (try_begin),
       (eq, "$g_sod_hide_messages", -1),
       (ge, ":count", 1),
+      (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
       #(str_store_party_name_link, s1, ":center_no"),
       (store_add, reg0, "str_sod_temple_summary_0", "$g_sod_faith"),
       (str_store_string, s1, reg0),
@@ -3733,7 +3966,7 @@ simple_triggers = [
       (set_show_messages, 1),
     (try_end),
   ]),
-# [ src/triggers/ST04_weekly/entry_0090.py:L1-L178 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0090.py:L1-L192 ] 24 * 7
 (24 * 7,
   [
     (try_begin),
@@ -3769,6 +4002,12 @@ simple_triggers = [
       (val_add, ":faith", "$g_sod_building_shrine_local_faith"),
       (val_clamp, ":faith", -100, 201),
       (party_set_slot, ":center_no", slot_center_sod_local_faith, ":faith"),
+      (try_begin),
+        (gt, "$g_sod_faith", 0),
+        (call_script, "script_sod_change_center_faith_support", ":center_no", "$g_sod_faith", "$g_sod_building_shrine_local_faith"),
+        (call_script, "script_sod_get_center_faith_profile", ":center_no"),
+        (assign, ":faith", reg2),
+      (try_end),
       (val_add, "$g_sod_global_faith", "$g_sod_building_shrine_global_faith"),
       (val_clamp, "$g_sod_global_faith", -2000, 2001),
 
@@ -3816,6 +4055,7 @@ simple_triggers = [
       # let the player know that their efforts are not in vain
       (try_begin),
         (eq, "$g_sod_hide_messages", 0),
+        (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
         (str_store_party_name_link, s1, ":center_no"),
         (store_add, reg0, "str_sod_shrine_improve_0", "$g_sod_faith"),
         (str_store_string, s1, reg0),
@@ -3827,6 +4067,7 @@ simple_triggers = [
     (try_begin),
       (eq, "$g_sod_hide_messages", -1),
       (ge, ":count", 1),
+      (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
       (store_add, reg0, "str_sod_shrine_summary_0", "$g_sod_faith"),
       (str_store_string, s1, reg0),
       (display_message, s1, faith_color),
@@ -3857,6 +4098,10 @@ simple_triggers = [
       # increase the global faithful
       (val_add, "$g_sod_global_faith", "$g_sod_building_chapel_holy"),
       (val_clamp, "$g_sod_global_faith", -2000, 2001),
+      (try_begin),
+        (gt, "$g_sod_faith", 0),
+        (call_script, "script_sod_change_center_faith_support", ":center_no", "$g_sod_faith", "$g_sod_building_chapel_holy"),
+      (try_end),
 
       # Chapels should also steady garrison life and nearby order.
       (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
@@ -3889,6 +4134,7 @@ simple_triggers = [
       # let the player know that their efforts are not in vain
       (try_begin),
         (eq, "$g_sod_hide_messages", 0),
+        (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
         (str_store_party_name_link, s2, ":center_no"),
         (store_add, reg0, "str_sod_chapel_0", "$g_sod_faith"),
         (str_store_string, s1, reg0),
@@ -3900,6 +4146,7 @@ simple_triggers = [
     (try_begin),
       (eq, "$g_sod_hide_messages", -1),
       (ge, ":count", 1),
+      (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
       (store_add, reg0, "str_sod_chapel_0", "$g_sod_faith"),
       (str_store_string, s1, reg0),
       (display_message, "@The {s1}s in your castles strengthen faith across your realm.", faith_color),
@@ -3910,7 +4157,7 @@ simple_triggers = [
       (set_show_messages, 1),
     (try_end),
   ]),
-# [ src/triggers/ST04_weekly/entry_0091.py:L1-L102 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0091.py:L1-L110 ] 24 * 7
 (24 * 7,
   [
     (try_begin),
@@ -3946,6 +4193,12 @@ simple_triggers = [
       (val_add, ":faith", "$g_sod_building_monastery_local_faith"),
       (val_clamp, ":faith", -100, 201),
       (party_set_slot, ":center_no", slot_center_sod_local_faith, ":faith"),
+      (try_begin),
+        (gt, "$g_sod_faith", 0),
+        (call_script, "script_sod_change_center_faith_support", ":center_no", "$g_sod_faith", "$g_sod_building_monastery_local_faith"),
+        (call_script, "script_sod_get_center_faith_profile", ":center_no"),
+        (assign, ":faith", reg2),
+      (try_end),
       (val_add, "$g_sod_global_faith", "$g_sod_building_monastery_global_faith"),
       (val_clamp, "$g_sod_global_faith", -2000, 2001),
 
@@ -3990,6 +4243,7 @@ simple_triggers = [
       # inform player of progress
       (try_begin),
         (eq, "$g_sod_hide_messages", 0),
+        (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
         (str_store_party_name_link, s1, ":center_no"),
         (store_add, reg0, "str_sod_monastery_improve_0", "$g_sod_faith"),
         (str_store_string, s1, reg0),
@@ -4001,6 +4255,7 @@ simple_triggers = [
     (try_begin),
       (eq, "$g_sod_hide_messages", -1),
       (ge, ":count", 1),
+      (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
       (store_add, reg0, "str_sod_monastery_summary_0", "$g_sod_faith"),
       (str_store_string, s1, reg0),
       (display_message, "@{s1}", dark_green),
@@ -4011,7 +4266,7 @@ simple_triggers = [
       (set_show_messages, 1),
     (try_end),
   ]),
-# [ src/triggers/ST04_weekly/entry_0092.py:L1-L98 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0092.py:L1-L91 ] 24 * 7
 (24 * 7,
   [
     (try_begin),
@@ -4074,13 +4329,6 @@ simple_triggers = [
       (try_end),
 
       (try_begin),
-        # give renown to its owner
-        (party_get_slot, ":center_lord", ":center_no", slot_town_lord),
-        (ge, ":center_lord", 0),
-        (set_show_messages, 0),
-        (call_script, "script_change_troop_renown", ":center_lord", "$g_sod_building_stables_renown"),
-        (set_show_messages, 1),
-
         # remaining effects apply to player only
         (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
 
@@ -4108,7 +4356,7 @@ simple_triggers = [
       (set_show_messages, 1),
     (try_end),
   ]),
-# [ src/triggers/ST04_weekly/entry_0093.py:L1-L74 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0093.py:L1-L65 ] 24 * 7
 (24 * 7,
   [
     (try_begin),
@@ -4130,15 +4378,6 @@ simple_triggers = [
 
       # ensure that this center has a chapter
       (party_slot_eq, ":center_no", slot_center_has_chapter, 1),
-
-      # give renown to its owner
-      (try_begin),
-        (party_get_slot, ":center_lord", ":center_no", slot_town_lord),
-        (ge, ":center_lord", 0),
-        (set_show_messages, 0),
-        (call_script, "script_change_troop_renown", ":center_lord", "$g_sod_building_chapter_renown"),
-        (set_show_messages, 1),
-      (try_end),
 
       # Chapters should also provide a little civic order and charitable stability.
       (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
@@ -4181,7 +4420,7 @@ simple_triggers = [
       (set_show_messages, 1),
     (try_end),
   ]),
-# [ src/triggers/ST04_weekly/entry_0094.py:L1-L146 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0094.py:L1-L126 ] 24 * 7
 (24 * 7,
   [
     (try_begin),
@@ -4199,15 +4438,6 @@ simple_triggers = [
       (store_faction_of_party, ":center_faction", ":center_no"),
       (this_or_next|eq, ":center_faction", "fac_player_supporters_faction"),
       (eq, ":center_faction", "fac_player_faction"),
-
-      # grant renown to the owner
-      (try_begin),
-        (party_get_slot, ":center_lord", ":center_no", slot_town_lord),
-        (ge, ":center_lord", 0), #if negative, then unowned
-        (set_show_messages, 0),
-        (call_script, "script_change_troop_renown", ":center_lord", "$g_sod_building_university_renown"),
-        (set_show_messages, 1),
-      (try_end),
 
       # Universities should also improve the underlying quality of life over time.
       (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
@@ -4241,15 +4471,9 @@ simple_triggers = [
         (call_script, "script_change_center_prosperity", ":center_no", 1),
       (try_end),
 
-      # increase this center's relation with the player
-      # Only when the player is the center lord OR the player is the faction leader (king).
       (try_begin),
         (this_or_next|party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
         (faction_slot_eq, ":center_faction", slot_faction_leader, "trp_player"),
-        (party_get_slot, ":cur_relation", ":center_no", slot_center_player_relation),
-        (val_add, ":cur_relation", "$g_sod_building_university_reputation"),
-		(val_min, ":cur_relation", 100), # FIX: cap relation at 100 so it doesn't break dialogue trees
-        (party_set_slot, ":center_no", slot_center_player_relation, ":cur_relation"),
 
         # inform the player that their universities are paying off
         (try_begin),
@@ -4276,11 +4500,6 @@ simple_triggers = [
 	(try_for_range, ":center_no", centers_begin, centers_end),
 		(party_slot_eq, ":center_no", slot_center_has_inn, 1),
 		(party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
-		(party_get_slot, ":cur_relation", ":center_no", slot_center_player_relation),
-		(val_add, ":cur_relation", "$g_sod_building_inn_reputation"),
-		(val_min, ":cur_relation", 100), # FIX: cap relation at 100
-		(val_clamp, ":cur_relation", -100, 101),
-		(party_set_slot, ":center_no", slot_center_player_relation, ":cur_relation"),
 		(party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
 		(party_get_slot, ":center_prosperity", ":center_no", slot_town_prosperity),
 		(party_get_slot, ":food_store", ":center_no", slot_party_food_store),
@@ -4326,7 +4545,7 @@ simple_triggers = [
       (set_show_messages, 1),
     (try_end),
   ]),
-# [ src/triggers/ST04_weekly/entry_0095.py:L1-L72 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0095.py:L1-L66 ] 24 * 7
 (24 * 7,
   [
     (try_begin),
@@ -4373,15 +4592,9 @@ simple_triggers = [
         (call_script, "script_change_center_prosperity", ":center_no", 1),
       (try_end),
 
-      # Only when the player is the center lord OR the player is the faction leader (king).
       (try_begin),
         (this_or_next|party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
         (faction_slot_eq, ":center_faction", slot_faction_leader, "trp_player"),
-        (party_get_slot, ":cur_relation", ":center_no", slot_center_player_relation),
-        (lt, ":cur_relation", 100),
-        (val_add, ":cur_relation", 1),
-        (val_clamp, ":cur_relation", -100, 101),
-        (party_set_slot, ":center_no", slot_center_player_relation, ":cur_relation"),
         (val_add, ":count", 1),
       (try_end),
     (try_end),
@@ -4397,7 +4610,7 @@ simple_triggers = [
       (set_show_messages, 1),
     (try_end),
   ]),
-# [ src/triggers/ST04_weekly/entry_0096.py:L1-L95 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0096.py:L1-L79 ] 24 * 7
 (24 * 7,
   [
     (try_begin),
@@ -4415,11 +4628,6 @@ simple_triggers = [
       (store_faction_of_party, ":center_faction", ":center_no"),
       (this_or_next|eq, ":center_faction", "fac_player_supporters_faction"),
       (eq, ":center_faction", "fac_player_faction"),
-
-      # improve the town's prosperity
-      (set_show_messages, 0),
-      (call_script, "script_change_center_prosperity", ":center_no", "$g_sod_building_guild_prosperity"),
-      (set_show_messages, 1),
 
       # Guilds should also improve circulation of staples and basic urban conditions.
       (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
@@ -4454,17 +4662,6 @@ simple_triggers = [
         (try_end),
       (try_end),
 
-      # improve player's relationship with this town
-      # Only when the player is the center lord OR the player is the faction leader (king).
-      (try_begin),
-        (this_or_next|party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
-        (faction_slot_eq, ":center_faction", slot_faction_leader, "trp_player"),
-        (party_get_slot, ":cur_relation", ":center_no", slot_center_player_relation),
-        (val_add, ":cur_relation", "$g_sod_building_guild_reputation"),
-        (val_clamp, ":cur_relation", -100, 101),
-        (party_set_slot, ":center_no", slot_center_player_relation, ":cur_relation"),
-      (try_end),
-
       # inform the player that their guild has an effect (all effects are global, so show message always)
       (try_begin),
         (eq, "$g_sod_hide_messages", 0),
@@ -4491,7 +4688,7 @@ simple_triggers = [
       (set_show_messages, 1),
     (try_end),
   ]),
-# [ src/triggers/ST04_weekly/entry_0097.py:L1-L89 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0097.py:L1-L79 ] 24 * 7
 (24 * 7,
   [
     (try_begin),
@@ -4504,11 +4701,6 @@ simple_triggers = [
 
       # only for centers that have a mill
       (party_slot_eq, ":center_no", slot_center_has_mill, 1),
-
-      # increase the prosperity
-      (set_show_messages, 0),
-      (call_script, "script_change_center_prosperity", ":center_no", "$g_sod_building_mill_prosperity"),
-      (set_show_messages, 1),
 
       # Mills should also support local food processing and baseline living conditions.
       (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
@@ -4547,11 +4739,6 @@ simple_triggers = [
       (store_faction_of_party, ":center_faction", ":center_no"),
       (this_or_next|eq, ":center_faction", "fac_player_supporters_faction"),
       (eq, ":center_faction", "fac_player_faction"),
-
-      # improve player's relationship with this village
-#      (party_get_slot, ":cur_relation", ":center_no", slot_center_player_relation),
-#      (val_add, ":cur_relation", 1),
-#      (party_set_slot, ":center_no", slot_center_player_relation, ":cur_relation"),
 
       # remaining effects apply to player only
       (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
@@ -4777,7 +4964,7 @@ simple_triggers = [
       (set_show_messages, 1),
     (try_end),
   ]),
-# [ src/triggers/ST04_weekly/entry_0100.py:L1-L107 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0100.py:L1-L108 ] 24 * 7
 (24 * 7,
   [
     (try_begin),
@@ -4836,6 +5023,7 @@ simple_triggers = [
         # inform the player that his lack of a religious building has an impact...
         (try_begin),
           (eq, "$g_sod_hide_messages", 0),
+          (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
           (str_store_party_name_link, s1, ":center_no"),
           (store_add, reg0, "str_sod_faith_lacking_0", "$g_sod_faith"),
           (str_store_string, s1, reg0),
@@ -4883,7 +5071,7 @@ simple_triggers = [
       (set_show_messages, 1),
     (try_end),
   ]),
-# [ src/triggers/ST04_weekly/entry_0101.py:L1-L265 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0101.py:L1-L306 ] 24 * 7
 (24 * 7,
   [
     (try_begin),
@@ -5094,9 +5282,50 @@ simple_triggers = [
         (neq, ":center_growth", 0),
         # update the population after growth or shrinkage
         (party_set_slot, ":center_no", slot_center_sod_local_population, ":new_population"),
+        # Only surface population news when it is player-relevant or severe enough
+        # to feel like a report rather than routine background census noise.
+        (assign, ":should_report_population_change", 0),
+        (try_begin),
+          (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
+          (assign, ":should_report_population_change", 1),
+        (else_try),
+          (gt, "$players_kingdom", 0),
+          (store_faction_of_party, ":center_faction", ":center_no"),
+          (eq, ":center_faction", "$players_kingdom"),
+          (assign, ":should_report_population_change", 1),
+        (else_try),
+          (assign, ":abs_growth", ":center_growth"),
+          (try_begin),
+            (lt, ":abs_growth", 0),
+            (val_mul, ":abs_growth", -1),
+          (try_end),
+          (ge, ":abs_growth", 20),
+          (assign, ":should_report_population_change", 1),
+        (else_try),
+          (lt, ":center_growth", 0),
+          (le, ":food_store", 0),
+          (assign, ":should_report_population_change", 1),
+        (else_try),
+          (lt, ":center_growth", 0),
+          (lt, ":food_security", 300),
+          (assign, ":should_report_population_change", 1),
+        (else_try),
+          (lt, ":center_growth", 0),
+          (lt, ":center_health", 35),
+          (assign, ":should_report_population_change", 1),
+        (else_try),
+          (lt, ":center_growth", 0),
+          (lt, ":prosperity", 30),
+          (assign, ":should_report_population_change", 1),
+        (else_try),
+          (lt, ":center_growth", 0),
+          (lt, ":cur_relation", -5),
+          (assign, ":should_report_population_change", 1),
+        (try_end),
         # inform the player of the new census
         (try_begin),
           (eq, "$g_sod_hide_messages", 0),
+          (eq, ":should_report_population_change", 1),
           (str_store_party_name_link, s1, ":center_no"),
           (assign, reg1, ":new_population"),
           (try_begin),
@@ -5147,7 +5376,7 @@ simple_triggers = [
       (set_show_messages, 1),
     (try_end),
   ]),
-# [ src/triggers/ST04_weekly/entry_0102.py:L1-L253 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0102.py:L1-L290 ] 24 * 7
 (24 * 7,
   [
     (try_begin),
@@ -5348,9 +5577,46 @@ simple_triggers = [
         (neq, ":center_growth", 0),
         # update the population after growth or shrinkage
         (party_set_slot, ":center_no", slot_center_sod_local_population, ":new_population"),
+        # Only surface population news when it is player-relevant or severe enough
+        # to feel like a report rather than routine background census noise.
+        (assign, ":should_report_population_change", 0),
+        (try_begin),
+          (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
+          (assign, ":should_report_population_change", 1),
+        (else_try),
+          (gt, "$players_kingdom", 0),
+          (store_faction_of_party, ":center_faction", ":center_no"),
+          (eq, ":center_faction", "$players_kingdom"),
+          (assign, ":should_report_population_change", 1),
+        (else_try),
+          (assign, ":abs_growth", ":center_growth"),
+          (try_begin),
+            (lt, ":abs_growth", 0),
+            (val_mul, ":abs_growth", -1),
+          (try_end),
+          (ge, ":abs_growth", 8),
+          (assign, ":should_report_population_change", 1),
+        (else_try),
+          (lt, ":center_growth", 0),
+          (lt, ":food_capacity_ratio", 20),
+          (assign, ":should_report_population_change", 1),
+        (else_try),
+          (lt, ":center_growth", 0),
+          (lt, ":prosperity", 30),
+          (assign, ":should_report_population_change", 1),
+        (else_try),
+          (lt, ":center_growth", 0),
+          (lt, ":center_health", 35),
+          (assign, ":should_report_population_change", 1),
+        (else_try),
+          (lt, ":center_growth", 0),
+          (lt, ":cur_relation", -5),
+          (assign, ":should_report_population_change", 1),
+        (try_end),
         # inform the player of the new census
         (try_begin),
           (eq, "$g_sod_hide_messages", 0),
+          (eq, ":should_report_population_change", 1),
           (str_store_party_name_link, s1, ":center_no"),
           (assign, reg1, ":new_population"),
           (try_begin),
@@ -5987,7 +6253,7 @@ simple_triggers = [
       (set_show_messages, 1),
     (try_end),
   ]),
-# [ src/triggers/ST04_weekly/entry_0105.py:L1-L809 ] 24 * 7
+# [ src/triggers/ST04_weekly/entry_0105.py:L1-L903 ] 24 * 7
 (24 * 7,
   [
     (try_begin),
@@ -6035,6 +6301,14 @@ simple_triggers = [
 
       (assign, ":desperation_score", 0),
       (assign, ":stability_score", 0),
+      (call_script, "script_sod_get_center_security_economy_profile", ":center_no"),
+      (assign, ":trade_security_pct", reg0),
+      (assign, ":recovery_security_pct", reg1),
+      (assign, ":bandit_pressure_pct", reg2),
+      (call_script, "script_sod_get_center_security_profile", ":center_no"),
+      (assign, ":effective_threat", reg0),
+      (assign, ":desperation_bandit_reduction", reg5),
+      (assign, ":unrest_pressure", reg8),
 
       (try_begin),
         (lt, ":prosperity", 30),
@@ -6111,12 +6385,39 @@ simple_triggers = [
         (val_add, ":stability_score", ":tmp"),
       (try_end),
 
+      (try_begin),
+        (gt, ":unrest_pressure", 20),
+        (assign, ":pressure_unrest", 1),
+        (store_div, ":tmp", ":unrest_pressure", 4),
+        (val_add, ":desperation_score", ":tmp"),
+      (try_end),
+      (try_begin),
+        (gt, ":effective_threat", 3),
+        (store_mul, ":tmp", ":effective_threat", 3),
+        (val_add, ":desperation_score", ":tmp"),
+      (try_end),
+      (try_begin),
+        (gt, ":trade_security_pct", 115),
+        (store_sub, ":tmp", ":trade_security_pct", 115),
+        (val_div, ":tmp", 5),
+        (val_add, ":stability_score", ":tmp"),
+      (try_end),
+      (try_begin),
+        (gt, ":recovery_security_pct", 115),
+        (store_sub, ":tmp", ":recovery_security_pct", 115),
+        (val_div, ":tmp", 5),
+        (val_add, ":stability_score", ":tmp"),
+      (try_end),
+
       (gt, ":desperation_score", 0),
 
       (store_random_in_range, ":roll", 0, 100),
       (assign, ":chance", sod_desperation_chance_percent),
       (val_add, ":chance", ":desperation_score"),
       (val_sub, ":chance", ":stability_score"),
+      (val_sub, ":chance", ":desperation_bandit_reduction"),
+      (val_mul, ":chance", ":bandit_pressure_pct"),
+      (val_div, ":chance", 100),
       (val_clamp, ":chance", 5, 80),
       (lt, ":roll", ":chance"),
 
@@ -6131,12 +6432,24 @@ simple_triggers = [
         (lt, ":center_health", 25),
         (val_add, ":bandit_count", 1),
       (try_end),
+      (val_mul, ":bandit_count", ":bandit_pressure_pct"),
+      (val_div, ":bandit_count", 100),
+      (try_begin),
+        (gt, ":desperation_bandit_reduction", 0),
+        (store_div, ":tmp", ":desperation_bandit_reduction", 25),
+        (val_sub, ":bandit_count", ":tmp"),
+      (try_end),
       (val_min, ":bandit_count", ":surplus"),
       (val_min, ":bandit_count", 18),
       (gt, ":bandit_count", 0),
 
       (spawn_around_party, ":center_no", "pt_bandits"),
       (assign, ":bandit_party", reg0),
+      (party_set_slot, ":bandit_party", slot_party_sod_threat_type, sod_threat_type_faction_problem),
+      (party_set_slot, ":bandit_party", slot_party_sod_threat_archetype, sod_threat_archetype_cattle_raiders),
+      (party_set_slot, ":bandit_party", slot_party_sod_threat_sponsor_center, ":center_no"),
+      (store_faction_of_party, ":center_faction", ":center_no"),
+      (party_set_slot, ":bandit_party", slot_party_sod_threat_sponsor_faction, ":center_faction"),
       (store_party_size, ":current_size", ":bandit_party"),
       (try_begin),
         (lt, ":current_size", ":bandit_count"),
@@ -6222,6 +6535,14 @@ simple_triggers = [
 
       (assign, ":desperation_score", 0),
       (assign, ":stability_score", 0),
+      (call_script, "script_sod_get_center_security_economy_profile", ":center_no"),
+      (assign, ":trade_security_pct", reg0),
+      (assign, ":recovery_security_pct", reg1),
+      (assign, ":bandit_pressure_pct", reg2),
+      (call_script, "script_sod_get_center_security_profile", ":center_no"),
+      (assign, ":effective_threat", reg0),
+      (assign, ":desperation_bandit_reduction", reg5),
+      (assign, ":unrest_pressure", reg8),
 
       (try_begin),
         (lt, ":prosperity", 30),
@@ -6298,12 +6619,39 @@ simple_triggers = [
         (val_add, ":stability_score", ":tmp"),
       (try_end),
 
+      (try_begin),
+        (gt, ":unrest_pressure", 20),
+        (assign, ":pressure_unrest", 1),
+        (store_div, ":tmp", ":unrest_pressure", 4),
+        (val_add, ":desperation_score", ":tmp"),
+      (try_end),
+      (try_begin),
+        (gt, ":effective_threat", 3),
+        (store_mul, ":tmp", ":effective_threat", 3),
+        (val_add, ":desperation_score", ":tmp"),
+      (try_end),
+      (try_begin),
+        (gt, ":trade_security_pct", 115),
+        (store_sub, ":tmp", ":trade_security_pct", 115),
+        (val_div, ":tmp", 5),
+        (val_add, ":stability_score", ":tmp"),
+      (try_end),
+      (try_begin),
+        (gt, ":recovery_security_pct", 115),
+        (store_sub, ":tmp", ":recovery_security_pct", 115),
+        (val_div, ":tmp", 5),
+        (val_add, ":stability_score", ":tmp"),
+      (try_end),
+
       (gt, ":desperation_score", 0),
 
       (store_random_in_range, ":roll", 0, 100),
       (assign, ":chance", sod_desperation_chance_percent),
       (val_add, ":chance", ":desperation_score"),
       (val_sub, ":chance", ":stability_score"),
+      (val_sub, ":chance", ":desperation_bandit_reduction"),
+      (val_mul, ":chance", ":bandit_pressure_pct"),
+      (val_div, ":chance", 100),
       (val_clamp, ":chance", 5, 80),
       (lt, ":roll", ":chance"),
 
@@ -6318,12 +6666,24 @@ simple_triggers = [
         (lt, ":prosperity", 20),
         (val_add, ":bandit_count", 1),
       (try_end),
+      (val_mul, ":bandit_count", ":bandit_pressure_pct"),
+      (val_div, ":bandit_count", 100),
+      (try_begin),
+        (gt, ":desperation_bandit_reduction", 0),
+        (store_div, ":tmp", ":desperation_bandit_reduction", 25),
+        (val_sub, ":bandit_count", ":tmp"),
+      (try_end),
       (val_min, ":bandit_count", ":surplus"),
       (val_min, ":bandit_count", 24),
       (gt, ":bandit_count", 0),
 
       (spawn_around_party, ":center_no", "pt_bandits"),
       (assign, ":bandit_party", reg0),
+      (party_set_slot, ":bandit_party", slot_party_sod_threat_type, sod_threat_type_faction_problem),
+      (party_set_slot, ":bandit_party", slot_party_sod_threat_archetype, sod_threat_archetype_cattle_raiders),
+      (party_set_slot, ":bandit_party", slot_party_sod_threat_sponsor_center, ":center_no"),
+      (store_faction_of_party, ":center_faction", ":center_no"),
+      (party_set_slot, ":bandit_party", slot_party_sod_threat_sponsor_faction, ":center_faction"),
       (store_party_size, ":current_size", ":bandit_party"),
       (try_begin),
         (lt, ":current_size", ":bandit_count"),
@@ -6854,7 +7214,7 @@ simple_triggers = [
     (try_end),
   ]
 ),
-# [ src/triggers/ST03_daily/entry_0107.py:L1-L260 ] 24
+# [ src/triggers/ST03_daily/entry_0107.py:L1-L302 ] 24
 (24,
   [
     (try_begin),
@@ -6875,6 +7235,31 @@ simple_triggers = [
 		
 			(party_get_slot, ":soldiers", ":center_no", slot_center_garrison_soldiers),
 			(party_get_slot, ":ranged", ":center_no", slot_center_garrison_ranged),
+			(store_add, ":daily_garrisoning", ":soldiers", ":ranged"),
+			(call_script, "script_sod_get_center_garrison_policy", ":center_no"),
+			(assign, ":garrison_recovery", reg0),
+			(store_div, ":recovery_bonus", ":garrison_recovery", 7),
+			(store_mod, ":recovery_remainder", ":garrison_recovery", 7),
+			(try_begin),
+				(gt, ":recovery_remainder", 0),
+				(store_random_in_range, ":recovery_roll", 0, 7),
+				(lt, ":recovery_roll", ":recovery_remainder"),
+				(val_add, ":recovery_bonus", 1),
+			(try_end),
+			(val_clamp, ":recovery_bonus", 0, 6),
+			(try_begin),
+				(gt, ":recovery_bonus", 0),
+				(store_sub, ":garrison_room", ":full", ":garrison"),
+				(val_max, ":garrison_room", 0),
+				(val_min, ":recovery_bonus", ":garrison_room"),
+				(try_begin),
+					(gt, ":ranged", 0),
+					(store_div, ":recovery_ranged", ":recovery_bonus", 2),
+					(val_add, ":ranged", ":recovery_ranged"),
+					(val_sub, ":recovery_bonus", ":recovery_ranged"),
+				(try_end),
+				(val_add, ":soldiers", ":recovery_bonus"),
+			(try_end),
 			(store_add, ":daily_garrisoning", ":soldiers", ":ranged"),
 			(gt, ":daily_garrisoning", 0),
 
@@ -7037,16 +7422,23 @@ simple_triggers = [
     # determine how many come (capped by population: high-tier nobles gated by realm size)
     (assign, ":nobles", 0),
     (assign, ":total_chapter_pop", 0),
+    (assign, ":noble_recruitment_bonus", 0),
     (try_for_range, ":center_no", walled_centers_begin, walled_centers_end),
 		(store_faction_of_party, ":center_faction", ":center_no"),
 		(eq, ":center_faction", "fac_player_supporters_faction"),
 		(party_slot_eq, ":center_no", slot_center_has_chapter, 1),
+		(call_script, "script_sod_get_center_recruitment_policy", ":center_no"),
+		(val_add, ":noble_recruitment_bonus", reg2),
 		(try_begin),
 		  (party_slot_eq, ":center_no", slot_party_type, spt_town),
 		  (party_get_slot, ":pop", ":center_no", slot_center_sod_local_population),
 		  (val_add, ":total_chapter_pop", ":pop"),
 		(else_try),
 		  (party_slot_eq, ":center_no", slot_party_type, spt_castle),
+		  (call_script, "script_sod_get_castle_support_profile", ":center_no"),
+		  (assign, ":castle_noble_support", reg0),
+		  (store_mul, ":castle_support_pop_equivalent", ":castle_noble_support", 15),
+		  (val_add, ":total_chapter_pop", ":castle_support_pop_equivalent"),
 		  (try_for_range, ":village", villages_begin, villages_end),
 		    (party_slot_eq, ":village", slot_village_bound_center, ":center_no"),
 		    (party_get_slot, ":pop", ":village", slot_center_sod_local_population),
@@ -7067,6 +7459,15 @@ simple_triggers = [
 		(store_div, ":num_nobles", ":num", 50),
 		(val_add, ":nobles", ":num_nobles"),
     (try_end),
+    (store_div, ":extra_nobles", ":noble_recruitment_bonus", 7),
+    (store_mod, ":extra_noble_remainder", ":noble_recruitment_bonus", 7),
+    (try_begin),
+		(gt, ":extra_noble_remainder", 0),
+		(store_random_in_range, ":extra_noble_roll", 0, 7),
+		(lt, ":extra_noble_roll", ":extra_noble_remainder"),
+		(val_add, ":extra_nobles", 1),
+    (try_end),
+    (val_add, ":nobles", ":extra_nobles"),
 
     (store_div, ":noble_cap", ":total_chapter_pop", sod_noble_cap_pop_divisor),
     (val_max, ":noble_cap", 1),
@@ -7074,6 +7475,7 @@ simple_triggers = [
 
     (try_begin),
 		(gt, ":nobles", 0),
+		(gt, "$g_sod_nobles_gather_at", 0),
 		(try_begin),
 			(eq, "$g_sod_country", cb_antares),
 			(assign, ":nobles_id", "trp_sod_ant_noble"),
@@ -7135,7 +7537,7 @@ simple_triggers = [
     (ge, ":cur_day", "$g_sod_invested_day"),
     (jump_to_menu, "mnu_investment_report"),
   ]),
-# [ src/triggers/ST03_daily/entry_0109.py:L1-L46 ] 24
+# [ src/triggers/ST03_daily/entry_0109.py:L1-L60 ] 24
 (24,
   [
     # don't allow a random event to occur when the player is a prisoner
@@ -7147,10 +7549,20 @@ simple_triggers = [
     (assign, "$g_sod_zealot", reg3),
 
     # ultimate troops (zealots) locked behind faith: need minimum effective faith for event to fire
-    (assign, ":faith", "$g_sod_global_faith"),
-    (store_mul, ":holy", "$g_sod_holy", 10),
-    (val_sub, ":faith", ":holy"),
+    (call_script, "script_sod_troop_get_effective_faith"),
+    (assign, ":faith", reg0),
     (ge, ":faith", sod_zealot_min_faith),
+    (assign, ":religious_seats", 0),
+    (assign, ":faith_ascension_bonus", 0),
+    (try_for_range, ":center_no", walled_centers_begin, walled_centers_end),
+      (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
+      (this_or_next|party_slot_eq, ":center_no", slot_center_has_temple, 1),
+      (party_slot_eq, ":center_no", slot_center_has_chapel, 1),
+      (val_add, ":religious_seats", 1),
+      (call_script, "script_sod_get_center_recruitment_policy", ":center_no"),
+      (val_add, ":faith_ascension_bonus", reg4),
+    (try_end),
+    (gt, ":religious_seats", 0),
 
     # determine if a zealot has come to be
     (store_random_in_range, ":rand", 0, 100),
@@ -7176,17 +7588,23 @@ simple_triggers = [
 	#SoD Law
 	(assign, ":result", 50),
 	(val_sub, ":result", "$g_sod_holy_law_modifier"),
+    (store_mul, ":seat_bonus", ":religious_seats", sod_faith_ascension_event_bonus),
+    (val_add, ":seat_bonus", ":faith_ascension_bonus"),
+    (val_sub, ":result", ":seat_bonus"),
+    (val_max, ":result", 12),
     # upgrade the zelaot
     (gt, ":rand", ":result"),
     (jump_to_menu, "mnu_event_holy"),
   ]),
-# [ src/triggers/ST02_every_hour/entry_0110.py:L1-L39 ] 12
+# [ src/triggers/ST02_every_hour/entry_0110.py:L1-L41 ] 12
 (12,
   [
     # we cannot be a prisoner...
     (neg|troop_slot_ge, "trp_player", slot_troop_prisoner_of_party, 0),
     (party_get_num_companions, ":num_comp", "p_main_party"),
 	(gt, ":num_comp", 15),
+	(call_script, "script_party_count_fit_regulars", "p_main_party"),
+	(gt, reg0, 0),
 	
     (store_random_in_range, ":rand" , 0, 200),
 	
@@ -7588,7 +8006,7 @@ simple_triggers = [
   [
   (call_script, "script_ai_hire_mercenaries"),
   ]),
-# [ src/triggers/ST03_daily/entry_0122.py:L1-L48 ] 24
+# [ src/triggers/ST03_daily/entry_0122.py:L1-L53 ] 24
 (24,
  [
 	(try_for_parties, ":cur_party"),
@@ -7609,11 +8027,13 @@ simple_triggers = [
 			(val_max, ":target_size", 18),
 			(try_begin),
 				(party_slot_eq, ":cur_party", slot_party_type, spt_player_mercenaries),
-				(val_add, ":target_size", 8),
+				(call_script, "script_sod_merc_player_company_try_replenish", ":cur_party"),
+				(assign, ":shortfall", 0),
 			(else_try),
 				(party_slot_eq, ":cur_party", slot_party_type, spt_mercenary_lord_party),
 				(val_add, ":target_size", 4),
 			(try_end),
+			(neg|party_slot_eq, ":cur_party", slot_party_type, spt_player_mercenaries),
 			(lt, ":size", ":target_size"),
 			(assign, reg0, slot_guild_tier_1_unit_1),
 			(assign, reg1, slot_guild_tier_1_unit_2),
@@ -7628,15 +8048,21 @@ simple_triggers = [
 			(else_try),
 				(val_min, ":shortfall", 3),
 			(try_end),
-			(party_add_members, ":cur_party", ":troop_to_add", ":shortfall"),
+			(try_begin),
+				(gt, ":shortfall", 0),
+				(party_add_members, ":cur_party", ":troop_to_add", ":shortfall"),
+			(try_end),
 		(try_end),
 		(store_mul, ":exp", ":size", 8),
 		(call_script, "script_cf_party_upgrade_with_xp", ":cur_party", ":exp", 0),
 	(try_end),
 	(call_script, "script_merc_apply_daily_standing_perks"),
 	]),
-# [ src/triggers/ST04_weekly/entry_0123.py:L1-L144 ] 24*7
+# [ src/triggers/ST04_weekly/entry_0123.py:L1-L146 ] 24*7
 (24*7, [
+	(try_for_range, ":cur_center", centers_begin, centers_end),
+		(call_script, "script_sod_advance_center_construction", ":cur_center"),
+	(try_end),
 
 	(try_for_range, ":cur_center", centers_begin, centers_end),
 		(party_get_slot, ":cur_improvement", ":cur_center", slot_center_current_improvement),
@@ -7706,8 +8132,10 @@ simple_triggers = [
 			(try_end),
 			(try_begin),
 				(call_script, "script_get_improvement_details", ":improvement_type"),
-				(val_div, reg0, 4),
-				(lt, ":gold", reg0),
+				(call_script, "script_sod_get_center_construction_cost", ":cur_center", ":improvement_type", reg0),
+				(assign, ":ai_affordability_cost", reg0),
+				(val_div, ":ai_affordability_cost", 4),
+				(lt, ":gold", ":ai_affordability_cost"),
 				(assign, ":improvement_type", 0),
 			(try_end),
 			(try_begin),
@@ -7756,18 +8184,15 @@ simple_triggers = [
 		(gt, ":improvement_type", 0),
 		(party_slot_eq, ":cur_center", ":improvement_type", 0),
 		(call_script, "script_get_improvement_details", ":improvement_type"),
-		(store_div, ":improvement_time", reg0, 200),
+		(call_script, "script_sod_get_center_construction_cost", ":cur_center", ":improvement_type", reg0),
+		(assign, ":improvement_cost", reg0),
 		
-		(party_set_slot, ":cur_center", slot_center_current_improvement, ":improvement_type"),
-        (store_current_hours, ":cur_hours"),
-        (store_mul, ":hours_takes", ":improvement_time", 24),
-        (val_add, ":hours_takes", ":cur_hours"),
-        (party_set_slot, ":cur_center", slot_center_improvement_end_hour, ":hours_takes"),
+		(call_script, "script_sod_start_center_construction", ":cur_center", ":improvement_type"),
 		
         # Antigravity: Actually subtract the AI lord's wealth for the improvement!
-        (val_div, reg0, 4), # AI pays 25% cost
+        (store_div, ":ai_improvement_cost", ":improvement_cost", 4), # AI pays 25% cost
         (troop_get_slot, ":gold", ":troop", slot_troop_wealth),
-        (val_sub, ":gold", reg0),
+        (val_sub, ":gold", ":ai_improvement_cost"),
         (troop_set_slot, ":troop", slot_troop_wealth, ":gold"),
 		
 		(this_or_next|eq, ":faction", "fac_player_supporters_faction"),
@@ -7778,7 +8203,7 @@ simple_triggers = [
         (display_message, "@Word arrives that {s5} has set workmen to raising {s0} in {s6}.", build_color),
 	(try_end),
 	]),
-# [ src/triggers/ST02_every_hour/entry_0124.py:L1-L57 ] 1
+# [ src/triggers/ST02_every_hour/entry_0124.py:L1-L71 ] 1
 (1,
    [
        (try_for_parties, ":cur_party"),
@@ -7796,12 +8221,26 @@ simple_triggers = [
 				(gt, ":troop_party_no", 0),
 			    (party_is_active, ":troop_party_no"), #twan456
 				(try_begin),
+					(party_get_attached_to, ":commander_attached_to", ":troop_party_no"),
 					(party_get_battle_opponent, ":opponent", ":troop_party_no"),
 					(gt, ":opponent", 0),
 					(store_distance_to_party_from_party, ":distance", ":troop_party_no", ":cur_party"),
 					(le, ":distance", 1),
 					(neq, ":is_attached", ":troop_party_no"),
-					(party_attach_to_party, ":cur_party", ":troop_party_no"),
+					(try_begin),
+						(is_between, ":commander_attached_to", centers_begin, centers_end),
+						(neq, ":is_attached", ":commander_attached_to"),
+						(party_attach_to_party, ":cur_party", ":commander_attached_to"),
+					(else_try),
+						(le, ":commander_attached_to", 0),
+						(party_attach_to_party, ":cur_party", ":troop_party_no"),
+					(else_try),
+						(gt, ":is_attached", 0),
+						(party_detach, ":cur_party"),
+						(party_set_slot, ":cur_party", slot_party_commander_party, ":troop_party_no"),
+						(party_set_ai_object,":cur_party",":troop_party_no"),
+						(party_set_ai_behavior,":cur_party",ai_bhvr_escort_party),
+					(try_end),
 				(else_try),
 					(party_get_attached_to, ":cur_attached_town", ":troop_party_no"),
 					(is_between, ":cur_attached_town", centers_begin, centers_end), #twan456
@@ -7840,9 +8279,11 @@ simple_triggers = [
 	 (map_free, 0),
 	 (jump_to_menu, "mnu_notification_new_king"),
 	 ]),
-# [ src/triggers/ST04_weekly/entry_0126.py:L1-L23 ] 24*7
+# [ src/triggers/ST04_weekly/entry_0126.py:L1-L33 ] 24*7
 (24*7, [
-	 (try_for_range, ":cur_guild", guilds_begin, "fac_sod_merc_guild6"),
+     (call_script, "script_sod_merc_market_weekly_pulse"),
+	 (try_for_range, ":cur_guild", guilds_begin, guilds_end),
+        (call_script, "script_cf_sod_merc_guild_uses_classic_employer_rotation", ":cur_guild"),
 		(assign, ":employed", 0),
 		(try_for_range, ":employer", kingdoms_begin, kingdoms_end),
 			(faction_slot_eq, ":employer", slot_faction_merc_pact, ":cur_guild"),
@@ -7856,6 +8297,14 @@ simple_triggers = [
 		(eq, ":employed", 0),
 		(call_script, "script_cf_merc_guild_give_new_employer", ":cur_guild"),
 	 (try_end),
+	 (call_script, "script_sod_jotnar_spawn_world_activity"),
+	 (call_script, "script_sod_elephant_guard_spawn_world_activity"),
+	 (call_script, "script_sod_slavers_spawn_world_activity"),
+	 (call_script, "script_sod_black_khergits_spawn_or_recover_camp"),
+	 (call_script, "script_sod_black_khergits_spawn_raids"),
+	 (call_script, "script_sod_diplomacy_process_treaty_effects"),
+	 (call_script, "script_sod_diplomacy_ai_weekly_pulse"),
+	 (call_script, "script_sod_diplomacy_process_incident_events"),
 	 (call_script, "script_update_all_notes"),
   
 	 (faction_get_slot, ":mercenaries", "fac_player_faction", slot_faction_merc_pact),
@@ -7869,7 +8318,7 @@ simple_triggers = [
 	(troop_get_slot, ":flag_icon", "trp_player", slot_troop_custom_banner_map_flag_type),
 	(val_max, ":flag_icon", 0),
 	(val_add, ":flag_icon", custom_banner_map_icons_begin),
-	(party_set_banner_icon, "p_main_party", ":flag_icon"),
+	(call_script, "script_sod_apply_player_banner_map_icon", ":flag_icon"),
 	(try_for_parties, ":cur_party"),
 		(call_script, "script_cf_is_patrol", ":cur_party"),
 		(eq, reg0, 0),
@@ -7927,91 +8376,15 @@ simple_triggers = [
 		(call_script, "script_cf_party_upgrade_with_xp", ":party_no", 1200, 0),
     (try_end),
     ]),
-# [ src/triggers/ST03_daily/entry_0129.py:L1-L87 ] 48
+# [ src/triggers/ST03_daily/entry_0129.py:L1-L11 ] 48
 (48,
     [
       (try_for_range, ":troop_no", kingdom_heroes_begin, kingdom_heroes_end),
-        (troop_slot_eq, ":troop_no", slot_troop_occupation, slto_mercenary_lord),
-        (neg|troop_slot_ge, ":troop_no", slot_troop_prisoner_of_party, 0),
-        (neg|troop_slot_ge, ":troop_no", slot_troop_leaded_party, 1),
-		(neg|main_party_has_troop, ":troop_no"),
-
-		(assign, ":pt_fac", -1),
-        (store_troop_faction, ":cur_faction", ":troop_no"),
-		(try_begin),
-			(eq, ":cur_faction", "fac_sod_merc_guild6"),
-			(assign, ":pt_fac", ":cur_faction"),
-			(store_random_in_range, ":base", towns_begin, towns_end),
-			(assign, ":patrol_radius", 500),
-		(else_try),
-			(try_for_range, ":employer", kingdoms_begin, kingdoms_end),
-				(faction_slot_eq, ":employer", slot_faction_merc_pact, ":cur_faction"),
-				(assign, ":pt_fac", ":employer"),
-			(try_end),
-			(faction_get_slot, ":base", ":cur_faction", slot_guild_base),
-			(assign, ":patrol_radius", 35),
-		(try_end),
-		
-		(gt, ":pt_fac", 0),
-		(spawn_around_party, ":base", "pt_mercenary_lord_party"),
-		(assign, ":merc_lord_party", reg0),
-		
-		(party_set_faction, ":merc_lord_party", ":pt_fac"),
-		(troop_set_slot, ":troop_no", slot_troop_leaded_party, ":merc_lord_party"),
-		(str_store_troop_name, s1, ":troop_no"),
-		(party_set_name, ":merc_lord_party", s1),
-		(try_begin),
-          (eq, ":cur_faction", "fac_sod_merc_guild1"),
-		  (party_set_banner_icon, ":merc_lord_party", "icon_banner_298"),
-        (else_try),
-          (eq, ":cur_faction", "fac_sod_merc_guild2"),
-		  (party_set_banner_icon, ":merc_lord_party", "icon_banner_299"),
-        (else_try),
-          (eq, ":cur_faction", "fac_sod_merc_guild3"),
-		  (party_set_banner_icon, ":merc_lord_party", "icon_banner_300"),
-		(else_try),
-          (eq, ":cur_faction", "fac_sod_merc_guild4"),
-		  (party_set_banner_icon, ":merc_lord_party", "icon_banner_301"),
-        (else_try),
-          (eq, ":cur_faction", "fac_sod_merc_guild5"),
-		  (party_set_banner_icon, ":merc_lord_party", "icon_banner_302"),
-		(else_try),
-		  (party_set_banner_icon, ":merc_lord_party", "icon_banner_303"),
-        (try_end),
-		(party_set_slot, ":merc_lord_party", slot_party_starting_size, 100),
-		(party_set_slot, ":merc_lord_party", slot_party_type, spt_mercenary_lord_party),
-		
-		(faction_get_slot, ":t1_1", ":cur_faction", slot_guild_tier_1_unit_1),
-		(faction_get_slot, ":t1_2", ":cur_faction", slot_guild_tier_1_unit_2),
-		(faction_get_slot, ":noble", ":cur_faction", slot_guild_noble),
-		(faction_get_slot, ":proportion", ":cur_faction", slot_guild_troop_proportion),
-
-        (party_add_members, ":merc_lord_party", ":troop_no", 1),
-		(party_add_members, ":merc_lord_party", ":noble", 3),
-		(store_mul, ":t1_1_units", 4, ":proportion"),
-        (party_add_members, ":merc_lord_party", ":t1_1", ":t1_1_units"),
-
-		(try_begin),
-			(store_sub, ":t1_2_units", 96, ":t1_1_units"),
-			(gt, ":t1_2_units", 0),
-			(try_begin),
-				(eq, ":cur_faction", "fac_sod_merc_guild1"),
-				(val_sub, ":t1_2_units", 16),
-				(party_add_members, ":merc_lord_party", black_army_tier_1_unit_3, 16),
-			(try_end),
-			(party_add_members, ":merc_lord_party", ":t1_2", ":t1_2_units"),
-		(try_end),
-
-        (try_for_range, ":unused", 0, 6),
-          (call_script, "script_cf_party_upgrade_with_xp", ":merc_lord_party", 7500, 0),
-        (try_end),
-		
-        (party_set_ai_behavior,":merc_lord_party",ai_bhvr_patrol_location),
-		(party_set_ai_patrol_radius, ":merc_lord_party", ":patrol_radius"),
-		
+        (call_script, "script_sod_merc_lord_try_spawn_for_troop", ":troop_no"),
       (try_end),
-	  (eq, "$g_sod_debug", 1),
-	  (display_message, "@Mercenary lords spawned.", debug_color),
+      (call_script, "script_sod_merc_guild_repair_ledgers"),
+      (eq, "$g_sod_debug", 1),
+      (display_message, "@Mercenary lord market pass complete.", debug_color),
     ]),
 # [ src/triggers/ST01_every_frame/entry_0130.py:L1-L29 ] 0.1
 (0.1,
@@ -8210,31 +8583,34 @@ simple_triggers = [
 			(try_end),
 		(try_end),
   ]),
-# [ src/triggers/ST02_every_hour/entry_0133.py:L1-L17 ] 12
+# [ src/triggers/ST04_weekly/entry_0132_five_faith_drift.py:L1-L12 ] 24 * 7
+(24 * 7,
+  [
+    (try_for_range, ":center_no", centers_begin, centers_end),
+      (call_script, "script_sod_apply_weekly_faith_drift", ":center_no"),
+    (try_end),
+    (try_for_range, ":faction_no", kingdoms_begin, kingdoms_end),
+      (call_script, "script_sod_get_realm_faith_profile", ":faction_no"),
+    (try_end),
+    (call_script, "script_sod_get_realm_faith_profile", "fac_player_supporters_faction"),
+  ]),
+# [ src/triggers/ST02_every_hour/entry_0133.py:L1-L11 ] 12
 (12,
    [
-     (call_script, "script_calculate_player_faction_wage"),
-	 # Safety: wages should be a non-negative amount.
-	 (val_max, reg0, 0),
-	 (val_add, "$g_sod_wages", reg0),
-	 (val_clamp, "$g_sod_wages", 0, 2000001),
-	 (val_add, "$g_sod_times_wages_added", 1),
-	 (val_clamp, "$g_sod_times_wages_added", 0, 1000),
-	 (try_begin),
-		(ge, "$g_sod_times_wages_added", 14),
-		(assign, "$g_cur_week_half_daily_wage_payments", 0), #Reseting the weekly half wage payments
-		(jump_to_menu, "mnu_pay_day"),
-	 (try_end),
+     (call_script, "script_sod_company_accounts_accrue_wages"),
+     (call_script, "script_sod_company_accounts_process_pay_promise"),
+     (call_script, "script_sod_company_accounts_process_petition_check"),
+     (call_script, "script_sod_company_accounts_process_desertion_check"),
+     (call_script, "script_sod_company_accounts_process_mutiny_check"),
+     (call_script, "script_sod_company_dialogue_schedule_spokesperson_incident"),
     ]),
-# [ src/triggers/ST03_daily/entry_0134.py:L1-L36 ] 24
-(24,
+# [ src/triggers/ST03_daily/entry_0134.py:L1-L34 ] 6
+(6,
    [
     (try_for_range, ":cur_center", walled_centers_begin, walled_centers_end),
 		(party_slot_eq, ":cur_center", slot_town_lord, "trp_player"),
 		(party_get_slot, ":trainers", ":cur_center", slot_center_trainers),
 		(gt, ":trainers", 0),
-		
-		(val_mul, ":trainers", 4),
 		
 		(party_get_num_companion_stacks, ":num_stacks", ":cur_center"),
 		(try_for_range_backwards, ":i_stack", 0, ":num_stacks"),
@@ -8414,7 +8790,7 @@ simple_triggers = [
       (jump_to_menu, "mnu_sod_royal_empty"),
     (try_end),
   ]),
-# [ src/triggers/ST02_every_hour/entry_0142.py:L1-L364 ] 1
+# [ src/triggers/ST02_every_hour/entry_0142.py:L1-L365 ] 1
 (1,  [  #FIX FOR NEGATIVE GOLD
    
            (store_troop_gold, ":gold", "trp_player"),
@@ -8555,6 +8931,7 @@ simple_triggers = [
 				   
 							   (party_stack_get_troop_id, ":troop_id", ":attached_to", ":stack_no"),
 							   (gt, ":troop_id", -1),
+							   (neg|troop_is_hero, ":troop_id"),
 							   
 							   (assign, ":transfer", 0),
 							   
@@ -9063,7 +9440,7 @@ simple_triggers = [
 			(party_set_slot, ":cur_party", slot_party_old_y, ":y"),
 		(try_end),
 	]),
-# [ src/triggers/ST03_daily/entry_0149.py:L1-L53 ] 24 * 3
+# [ src/triggers/ST03_daily/entry_0149.py:L1-L61 ] 24 * 3
 (24 * 3, # Every 3 days
     [
       (try_for_parties, ":party_no"),
@@ -9096,10 +9473,7 @@ simple_triggers = [
       (try_end),
       (try_for_parties, ":party_no"),
         (party_is_active, ":party_no"),
-        (store_faction_of_party, ":fac", ":party_no"),
-        (this_or_next|eq, ":fac", "fac_outlaws"),
-        (this_or_next|eq, ":fac", "fac_mountain_bandits"),
-        (eq, ":fac", "fac_forest_bandits"),
+        (call_script, "script_cf_sod_party_is_hostile_economy_party", ":party_no"),
         (party_get_num_companions, ":current_size", ":party_no"),
         (gt, ":current_size", sod_bandit_party_bloat_max),
         (store_sub, ":to_remove", ":current_size", sod_bandit_party_bloat_max),
@@ -9113,24 +9487,45 @@ simple_triggers = [
           (party_remove_members, ":party_no", ":stack_troop", ":removed_count"),
           (val_sub, ":to_remove", ":removed_count"),
         (try_end),
+        (party_get_num_companion_stacks, ":num_stacks", ":party_no"),
+        (try_for_range_backwards, ":stack_no", 0, ":num_stacks"),
+          (gt, ":to_remove", 0),
+          (party_stack_get_troop_id, ":stack_troop", ":party_no", ":stack_no"),
+          (neg|troop_is_hero, ":stack_troop"),
+          (party_stack_get_size, ":stack_size", ":party_no", ":stack_no"),
+          (assign, ":removed_count", ":stack_size"),
+          (val_min, ":removed_count", ":to_remove"),
+          (party_remove_members, ":party_no", ":stack_troop", ":removed_count"),
+          (val_sub, ":to_remove", ":removed_count"),
+        (try_end),
       (try_end),
     ]),
-# [ src/triggers/ST04_weekly/entry_0150.py:L1-L5 ] 999
-(999,
-  [
-  ]),
-# [ src/triggers/ST03_daily/entry_0151.py:L1-L17 ] 24
+# [ src/triggers/ST03_daily/entry_0150.py:L1-L7 ] 24
+(24,
+ [
+   (call_script, "script_sod_process_castle_patrols"),
+   (call_script, "script_sod_try_spawn_castle_patrols"),
+ ]),
+# [ src/triggers/ST03_daily/entry_0151.py:L1-L25 ] 24
 (24,
  [
    (try_begin),
      (check_quest_active, "qst_regional_threat_contract"),
      (quest_slot_eq, "qst_regional_threat_contract", slot_quest_sod_threat_ready_to_claim, 0),
+
      (quest_get_slot, ":target_party", "qst_regional_threat_contract", slot_quest_sod_threat_target_party),
      (quest_get_slot, ":deadline", "qst_regional_threat_contract", slot_quest_sod_threat_deadline_day),
      (store_current_day, ":cur_day"),
+
      (try_begin),
-       (this_or_next|ge, ":cur_day", ":deadline"),
+       (ge, ":cur_day", ":deadline"),
+       (call_script, "script_sod_threat_board_fail_contract"),
+     (else_try),
+       (gt, ":target_party", 0),
        (neg|party_is_active, ":target_party"),
+       (call_script, "script_sod_threat_board_fail_contract"),
+     (else_try),
+       (le, ":target_party", 0),
        (call_script, "script_sod_threat_board_fail_contract"),
      (try_end),
    (try_end),
@@ -9155,4 +9550,158 @@ simple_triggers = [
   [
     (call_script, "script_sod_consume_all_center_trade_goods"),
   ]),
+# [ src/triggers/ST03_daily/entry_0156.py:L1-L6 ] 24
+(24,
+    [
+      (call_script, "script_sod_slavers_process_world_activity"),
+    ]),
+# [ src/triggers/ST03_daily/entry_0157.py:L1-L6 ] 24
+(24,
+   [
+     (call_script, "script_sod_slavers_process_player_slave_burden"),
+   ]),
+# [ src/triggers/ST03_daily/entry_0158.py:L1-L21 ] 24
+(24,
+   [
+     # Campaign modernization cadence: daily world-presence, diplomacy,
+     # companion, and lord morale pulse. Keep this trigger declarative.
+     (call_script, "script_sod_jotnar_process_world_activity"),
+     (call_script, "script_sod_elephant_guard_process_world_activity"),
+     (call_script, "script_sod_black_khergits_spawn_raids"),
+     (call_script, "script_sod_imperial_expedition_process_campaign"),
+     (call_script, "script_sod_diplomacy_process_envoy_parties"),
+     (call_script, "script_sod_diplomacy_process_decrees"),
+     (call_script, "script_sod_diplomacy_update_realm_state"),
+     (call_script, "script_sod_mini_faction_process_threshold_incidents"),
+     (call_script, "script_sod_companion_process_daily_depth"),
+     (call_script, "script_sod_lord_update_all_party_morale"),
+     (try_begin),
+       (neq, "$g_sod_lord_offers_allegience", 0),
+       (start_map_conversation, "$g_sod_lord_offers_allegience"),
+     (try_end),
+   ]),
+# [ src/triggers/ST02_every_hour/entry_0159.py:L1-L6 ] 1
+(1,
+   [
+     (call_script, "script_sod_black_khergits_process_day_cycle"),
+   ]),
+# [ src/triggers/ST04_weekly/entry_0160.py:L1-L45 ] 24 * 7
+(24 * 7,
+  [
+    (try_for_range, ":center_no", centers_begin, centers_end),
+      (this_or_next|is_between, ":center_no", towns_begin, towns_end),
+      (this_or_next|is_between, ":center_no", villages_begin, villages_end),
+      (is_between, ":center_no", castles_begin, castles_end),
+      (call_script, "script_sod_get_center_goods_market_profile", ":center_no"),
+      (assign, ":food_balance", reg0),
+      (assign, ":strategic_balance", reg2),
+      (assign, ":scarcity_pressure", reg4),
+      (assign, ":trade_willingness", reg5),
+      (assign, ":liquidity_pressure", reg6),
+      (assign, ":wealth_delta", reg7),
+      (assign, ":prosperity_pressure", reg8),
+
+      (try_begin),
+        (neq, ":wealth_delta", 0),
+        (call_script, "script_sod_change_center_wealth", ":center_no", ":wealth_delta"),
+      (try_end),
+
+      (try_begin),
+        (gt, ":prosperity_pressure", 0),
+        (ge, ":trade_willingness", 75),
+        (ge, ":liquidity_pressure", 80),
+        (call_script, "script_change_center_prosperity", ":center_no", 1),
+      (else_try),
+        (lt, ":prosperity_pressure", 0),
+        (this_or_next|gt, ":scarcity_pressure", 160),
+        (lt, ":trade_willingness", 45),
+        (call_script, "script_change_center_prosperity", ":center_no", -1),
+      (try_end),
+
+      (try_begin),
+        (is_between, ":center_no", towns_begin, towns_end),
+        (lt, ":food_balance", -50),
+        (call_script, "script_sod_change_center_local_prosperity", ":center_no", -1),
+      (else_try),
+        (is_between, ":center_no", castles_begin, castles_end),
+        (lt, ":strategic_balance", -40),
+        (call_script, "script_sod_change_center_local_prosperity", ":center_no", -1),
+      (try_end),
+    (try_end),
+  ]),
+# [ src/triggers/ST03_daily/entry_0161.py:L1-L6 ] 24
+(24,
+   [
+     (call_script, "script_sod_process_prisoner_trains"),
+   ]),
+# [ src/triggers/ST04_weekly/entry_0162.py:L1-L6 ] 24 * 7
+(24 * 7,
+  [
+    (call_script, "script_sod_process_prisoner_weekly_pressure"),
+  ]),
+# [ src/triggers/ST02_every_hour/entry_0163.py:L1-L6 ] 1
+(1,
+  [
+    (call_script, "script_sod_sanitize_unique_hero_party_stacks"),
+  ]),
+# [ src/triggers/ST02_every_hour/entry_0164.py:L1-L9 ] 1
+(1, [
+    # Defensive reset for legacy set_show_messages suppression leaks.
+    (set_show_messages, 1),
+    # Repair rare late-campaign party identity drift that can make hostile lords
+    # and hired mercenaries appear neutral and stop reacting to the player.
+    (call_script, "script_sod_campaign_party_sanity"),
+  ]),
+# [ src/triggers/ST03_daily/entry_0165.py:L1-L14 ] 24
+(24,
+   [
+     # Keep kingdom trade visible on the world map. The caravan behavior and
+     # trade engine already exist; this daily pulse supplies new caravans up to
+     # each faction's configured cap.
+     (try_for_range, ":faction_no", kingdoms_begin, kingdoms_end),
+       (faction_slot_eq, ":faction_no", slot_faction_state, sfs_active),
+       (faction_get_slot, ":num_towns", ":faction_no", slot_faction_num_towns),
+       (gt, ":num_towns", 0),
+       (call_script, "script_create_kingdom_party_if_below_limit", ":faction_no", spt_kingdom_caravan),
+     (try_end),
+   ]),
+# [ src/triggers/ST03_daily/entry_0166.py:L1-L7 ] 24
+(24,
+   [
+     (eq, "$g_sod_seven_ash_enabled", 1),
+     (call_script, "script_sod_seven_ash_act2_daily_pacing"),
+   ]),
+# [ src/triggers/ST03_daily/entry_0167.py:L1-L6 ] 24
+(24,
+ [
+   (call_script, "script_sod_process_tax_courier_parties"),
+ ]),
+# [ src/triggers/ST02_every_hour/entry_0168.py:L1-L5 ] 3
+(3, [
+    (call_script, "script_sod_process_looter_village_raids"),
+  ]),
+# [ src/triggers/ST01_every_frame/entry_0169.py:L1-L10 ] 0
+(0,
+   [
+      (try_begin),
+        (map_free),
+        (eq, "$g_sod_initial_world_setup_pending", 1),
+        (call_script, "script_sod_finish_initial_party_world_setup"),
+      (try_end),
+    ]),
+# [ src/triggers/ST04_weekly/entry_0170.py:L1-L6 ] 24 * 7
+(24 * 7,
+  [
+    (call_script, "script_sod_process_active_pretender_politics"),
+  ]),
+# [ src/triggers/ST03_daily/entry_0171.py:L1-L11 ] 24
+(24,
+   [
+     (try_for_range, ":rebel_faction", rebel_factions_begin, rebel_factions_end),
+       (faction_slot_eq, ":rebel_faction", slot_faction_state, sfs_active),
+       (faction_slot_eq, ":rebel_faction", slot_faction_sod_civil_war_state, sod_civil_war_open_rebellion),
+       (call_script, "script_sod_claimant_maintain_rebel_ai", ":rebel_faction"),
+       (call_script, "script_sod_claimant_civil_war_check_resolution", ":rebel_faction"),
+     (try_end),
+   ]),
 ]

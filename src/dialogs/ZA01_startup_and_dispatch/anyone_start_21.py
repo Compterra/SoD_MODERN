@@ -1,7 +1,5 @@
 DIALOGS = [
 [anyone, "start", [(store_partner_quest, ":lords_quest"),
-					(store_relation, ":rel", "fac_player_faction", "$g_talk_troop_faction"),
-					(talk_info_set_relation_bar, ":rel"),
                          (this_or_next|eq, ":lords_quest", "qst_black_army_collect_debt"),
                          (this_or_next|eq, ":lords_quest", "qst_conquistadors_collect_debt"),
 						 (eq, ":lords_quest", "qst_slavers_collect_debt"),

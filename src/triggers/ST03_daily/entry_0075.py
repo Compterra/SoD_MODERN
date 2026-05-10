@@ -13,7 +13,9 @@ SIMPLE_TRIGGERS = [
               (else_try),
                 (quest_set_slot, ":cur_quest", slot_quest_expiration_days, ":exp_days"),
                 (assign, reg0, ":exp_days"),
-                (add_quest_note_from_sreg, ":cur_quest", 7, "@You have {reg0} days to finish this quest.", 0),
+                (str_store_string, s49, "@You have {reg0} days to finish this quest."),
+
+                (add_quest_note_from_sreg, ":cur_quest", 7, s49, 0),
               (try_end),
             (try_end),
           (else_try),

@@ -17,11 +17,6 @@ SIMPLE_TRIGGERS = [
       (this_or_next|eq, ":center_faction", "fac_player_supporters_faction"),
       (eq, ":center_faction", "fac_player_faction"),
 
-      # improve the town's prosperity
-      (set_show_messages, 0),
-      (call_script, "script_change_center_prosperity", ":center_no", "$g_sod_building_guild_prosperity"),
-      (set_show_messages, 1),
-
       # Guilds should also improve circulation of staples and basic urban conditions.
       (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
       (party_get_slot, ":center_prosperity", ":center_no", slot_town_prosperity),
@@ -53,17 +48,6 @@ SIMPLE_TRIGGERS = [
           (lt, ":guild_trade_surge_roll", 30),
           (call_script, "script_change_center_prosperity", ":center_no", 1),
         (try_end),
-      (try_end),
-
-      # improve player's relationship with this town
-      # Only when the player is the center lord OR the player is the faction leader (king).
-      (try_begin),
-        (this_or_next|party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
-        (faction_slot_eq, ":center_faction", slot_faction_leader, "trp_player"),
-        (party_get_slot, ":cur_relation", ":center_no", slot_center_player_relation),
-        (val_add, ":cur_relation", "$g_sod_building_guild_reputation"),
-        (val_clamp, ":cur_relation", -100, 101),
-        (party_set_slot, ":center_no", slot_center_player_relation, ":cur_relation"),
       (try_end),
 
       # inform the player that their guild has an effect (all effects are global, so show message always)

@@ -3,7 +3,9 @@ SCRIPTS = [
         [
           (store_script_param, ":center_no", 1),
           (store_script_param, ":difference", 2),
-          (party_get_slot, ":health", ":center_no", slot_center_sod_local_health),
+          (try_begin),
+            (is_between, ":center_no", centers_begin, centers_end),
+            (party_get_slot, ":health", ":center_no", slot_center_sod_local_health),
 		  (assign, ":max", 101),
 		  (try_begin),
 			(this_or_next|party_slot_eq, ":center_no", slot_center_has_hospital, 1),
@@ -48,6 +50,7 @@ SCRIPTS = [
             (else_try),
               (display_message, "@{s10} population's health has declined from {s1} to {s2}.", red),
             (try_end),
+          (try_end),
           (try_end),
         ]
       ),

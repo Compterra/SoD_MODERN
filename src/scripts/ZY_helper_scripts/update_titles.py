@@ -9,5 +9,6 @@ SCRIPTS = [
         (party_set_name, ":cur_party", s5),
       (try_end),
       (call_script, "script_update_merc_names"),
+      (call_script, "script_update_all_notes"),
   ]),
 ]

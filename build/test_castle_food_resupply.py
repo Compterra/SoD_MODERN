@@ -21,12 +21,14 @@ def main() -> int:
     assert_contains(restock, "slot_party_food_store")
     assert_contains(restock, "script_center_get_food_consumption")
     assert_contains(restock, "slot_town_wealth")
-    assert_contains(restock, "slot_village_bound_center")
-    assert_contains(restock, "slot_center_sod_local_population")
+    assert_contains(restock, "script_sod_get_castle_support_profile")
+    assert_contains(restock, ":castle_support")
+    assert_contains(restock, ":garrison")
+    assert_contains(restock, ":road_control")
     assert_contains(restock, "support_population")
     assert_contains(restock, "resupply_capacity")
     assert_contains(restock, "resupply_cost")
-    assert_contains(restock, "party_set_slot, \":center_no\", slot_town_wealth")
+    assert_contains(restock, "script_sod_change_center_wealth")
 
     print("[castle_food_resupply] OK")
     return 0
