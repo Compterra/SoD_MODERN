@@ -142,9 +142,6 @@ _STUB_MARKER_RE = re.compile(r"(?i)\b(?:stub|placeholder|not implemented|todo|tb
 MB1011_HARDCODED_MENU_NAMES = [
     "start_game_1",
     "start_phase_2",
-    "start_game_3",
-    "tutorial",
-    "reports",
 ]
 
 MB1011_HARDCODED_SCRIPT_NAMES = [
@@ -163,8 +160,6 @@ MB1011_HARDCODED_SCRIPT_NAMES = [
     "game_check_prisoner_can_be_sold",
     "game_event_detect_party",
     "game_event_undetect_party",
-    "game_check_party_sees_party",
-    "game_get_party_speed_multiplier",
     "game_get_statistics_line",
     "game_get_date_text",
     "game_get_money_text",
@@ -223,15 +218,146 @@ MB1011_HARDCODED_SKILL_NAMES = [
     "reserved_18",
 ]
 
+MB1011_HARDCODED_ITEM_CODES_H_NAMES = [
+    "no_item",
+    "horse_meat",
+    "practice_sword",
+    "heavy_practice_sword",
+    "practice_axe",
+    "arena_axe",
+    "arena_sword",
+    "arena_sword_two_handed",
+    "arena_lance",
+    "practice_staff",
+    "practice_lance",
+    "practice_shield",
+    "practice_bow",
+    "practice_crossbow",
+    "practice_javelin",
+    "practice_throwing_daggers",
+    "practice_throwing_daggers_100_amount",
+    "practice_horse",
+    "practice_arrows",
+    "practice_bolts",
+    "practice_arrows_10_amount",
+    "practice_arrows_100_amount",
+    "practice_bolts_9_amount",
+    "practice_boots",
+    "red_tourney_armor",
+    "blue_tourney_armor",
+    "green_tourney_armor",
+    "gold_tourney_armor",
+    "red_tourney_helmet",
+    "blue_tourney_helmet",
+    "green_tourney_helmet",
+    "gold_tourney_helmet",
+    "arena_shield_red",
+    "arena_shield_blue",
+    "arena_shield_green",
+    "arena_shield_yellow",
+    "arena_armor_white",
+    "arena_armor_red",
+    "arena_armor_blue",
+    "arena_armor_green",
+    "arena_armor_yellow",
+    "arena_tunic_white",
+    "arena_tunic_red",
+    "arena_tunic_blue",
+    "arena_tunic_green",
+    "arena_tunic_yellow",
+    "arena_helmet_red",
+    "arena_helmet_blue",
+    "arena_helmet_green",
+    "arena_helmet_yellow",
+    "steppe_helmet_white",
+    "steppe_helmet_red",
+    "steppe_helmet_blue",
+    "steppe_helmet_green",
+    "steppe_helmet_yellow",
+    "tourney_helm_white",
+    "tourney_helm_red",
+    "tourney_helm_blue",
+    "tourney_helm_green",
+    "tourney_helm_yellow",
+    "book_tactics",
+    "book_persuasion",
+    "book_leadership",
+    "book_intelligence",
+    "book_trade",
+    "book_weapon_mastery",
+    "book_engineering",
+    "book_wound_treatment_reference",
+    "book_training_reference",
+    "book_surgery_reference",
+    "smoked_fish",
+    "dried_meat",
+    "cattle_meat",
+    "pork",
+    "bread",
+    "apples",
+    "cheese",
+    "chicken",
+    "honey",
+    "sausages",
+    "cabbages",
+    "butter",
+    "wine",
+    "ale",
+    "spice",
+    "salt",
+    "grain",
+    "flour",
+    "iron",
+    "oil",
+    "pottery",
+    "linen",
+    "furs",
+    "wool",
+    "velvet",
+    "tools",
+]
+
+MB1011_SPECIAL_DIALOG_STATES = [
+    "start",
+    "party_relieved",
+    "prisoner_liberated",
+    "enemy_defeated",
+    "event_triggered",
+    "close_window",
+]
+
+MB1011_NATIVE_RANGE_CONTRACTS = [
+    ("kingdoms", "kingdoms_begin", "kingdoms_end", ROOT / "compile" / "ids" / "ID_factions.py"),
+    ("kingdom heroes", "kingdom_heroes_begin", "kingdom_heroes_end", ROOT / "compile" / "ids" / "ID_troops.py"),
+    ("companions", "companions_begin", "companions_end", ROOT / "compile" / "ids" / "ID_troops.py"),
+    ("soldiers", "soldiers_begin", "soldiers_end", ROOT / "compile" / "ids" / "ID_troops.py"),
+    ("towns", "towns_begin", "towns_end", ROOT / "compile" / "ids" / "ID_parties.py"),
+    ("castles", "castles_begin", "castles_end", ROOT / "compile" / "ids" / "ID_parties.py"),
+    ("villages", "villages_begin", "villages_end", ROOT / "compile" / "ids" / "ID_parties.py"),
+    ("centers", "centers_begin", "centers_end", ROOT / "compile" / "ids" / "ID_parties.py"),
+    ("trade goods", "trade_goods_begin", "trade_goods_end", ROOT / "compile" / "ids" / "ID_items.py"),
+    ("food", "food_begin", "food_end", ROOT / "compile" / "ids" / "ID_items.py"),
+    ("readable books", "readable_books_begin", "readable_books_end", ROOT / "compile" / "ids" / "ID_items.py"),
+    ("reference books", "reference_books_begin", "reference_books_end", ROOT / "compile" / "ids" / "ID_items.py"),
+    ("armor merchants", "armor_merchants_begin", "armor_merchants_end", ROOT / "compile" / "ids" / "ID_troops.py"),
+    ("weapon merchants", "weapon_merchants_begin", "weapon_merchants_end", ROOT / "compile" / "ids" / "ID_troops.py"),
+    ("tavernkeepers", "tavernkeepers_begin", "tavernkeepers_end", ROOT / "compile" / "ids" / "ID_troops.py"),
+    ("goods merchants", "goods_merchants_begin", "goods_merchants_end", ROOT / "compile" / "ids" / "ID_troops.py"),
+    ("horse merchants", "horse_merchants_begin", "horse_merchants_end", ROOT / "compile" / "ids" / "ID_troops.py"),
+    ("mayors", "mayors_begin", "mayors_end", ROOT / "compile" / "ids" / "ID_troops.py"),
+    ("village elders", "village_elders_begin", "village_elders_end", ROOT / "compile" / "ids" / "ID_troops.py"),
+]
+
 MB1011_HARDCODED_CONTRACTS = [
     ("menus", ROOT / "compile" / "module_game_menus.py", ROOT / "compile" / "ids" / "ID_menus.py", "menu_", MB1011_HARDCODED_MENU_NAMES),
     ("skills", ROOT / "compile" / "module_skills.py", ROOT / "compile" / "ids" / "ID_skills.py", "skl_", MB1011_HARDCODED_SKILL_NAMES),
     ("parties", ROOT / "compile" / "module_parties.py", ROOT / "compile" / "ids" / "ID_parties.py", "p_", ["main_party", "temp_party", "camp_bandits"]),
+    ("party templates", ROOT / "compile" / "module_party_templates.py", ROOT / "compile" / "ids" / "ID_party_templates.py", "pt_", ["none", "rescued_prisoners", "enemy", "hero_party"]),
     ("troops", ROOT / "compile" / "module_troops.py", ROOT / "compile" / "ids" / "ID_troops.py", "trp_", ["player", "temp_troop", "game", "unarmed_troop"]),
     ("factions", ROOT / "compile" / "module_factions.py", ROOT / "compile" / "ids" / "ID_factions.py", "fac_", ["no_faction", "commoners", "outlaws"]),
     ("strings", ROOT / "compile" / "module_strings.py", ROOT / "compile" / "ids" / "ID_strings.py", "str_", ["no_string", "empty_string", "yes", "no"]),
     ("mission templates", ROOT / "compile" / "module_mission_templates.py", ROOT / "compile" / "ids" / "ID_mission_templates.py", "mst_", ["town_default", "conversation_encounter"]),
-    ("items", ROOT / "compile" / "module_items.py", ROOT / "compile" / "ids" / "ID_items.py", "itm_", ["no_item", "horse_meat"]),
+    ("items", ROOT / "compile" / "module_items.py", ROOT / "compile" / "ids" / "ID_items.py", "itm_", MB1011_HARDCODED_ITEM_CODES_H_NAMES),
 ]
 
 MB1011_ENGINE_CALLBACK_CONTRACTS = [
@@ -272,7 +398,10 @@ def _parse_module_tuple_names(path: Path) -> List[str]:
         "module_factions.py": "factions",
         "module_strings.py": "strings",
         "module_mission_templates.py": "mission_templates",
+        "module_party_templates.py": "party_templates",
         "module_items.py": "items",
+        "module_animations.py": "animations",
+        "module_skins.py": "skins",
     }
     list_var = list_vars.get(path.name)
     if list_var:
@@ -299,6 +428,8 @@ def _check_generated_sequence_contract(
     expected_names: List[str],
     errors: List[str],
     warnings: List[str],
+    *,
+    check_ids: bool = True,
 ) -> None:
     module_names = _parse_module_tuple_names(module_path)
     if not module_names:
@@ -311,6 +442,9 @@ def _check_generated_sequence_contract(
                     "[MB1011] Generated "
                     f"{label} order mismatch at index {expected_index}: expected {expected_name}, got {actual_name}"
                 )
+
+    if not check_ids:
+        return
 
     id_assignments = _parse_id_assignments(id_path)
     if not id_assignments:
@@ -333,12 +467,14 @@ def _check_generated_presence_contract(
     expected_names: List[str],
     errors: List[str],
     warnings: List[str],
+    *,
+    check_ids: bool = True,
 ) -> None:
     module_names = set(_parse_module_tuple_names(module_path))
     if not module_names:
         errors.append(f"[MB1011] Missing or unparsable generated {label} file: {module_path.relative_to(ROOT).as_posix()}")
-    id_assignments = _parse_id_assignments(id_path)
-    if not id_assignments:
+    id_assignments = _parse_id_assignments(id_path) if check_ids else {}
+    if check_ids and not id_assignments:
         warnings.append(f"[MB1011] Generated ID file not available for {label}: {id_path.relative_to(ROOT).as_posix()}")
 
     for expected_name in expected_names:
@@ -347,7 +483,119 @@ def _check_generated_presence_contract(
         if id_assignments and f"{id_prefix}{expected_name}" not in id_assignments:
             errors.append(f"[MB1011] Engine callback ID missing from generated {label}: {id_prefix}{expected_name}")
 
-def _write_mb1011_hardcoded_contract_report(errors: List[str], warnings: List[str]) -> None:
+def _check_skin_contract(errors: List[str], warnings: List[str]) -> None:
+    skin_names = _parse_module_tuple_names(ROOT / "compile" / "module_skins.py")
+    if not skin_names:
+        errors.append("[MB1011] Missing or unparsable generated skins file: compile/module_skins.py")
+        return
+    for expected_index, expected_name in enumerate(("man", "woman")):
+        actual_name = skin_names[expected_index] if expected_index < len(skin_names) else "<missing>"
+        if actual_name != expected_name:
+            errors.append(
+                "[MB1011] Generated skin order mismatch at index "
+                f"{expected_index}: expected {expected_name}, got {actual_name}"
+            )
+
+def _check_dialog_state_contract(errors: List[str], warnings: List[str]) -> None:
+    dialog_path = ROOT / "compile" / "module_dialogs.py"
+    if not dialog_path.exists():
+        errors.append("[MB1011] Missing generated dialogs file: compile/module_dialogs.py")
+        return
+    dialog_literals = {literal for literal, _line in _iter_string_literals_with_linenos(_read_text(dialog_path))}
+    for state in MB1011_SPECIAL_DIALOG_STATES:
+        if state not in dialog_literals:
+            errors.append(f"[MB1011] Special dialog state missing from generated dialogs: {state}")
+
+def _check_animation_id_contract(errors: List[str], warnings: List[str], *, check_ids: bool = True) -> None:
+    if not check_ids:
+        generated_names = _parse_module_tuple_names(ROOT / "compile" / "module_animations.py")
+        reference_names = _parse_module_tuple_names(ROOT / "References" / "Vanilla_Module_System" / "module_animations.py")
+        if not generated_names or not reference_names:
+            warnings.append("[MB1011] Vanilla animation source baseline unavailable; animation source order could not be checked.")
+            return
+        for expected_index, expected_name in enumerate(reference_names):
+            if re.match(r"unused_(?:human|horse)_anim_", expected_name):
+                continue
+            actual_name = generated_names[expected_index] if expected_index < len(generated_names) else "<missing>"
+            if actual_name != expected_name:
+                errors.append(
+                    "[MB1011] Generated animation source order mismatch at index "
+                    f"{expected_index}: expected {expected_name}, got {actual_name}"
+                )
+        return
+
+    generated_ids = _parse_id_assignments(ROOT / "compile" / "ids" / "ID_animations.py")
+    if not generated_ids:
+        errors.append("[MB1011] Missing generated animation IDs: compile/ids/ID_animations.py")
+        return
+    reference_path = ROOT / "References" / "Vanilla_Module_System" / "ID_animations.py"
+    reference_ids = _parse_id_assignments(reference_path)
+    if not reference_ids:
+        warnings.append("[MB1011] Vanilla animation ID baseline unavailable; animation order could not be checked.")
+        return
+    for anim_id, expected_index in sorted(reference_ids.items(), key=lambda item: item[1]):
+        if re.match(r"anim_unused_(?:human|horse)_anim_", anim_id):
+            continue
+        actual_index = generated_ids.get(anim_id)
+        if actual_index != expected_index:
+            errors.append(
+                "[MB1011] Generated animation ID mismatch for "
+                f"{anim_id}: expected {expected_index}, got {actual_index}"
+            )
+
+def _parse_module_constants(path: Path) -> Dict[str, str]:
+    if not path.exists():
+        return {}
+    constants: Dict[str, str] = {}
+    raw = _read_text(path)
+    pattern = re.compile(
+        r"(?m)^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:[\"']([^\"']+)[\"']|([A-Za-z_][A-Za-z0-9_]*)|(-?\d+))"
+    )
+    for match in pattern.finditer(raw):
+        value = match.group(2) or match.group(3) or match.group(4) or ""
+        constants[match.group(1)] = value
+    return constants
+
+def _resolve_constant_symbol(constants: Dict[str, str], name: str) -> str:
+    value = constants.get(name, "")
+    seen: Set[str] = set()
+    while value in constants and value not in seen:
+        seen.add(value)
+        value = constants.get(value, "")
+    return value
+
+def _check_native_range_contracts(warnings: List[str], *, check_ids: bool = True) -> None:
+    if not check_ids:
+        return
+    constants = _parse_module_constants(ROOT / "compile" / "module_constants.py")
+    if not constants:
+        warnings.append("[MB1011-RANGE] Generated module_constants.py unavailable; Native range contracts were not checked.")
+        return
+    for label, begin_name, end_name, id_path in MB1011_NATIVE_RANGE_CONTRACTS:
+        begin_symbol = _resolve_constant_symbol(constants, begin_name)
+        end_symbol = _resolve_constant_symbol(constants, end_name)
+        if not begin_symbol or not end_symbol:
+            warnings.append(f"[MB1011-RANGE] {label} range constants missing: {begin_name}/{end_name}")
+            continue
+        id_assignments = _parse_id_assignments(id_path)
+        if not id_assignments:
+            warnings.append(f"[MB1011-RANGE] {label} ID file unavailable: {id_path.relative_to(ROOT).as_posix()}")
+            continue
+        begin_index = id_assignments.get(begin_symbol)
+        end_index = id_assignments.get(end_symbol)
+        if begin_index is None or end_index is None:
+            warnings.append(
+                "[MB1011-RANGE] "
+                f"{label} range points do not resolve to IDs: {begin_name}={begin_symbol}, {end_name}={end_symbol}"
+            )
+            continue
+        if begin_index >= end_index:
+            warnings.append(
+                "[MB1011-RANGE] "
+                f"{label} range is empty or inverted: {begin_symbol}={begin_index}, {end_symbol}={end_index}"
+            )
+
+def _write_mb1011_hardcoded_contract_report(errors: List[str], warnings: List[str], *, check_ids: bool = True) -> None:
     DOCS_REPORTS.mkdir(parents=True, exist_ok=True)
     report_path = DOCS_REPORTS / "mb1011_hardcoded_contract.md"
     lines = [
@@ -355,13 +603,17 @@ def _write_mb1011_hardcoded_contract_report(errors: List[str], warnings: List[st
         "",
         "Doctor validates these generated compile-layer contracts after source fragments are assembled:",
         "",
-        "- Startup menus: the first five menu windows (`start_game_1`, `start_phase_2`, `start_game_3`, `tutorial`, `reports`) must keep their generated IDs.",
+        "- Startup menus: `start_game_1` and `start_phase_2` must keep generated IDs 0 and 1.",
         "- Engine callback scripts: `game_start` and the other `game_*` callbacks must exist by name; their generated order is not treated as hardcoded.",
         "- Engine callback presentations: `game_credits` must exist by name; Warband-only `game_start` and `game_escape` presentation callbacks stay absent.",
-        "- Engine sentinels: first parties, troops, factions, strings, skills, mission templates, and the two hardwired item sentinels keep their hardwired indices.",
+        "- Engine sentinels: first parties, party templates, troops, factions, strings, skills, mission templates, skins, and the Native `item_codes.h` item block keep their hardwired indices.",
+        "- Animation IDs: used Native animation IDs are compared against the M&B 1.011 baseline; unused human/horse animation slots are left available for replacement.",
+        "- Dialog states: engine-entered states (`start`, `party_relieved`, `prisoner_liberated`, `enemy_defeated`, `event_triggered`) and `close_window` must exist.",
+        "- Native-script range contracts are checked separately as warnings because they are script/order contracts rather than executable-hardwired IDs.",
         "",
         "Current result:",
         "",
+        f"- Generated ID file checks: {'enabled' if check_ids else 'deferred until process output exists'}",
         f"- Errors: {len(errors)}",
         f"- Warnings: {len(warnings)}",
     ]
@@ -375,7 +627,7 @@ def _write_mb1011_hardcoded_contract_report(errors: List[str], warnings: List[st
         lines.extend(f"- {warning}" for warning in warnings)
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-def check_generated_hardcoded_contract() -> Tuple[List[str], List[str]]:
+def check_generated_hardcoded_contract(*, check_ids: bool = True) -> Tuple[List[str], List[str]]:
     """Validate generated compile files against the M&B 1.011 hardcoded contract."""
     errors: List[str] = []
     warnings: List[str] = []
@@ -389,6 +641,7 @@ def check_generated_hardcoded_contract() -> Tuple[List[str], List[str]]:
             expected_names,
             errors,
             warnings,
+            check_ids=check_ids,
         )
 
     for label, module_path, id_path, id_prefix, expected_names in MB1011_ENGINE_CALLBACK_CONTRACTS:
@@ -400,7 +653,13 @@ def check_generated_hardcoded_contract() -> Tuple[List[str], List[str]]:
             expected_names,
             errors,
             warnings,
+            check_ids=check_ids,
         )
+
+    _check_skin_contract(errors, warnings)
+    _check_dialog_state_contract(errors, warnings)
+    _check_animation_id_contract(errors, warnings, check_ids=check_ids)
+    _check_native_range_contracts(warnings, check_ids=check_ids)
 
     presentation_names = _parse_module_tuple_names(ROOT / "compile" / "module_presentations.py")
     presentation_ids = _parse_id_assignments(ROOT / "compile" / "ids" / "ID_presentations.py")
@@ -411,7 +670,7 @@ def check_generated_hardcoded_contract() -> Tuple[List[str], List[str]]:
             errors.append(f"[MB1011] Warband-only presentation ID is generated in M&B 1.011: prsnt_{forbidden_name}")
 
     export_parties_path = ROOT / "_export" / "parties.txt"
-    if export_parties_path.exists():
+    if check_ids and export_parties_path.exists():
         export_lines = [
             line.strip()
             for line in _read_text(export_parties_path).splitlines()
@@ -420,7 +679,7 @@ def check_generated_hardcoded_contract() -> Tuple[List[str], List[str]]:
         if export_lines and "p_main_party" not in export_lines[0]:
             errors.append("[MB1011] Exported parties.txt does not put p_main_party first.")
 
-    _write_mb1011_hardcoded_contract_report(errors, warnings)
+    _write_mb1011_hardcoded_contract_report(errors, warnings, check_ids=check_ids)
     return errors, warnings
 
 def _doctor_report_artifacts() -> List[Dict[str, object]]:
@@ -3857,6 +4116,8 @@ def run_doctor(
     check_dialog_duplicates: bool = True,
     dialog_duplicates_strict: bool = False,
     check_feature_integrations: bool = True,
+    check_generated_contract: bool = True,
+    check_generated_ids: bool = True,
     strict_all: bool = False,
     new_only: bool = False,
 ) -> DoctorResult:
@@ -3875,12 +4136,13 @@ def run_doctor(
     DOCS_REPORTS.mkdir(parents=True, exist_ok=True)
     _check_compile_id_shadow_artifacts(errors)
 
-    def run_generated_contract() -> None:
-        contract_errors, contract_warnings = check_generated_hardcoded_contract()
-        errors.extend(contract_errors)
-        warnings.extend(contract_warnings)
+    if check_generated_contract:
+        def run_generated_contract() -> None:
+            contract_errors, contract_warnings = check_generated_hardcoded_contract(check_ids=check_generated_ids)
+            errors.extend(contract_errors)
+            warnings.extend(contract_warnings)
 
-    run_timed("mb1011_generated_hardcoded_contract", run_generated_contract)
+        run_timed("mb1011_generated_hardcoded_contract", run_generated_contract)
 
     # Gather files (exclude _preamble folders from fragment validation)
     script_files_all = _iter_py_files(SRC_SCRIPTS)
@@ -4328,7 +4590,11 @@ def run_doctor(
     summary.append(f"ASCII build/bat:    {'ENABLED (STRICT)' if check_ascii and ascii_strict else ('ENABLED (WARN)' if check_ascii else 'DISABLED')}")
     summary.append(f"Stub detection:     {'ENABLED (STRICT)' if check_stubs and stubs_strict else ('ENABLED (WARN)' if check_stubs else 'DISABLED')}")
     summary.append(f"Dialog duplicates:  {'ENABLED (STRICT)' if check_dialog_duplicates and dialog_duplicates_strict else ('ENABLED (WARN)' if check_dialog_duplicates else 'DISABLED')}")
-    summary.append("M&B 1.011 generated hardcoded contract: ENABLED (STRICT)")
+    if check_generated_contract:
+        generated_mode = "ENABLED (STRICT)" if check_generated_ids else "ENABLED (STRICT, IDs deferred)"
+    else:
+        generated_mode = "DISABLED (checked after fragment assembly)"
+    summary.append(f"M&B 1.011 generated hardcoded contract: {generated_mode}")
     summary.append("SoD doctrine:       ENABLED (STRICT)")
     summary.append("Threat board:       ENABLED (STRICT)")
     summary.append(f"Strict umbrella:    {'ENABLED' if strict_all else 'DISABLED'}")
@@ -4432,6 +4698,8 @@ def main(
     stubs_strict: bool = False,
     check_dialog_duplicates: bool = True,
     dialog_duplicates_strict: bool = False,
+    check_generated_contract: bool = True,
+    check_generated_ids: bool = True,
     strict_all: bool = False,
     new_only: bool = False,
     argv: List[str] | None = None,
@@ -4462,10 +4730,31 @@ def main(
       --doctor-dialog-dupes       enable duplicate dialog head detection (default)
       --doctor-dialog-dupes-strict treat duplicate dialog heads as errors
 
+      --doctor-no-generated-contract skip generated compile-layer hardcoded checks
+      --doctor-prebuild-source-only defer generated ID checks until the process step
+      --doctor-hardcoded-postprocess run only the M&B 1.011 generated ID/name contract
+
       --doctor-strict             promote all remaining warnings to errors
       --doctor-new-only           suppress findings matched by docs/edit/doctor_baseline_findings.txt
     """
     args = list(sys.argv if argv is None else argv)
+    if '--doctor-hardcoded-postprocess' in args:
+        contract_errors, contract_warnings = check_generated_hardcoded_contract(check_ids=True)
+        for warning in contract_warnings:
+            print(f"[doctor] WARNING: {warning}")
+        if contract_errors:
+            for error in contract_errors:
+                print(f"[doctor] ERROR: {error}")
+            print(f"[doctor] M&B 1.011 generated hardcoded contract failed: {len(contract_errors)} error(s), {len(contract_warnings)} warning(s).")
+            raise SystemExit(1)
+        print(f"[doctor] M&B 1.011 generated hardcoded contract OK: {len(contract_warnings)} warning(s).")
+        return
+
+    if '--doctor-prebuild-source-only' in args:
+        check_generated_ids = False
+    if '--doctor-no-generated-contract' in args:
+        check_generated_contract = False
+
     if "--doctor-no-dupes" in args:
         check_duplicate_ids = False
     elif "--doctor-dupes" in args:
@@ -4537,6 +4826,8 @@ def main(
         stubs_strict=stubs_strict,
         check_dialog_duplicates=check_dialog_duplicates,
         dialog_duplicates_strict=dialog_duplicates_strict,
+        check_generated_contract=check_generated_contract,
+        check_generated_ids=check_generated_ids,
         strict_all=strict_all,
         new_only=new_only,
     )

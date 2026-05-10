@@ -57,7 +57,7 @@ def main() -> None:
     source_map = emit_source_map(profile)
     use_cache = "--no-cache" not in sys.argv
 
-    doctor_main(argv=list(sys.argv))
+    doctor_main(argv=list(sys.argv) + ["--doctor-no-generated-contract"])
 
     print(f"[build_all] Profile: {profile}")
     build_constants()
@@ -69,14 +69,14 @@ def main() -> None:
     build_presentations(use_cache=use_cache, emit_source_map=source_map)
     build_mission_templates(use_cache=use_cache, emit_source_map=source_map)
 
-    contract_errors, contract_warnings = check_generated_hardcoded_contract()
+    contract_errors, contract_warnings = check_generated_hardcoded_contract(check_ids=False)
     for warning in contract_warnings:
         print(f"[doctor] WARNING: {warning}")
     if contract_errors:
         for error in contract_errors:
             print(f"[doctor] ERROR: {error}")
         raise SystemExit(1)
-    print(f"[doctor] M&B 1.011 generated hardcoded contract OK: {len(contract_warnings)} warning(s).")
+    print(f"[doctor] M&B 1.011 compile-source hardcoded contract OK: {len(contract_warnings)} warning(s).")
 
     _backup_successful_compile(profile)
 

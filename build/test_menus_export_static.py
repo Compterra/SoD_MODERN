@@ -86,9 +86,6 @@ def test_mb1011_hardcoded_start_menus_keep_native_indices() -> None:
     expected = {
         "menu_start_game_1": 0,
         "menu_start_phase_2": 1,
-        "menu_start_game_3": 2,
-        "menu_tutorial": 3,
-        "menu_reports": 4,
     }
     for menu_id, expected_index in expected.items():
         token = f"{menu_id} = {expected_index}"

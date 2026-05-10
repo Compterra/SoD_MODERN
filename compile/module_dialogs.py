@@ -29201,6 +29201,8 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 [anyone, "enemy_defeated", [], "Arggh! I hate this.", "close_window", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_party_relieved.py:L1-L3 ] anyone::party_relieved->close_window [no_conditions] {thank you for helping us against those bastards.}
 [anyone, "party_relieved", [], "Thank you for helping us against those bastards.", "close_window", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_prisoner_liberated.py:L1-L3 ] anyone::prisoner_liberated->close_window [no_conditions] {you have my thanks. i thought that cell would be the end of me.}
+[anyone, "prisoner_liberated", [], "You have my thanks. I thought that cell would be the end of me.", "close_window", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_150.py:L1-L4 ] anyone::start->battle_reason_stated [eq|store_encountered_party|5] {{var}}
 [anyone, "start", [(eq, "$talk_context", tc_party_encounter), (store_encountered_party, reg(5)), (party_get_template_id, reg(7), reg(5)), (eq, reg(7), "pt_sea_raiders"), (call_script, "script_sod_store_hostile_greeting")],
    "{s5}", "battle_reason_stated", [(play_sound, "snd_encounter_sea_raiders")]],
