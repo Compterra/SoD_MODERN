@@ -43,7 +43,7 @@ SCRIPTS = [
           (neg|is_between, ":cur_center_no", walled_centers_begin, walled_centers_end), #twan new
           (assign, ":cur_center_no", -1),
           (assign, ":cur_center_nearby_strength", 0),
-          (store_sub, ":cur_center_left_strength", 1000000), #must be higher than our strength
+          (assign, ":cur_center_left_strength", 1000000), #must be higher than our strength
 		  (assign, ":my_center_threat_level", 0), 
         (else_try),
           (party_get_slot, ":cur_center_nearby_strength", ":cur_center_no", slot_party_nearby_friend_strength),

@@ -29,7 +29,7 @@ SIMPLE_TRIGGERS = [
       (val_mul, ":consumption", ":consumption_mod"),
       (val_div, ":consumption", 100),
       (val_max, ":consumption", 1),
-      (store_mul, ":consumption", -1),
+      (val_mul, ":consumption", -1),
       (call_script, "script_center_change_trade_good_production", ":center_no", "itm_grain", ":consumption", 0),
       (call_script, "script_center_change_trade_good_production", ":center_no", "itm_flour", ":consumption", 0),
 
@@ -47,7 +47,7 @@ SIMPLE_TRIGGERS = [
       (val_mul, ":consumption_extra", ":consumption_extra_mod"),
       (val_div, ":consumption_extra", 100),
       (val_max, ":consumption_extra", 1),
-      (store_mul, ":consumption_extra", -1),
+      (val_mul, ":consumption_extra", -1),
       (call_script, "script_center_change_trade_good_production", ":center_no", "itm_cattle_meat", ":consumption_extra", 0),
       (call_script, "script_center_change_trade_good_production", ":center_no", "itm_ale", ":consumption_extra", 0),
 
@@ -116,7 +116,7 @@ SIMPLE_TRIGGERS = [
         (val_add, ":castle_food_consumption", 1),
       (try_end),
       (val_clamp, ":castle_food_consumption", 1, 8),
-      (store_mul, ":castle_food_consumption", -1),
+      (val_mul, ":castle_food_consumption", -1),
       (call_script, "script_center_change_trade_good_production", ":center_no", "itm_grain", ":castle_food_consumption", 0),
       (call_script, "script_center_change_trade_good_production", ":center_no", "itm_flour", ":castle_food_consumption", 0),
 
@@ -133,7 +133,7 @@ SIMPLE_TRIGGERS = [
         (val_add, ":castle_store_consumption", 1),
       (try_end),
       (val_clamp, ":castle_store_consumption", 0, 4),
-      (store_mul, ":castle_store_consumption", -1),
+      (val_mul, ":castle_store_consumption", -1),
       (call_script, "script_center_change_trade_good_production", ":center_no", "itm_salt", ":castle_store_consumption", 0),
       (call_script, "script_center_change_trade_good_production", ":center_no", "itm_iron", ":castle_store_consumption", 0),
       (call_script, "script_center_change_trade_good_production", ":center_no", "itm_tools", ":castle_store_consumption", 0),

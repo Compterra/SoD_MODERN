@@ -17,6 +17,14 @@ ASSIGN_WITH_EXTRA_DEBUG_COLOR = re.compile(
 STR_STORE_STRING_WITH_EXTRA_ZERO = re.compile(
     r"\(str_store_string,\s*[^,\n]+,\s*\"[^\"]*\",\s*0\s*\)"
 )
+TWO_ARG_STORE_ARITHMETIC = re.compile(
+    r"\((?:store_add|store_sub|store_mul|store_div|store_mod|min|max),\s*[^,\n]+,\s*[^,\n]+\s*\)"
+)
+MISSING_GET_SLOT_SLOT_ID = re.compile(
+    r"\((?:party_get_slot|troop_get_slot|faction_get_slot|quest_get_slot),\s*"
+    r"(?:\"[^\"]+\"|:[A-Za-z_]\w*|\$[A-Za-z_]\w*|reg\d+),\s*"
+    r"(?:\"[^\"]+\"|:[A-Za-z_]\w*|\$[A-Za-z_]\w*)\s*\)"
+)
 
 
 def _line_no(text, pos):
@@ -41,6 +49,12 @@ def main():
 
         for match in STR_STORE_STRING_WITH_EXTRA_ZERO.finditer(text):
             offenders.append(f"{rel}:{_line_no(text, match.start())}: str_store_string has stray zero argument")
+
+        for match in TWO_ARG_STORE_ARITHMETIC.finditer(text):
+            offenders.append(f"{rel}:{_line_no(text, match.start())}: store arithmetic op has too few operands")
+
+        for match in MISSING_GET_SLOT_SLOT_ID.finditer(text):
+            offenders.append(f"{rel}:{_line_no(text, match.start())}: slot getter is missing a slot id")
 
     assert not offenders, "Malformed operation tuples found:\n" + "\n".join(offenders)
 

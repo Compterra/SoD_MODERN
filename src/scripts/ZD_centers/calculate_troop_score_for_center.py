@@ -34,7 +34,7 @@ SCRIPTS = [
         (try_end),
         (try_begin),
           (eq, ":troop_no", "trp_player"),
-          (faction_get_slot, ":faction_leader", "$players_kingdom"),
+          (faction_get_slot, ":faction_leader", "$players_kingdom", slot_faction_leader),
           (call_script, "script_troop_get_player_relation", ":faction_leader"),
           (assign, ":leader_relation", reg0),
           #(troop_get_slot, ":leader_relation", ":faction_leader", slot_troop_player_relation),

@@ -104,7 +104,7 @@ SCRIPTS = [
 			 (else_try),
 			 (assign, ":minimum", 0),
 			 (try_end),
-             (store_add, ":minimum", ":our_strength"),			 
+             (val_add, ":minimum", ":our_strength"),
 				   (try_begin), #tr9
 				       (gt, ":minimum", ":cur_center_nearby_strength"),
                        (assign, ":should_i_stay", 1),
