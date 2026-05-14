@@ -5212,7 +5212,7 @@ game_menus = [
       ("pre_join_leave", [], "Don't get involved.", [(leave_encounter), (change_screen_return)]),
     ]
   ),
-# [ src/menus/encounter/join_attack.py:L1-L158 ] join_battle
+# [ src/menus/encounter/join_attack.py:L1-L149 ] join_battle
 (
     "join_battle", mnf_enable_hot_keys,
     "You are helping {s2} against {s1}. Your side looks {s10}; the enemy line looks {s11}.",
@@ -5258,15 +5258,6 @@ game_menus = [
         (eq, "$new_encounter", 1),
         (assign, "$new_encounter", 0),
         (call_script, "script_encounter_init_variables"),
-##          (assign, "$capture_screen_shown", 0),
-##          (assign, "$loot_screen_shown", 0),
-##          (assign, "$g_battle_result", 0),
-##          (assign, "$cant_leave_encounter", 0),
-##          (assign, "$last_defeated_hero", 0),
-##          (assign, "$last_freed_hero", 0),
-##          (call_script, "script_party_copy", "p_main_party_backup", "p_main_party"),
-##          (call_script, "script_party_copy", "p_encountered_party_backup", "p_collective_enemy"),
-##          (call_script, "script_party_copy", "p_ally_party_backup", "p_collective_ally"),
         (else_try), #second or more turn
           (eq, "$g_leave_encounter", 1),
           (change_screen_return),
