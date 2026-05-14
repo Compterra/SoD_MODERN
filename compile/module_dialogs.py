@@ -27988,7 +27988,7 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (call_script, "script_change_troop_renown", "trp_player", -5),
     ]],
 # [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_lost_kidnapped_girl_4.py:L1-L9 ] anyone|plyr::lost_kidnapped_girl_4->merchant_quest_about_job_5a [store_troop_gold|quest_get_slot|ge] {of course. here you are...}
-[anyone|plyr, "lost_kidnapped_girl_4", [(store_troop_gold, ":gold"),
+[anyone|plyr, "lost_kidnapped_girl_4", [(store_troop_gold, ":gold", "trp_player"),
                                           (quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
                                           (ge, ":gold", ":quest_target_amount"),
                                           ],

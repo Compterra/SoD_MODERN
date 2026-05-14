@@ -1,5 +1,5 @@
 DIALOGS = [
-[anyone|plyr, "lost_kidnapped_girl_4", [(store_troop_gold, ":gold"),
+[anyone|plyr, "lost_kidnapped_girl_4", [(store_troop_gold, ":gold", "trp_player"),
                                           (quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
                                           (ge, ":gold", ":quest_target_amount"),
                                           ],

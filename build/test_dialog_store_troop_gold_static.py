@@ -11,6 +11,7 @@ TARGETS = (
     ROOT / "src" / "dialogs" / "ZC02_townsfolk_and_special_npcs" / "party_tpl_pt_bandits_awaiting_ransom_plyr_bandits_awaiting_ransom_intro_1.py",
     ROOT / "src" / "dialogs" / "ZC02_townsfolk_and_special_npcs" / "party_tpl_pt_militia_awaiting_ransom_plyr_militia_awaiting_ransom_intro_1.py",
     ROOT / "src" / "dialogs" / "ZD01_encounters_battles_and_prisoners" / "anyone_plyr_deserter_barter_2.py",
+    ROOT / "src" / "dialogs" / "ZE01_companions_and_named_npcs" / "anyone_plyr_lost_kidnapped_girl_4.py",
 )
 
 ONE_ARG_STORE_TROOP_GOLD = re.compile(r"\(store_troop_gold,\s*(?:reg\(\d+\)|[^,()]+)\)")
@@ -25,8 +26,6 @@ def main() -> None:
 
     offenders = []
     for path in SRC_DIALOGS.rglob("*.py"):
-        if "ZE01_companions_and_named_npcs" in path.parts:
-            continue
         source = path.read_text(encoding="utf-8")
         for match in ONE_ARG_STORE_TROOP_GOLD.finditer(source):
             offenders.append(f"{path.relative_to(ROOT)}: {match.group(0)}")
