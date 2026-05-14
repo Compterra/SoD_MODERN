@@ -755,7 +755,7 @@ PRESENTATIONS = [
 		(store_random_in_range, ":rand", 14, 28),
 		(val_add, ":cur_day", ":rand"),
 		(assign, "$sod_royal_mission_end", ":cur_day"),
-		(store_random_in_range, ":rand", 1, 100), #get mission result immidiately
+		(store_random_in_range, ":rand", 1, 100), #get mission result immediately
 			(val_sub, ":rand", "$sod_mission_chance"), 
 		(try_begin),
 			(this_or_next|eq, "$sod_royal_artifact_1", "$sod_royal_mission"),
@@ -866,7 +866,7 @@ PRESENTATIONS = [
 			(eq, "$sod_mission_8", 2),
 			(str_store_string, s36, "@^We know that one of the artifacts is here."),
 		(try_end),	
-		(str_store_string, s35, "@Loth. Center of the Lothian Clan, most powerfull family in Villianese.{s36}"),
+		(str_store_string, s35, "@Loth. Center of the Lothian Clan, most powerful family in Villianese.{s36}"),
 		(start_presentation, "prsnt_sod_royal_artifacts"),
 	(else_try),
 		(eq, ":object", "$g_presentation_obj_10"),
@@ -906,7 +906,7 @@ PRESENTATIONS = [
 			(eq, "$sod_mission_12", 2),
 			(str_store_string, s36, "@^We know that one of the artifacts is here."),
 		(try_end),	
-		(str_store_string, s35, "@Dragonrock. Magnates in Aden build many castles, mostly to protect from other Adenian Families. Dragonrock the Capital is the most powerfull.{s36}"),
+		(str_store_string, s35, "@Dragonrock. Magnates in Aden build many castles, mostly to protect from other Adenian Families. Dragonrock the Capital is the most powerful.{s36}"),
 		(start_presentation, "prsnt_sod_royal_artifacts"),
 	(else_try),
 		(eq, ":object", "$g_presentation_obj_14"),

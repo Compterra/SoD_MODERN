@@ -242,7 +242,7 @@ MENUS = [
            (assign, "$g_last_defeated_bandits_town", 0),
            (assign, "$sneaked_into_town", 1),
            (assign, "$town_entered", 1),
-           (jump_to_menu, "mnu_sneak_into_town_suceeded"),
+           (jump_to_menu, "mnu_sneak_into_town_succeeded"),
          (else_try),
            (jump_to_menu, "mnu_sneak_into_town_caught"),
          (try_end)

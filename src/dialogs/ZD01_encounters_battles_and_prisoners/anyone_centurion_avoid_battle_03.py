@@ -4,7 +4,7 @@ DIALOGS = [
 	(try_begin),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_crusader),
 		(assign, ":enable", 1),
-		(str_store_string, s0, "@Why, {playername}, your time is the last thing I wish to waste. The first is your blood ! It would be definately entertaining to watch your rabble of weaklings scurry away with their tails between their legs, but I had enough of playing 'cat-chasing-mice' with you. Know this: what must come to pass here this day is not 'just' a battle ! It is an enermous sacrifice in the name of Marsus ! War for the warrior god ! All of you heretics, lay down and DIE in his name !"),
+		(str_store_string, s0, "@Why, {playername}, your time is the last thing I wish to waste. The first is your blood ! It would be definitely entertaining to watch your rabble of weaklings scurry away with their tails between their legs, but I had enough of playing 'cat-chasing-mice' with you. Know this: what must come to pass here this day is not 'just' a battle ! It is an enormous sacrifice in the name of Marsus ! War for the warrior god ! All of you heretics, lay down and DIE in his name !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_liberator),
 		(assign, ":enable", 1),

@@ -1,6 +1,6 @@
 MENUS = [
 (
-    "sneak_into_town_suceeded", 0,
+    "sneak_into_town_succeeded", 0,
     "Disguised in the garments of a poor pilgrim, you fool the guards and make your way into the town.",
     "none",
     [

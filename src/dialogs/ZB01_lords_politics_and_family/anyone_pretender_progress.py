@@ -65,7 +65,7 @@ DIALOGS = [
          (str_store_string, s30, "@we have made very little progress so far"),
        (else_try),
          (lt, ":our_ratio", 30),
-         (str_store_string, s30, "@we have suceeded in gaining some ground, but we still have a long way to go"),
+         (str_store_string, s30, "@we have succeeded in gaining some ground, but we still have a long way to go"),
        (else_try),
          (lt, ":our_ratio", 50),
          (str_store_string, s30, "@we have become a significant force, and we have an even chance of victory"),
