@@ -6795,7 +6795,7 @@ game_menus = [
    [
    ("continue",[],"Continue...",[(jump_to_menu,"mnu_castle_besiege")]),
    ]),
-# [ src/menus/other/continue_16.py:L1-L78 ] castle_attack_walls_with_allies_simulate
+# [ src/menus/other/continue_16.py:L1-L70 ] castle_attack_walls_with_allies_simulate
 (
     "castle_attack_walls_with_allies_simulate", mnf_disable_all_keys,#mnf_scale_picture|
     "{s4}^^Your casualties: {s8}^^Allies' casualties: {s9}^^Enemy casualties: {s10}",
@@ -6822,14 +6822,6 @@ game_menus = [
       (call_script, "script_party_calculate_strength", "p_collective_enemy", 0),
       (assign, ":enemy_party_strength", reg0),
       (val_div, ":enemy_party_strength", 4),
-
-##        (assign, reg0, ":player_party_strength"),
-##        (assign, reg1, ":friend_party_strength"),
-##        (assign, reg2, ":enemy_party_strength"),
-##        (assign, reg3, "$g_enemy_party"),
-##        (assign, reg4, "$g_ally_party"),
-##        (display_message, "@player_str={reg0} friend_str={reg1} enemy_str={reg2}", debug_color),
-##        (display_message, "@enemy_party={reg3} ally_party={reg4}", debug_color),
 
       (assign, ":enemy_party_strength_for_p", ":enemy_party_strength"),
       (val_mul, ":enemy_party_strength_for_p", ":player_party_strength"),

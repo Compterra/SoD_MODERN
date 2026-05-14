@@ -26,14 +26,6 @@ MENUS = [
       (assign, ":enemy_party_strength", reg0),
       (val_div, ":enemy_party_strength", 4),
 
-##        (assign, reg0, ":player_party_strength"),
-##        (assign, reg1, ":friend_party_strength"),
-##        (assign, reg2, ":enemy_party_strength"),
-##        (assign, reg3, "$g_enemy_party"),
-##        (assign, reg4, "$g_ally_party"),
-##        (display_message, "@player_str={reg0} friend_str={reg1} enemy_str={reg2}", debug_color),
-##        (display_message, "@enemy_party={reg3} ally_party={reg4}", debug_color),
-
       (assign, ":enemy_party_strength_for_p", ":enemy_party_strength"),
       (val_mul, ":enemy_party_strength_for_p", ":player_party_strength"),
       (val_div, ":enemy_party_strength_for_p", ":friend_party_strength"),
