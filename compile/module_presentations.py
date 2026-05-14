@@ -2281,7 +2281,7 @@ presentations = [
         (overlay_set_text, "$g_presentation_obj_2", s1),
         ]),
       ]),
-# [ src/presentations/0014_retirement/retirement.py:L1-L698 ] retirement
+# [ src/presentations/0014_retirement/retirement.py:L1-L697 ] retirement
 ("retirement", 0, mesh_load_window,
    [
      (ti_on_presentation_load,
@@ -2451,7 +2451,6 @@ presentations = [
         (position_set_x, pos1, 950),
         (position_set_y, pos1, 950),
         (overlay_set_size, reg1, pos1),
-##        (overlay_set_color, reg1, 0),
         (create_text_overlay, reg2, "@Effect on Score", tf_center_justify),
         (position_set_x, pos1, 750),
         (position_set_y, pos1, 750),

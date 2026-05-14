@@ -168,7 +168,6 @@ PRESENTATIONS = [
         (position_set_x, pos1, 950),
         (position_set_y, pos1, 950),
         (overlay_set_size, reg1, pos1),
-##        (overlay_set_color, reg1, 0),
         (create_text_overlay, reg2, "@Effect on Score", tf_center_justify),
         (position_set_x, pos1, 750),
         (position_set_y, pos1, 750),
