@@ -36,6 +36,8 @@ def main():
 
     random_quest = read("src/scripts/ZG_quests/get_random_quest.py")
     assert random_quest.count("script_cf_sod_valid_lord_duel_target") >= 4
+    assert "Remove this when test is done" not in random_quest
+    assert '(assign, ":quest_no", "qst_meet_spy_in_enemy_town")' not in random_quest
 
     for rel in [
         "src/mission_templates/0039_arena_challenge_fight/arena_challenge_fight.py",

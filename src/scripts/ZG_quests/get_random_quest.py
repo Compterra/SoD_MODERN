@@ -116,9 +116,6 @@ SCRIPTS = [
         (assign, ":quest_dont_give_again_period", 0),
 
         (store_random_in_range, ":quest_no", ":quests_begin", ":quests_end"),
-        #TODO: Remove this when test is done
-        #       (assign, ":quest_no", "qst_meet_spy_in_enemy_town"),
-        #TODO: Remove this when test is done end
         (neg|check_quest_active, ":quest_no"),
         (neg|quest_slot_ge, ":quest_no", slot_quest_dont_give_again_remaining_days, 1),
         (try_begin),
