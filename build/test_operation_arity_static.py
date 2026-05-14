@@ -29,6 +29,10 @@ ONE_ARG_STORE_READ = re.compile(
     r"\((?:store_character_level|store_troop_faction|store_faction_of_party|store_relation),\s*"
     r"(?:\"[^\"]+\"|:[A-Za-z_]\w*|\$[A-Za-z_]\w*|reg\d+)\s*\)"
 )
+STR_STORE_NAME_WITH_EXTRA_ARG = re.compile(
+    r"\((?:str_store_troop_name|str_store_party_name|str_store_faction_name|str_store_item_name)"
+    r"(?:_link)?,\s*[^,\n]+,\s*[^,\n]+,\s*(?:debug_color|faith_color|dark_green)\s*\)"
+)
 
 
 def _line_no(text, pos):
@@ -62,6 +66,9 @@ def main():
 
         for match in ONE_ARG_STORE_READ.finditer(text):
             offenders.append(f"{rel}:{_line_no(text, match.start())}: store read op has too few operands")
+
+        for match in STR_STORE_NAME_WITH_EXTRA_ARG.finditer(text):
+            offenders.append(f"{rel}:{_line_no(text, match.start())}: str_store_*_name op has too many operands")
 
     assert not offenders, "Malformed operation tuples found:\n" + "\n".join(offenders)
 

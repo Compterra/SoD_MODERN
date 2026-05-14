@@ -293,7 +293,7 @@ SIMPLE_TRIGGERS = [
 		(try_begin),
 			(eq, "$g_sod_hide_messages", 0),
 			(call_script, "script_store_troop_name_link", s1, ":nobles_id"),
-			(str_store_party_name_link, s2, "$g_sod_nobles_gather_at", faith_color),
+			(str_store_party_name_link, s2, "$g_sod_nobles_gather_at"),
 			(assign, reg1, ":nobles"),
 			(try_begin),
 				(gt, ":nobles", 1),
