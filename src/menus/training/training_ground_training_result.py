@@ -30,8 +30,6 @@ MENUS = [
          (convert_to_fixed_point, ":xp_ratio_to_add"),
          (val_div, ":xp_ratio_to_add", ":divisor"),
        (try_end),
-##       (assign, reg0, ":xp_ratio_to_add"),
-##       (display_message, "@xp earn ratio: {reg0}/1000", debug_color),
        (store_mul, ":xp_ratio_to_add_with_trainer_skill", ":xp_ratio_to_add", ":trainer_skill_multiplier"),
        (val_div, ":xp_ratio_to_add_with_trainer_skill", 10),
        (party_get_num_companion_stacks, ":num_stacks", "p_main_party"),

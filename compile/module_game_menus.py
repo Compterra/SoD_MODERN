@@ -30337,7 +30337,7 @@ or spirit exist and so condemn the priests of false religions and other magician
        ),
       ]
   ),
-# [ src/menus/training/training_ground_training_result.py:L1-L102 ] training_ground_training_result
+# [ src/menus/training/training_ground_training_result.py:L1-L100 ] training_ground_training_result
 ("training_ground_training_result", mnf_disable_all_keys,
    "{s7}{s2}",
    "none",
@@ -30369,8 +30369,6 @@ or spirit exist and so condemn the priests of false religions and other magician
          (convert_to_fixed_point, ":xp_ratio_to_add"),
          (val_div, ":xp_ratio_to_add", ":divisor"),
        (try_end),
-##       (assign, reg0, ":xp_ratio_to_add"),
-##       (display_message, "@xp earn ratio: {reg0}/1000", debug_color),
        (store_mul, ":xp_ratio_to_add_with_trainer_skill", ":xp_ratio_to_add", ":trainer_skill_multiplier"),
        (val_div, ":xp_ratio_to_add_with_trainer_skill", 10),
        (party_get_num_companion_stacks, ":num_stacks", "p_main_party"),
