@@ -1483,7 +1483,8 @@ def test_post_defeat_spectator_follow_camera_is_shared() -> None:
     assert_contains(doc, "- [x] Add event text for collapse after the captain fell.")
     assert_contains(doc, "- [x] Add `$sod_post_defeat_second_in_command`.")
     assert_contains(doc, "- [x] Feed the result into battle ranking or company memory.")
-    assert_contains(doc, "- [ ] Add `$sod_post_defeat_mission_allows_takeover`.")
+    assert_contains(doc, "### Phase 6: Pre-Battle Acting Commander")
+    assert_contains(doc, "- [x] Preserve the stricter post-defeat takeover idea as a design note, not an active implementation checklist.")
 
 
 def test_battle_commander_selection_uses_custom_commander_style_flow() -> None:
@@ -1506,6 +1507,7 @@ def test_battle_commander_selection_uses_custom_commander_style_flow() -> None:
         '"sod_battle_commander_restore_player_health"',
         '"sod_battle_commander_reset"',
         "(set_player_troop, \":commander\")",
+        "(set_player_troop, \"trp_player\")",
         "(str_store_troop_name, s7, \":commander\")",
         "(spawn_agent, \"trp_player\")",
         "(troop_set_inventory_slot, \"trp_player\", ek_horse, -1)",
@@ -1554,6 +1556,7 @@ def test_battle_commander_selection_uses_custom_commander_style_flow() -> None:
     assert_contains(doc, "Custom Commander-style pre-battle acting commander")
     assert_contains(doc, "- [x] Add a pre-battle acting commander selector")
     assert_contains(doc, "- [x] Show the acting commander's name on battle-entry options, including wounded-player companion-led fights.")
+    assert_contains(doc, "- [x] Add a static test that original player troop restore logic exists.")
 
 
 if __name__ == "__main__":

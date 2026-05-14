@@ -525,7 +525,7 @@ Original player-agent assumptions found:
 - [x] Feed the result into battle ranking or company memory.
 - [x] Surface command-continuity memory in companion/company reports.
 
-### Phase 6: Optional Hero Takeover Prototype
+### Phase 6: Pre-Battle Acting Commander
 
 - [x] Audit Custom Commander's pre-battle commander selection.
 - [x] Add a pre-battle acting commander selector.
@@ -535,31 +535,11 @@ Original player-agent assumptions found:
 - [x] Use a dismounted player-ally spawn for sieges and tight village scenes.
 - [x] Restore the real player's battle health once in the debrief.
 - [x] Reset acting commander state on map-free.
-- [x] Preserve the stricter post-defeat takeover prototype as a separate future opt-in.
-- [ ] Add `$sod_post_defeat_mission_allows_takeover`.
-- [ ] Add `script_sod_post_defeat_agent_is_controllable`.
-- [ ] Require mission opt-in before takeover is possible.
-- [ ] Require the focused agent to be allied.
-- [ ] Require the focused agent to be a living human hero.
-- [ ] Require the focused troop to be in `p_main_party`.
-- [ ] Block takeover during duels, prison breaks, tutorials, scripted trials, and scene conversations.
-- [ ] Store the original player troop before calling `set_player_troop`.
-- [ ] Store the original focused agent and troop.
-- [ ] Validate a safe spawn position near the focused agent.
-- [ ] Spawn the new player-controlled agent only after all checks pass.
-- [ ] Restore horse/equipment state safely if the chosen hero is mounted.
-- [ ] Copy only known safe agent slots.
-- [ ] Remove or hide the old AI agent only after the new agent is valid.
-- [ ] Set `$sod_post_defeat_takeover_used` so takeover is once per battle.
-- [ ] Restore the original player troop after the mission.
-- [ ] Record takeover use in companion/company memory.
+- [x] Preserve the stricter post-defeat takeover idea as a design note, not an active implementation checklist.
 
 ### Phase 7: Presentation And Feedback
 
-- [x] Decide whether the first version needs a presentation or only messages.
-- [ ] If using a presentation, keep it smaller than 108-WB's `choose_fighter_in_battle`.
-- [ ] Show only valid command candidates.
-- [ ] Display why takeover is unavailable when blocked.
+- [x] Decide the first version uses battle menu entries and short messages, not a new presentation.
 - [x] Avoid using debug or placeholder wording.
 - [x] Add post-battle summary text for who took command.
 - [x] Add event text for no surviving officer.
@@ -572,8 +552,8 @@ Original player-agent assumptions found:
 - [x] Add a static test that custom battle defeat waits for side elimination, not player fall.
 - [x] Add a static test that safe battle templates initialize post-defeat state.
 - [x] Add a static test that excluded mission templates do not include takeover triggers.
-- [ ] Add a static test that takeover is gated by `$sod_post_defeat_mission_allows_takeover`.
-- [ ] Add a static test that original player troop restore logic exists.
+- [x] Add a static test that acting commander battle entries show the selected commander name.
+- [x] Add a static test that original player troop restore logic exists.
 - [x] Add a static test that no broad pasted 108-WB trigger block was copied into multiple templates.
 - [x] Run `py build\test_feature_audit_static.py`.
 - [x] Run `py build\doctor.py`.
@@ -592,7 +572,9 @@ Original player-agent assumptions found:
 - [ ] Custom battle: spectator camera remains stable.
 - [ ] Excluded duel mission: player fall ends normally.
 - [ ] Excluded prison break: player fall ends normally.
-- [ ] Optional takeover battle: eligible companion can take command.
-- [ ] Optional takeover battle: ineligible troop is blocked with clear feedback.
-- [ ] Optional takeover battle: player troop restores after mission.
+- [ ] Wounded player: a fit companion can be selected and lead the next battle.
+- [ ] Wounded player: battle entry is blocked cleanly if no fit commander exists.
+- [ ] Companion-led field battle: the real player spawns as an allied AI agent only when not wounded.
+- [ ] Companion-led siege or village battle: the real player does not appear mounted in tight scenes.
+- [ ] Companion-led battle: player troop resets to `trp_player` after returning to the map.
 - [ ] Save/load after battle does not preserve stale post-defeat globals.
