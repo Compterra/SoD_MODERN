@@ -5580,7 +5580,7 @@ game_menus = [
                                  (try_end)]),
       ]
   ),
-# [ src/menus/centers/castle/talk_to_siege_commander.py:L1-L145 ] besiegers_camp_with_allies
+# [ src/menus/centers/castle/talk_to_siege_commander.py:L1-L142 ] besiegers_camp_with_allies
 (
     "besiegers_camp_with_allies", mnf_enable_hot_keys,
     "{s1} remains under siege. The banners of {s2} fly above the camp of the besiegers, where you and your men are welcomed.",
@@ -5623,8 +5623,6 @@ game_menus = [
         (try_end),
         (this_or_next|eq, ":enemy_finished", 1),
         (eq, "$g_enemy_surrenders", 1),
-##          (assign, "$g_next_menu", -1), #"mnu_castle_taken_by_friends"),
-##          (jump_to_menu, "mnu_total_victory"),
         (call_script, "script_party_wound_all_members", "$g_enemy_party"),
         (leave_encounter),
         (change_screen_return),
@@ -5691,7 +5689,6 @@ game_menus = [
         (assign, "$g_siege_final_menu", "mnu_besiegers_camp_with_allies"),
         (assign, "$g_siege_battle_state", 1),
         (assign, "$g_next_menu", "mnu_castle_besiege_inner_battle"),
-##           (assign, "$g_next_menu", "mnu_besiegers_camp_with_allies"),
         (jump_to_menu, "mnu_battle_debrief"),
         (call_script, "script_sod_battle_commander_apply_before_mission"),
         (change_screen_mission),
