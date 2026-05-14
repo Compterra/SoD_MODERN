@@ -34,18 +34,6 @@ SCRIPTS = [
         (val_add, ":camera_pitch", -14),
         (assign, ":animation", anim_stand_man),
 
-        ##       (troop_get_inventory_slot, ":horse_item", ":troop_no", ek_horse),
-        ##       (try_begin),
-        ##         (gt, ":horse_item", 0),
-        ##         (assign, ":eye_height", 210),
-        ##         (cur_tableau_add_horse, ":horse_item", pos2, anim_horse_stand, 0),
-        ##         (assign, ":animation", anim_ride_0),
-        ##         (position_set_z, pos5, 125),
-        ##         (try_begin),
-        ##           (is_between, ":camera_yaw", -10, 10), #make sure horse head doesn't obstruct face.
-        ##           (val_min, ":camera_pitch", -5),
-        ##         (try_end),
-        ##       (try_end),
         (position_set_z, pos5, ":eye_height"),
 
         # camera looks towards -z axis

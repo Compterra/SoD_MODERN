@@ -7,7 +7,6 @@ SCRIPTS = [
 
         (cur_tableau_clear_override_items),
         (cur_tableau_set_override_flags, af_override_fullhelm),
-        ##       (cur_tableau_set_override_flags, af_override_head|af_override_weapons),
 
         (init_position, pos2),
         (cur_tableau_set_camera_parameters, 1, 4, 8, 10, 10000),

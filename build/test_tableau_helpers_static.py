@@ -31,6 +31,21 @@ def main() -> int:
         assert '(cur_tableau_add_troop, ":troop_no", pos2, ":animation", reg0)' in raw, rel
         assert '":random_seed"' not in raw, rel
 
+    character = read("src/scripts/ZH_heroes/add_troop_to_cur_tableau_for_character.py")
+    assert "(cur_tableau_set_override_flags, af_override_fullhelm)" in character
+    assert "##       (cur_tableau_set_override_flags, af_override_head|af_override_weapons)" not in character
+
+    portrait = read("src/scripts/ZH_heroes/add_troop_to_cur_tableau.py")
+    assert "(cur_tableau_set_override_flags, af_override_head|af_override_weapons)" in portrait
+    assert '(assign, ":animation", anim_stand_man)' in portrait
+    assert "(position_set_z, pos5, \":eye_height\")" in portrait
+    for stale in (
+        '##       (troop_get_inventory_slot, ":horse_item", ":troop_no", ek_horse)',
+        "cur_tableau_add_horse",
+        "anim_ride_0",
+    ):
+        assert stale not in portrait, stale
+
     print("test_tableau_helpers_static: OK")
     return 0
 
