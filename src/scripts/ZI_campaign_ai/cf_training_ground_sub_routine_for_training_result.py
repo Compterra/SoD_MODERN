@@ -15,8 +15,6 @@ SCRIPTS = [
       (store_sub, ":hardness_dif", 100, ":hardness_dif"),
       (val_mul, ":hardness_dif", ":hardness_dif"),
       (val_div, ":hardness_dif", 10), # value over 1000
-      ##     (assign, reg0, ":hardness_dif"),
-      ##     (display_message, "@Hardness difference: {reg0}/1000", debug_color),
       (store_mul, ":xp_ratio_to_add_for_stack", ":xp_ratio_to_add", ":hardness_dif"),
       (val_div, ":xp_ratio_to_add_for_stack", 1000),
       (try_begin),

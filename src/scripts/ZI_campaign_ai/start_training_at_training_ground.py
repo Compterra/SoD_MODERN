@@ -48,7 +48,6 @@ SCRIPTS = [
         (assign, ":training_default_weapon_2", reg1),
       (try_end),
 
-      ##     (assign, "$g_training_ground_training_troop_stack_index", ":stack_index"),
       (try_begin),
         (eq, "$g_mt_mode", ctm_mounted),
         (assign, ":training_default_weapon_3", "itm_practice_horse"),
