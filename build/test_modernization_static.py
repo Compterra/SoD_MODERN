@@ -608,19 +608,19 @@ def test_high_frequency_distance_calls_are_audited() -> None:
     current = {f"{path}:{line}" for path, line, _ in hits}
     audited = {
         "src/triggers/ST01_every_frame/entry_0052.py:41",
-        "src/triggers/ST01_every_frame/entry_0053.py:28",
-        "src/triggers/ST01_every_frame/entry_0078.py:6",
-        "src/triggers/ST02_every_hour/entry_0073.py:4",
+        "src/triggers/ST01_every_frame/entry_0053.py:30",
+        "src/triggers/ST01_every_frame/entry_0078.py:10",
+        "src/triggers/ST02_every_hour/entry_0073.py:5",
         "src/triggers/ST02_every_hour/entry_0077.py:17",
         "src/triggers/ST02_every_hour/entry_0082.py:8",
         "src/triggers/ST02_every_hour/entry_0082.py:16",
         "src/triggers/ST02_every_hour/entry_0082.py:24",
-        "src/triggers/ST02_every_hour/entry_0086.py:55",
-        "src/triggers/ST02_every_hour/entry_0087.py:33",
+        "src/triggers/ST02_every_hour/entry_0086.py:69",
+        "src/triggers/ST02_every_hour/entry_0087.py:39",
         "src/triggers/ST02_every_hour/entry_0124.py:22",
-        "src/triggers/ST02_every_hour/entry_0124.py:42",
-        "src/triggers/ST02_every_hour/entry_0142.py:235",
-        "src/triggers/ST02_every_hour/entry_0142.py:318",
+        "src/triggers/ST02_every_hour/entry_0124.py:41",
+        "src/triggers/ST02_every_hour/entry_0142.py:245",
+        "src/triggers/ST02_every_hour/entry_0142.py:329",
     }
     assert current == audited, "high-frequency distance-call inventory changed: " + repr(sorted(current ^ audited))
 
@@ -693,6 +693,7 @@ def test_global_party_operations_are_audited_in_scripts_and_triggers() -> None:
         "src/scripts/ZE_encounters/sod_safe_leave_encounter.py:str_store_party_name:$g_enemy_party",
         "src/scripts/ZE_encounters/sod_safe_leave_encounter.py:str_store_party_name:$g_talk_troop_party",
         "src/scripts/ZG_quests/get_random_quest.py:party_slot_eq:$g_encountered_party",
+        "src/scripts/ZY_helper_scripts/sod_banking.py:party_slot_eq:$current_town",
         "src/scripts/ZL_banners_and_profiles/change_banners_and_chest.py:party_get_slot:$g_encountered_party",
         "src/scripts/ZN_tournaments/get_random_tournament_team_amount_and_size.py:party_get_slot:$current_town",
         "src/scripts/ZN_tournaments/get_win_amount_for_tournament_bet.py:party_get_slot:$current_town",
@@ -820,9 +821,13 @@ def test_closest_center_consumers_are_inventoried() -> None:
     current = {f"{path}:{text}" for path, _line, text in hits}
     audited = {
         'src/scripts/ZC_parties/total_victory_finalize.py:(call_script, "script_get_closest_center", "p_main_party"),',
+        'src/scripts/ZG_quests/sod_rtc_price_of_bread_bind_world.py:(call_script, "script_get_closest_village", "p_main_party"),',
         'src/scripts/ZE_encounters/get_information_about_troops_position.py:(call_script, "script_get_closest_center", ":party_no"),',
         'src/scripts/ZI_campaign_ai/cf_spawn_ai_mercs.py:(call_script, "script_get_closest_walled_center", ":cur_party"),',
         'src/scripts/ZK_music/music_set_situation_with_culture.py:(call_script, "script_get_closest_center", "p_main_party"),',
+        'src/scripts/ZY_helper_scripts/sod_black_khergit_horde.py:(call_script, "script_get_closest_center", ":camp_party"),',
+        'src/scripts/ZY_helper_scripts/sod_companion_depth.py:(call_script, "script_get_closest_town", "p_main_party"),',
+        'src/scripts/ZY_helper_scripts/sod_companion_depth.py:(call_script, "script_get_closest_village", ":origin"),',
         'src/scripts/ZY_helper_scripts/sod_companion_depth.py:(call_script, "script_get_closest_village", "p_main_party"),',
         'src/scripts/ZY_helper_scripts/sod_company_accounts.py:(call_script, "script_get_closest_center", "p_main_party"),',
         'src/scripts/ZY_helper_scripts/sod_company_accounts.py:(call_script, "script_get_closest_walled_center", "p_main_party"),',
