@@ -23,8 +23,12 @@ def main():
     convince_menu = read("src/menus/duels/convince_duel.py")
     assert "script_cf_sod_valid_lord_duel_target" in convince_menu
     assert '(assign, ":duel_target", "$g_talk_troop")' in convince_menu
-    assert '(set_visitor, 1, ":duel_target")' in convince_menu
-    assert '(set_visitor, 1, "$g_talk_troop")' not in convince_menu
+    assert '(set_visitor, 58, ":duel_target")' in convince_menu
+    assert '(set_visitor, 58, "$g_talk_troop")' not in convince_menu
+
+    custom_duel_template = read("src/mission_templates/0043_sod_arena_duel_fight/sod_arena_duel_fight.py")
+    assert "(56, mtef_visitor_source|mtef_team_0" in custom_duel_template
+    assert "(58, mtef_visitor_source|mtef_team_2" in custom_duel_template
 
     convince_dialog = read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_convince_duel_02.py")
     assert 'script_cf_sod_valid_lord_duel_target", "$g_talk_troop"' in convince_dialog
