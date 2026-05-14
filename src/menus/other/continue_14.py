@@ -74,8 +74,6 @@ MENUS = [
              (party_get_slot, ":battle_scene", "$g_encountered_party", slot_town_castle),
              (set_jump_mission, "mt_besiege_inner_battle_castle"),
            (try_end),
-##           (call_script, "script_calculate_battle_advantage"),
-##           (set_battle_advantage, reg0),
            (set_party_battle_mode),
            (jump_to_scene, ":battle_scene"),
            (val_add, "$g_siege_battle_state", 1),

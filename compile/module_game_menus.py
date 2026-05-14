@@ -6484,7 +6484,7 @@ game_menus = [
        ]),
     ]
   ),
-# [ src/menus/other/continue_14.py:L1-L89 ] castle_besiege_inner_battle
+# [ src/menus/other/continue_14.py:L1-L87 ] castle_besiege_inner_battle
 (
     "castle_besiege_inner_battle", mnf_enable_hot_keys,#mnf_scale_picture|
     "{s1}",
@@ -6560,8 +6560,6 @@ game_menus = [
              (party_get_slot, ":battle_scene", "$g_encountered_party", slot_town_castle),
              (set_jump_mission, "mt_besiege_inner_battle_castle"),
            (try_end),
-##           (call_script, "script_calculate_battle_advantage"),
-##           (set_battle_advantage, reg0),
            (set_party_battle_mode),
            (jump_to_scene, ":battle_scene"),
            (val_add, "$g_siege_battle_state", 1),
