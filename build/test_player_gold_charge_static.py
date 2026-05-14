@@ -46,6 +46,7 @@ def test_known_register_based_payments_use_charge_script():
 def test_high_risk_paid_outcomes_check_full_payment():
     checked = {
         "src/presentations/0020_sod_fief_management/sod_fief_management.py": [
+            'script_sod_get_center_construction_quote',
             '(call_script, "script_sod_player_charge_gold", ":construction_cost")',
             '(eq, reg1, 1)',
             'script_sod_start_center_construction',

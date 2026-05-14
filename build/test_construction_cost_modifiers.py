@@ -31,11 +31,11 @@ def main() -> int:
         assert_contains(construction, token)
 
     for token in (
-        "script_sod_get_center_construction_cost",
+        "script_sod_get_center_construction_quote",
         "$pres_sod_fief_selected",
         "$pres_sod_fief_selected_building",
         "local construction cost factor",
-        "(assign, reg13, reg1)",
+        "(assign, reg13, \":construction_cost_pct\")",
     ):
         assert_contains(presentation, token)
 

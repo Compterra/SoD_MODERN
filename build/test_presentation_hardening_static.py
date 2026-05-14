@@ -30,11 +30,27 @@ def main():
         '(create_game_button_overlay, "$g_presentation_obj_28", "@<", tf_center_justify)',
         '(eq, ":object", "$g_presentation_obj_11")',
         '(display_message, "@Not enough funds.", dark_red)',
+        'script_sod_get_center_construction_quote',
         "@Set the garrison limit.",
         "@Set how many recruits this center's trainers can add daily.",
         "@Set this center's trainer count.",
     ]:
         assert token in fief, f"missing fief presentation slider hardening: {token}"
+
+    for token in [
+        "slot_center_has_barracks1",
+        "slot_center_has_barracks2",
+        "slot_center_has_barracks3",
+        "slot_center_has_barracks4",
+        "slot_center_has_barracks5",
+        "slot_center_has_range1",
+        "slot_center_has_range2",
+        "slot_center_has_range3",
+        "slot_center_has_range4",
+        "slot_center_has_range5",
+        "Garrisoning impossible",
+    ]:
+        assert token not in fief, f"stale fief presentation garrison block remains: {token}"
 
     for token in [
         '(gt, ":mission_heroes", 0)',

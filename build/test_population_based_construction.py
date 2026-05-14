@@ -42,6 +42,7 @@ def main() -> int:
     for token in (
         '"sod_get_center_construction_workforce"',
         '"sod_get_building_development_required"',
+        '"sod_get_center_construction_quote"',
         '"sod_start_center_construction"',
         '"sod_ensure_center_construction_state"',
         '"sod_advance_center_construction"',
@@ -81,8 +82,7 @@ def main() -> int:
     assert_contains(available_report, "most advanced active project")
     assert_contains(available_report, "lack of usable labor")
     assert_contains(presentation, "script_sod_start_center_construction")
-    assert_contains(presentation, "script_sod_get_building_development_required")
-    assert_contains(presentation, "script_sod_get_center_construction_workforce")
+    assert_contains(presentation, "script_sod_get_center_construction_quote")
     assert_contains(presentation, "labor per week")
     assert_contains(presentation, '":show_project_summary"')
     assert_contains(presentation, '@{s39}^^As the party member with the highest engineer skill')
