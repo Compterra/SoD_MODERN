@@ -4418,7 +4418,7 @@ dialogs = [
     (call_script, "script_change_troop_renown", "trp_player", -5),
     ]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_lost_sh_spy_4.py:L1-L9 ] anyone|plyr::lost_sh_spy_4->sh_quest_about_job_5a [store_troop_gold|quest_get_slot|ge] {of course. here you are...}
-[anyone|plyr, "lost_sh_spy_4", [(store_troop_gold, ":gold"),
+[anyone|plyr, "lost_sh_spy_4", [(store_troop_gold, ":gold", "trp_player"),
                                           (quest_get_slot, ":quest_target_amount", "qst_serpent_host_free_spy", slot_quest_target_amount),
                                           (ge, ":gold", ":quest_target_amount"),
                                           ],
@@ -8431,7 +8431,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 		(neg|quest_slot_eq, "qst_serpent_host_free_spy", slot_quest_current_state, 1), ],
    "Are you the one that brought the ransom hor this poor spy? Quick, give us the money now.", "militia_awaiting_ransom_intro_1", []],
 # [ src/dialogs/ZC02_townsfolk_and_special_npcs/party_tpl_pt_militia_awaiting_ransom_plyr_militia_awaiting_ransom_intro_1.py:L1-L7 ] party_tpl|pt_militia_awaiting_ransom|plyr::militia_awaiting_ransom_intro_1->militia_awaiting_ransom_pay [store_troop_gold|quest_get_slot|ge] {here, take the money. just set him free.}
-[party_tpl|pt_militia_awaiting_ransom|plyr, "militia_awaiting_ransom_intro_1", [(store_troop_gold, ":cur_gold"),
+[party_tpl|pt_militia_awaiting_ransom|plyr, "militia_awaiting_ransom_intro_1", [(store_troop_gold, ":cur_gold", "trp_player"),
                                                                                   (quest_get_slot, ":quest_target_amount", "qst_serpent_host_free_spy", slot_quest_target_amount),
                                                                                   (ge, ":cur_gold", ":quest_target_amount")
                                                                                   ],
@@ -8470,7 +8470,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "militia_awaiting_ransom_b", [],
    "You fool! Stop playing games and give us the money! ", "militia_awaiting_ransom_b2", []],
 # [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_militia_awaiting_ransom_b2.py:L1-L6 ] anyone|plyr::militia_awaiting_ransom_b2->militia_awaiting_ransom_pay [store_troop_gold|quest_get_slot|ge] {all right. here's your money. let the spy go now.}
-[anyone|plyr, "militia_awaiting_ransom_b2", [(store_troop_gold, ":cur_gold"),
+[anyone|plyr, "militia_awaiting_ransom_b2", [(store_troop_gold, ":cur_gold", "trp_player"),
                                                (quest_get_slot, ":quest_target_amount", "qst_serpent_host_free_spy", slot_quest_target_amount),
                                                (ge, ":cur_gold", ":quest_target_amount")],
    "All right. Here's your money. Let the spy go now.", "militia_awaiting_ransom_pay", []],
@@ -25716,7 +25716,7 @@ I will find another hunter, though I had hoped your name would make the fugitive
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_deserter_barter.py:L1-L3 ] anyone::deserter_barter->deserter_barter_2 [no_conditions] {good. you are clever. you pay us {var} denars. then you can go.}
 [anyone, "deserter_barter", [], "Good. You are clever. You pay us {reg5} denars. Then you can go.", "deserter_barter_2", [(assign, "$deserter_tribute", 150), (assign, reg(5), "$deserter_tribute")]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_deserter_barter_2.py:L1-L4 ] anyone|plyr::deserter_barter_2->deserter_barter_3a [store_troop_gold|2|ge] {all right here's your {var} denars.}
-[anyone|plyr, "deserter_barter_2", [(store_troop_gold, reg(2)), (ge, reg(2), "$deserter_tribute"), (assign, reg(5), "$deserter_tribute")],
+[anyone|plyr, "deserter_barter_2", [(store_troop_gold, reg(2), "trp_player"), (ge, reg(2), "$deserter_tribute"), (assign, reg(5), "$deserter_tribute")],
    "All right here's your {reg5} denars.", "deserter_barter_3a", [(call_script, "script_sod_player_charge_gold", "$deserter_tribute"), (play_sound, "snd_money_paid"), ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_deserter_barter_2_02.py:L1-L4 ] anyone|plyr::deserter_barter_2->deserter_barter_3b [no_conditions] {i don't have that much money with me}
 [anyone|plyr, "deserter_barter_2", [],
@@ -27865,7 +27865,7 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 [party_tpl|pt_bandits_awaiting_ransom, "start", [(quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 1), ],
    "You came back? Quick, give us the money now.", "bandits_awaiting_ransom_intro_1", []],
 # [ src/dialogs/ZC02_townsfolk_and_special_npcs/party_tpl_pt_bandits_awaiting_ransom_plyr_bandits_awaiting_ransom_intro_1.py:L1-L7 ] party_tpl|pt_bandits_awaiting_ransom|plyr::bandits_awaiting_ransom_intro_1->bandits_awaiting_ransom_pay [store_troop_gold|quest_get_slot|ge] {here, take the money. just set the girl free.}
-[party_tpl|pt_bandits_awaiting_ransom|plyr, "bandits_awaiting_ransom_intro_1", [(store_troop_gold, ":cur_gold"),
+[party_tpl|pt_bandits_awaiting_ransom|plyr, "bandits_awaiting_ransom_intro_1", [(store_troop_gold, ":cur_gold", "trp_player"),
                                                                                   (quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
                                                                                   (ge, ":cur_gold", ":quest_target_amount")
                                                                                   ],
@@ -27904,7 +27904,7 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 [anyone, "bandits_awaiting_ransom_b", [],
    "You fool! Stop playing games and give us the money! ", "bandits_awaiting_ransom_b2", []],
 # [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_bandits_awaiting_ransom_b2.py:L1-L6 ] anyone|plyr::bandits_awaiting_ransom_b2->bandits_awaiting_ransom_pay [store_troop_gold|quest_get_slot|ge] {all right. here's your money. let the girl go now.}
-[anyone|plyr, "bandits_awaiting_ransom_b2", [(store_troop_gold, ":cur_gold"),
+[anyone|plyr, "bandits_awaiting_ransom_b2", [(store_troop_gold, ":cur_gold", "trp_player"),
                                                (quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
                                                (ge, ":cur_gold", ":quest_target_amount")],
    "All right. Here's your money. Let the girl go now.", "bandits_awaiting_ransom_pay", []],
