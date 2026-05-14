@@ -46,15 +46,8 @@ SCRIPTS = [
         (position_move_z, pos5, ":camera_distance", 0),
         (position_move_x, pos5, 5, 0),
 
-        (try_begin),
-          (troop_is_hero, ":troop_no"),
-          (cur_tableau_add_troop, ":troop_no", pos2, ":animation", -1),
-        (else_try),
-          (store_mul, ":random_seed", ":troop_no", 126233),
-          (val_mod, ":random_seed", 1000),
-          (val_add, ":random_seed", 1),
-          (cur_tableau_add_troop, ":troop_no", pos2, ":animation", ":random_seed"),
-        (try_end),
+        (call_script, "script_sod_get_tableau_troop_seed", ":troop_no"),
+        (cur_tableau_add_troop, ":troop_no", pos2, ":animation", reg0),
         (cur_tableau_set_camera_position, pos5),
 
         (copy_position, pos8, pos5),
