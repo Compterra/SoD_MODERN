@@ -30,8 +30,7 @@ SCRIPTS = [
                           #(val_add, ":upper_bound", ":renown_factor"),
                           (val_sub, ":upper_bound", ":level_factor"),
 
-                          #TODO: count how many individuals this prisoner represents in the player's priosoners party
-                          #      and scale the % chance by that number (essentially, if 3 in stack, then 3x as likely one of them will agree)
+                          # Larger prisoner stacks get proportionally more chances for one recruit to agree.
                           (party_get_num_prisoner_stacks, ":num_stacks", "p_main_party"),
                           (try_for_range, ":index", 0, ":num_stacks"),
                             (party_prisoner_stack_get_troop_id, ":troop_no", "p_main_party", ":index"),

@@ -40,3 +40,12 @@ def test_agreement_script_refuses_heroes_and_chieftain() -> None:
     assert '(this_or_next|troop_is_hero, ":prisoner")' in script
     assert '(eq, ":prisoner", "trp_khergit_chieftain")' in script
     assert '(troop_set_slot, ":prisoner", slot_prisoner_agreed, 0)' in script
+
+
+def test_agreement_script_documents_stack_size_scaling() -> None:
+    script = read("src/scripts/ZC_parties/determine_prisoner_agreed.py")
+    assert "TODO" not in script
+    assert "priosoners" not in script
+    assert "Larger prisoner stacks get proportionally more chances" in script
+    assert '(party_prisoner_stack_get_size, ":count", "p_main_party", ":index")' in script
+    assert '(val_mul, ":upper_bound", ":count")' in script
