@@ -14,6 +14,9 @@ ONE_ARG_ASSIGN = re.compile(
 ASSIGN_WITH_EXTRA_DEBUG_COLOR = re.compile(
     r"\(assign,\s*[^,\n]+,\s*[^,\n]+,\s*debug_color\s*\)"
 )
+STR_STORE_STRING_WITH_EXTRA_ZERO = re.compile(
+    r"\(str_store_string,\s*[^,\n]+,\s*\"[^\"]*\",\s*0\s*\)"
+)
 
 
 def _line_no(text, pos):
@@ -35,6 +38,9 @@ def main():
 
         for match in ASSIGN_WITH_EXTRA_DEBUG_COLOR.finditer(text):
             offenders.append(f"{rel}:{_line_no(text, match.start())}: assign has stray debug_color argument")
+
+        for match in STR_STORE_STRING_WITH_EXTRA_ZERO.finditer(text):
+            offenders.append(f"{rel}:{_line_no(text, match.start())}: str_store_string has stray zero argument")
 
     assert not offenders, "Malformed operation tuples found:\n" + "\n".join(offenders)
 
