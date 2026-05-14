@@ -1010,7 +1010,7 @@ SCRIPTS = [
           (eq, ":quest_no", "qst_kidnapped_girl"),
           (is_between, ":giver_center_no", centers_begin, centers_end),
           (store_random_in_range, ":quest_target_center", villages_begin, villages_end),
-          (store_character_level, ":quest_target_amount"),
+          (store_character_level, ":quest_target_amount", "trp_player"),
           (val_add, ":quest_target_amount", 15),
           (store_distance_to_party_from_party, ":dist", ":giver_center_no", ":quest_target_center"),
           (val_add, ":dist", 15),

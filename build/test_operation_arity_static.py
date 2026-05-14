@@ -25,6 +25,10 @@ MISSING_GET_SLOT_SLOT_ID = re.compile(
     r"(?:\"[^\"]+\"|:[A-Za-z_]\w*|\$[A-Za-z_]\w*|reg\d+),\s*"
     r"(?:\"[^\"]+\"|:[A-Za-z_]\w*|\$[A-Za-z_]\w*)\s*\)"
 )
+ONE_ARG_STORE_READ = re.compile(
+    r"\((?:store_character_level|store_troop_faction|store_faction_of_party|store_relation),\s*"
+    r"(?:\"[^\"]+\"|:[A-Za-z_]\w*|\$[A-Za-z_]\w*|reg\d+)\s*\)"
+)
 
 
 def _line_no(text, pos):
@@ -55,6 +59,9 @@ def main():
 
         for match in MISSING_GET_SLOT_SLOT_ID.finditer(text):
             offenders.append(f"{rel}:{_line_no(text, match.start())}: slot getter is missing a slot id")
+
+        for match in ONE_ARG_STORE_READ.finditer(text):
+            offenders.append(f"{rel}:{_line_no(text, match.start())}: store read op has too few operands")
 
     assert not offenders, "Malformed operation tuples found:\n" + "\n".join(offenders)
 
