@@ -1,7 +1,7 @@
 DIALOGS = [
 [anyone, "lord_ask_pardon_after_oath_renounced",
    [
-     (assign, ":num_centers_captured_by_player"),
+     (assign, ":num_centers_captured_by_player", 0),
      (try_for_range, ":cur_center", walled_centers_begin, walled_centers_end),
        (store_faction_of_party, ":cur_center_faction", ":cur_center"),
        (eq, ":cur_center_faction", "fac_player_supporters_faction"),

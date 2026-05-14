@@ -7,7 +7,7 @@ DIALOGS = [
      (assign, ":new_owner", "$temp"),
      (call_script, "script_calculate_troop_score_for_center", ":new_owner", "$g_center_taken_by_player_faction"),
      (assign, ":new_owner_score", reg0),
-     (assign, ":total_negative_effect"),
+     (assign, ":total_negative_effect", 0),
      (try_for_range, ":cur_troop", kingdom_heroes_begin, kingdom_heroes_end),
        (store_troop_faction, ":cur_faction", ":cur_troop"),
        (eq, ":cur_faction", "fac_player_supporters_faction"),
