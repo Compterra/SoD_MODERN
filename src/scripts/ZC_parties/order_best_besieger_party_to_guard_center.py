@@ -53,7 +53,7 @@ SCRIPTS = [
       (try_begin), #tr4
         (gt, ":best_party", 0),
         (call_script, "script_party_set_ai_state", ":best_party", spai_holding_center, ":defeated_center"),
-		(troop_set_slot, ":best_hero", slot_lord_initiative, -10),  # should make hero guard center at least untill lords ai is recalculated
+		(troop_set_slot, ":best_hero", slot_lord_initiative, -10),  # should make hero guard center at least until lords ai is recalculated
         (party_set_slot, ":best_party", slot_party_commander_party, -1),
         (party_set_flags, ":best_party", pf_default_behavior, 1),
 	  (try_end), #tr4   #twan453new end

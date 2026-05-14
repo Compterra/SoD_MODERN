@@ -69,7 +69,7 @@ SCRIPTS = [
         (try_begin),
           (eq, "$g_sod_debug", 1),
           (str_store_party_name_link, s1, ":spawn_center"),
-          (display_message, "@sucessfully created a caravan party at {s1}.", debug_color),
+          (display_message, "@Successfully created a caravan party at {s1}.", debug_color),
         (try_end),
 
         (try_begin),

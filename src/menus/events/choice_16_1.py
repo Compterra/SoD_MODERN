@@ -25,11 +25,11 @@ MENUS = [
           (val_div, ":temp_center_population", 10),
           (call_script, "script_sod_center_apply_population_delta", "$temp", ":temp_center_population"),
           (call_script, "script_sod_center_apply_health_delta", "$temp", 7),
-          (display_message, "@Population and health of {s1} increases.", quest_success_color),
+          (display_message, "@Population and health of {s1} increase.", quest_success_color),
           (change_screen_return),
         ]
       ),
-      ("choice_16_2", [], "Cut their taxes to strenghten the effect (1000 denars).",
+      ("choice_16_2", [], "Cut their taxes to strengthen the effect (1000 denars).",
         [
           (str_store_party_name_link, s1, "$temp"),
           (store_troop_gold, ":gold", "trp_player"),
@@ -43,7 +43,7 @@ MENUS = [
             (val_div, ":temp_center_population", 5),
             (call_script, "script_sod_center_apply_population_delta", "$temp", ":temp_center_population"),
             (call_script, "script_sod_center_apply_health_delta", "$temp", 10),
-            (display_message, "@Population, prosperity, Your popularity and health of {s1} greatly increases.", quest_success_color),
+            (display_message, "@Population, prosperity, your popularity, and health of {s1} greatly increase.", quest_success_color),
           (else_try),
             (display_message, "@You don't have enough gold. How embarrassing! Still, population and health of {s1} rise.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -2),

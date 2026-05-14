@@ -378,7 +378,7 @@ PRESENTATIONS = [
 (position_set_y, pos1, -200),
 
 #Create buttons (even if the equiv. hero doesn't exist)
-#If I don't do this, the 'Return'-button will take over the memory adress. Yup i suck at this.
+#If I don't do this, the 'Return'-button will take over the memory address. Yup i suck at this.
 
 (create_image_button_overlay, "$g_jq_selector_1", "mesh_white_plane", "mesh_white_plane"),
 (overlay_set_position, "$g_jq_selector_1", pos1),

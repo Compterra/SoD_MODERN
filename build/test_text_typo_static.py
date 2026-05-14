@@ -5,6 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOTS = ("src", "docs")
 MISSPELLINGS = (
     "definately",
+    "adress",
     "immidiately",
     "oders",
     "occured",
@@ -14,7 +15,10 @@ MISSPELLINGS = (
     "seperation",
     "seperatists",
     "suceeded",
+    "sucessfully",
+    "strenghten",
     "towads",
+    "untill",
 )
 
 
