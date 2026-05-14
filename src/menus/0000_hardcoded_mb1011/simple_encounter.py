@@ -173,7 +173,7 @@ MENUS = [
 ##         (store_troop_health, reg(5)),
 ##         (ge, reg(5), 5),
       ],
-      "Charge the enemy.", [
+      "Charge the enemy ({s7} leads).", [
         (assign, "$g_battle_result", 0),
         (assign, "$g_engaged_enemy", 1),
         (call_script, "script_calculate_renown_value"),

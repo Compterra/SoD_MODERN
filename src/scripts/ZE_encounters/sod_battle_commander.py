@@ -67,6 +67,7 @@ SCRIPTS = [
    (assign, ":commander", reg0),
    (gt, ":commander", -1),
    (call_script, "script_cf_sod_battle_commander_troop_available", ":commander"),
+   (str_store_troop_name, s7, ":commander"),
  ]),
 
 ("sod_battle_commander_store_current_name_to_s7",

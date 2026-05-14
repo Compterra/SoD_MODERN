@@ -129,7 +129,7 @@ Implemented local flow:
 
 1. Menus expose `Choose acting commander ({s7}).` before normal battle-entry options.
 2. `mnu_sod_battle_commander_select` lists the player and fit companion heroes in the main party.
-3. Battle-entry options call `script_cf_sod_battle_commander_can_start` instead of hard-locking on `trp_player` health.
+3. Battle-entry options call `script_cf_sod_battle_commander_can_start` instead of hard-locking on `trp_player` health, and show the acting commander's name in the option text.
 4. Launch actions call `script_sod_battle_commander_apply_before_mission`, which sets the acting commander with `set_player_troop`.
 5. Shared mission triggers call `script_sod_battle_commander_spawn_player_ally` to spawn the real player beside the acting commander when appropriate.
 6. Siege, village raid, and inner-battle templates use the dismounted spawn variant so the real player does not appear mounted on walls or in tight scenes.
@@ -530,6 +530,7 @@ Original player-agent assumptions found:
 - [x] Audit Custom Commander's pre-battle commander selection.
 - [x] Add a pre-battle acting commander selector.
 - [x] Gate battle entry on the selected acting commander rather than only `trp_player`.
+- [x] Show the acting commander's name on battle-entry options, including wounded-player companion-led fights.
 - [x] Spawn the real player as an allied AI agent when a companion leads.
 - [x] Use a dismounted player-ally spawn for sieges and tight village scenes.
 - [x] Restore the real player's battle health once in the debrief.

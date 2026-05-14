@@ -1506,6 +1506,7 @@ def test_battle_commander_selection_uses_custom_commander_style_flow() -> None:
         '"sod_battle_commander_restore_player_health"',
         '"sod_battle_commander_reset"',
         "(set_player_troop, \":commander\")",
+        "(str_store_troop_name, s7, \":commander\")",
         "(spawn_agent, \"trp_player\")",
         "(troop_set_inventory_slot, \"trp_player\", ek_horse, -1)",
         "slot_troop_sod_times_took_command",
@@ -1515,6 +1516,7 @@ def test_battle_commander_selection_uses_custom_commander_style_flow() -> None:
     assert_contains(menu_preamble, "build_sod_battle_commander_change_option")
     assert_contains(menu_preamble, "generate_sod_battle_commander_select_options")
     assert_contains(selector, '"sod_battle_commander_select"')
+    assert_contains(selector, "If you cannot fight, select a fit companion.")
     assert_contains(debrief, '(call_script, "script_sod_battle_commander_restore_player_health")')
     assert_contains(trigger_order, "entry_0175_sod_battle_commander_reset.py")
     assert_contains(reset_trigger, "(map_free)")
@@ -1548,8 +1550,10 @@ def test_battle_commander_selection_uses_custom_commander_style_flow() -> None:
         assert_contains(raw, "build_sod_battle_commander_change_option")
         assert_contains(raw, "script_cf_sod_battle_commander_can_start")
         assert_contains(raw, "script_sod_battle_commander_apply_before_mission")
+        assert_contains(raw, "({s7} leads")
     assert_contains(doc, "Custom Commander-style pre-battle acting commander")
     assert_contains(doc, "- [x] Add a pre-battle acting commander selector")
+    assert_contains(doc, "- [x] Show the acting commander's name on battle-entry options, including wounded-player companion-led fights.")
 
 
 if __name__ == "__main__":

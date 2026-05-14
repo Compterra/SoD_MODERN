@@ -1,7 +1,7 @@
 MENUS = [
 (
     "sod_battle_commander_select", 0,
-    "Choose who will lead the next fight. Current acting commander: {s7}",
+    "Choose who will lead the next fight. Current acting commander: {s7}. If you cannot fight, select a fit companion.",
     "none",
     [
       (set_background_mesh, "mesh_pic_attack_ready"),

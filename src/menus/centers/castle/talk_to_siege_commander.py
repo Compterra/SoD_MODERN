@@ -72,7 +72,7 @@ MENUS = [
         "mnu_besiegers_camp_with_allies",
       ),
 
-      ("join_siege_with_allies", [(call_script, "script_cf_sod_battle_commander_can_start")], "Join the next assault.", [
+      ("join_siege_with_allies", [(call_script, "script_cf_sod_battle_commander_can_start")], "Join the next assault ({s7} leads).", [
         (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
         (try_begin),
           (check_quest_active, "qst_join_siege_with_army"),

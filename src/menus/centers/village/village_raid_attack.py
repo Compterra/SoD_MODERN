@@ -56,7 +56,7 @@ MENUS = [
         "mnu_village_start_attack",
       ),
 
-      ("village_raid_attack", [(call_script, "script_cf_sod_battle_commander_can_start")], "Charge them.", [
+      ("village_raid_attack", [(call_script, "script_cf_sod_battle_commander_can_start")], "Charge them ({s7} leads).", [
           (store_random_in_range, ":enmity", -10, -5),
           (call_script, "script_change_player_relation_with_center", "$current_town", ":enmity"),
           (try_begin),

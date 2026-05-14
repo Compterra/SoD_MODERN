@@ -4359,7 +4359,7 @@ game_menus = [
 ##         (store_troop_health, reg(5)),
 ##         (ge, reg(5), 5),
       ],
-      "Charge the enemy.", [
+      "Charge the enemy ({s7} leads).", [
         (assign, "$g_battle_result", 0),
         (assign, "$g_engaged_enemy", 1),
         (call_script, "script_calculate_renown_value"),
@@ -5334,7 +5334,7 @@ game_menus = [
         ("join_attack", [
           (call_script, "script_cf_sod_battle_commander_can_start"),
         ],
-        "Charge the enemy.", [
+        "Charge the enemy ({s7} leads).", [
           (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
           (assign, "$g_battle_result", 0),
           (call_script, "script_calculate_renown_value"),
@@ -5662,7 +5662,7 @@ game_menus = [
         "mnu_besiegers_camp_with_allies",
       ),
 
-      ("join_siege_with_allies", [(call_script, "script_cf_sod_battle_commander_can_start")], "Join the next assault.", [
+      ("join_siege_with_allies", [(call_script, "script_cf_sod_battle_commander_can_start")], "Join the next assault ({s7} leads).", [
         (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
         (try_begin),
           (check_quest_active, "qst_join_siege_with_army"),
@@ -6416,7 +6416,7 @@ game_menus = [
          (store_current_hours, ":cur_hours"),
          (ge, ":cur_hours", "$g_siege_method_finish_hours"),
        ],
-       "Lead your soldiers in an assault.",
+       "Lead your soldiers in an assault ({s7} leads).",
        [
            (try_begin),
              (party_slot_eq, "$g_encountered_party", slot_party_type, spt_town),
@@ -8323,7 +8323,7 @@ game_menus = [
        [
          (call_script, "script_cf_sod_battle_commander_can_start"),
          ],
-          "Join the battle.", [
+          "Join the battle ({s7} leads).", [
               (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
               (assign, "$g_battle_result", 0),
               (try_begin),
@@ -8376,7 +8376,7 @@ game_menus = [
         "mnu_train_peasants_against_bandits_attack",
       ),
 
-      ("peasants_against_bandits_attack_resist", [(call_script, "script_cf_sod_battle_commander_can_start")], "Prepare for a fight!",
+      ("peasants_against_bandits_attack_resist", [(call_script, "script_cf_sod_battle_commander_can_start")], "Prepare for a fight ({s7} leads)!",
        [
         (store_random_in_range, ":random_no", 0, 3),
         (try_begin),
@@ -9312,7 +9312,7 @@ game_menus = [
       ("village_attack_bandits", [
 	  (party_slot_ge, "$current_town", slot_village_infested_by_bandits, 1),
         (call_script, "script_cf_sod_battle_commander_can_start"), ],
-       "Attack the bandits.",
+       "Attack the bandits ({s7} leads).",
        [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
         (party_get_slot, ":scene_to_use", "$current_town", slot_castle_exterior),
         (modify_visitors_at_site, ":scene_to_use"),
@@ -9349,7 +9349,7 @@ game_menus = [
 		(quest_slot_eq, "qst_black_army_aid_warband", slot_quest_target_center, "$current_town"),
         (call_script, "script_cf_sod_battle_commander_can_start"),
 		],
-       "Attack the enemy forces.",
+       "Attack the enemy forces ({s7} leads).",
        [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
         (party_get_slot, ":scene_to_use", "$current_town", slot_castle_exterior),
 		(try_begin),
@@ -9398,7 +9398,7 @@ game_menus = [
 		(quest_slot_eq, "qst_jotnar_clan_revenge", slot_quest_target_center, "$current_town"),
         (call_script, "script_cf_sod_battle_commander_can_start"),
 		],
-       "Attack them.",
+       "Attack them ({s7} leads).",
        [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
         (party_get_slot, ":scene_to_use", "$current_town", slot_castle_exterior),
         (modify_visitors_at_site, ":scene_to_use"),
@@ -9444,7 +9444,7 @@ game_menus = [
 		(quest_slot_eq, "qst_slavers_deal_with_good_guys", slot_quest_target_center, "$current_town"),
         (call_script, "script_cf_sod_battle_commander_can_start"),
 		],
-       "Attack the band of self-proclaimed heroes.",
+       "Attack the band of self-proclaimed heroes ({s7} leads).",
        [
 		(call_script, "script_change_player_relation_with_center", "$g_encountered_party", -10),
 		(call_script, "script_change_player_honor", -10),
@@ -10075,7 +10075,7 @@ game_menus = [
         "mnu_village_start_attack",
       ),
 
-      ("village_raid_attack", [(call_script, "script_cf_sod_battle_commander_can_start")], "Charge them.", [
+      ("village_raid_attack", [(call_script, "script_cf_sod_battle_commander_can_start")], "Charge them ({s7} leads).", [
           (store_random_in_range, ":enmity", -10, -5),
           (call_script, "script_change_player_relation_with_center", "$current_town", ":enmity"),
           (try_begin),
@@ -30889,7 +30889,7 @@ or spirit exist and so condemn the priests of false religions and other magician
 # [ src/menus/other/sod_battle_commander_select.py:L1-L12 ] sod_battle_commander_select
 (
     "sod_battle_commander_select", 0,
-    "Choose who will lead the next fight. Current acting commander: {s7}",
+    "Choose who will lead the next fight. Current acting commander: {s7}. If you cannot fight, select a fit companion.",
     "none",
     [
       (set_background_mesh, "mesh_pic_attack_ready"),

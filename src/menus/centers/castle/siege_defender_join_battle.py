@@ -112,7 +112,7 @@ MENUS = [
        [
          (call_script, "script_cf_sod_battle_commander_can_start"),
          ],
-          "Join the battle.", [
+          "Join the battle ({s7} leads).", [
               (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
               (assign, "$g_battle_result", 0),
               (try_begin),

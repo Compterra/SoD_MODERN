@@ -214,7 +214,7 @@ MENUS = [
          (store_current_hours, ":cur_hours"),
          (ge, ":cur_hours", "$g_siege_method_finish_hours"),
        ],
-       "Lead your soldiers in an assault.",
+       "Lead your soldiers in an assault ({s7} leads).",
        [
            (try_begin),
              (party_slot_eq, "$g_encountered_party", slot_party_type, spt_town),

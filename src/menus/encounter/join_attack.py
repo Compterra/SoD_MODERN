@@ -110,7 +110,7 @@ MENUS = [
         ("join_attack", [
           (call_script, "script_cf_sod_battle_commander_can_start"),
         ],
-        "Charge the enemy.", [
+        "Charge the enemy ({s7} leads).", [
           (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
           (assign, "$g_battle_result", 0),
           (call_script, "script_calculate_renown_value"),
