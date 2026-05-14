@@ -1296,7 +1296,7 @@ game_menus = [
 	  ("advisory_2", [(eq, "$g_sod_parental_advisory", 1)], "Disable Parental Nanny", [(assign, "$g_sod_parental_advisory", 0), (jump_to_menu, "mnu_game_options_3")]),
       ("game_options_return", [], "Back to Options...", [(jump_to_menu, "mnu_game_options")]),
 ]),
-# [ src/menus/0000_hardcoded_mb1011/custom_battle_2.py:L1-L234 ] custom_battle_2
+# [ src/menus/0000_hardcoded_mb1011/custom_battle_2.py:L1-L233 ] custom_battle_2
 (
     "custom_battle_2", mnf_disable_all_keys,
     "{s16}",
@@ -1473,7 +1473,6 @@ game_menus = [
      (else_try),
        (eq, "$g_custom_battle_scenario", 4),
 
-##       (assign, "$g_custom_battle_scene", "scn_quick_battle_6"),
        (assign, "$g_custom_battle_scene", "scn_quick_battle_7"),
 
 #   Player Wear

@@ -175,7 +175,6 @@ MENUS = [
      (else_try),
        (eq, "$g_custom_battle_scenario", 4),
 
-##       (assign, "$g_custom_battle_scene", "scn_quick_battle_6"),
        (assign, "$g_custom_battle_scene", "scn_quick_battle_7"),
 
 #   Player Wear
