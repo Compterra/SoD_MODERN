@@ -4176,7 +4176,7 @@ game_menus = [
         ]),
       ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/simple_encounter.py:L1-L342 ] simple_encounter
+# [ src/menus/0000_hardcoded_mb1011/simple_encounter.py:L1-L340 ] simple_encounter
 (
     "simple_encounter", mnf_enable_hot_keys|mnf_scale_picture,
     "{s2} You have {reg10} troops fit for battle against their {reg11}.",
@@ -4348,8 +4348,6 @@ game_menus = [
       ("encounter_attack", [
         (eq, "$encountered_party_friendly", 0),
         (call_script, "script_cf_sod_battle_commander_can_start"),
-##         (store_troop_health, reg(5)),
-##         (ge, reg(5), 5),
       ],
       "Charge the enemy ({s7} leads).", [
         (assign, "$g_battle_result", 0),

@@ -170,8 +170,6 @@ MENUS = [
       ("encounter_attack", [
         (eq, "$encountered_party_friendly", 0),
         (call_script, "script_cf_sod_battle_commander_can_start"),
-##         (store_troop_health, reg(5)),
-##         (ge, reg(5), 5),
       ],
       "Charge the enemy ({s7} leads).", [
         (assign, "$g_battle_result", 0),
