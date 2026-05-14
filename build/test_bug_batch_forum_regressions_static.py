@@ -61,7 +61,7 @@ def test_inner_siege_continue_menu_has_no_dead_future_text() -> None:
 def test_mercenary_encounter_handles_stale_party_boss_data() -> None:
     troop_name = read("src/scripts/ZH_heroes/store_troop_name.py")
     assert '(neg|is_between, ":troop", 0, "trp_last_troop")' in troop_name
-    assert '@unknown captain' in troop_name
+    assert '@an unknown commander' in troop_name
 
     merc_ask = read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_party_encounter_mercs_ask.py")
     for token in (
