@@ -50,6 +50,14 @@ def test_construction_reports_sanitize_stale_finished_project_slots() -> None:
         assert "script_sod_ensure_center_construction_state" in read(path)
 
 
+def test_inner_siege_continue_menu_has_no_dead_future_text() -> None:
+    menu = read("src/menus/other/continue_14.py")
+    assert "TODO: To use for the future" not in menu
+    assert "As a last defensive effort" not in menu
+    assert "You've been driven away from the walls" in menu
+    assert menu.count("(str_store_string, s1,") == 4
+
+
 def test_mercenary_encounter_handles_stale_party_boss_data() -> None:
     troop_name = read("src/scripts/ZH_heroes/store_troop_name.py")
     assert '(neg|is_between, ":troop", 0, "trp_last_troop")' in troop_name

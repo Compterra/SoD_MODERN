@@ -16,8 +16,6 @@ MENUS = [
         (assign, ":result", "$g_battle_result"), #will be reset at script_encounter_calculate_fit
         (call_script, "script_encounter_calculate_fit"),
 
-# TODO: To use for the future:
-        (str_store_string, s1, "@As a last defensive effort, you retreat to the main hall of the keep. You and your remaining soldiers will put up a desperate fight here. If you are defeated, there's no other place to fall back to."),
         (str_store_string, s1, "@You've been driven away from the walls. Now the attackers are pouring into the streets. IF you can defeat them, you can perhaps turn the tide and save the day."),
         (try_begin),
           (this_or_next|neq, ":result", 1),
