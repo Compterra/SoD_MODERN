@@ -5,7 +5,6 @@ SCRIPTS = [
           (troop_get_slot, ":entry_type",            "trp_log_array_entry_type",            ":log_entry_no"),
           (troop_get_slot, ":entry_time",            "trp_log_array_entry_time",            ":log_entry_no"),
           (troop_get_slot, ":actor",                 "trp_log_array_actor",                 ":log_entry_no"),
-          ##     (troop_get_slot, ":center_object",         "trp_log_array_center_object",         ":log_entry_no"),
           (troop_get_slot, ":center_object_lord",    "trp_log_array_center_object_lord",    ":log_entry_no"),
           (troop_get_slot, ":center_object_faction", "trp_log_array_center_object_faction", ":log_entry_no"),
           (troop_get_slot, ":troop_object",          "trp_log_array_troop_object",          ":log_entry_no"),

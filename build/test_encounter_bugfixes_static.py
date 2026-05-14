@@ -19,6 +19,9 @@ def test_lord_defeat_comments_require_valid_troop_object() -> None:
     assert '(eq, ":entry_type", logent_lord_defeated_by_player)' in raw
     assert '(neg|is_between, ":troop_object", heroes_begin, heroes_end)' in raw
     assert '(assign, ":entry_type", -1)' in raw
+    assert '(troop_get_slot, ":center_object_lord",    "trp_log_array_center_object_lord",    ":log_entry_no")' in raw
+    assert '(troop_get_slot, ":center_object_faction", "trp_log_array_center_object_faction", ":log_entry_no")' in raw
+    assert '##     (troop_get_slot, ":center_object",         "trp_log_array_center_object",         ":log_entry_no")' not in raw
     helper = read("src/scripts/ZY_helper_scripts/get_relevant_comment_to_s42.py")
     assert '(str_store_string, s54, "@that commander")' in helper
     assert '(is_between, ":troop_object", heroes_begin, heroes_end)' in helper
