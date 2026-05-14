@@ -19,13 +19,6 @@ MENUS = [
 
         ]
        ),
-##      ("custom_battle_scenario_2", [], "Siege Attack 1",
-##       [
-##           (assign, "$g_custom_battle_scenario", 1),
-##           (jump_to_menu, "mnu_custom_battle_2"),
-##
-##        ]
-##       ),
       ("custom_battle_scenario_3", [], "Skirmish 2",
        [
            (assign, "$g_custom_battle_scenario", 1),

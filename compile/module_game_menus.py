@@ -416,7 +416,7 @@ game_menus = [
        ),
     ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/start_game_3_custom_battle_picker.py:L1-L61 ] start_game_3
+# [ src/menus/0000_hardcoded_mb1011/start_game_3_custom_battle_picker.py:L1-L54 ] start_game_3
 (
     "start_game_3", mnf_disable_all_keys,
     "Choose your scenario:",
@@ -437,13 +437,6 @@ game_menus = [
 
         ]
        ),
-##      ("custom_battle_scenario_2", [], "Siege Attack 1",
-##       [
-##           (assign, "$g_custom_battle_scenario", 1),
-##           (jump_to_menu, "mnu_custom_battle_2"),
-##
-##        ]
-##       ),
       ("custom_battle_scenario_3", [], "Skirmish 2",
        [
            (assign, "$g_custom_battle_scenario", 1),
