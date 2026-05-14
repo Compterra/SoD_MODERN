@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "lord_attack_verify_b", [],  "Forgive me sir. I don't know what I was thinking.", "lord_attack_verify_cancel", []],
+[anyone|plyr, "lord_attack_verify_b", [],  "No. Let the insult pass for now. Drawing steel here would serve neither of us.", "lord_attack_verify_cancel", []],
 ]

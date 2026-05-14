@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "gm_jc_aid_warband_quest_brief", [],
-   "Sorry. I don't have time for this right now.", "gm_pretalk", []],
+   "Not now. That warband must find another hand.", "gm_pretalk", []],
 ]

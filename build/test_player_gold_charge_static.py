@@ -37,7 +37,7 @@ def test_known_register_based_payments_use_charge_script():
         "src/dialogs/ZZ99_misc_dialogs/anyone_plyr_boar_clan_talk_03.py": 'script_sod_player_charge_gold", reg5',
         "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_boar_clan_recruit_3.py": 'script_sod_player_charge_gold", reg5',
         "src/menus/other/sod_upgrade_continue.py": 'script_sod_player_charge_gold", reg0',
-        "src/menus/kingdom/mercenaries_weekly_payment.py": 'script_sod_player_charge_gold", reg3',
+        "src/menus/kingdom/mercenaries_weekly_payment.py": 'script_sod_player_charge_gold", reg1',
     }
     for rel, needle in checked.items():
         assert needle in read(ROOT / rel)
@@ -59,7 +59,9 @@ def test_high_risk_paid_outcomes_check_full_payment():
             '(call_script, "script_sod_player_charge_gold", ":cost")',
             '(eq, reg1, 1)',
             '(call_script, "script_game_event_buy_item", "itm_cattle_meat", 0)',
-            '(party_set_slot, ":village_no", slot_village_number_of_cattle, ":num_cattle")',
+            '(call_script, "script_sod_center_apply_cattle_delta", ":village_no", ":cattle_delta")',
+            '(store_mul, ":amount_bought", reg1, -1)',
+            '(party_add_members, ":cur_party", "trp_cattle", ":amount_bought")',
         ],
         "src/scripts/ZD_centers/village_recruit_volunteers_recruit.py": [
             '(call_script, "script_sod_player_charge_gold", ":cost")',

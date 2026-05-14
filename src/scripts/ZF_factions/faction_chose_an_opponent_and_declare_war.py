@@ -482,7 +482,7 @@ SCRIPTS = [
                         (assign, ":candidate_war_reason", sod_diplomacy_war_reason_imperial_crisis),
                     (else_try),
                         (faction_get_slot, ":badboy", ":other_faction", slot_faction_badboy_rating),
-                        (ge, ":badboy", 30),
+                        (ge, ":badboy", 35),
                         (assign, ":candidate_war_reason", sod_diplomacy_war_reason_badboy_containment),
                     (else_try),
                         (faction_get_slot, ":black_khergit_pressure", "fac_black_khergits", slot_faction_black_khergit_pressure),

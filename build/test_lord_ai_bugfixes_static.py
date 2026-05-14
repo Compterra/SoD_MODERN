@@ -19,6 +19,7 @@ def main():
     trigger_order = read("src/triggers/_order_simple_triggers.txt")
     castle_patrol_process = read("src/scripts/ZY_helper_scripts/sod_process_castle_patrols.py")
     castle_patrol_spawn = read("src/scripts/ZY_helper_scripts/sod_try_spawn_castle_patrols.py")
+    simulated_battle = read("src/scripts/ZA_hardcoded_game_scripts/game_event_simulate_battle.py")
 
     euscarl_line = next(line for line in troops.splitlines() if '["reserved_knight_6", "Euscarl"' in line)
     assert "itm_courser" in euscarl_line, "Euscarl should still be a mounted lord"
@@ -68,6 +69,9 @@ def main():
     assert "sod_support_type_castle_patrol" in castle_patrol_process
     assert "SCRIPTS = [" in castle_patrol_spawn
     assert "script_cf_sod_create_castle_patrol" in castle_patrol_spawn
+    assert "slot_party_sod_support_type, sod_support_type_castle_patrol" in simulated_battle
+    assert "script_sod_castle_patrol_destroyed" in simulated_battle
+    assert simulated_battle.index("script_sod_castle_patrol_destroyed") < simulated_battle.index('script_clear_party_group", ":root_defeated_party"')
 
     print("Lord AI bugfix static checks passed")
 

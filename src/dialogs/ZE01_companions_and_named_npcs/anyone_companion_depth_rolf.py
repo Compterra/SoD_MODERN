@@ -82,7 +82,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc4", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "There is correction, and then there is public smallness dressed as honesty. My confidence in our grandeur is {s2}, though grandeur is presently nursing a bruise.",
   "member_talk",
@@ -94,7 +94,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "A name earned in sight of witnesses has a sturdier ring than one shouted over objections. I knew this, naturally. My confidence in our grandeur is {s2}.",
   "member_talk",
@@ -104,7 +104,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The claim is quieter now. Perhaps too quiet. Still, a bruised banner can be raised again if the hand holding it is not mocked for bleeding. My confidence in our grandeur is {s2}.",
   "member_talk",
@@ -114,7 +114,7 @@ DIALOGS = [
   [
     (eq, "$g_sod_rolf_name_challenge_pending", 1),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The crowd gave me applause and questions in equal measure. A vulgar exchange. Still, ask the town, stage the public proof, and then we may answer. My confidence in our grandeur is {s2}.",
   "member_talk",
@@ -124,7 +124,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "A Name Worth Wearing is more than cloth and vowels. Disappointing, perhaps, but occasionally useful. My confidence in our grandeur is {s2}.",
   "member_talk",
@@ -134,7 +134,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "There are men who inherit names, and lesser men who question them. Yet I begin to suspect a name can also be made heavier by conduct. My confidence in our grandeur is {s2}.",
   "member_talk",
@@ -144,7 +144,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc4", slot_troop_companion_approval, 70),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You understand that dignity is not an ornament. It is a weapon for keeping lesser rooms from becoming lesser men. My confidence in our grandeur is {s2}.",
   "member_talk",
@@ -159,7 +159,7 @@ DIALOGS = [
 [anyone, "companion_depth_rolf",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "A name of stature can endure mud, blood, and even poor tailoring. It cannot endure smallness forever. My confidence in our grandeur is {s2}.",
   "member_talk",

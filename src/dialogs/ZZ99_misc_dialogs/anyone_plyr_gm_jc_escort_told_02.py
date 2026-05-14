@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "gm_jc_escort_told", [],
-  "I don't have time for this.", "gm_pretalk", [],],
+  "Not today. Your escort will have to trust another road sword.", "gm_pretalk", [],],
 ]

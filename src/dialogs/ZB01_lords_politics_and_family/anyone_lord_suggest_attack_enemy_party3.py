@@ -5,7 +5,7 @@ DIALOGS = [
        (assign, ":sod_battle_willingness", reg0),
        (ge, ":sod_battle_willingness", 25),
        ],
-   "As you wish, we will attack {s1}.", "lord_pretalk",
+   "Then we put steel where the war can feel it. I will move on {s1}, and let their scouts carry the fear ahead of us.", "lord_pretalk",
    [
        (call_script, "script_party_set_ai_state", "$g_talk_troop_party", spai_engaging_army, "$suggested_to_attack_party"),
        ]],

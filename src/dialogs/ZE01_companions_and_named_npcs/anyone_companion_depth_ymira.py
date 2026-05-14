@@ -144,7 +144,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc3", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "I can follow hard choices. I cannot follow a commander who starts calling helpless people convenient. If mercy has no place here, then I need to know it plainly. Right now, my trust is {s2}.",
   "member_talk",
@@ -156,7 +156,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You proved something I was afraid to ask for. Not that war can be clean. It cannot. But that a commander can put guards around mercy and mean it. Right now, my trust is {s2}.",
   "member_talk",
@@ -166,7 +166,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "I stayed because I know armies starve and plans break. But I remember every face we decided was too heavy to carry. Necessary should leave a mark. Right now, my trust is {s2}.",
   "member_talk",
@@ -176,7 +176,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "This is the part that matters after victory, after counting coin and stores, when nobody important is looking at the captives. That is where command shows its real face. Right now, my trust is {s2}.",
   "member_talk",
@@ -186,7 +186,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The first thing I was ever praised for in a war camp was keeping a bowl steady while a man died. I learned then that small mercies are not small to the person receiving them. Right now, my trust is {s2}.",
   "member_talk",
@@ -196,7 +196,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc3", slot_troop_companion_approval, 70),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You keep making room for the wounded, the frightened, and the people who cannot bargain for themselves. I am starting to believe that is not an accident. Right now, my trust is {s2}.",
   "member_talk",
@@ -207,7 +207,7 @@ DIALOGS = [
 [anyone, "companion_depth_ymira",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "I am still here, and that means something. I watch the wounded before I watch the banners, and I watch what happens to the helpless after our victories. Right now, my trust is {s2}.",
   "member_talk",

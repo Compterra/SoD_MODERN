@@ -29,10 +29,7 @@ SCRIPTS = [
      (faction_slot_eq, "fac_player_faction", slot_faction_merc_pact, ":guild_faction"),
      (str_store_string, s65, "@Active pact."),
    (else_try),
-     (troop_slot_ge, "trp_player", slot_troop_mercenaries, 1),
-     (troop_get_slot, ":player_company", "trp_player", slot_troop_mercenaries),
-     (party_is_active, ":player_company"),
-     (party_slot_eq, ":player_company", slot_party_orginal_faction, ":guild_faction"),
+     (call_script, "script_cf_sod_player_has_active_merc_company_from_guild", ":guild_faction"),
      (str_store_string, s65, "@Active company."),
    (try_end),
 

@@ -26,6 +26,9 @@ def _build_grouped_construction_count_ops(center_param_name):
 
     ops = [
         (assign, ":num_improvements", 0),
+        (try_begin,),
+        (is_between, center_param_name, centers_begin, centers_end),
+        (party_is_active, center_param_name),
     ]
 
     for slot_name in standalone_slots:
@@ -60,7 +63,10 @@ def _build_grouped_construction_count_ops(center_param_name):
             (try_end,),
         ])
 
-    ops.append((assign, reg0, ":num_improvements"))
+    ops.extend([
+        (try_end,),
+        (assign, reg0, ":num_improvements"),
+    ])
     return ops
 
 

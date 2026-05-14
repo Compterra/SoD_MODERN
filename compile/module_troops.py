@@ -2460,6 +2460,11 @@ troops = [
    str_18|agi_16|int_8|cha_7|level(18), expert_javelinmen(18),
    knows_ironflesh_1|knows_power_strike_6|knows_power_throw_6|knows_weapon_master_3|knows_shield_5|knows_athletics_5|knows_tracking_2|knows_pathfinding_2|knows_spotting_2,
    0x00000006c10c100739ce9c805d6f3e1300000000001cc7ad0000000000000000],
+
+   #Special post-quest companion. Diego is recruited through the Slaver prison-break quest, not taverns.
+   ["diego_companion", "Diego", "Diego", tf_hero|tf_unmoveable_in_party_window, 0, reserved, fac_commoners,
+   [itm_slave_neck_chain, itm_twohandedmace, itm_stones],
+   def_attrib|level(40), expert_melee(40), knows_power_throw_10|knows_shield_4|knows_ironflesh_10|knows_power_strike_10|knows_athletics_10, 0x0000000e260571403adfd5f2d10f466c00000000001dc71e0000000000000000],
 #NPC system changes end
 
   ["kingdom_heroes_including_player_begin",  "kingdom_heroes_including_player_begin",  "kingdom_heroes_including_player_begin",  tf_hero, 0, reserved,  fac_kingdom_1, [], lord_attrib, wp_all(220), knows_lord_1, 0x000000000010918a01f248377289467d],
@@ -2819,10 +2824,9 @@ troops = [
    def_attrib|level(30), expert_melee(30), knows_riding_7|knows_power_strike_7|knows_shield_7|knows_athletics_5|knows_tactics_5|knows_leadership_5, 0x0000000eff111294426b8db96132d89e00000000001e14ea0000000000000000],
 
    
-  ["slave_hero", "One-Eyed Slave", "One-Eyed Slave", tf_hero, 0, reserved, fac_commoners,
+  ["slave_hero", "One-Eyed Slave", "One-Eyed Slave", tf_hero|tf_inactive, 0, reserved, fac_commoners,
    [itm_slave_neck_chain, itm_twohandedmace, itm_stones],
    def_attrib|level(40), expert_melee(40), knows_power_throw_10|knows_shield_4|knows_ironflesh_10|knows_power_strike_10|knows_athletics_10, 0x0000000e260571403adfd5f2d10f466c00000000001dc71e0000000000000000],
-
 
 ##################################################################################################################################
 # KINGS
@@ -3618,6 +3622,9 @@ troops.append(["black_khergit_khan", "Temujin Black Sky", "Temujin Black Sky", t
    [itm_khergit_bow, itm_khergit_arrows, itm_sword_khergit_4, itm_scimitar, itm_lance, itm_tab_shield_round_e,
     itm_khergit_war_helmet, itm_khergit_guard_armor, itm_khergit_guard_boots, itm_steppe_horse_lv, itm_steppe_horse_b],
    def_attrib|level(36), expert_archer(36)|expert_melee(36), knows_riding_7|knows_horse_archery_7|knows_power_draw_7|knows_power_strike_6|knows_ironflesh_6|knows_weapon_master_6|knows_shield_4|knows_tactics_4, khergit_face_older_1, khergit_face_old_2])
+
+# Player banking vault. Kept near the tail to avoid shifting legacy troop ids.
+troops.append(["sod_bankvault_possessions", "{!}sod_bankvault_possessions", "{!}sod_bankvault_possessions", tf_hero|tf_inactive|tf_is_merchant, no_scene, reserved, fac_neutral, [], def_attrib|level(18), wp(60), knows_inventory_management_10, 0])
 
 # for iterating thru experienced troops
 troops.append(["last_troop", "last_troop", "last_troop", tf_hero|tf_inactive, 0, reserved,  fac_neutral, [], def_attrib|level(18), regular_melee(18), knows_common, 0])

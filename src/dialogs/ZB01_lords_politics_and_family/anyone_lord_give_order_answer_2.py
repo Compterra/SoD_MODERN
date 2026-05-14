@@ -6,6 +6,6 @@ DIALOGS = [
      (party_slot_eq, ":party_no", slot_party_ai_object, "$temp_2"),
      (assign, "$g_leave_encounter", 1),
      ],
-   "I will do that.", "close_window",
+   "Then it is done. My men move at once.", "close_window",
    []],
 ]

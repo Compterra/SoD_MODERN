@@ -18,6 +18,8 @@ SCRIPTS = [
       (party_get_num_companions, ":num_cattle", ":party_no"),
       (try_begin),
         (ge, ":amount", ":num_cattle"),
+        (neq, ":party_no", "p_main_party"),
+        (party_slot_eq, ":party_no", slot_party_type, spt_cattle_herd),
         (remove_party, ":party_no"),
       (else_try),
         (party_remove_members, ":party_no", "trp_cattle", ":amount"),

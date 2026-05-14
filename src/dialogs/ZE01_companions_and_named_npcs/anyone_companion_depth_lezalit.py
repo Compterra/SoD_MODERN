@@ -79,7 +79,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc14", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Standards cannot exist only when they are pleasant. If you mean to command, command. If you mean to be liked, dismiss the army and hire flatterers. At present, my confidence is {s2}.",
   "member_talk",
@@ -91,7 +91,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The Imperial method was efficient because it was consistent, not because it was cruel. That distinction should have been obvious to me sooner. Your standards remain hard. They no longer need chains. At present, my confidence is {s2}.",
   "member_talk",
@@ -101,7 +101,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The line obeys. It will march, wheel, strike, and hold. Do not confuse that with loyalty. Loyalty is slower to make and less predictable to use. At present, my confidence is {s2}.",
   "member_talk",
@@ -111,7 +111,7 @@ DIALOGS = [
   [
     (eq, "$g_sod_lezalit_ief_discipline_pending", 1),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The captured Imperial drill is waiting. Hear the men, run the trial, and then decide what survives. A commander who cannot separate poison from structure deserves neither mercy nor discipline. At present, my confidence is {s2}.",
   "member_talk",
@@ -121,7 +121,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "We are past theory. The question is whether discipline makes soldiers stronger or merely quieter. I am less certain than I was. That irritates me. At present, my confidence is {s2}.",
   "member_talk",
@@ -131,7 +131,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The first lesson of command is that men will fail the standard unless the standard is made real. The second lesson, which I dislike, is that fear is not the only tool that makes it real. At present, my confidence is {s2}.",
   "member_talk",
@@ -141,7 +141,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc14", slot_troop_companion_approval, 70),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You do not always choose the method I would choose. Annoying. But the company still forms, marches, and survives. I am forced to respect evidence. At present, my confidence is {s2}.",
   "member_talk",
@@ -152,7 +152,7 @@ DIALOGS = [
 [anyone, "companion_depth_lezalit",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "I see an army deciding whether it is a blade or a crowd with weapons. Discipline is not cruelty. Cruelty is what weak commanders use when discipline fails them. At present, my confidence is {s2}.",
   "member_talk",

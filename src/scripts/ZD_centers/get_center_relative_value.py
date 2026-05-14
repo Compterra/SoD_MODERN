@@ -1,6 +1,9 @@
 SCRIPTS = [
 ("get_center_relative_value",
     [ (store_script_param_1, ":center_no"),
+      (assign, reg0, 0),
+      (try_begin),
+      (is_between, ":center_no", centers_begin, centers_end),
       (assign, ":player_center", 0), 
       (party_get_slot, ":population", ":center_no", slot_center_sod_local_population),
       (party_get_slot, ":health", ":center_no", slot_center_sod_local_health),
@@ -97,5 +100,6 @@ SCRIPTS = [
 		  (else_try),
 		  (val_div, reg0, 6),
 		  (try_end),
+      (try_end),
       ]),
 ]

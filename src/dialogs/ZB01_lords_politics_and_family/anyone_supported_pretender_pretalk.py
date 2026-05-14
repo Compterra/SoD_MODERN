@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone , "supported_pretender_pretalk", [],
-   "Anything else?", "supported_pretender_talk", []],
+   "The claim is still before us. What else must be decided?", "supported_pretender_talk", []],
 ]

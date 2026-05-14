@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "gm_unpaid", [
-  ], "Please, give me more time.", "gm_unpaid2",[]],
+  ], "The coin is not ready. Keep the writ open a little longer.", "gm_unpaid2",[]],
 ]

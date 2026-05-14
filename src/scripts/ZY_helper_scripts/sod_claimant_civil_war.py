@@ -210,6 +210,7 @@ SCRIPTS = [
      (is_between, ":lord_no", kingdom_heroes_begin, kingdom_heroes_end),
      (troop_get_slot, ":party_no", ":lord_no", slot_troop_leaded_party),
      (gt, ":party_no", 0),
+     (neq, ":party_no", "p_main_party"),
      (party_is_active, ":party_no"),
      (remove_party, ":party_no"),
      (troop_set_slot, ":lord_no", slot_troop_leaded_party, -1),

@@ -2468,7 +2468,7 @@ We apologize sincerely if you contributed your suggestions and feedback but were
   ("sod_law_name_02", "Hunting Privileges"),
   ("sod_law_name_03", "Access to Woods"),
   ("sod_law_name_04", "Brewing Privileges"),
-  ("sod_law_name_05", "Fair Trail"),
+  ("sod_law_name_05", "Fair Trial"),
   ("sod_law_name_06", "Enfranchisement"),
   ("sod_law_name_07", "High Capitation"),
   ("sod_law_name_08", "Low Capitation"),

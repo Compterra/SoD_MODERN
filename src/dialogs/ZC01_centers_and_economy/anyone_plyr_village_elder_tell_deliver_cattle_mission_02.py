@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "village_elder_tell_deliver_cattle_mission", [],
-   "I don't have time for this. Ask help from someone else.", "village_elder_deliver_cattle_mission_reject", []],
+   "I cannot turn aside for cattle today. Ask another rider before the pens stand empty too long.", "village_elder_deliver_cattle_mission_reject", []],
 ]

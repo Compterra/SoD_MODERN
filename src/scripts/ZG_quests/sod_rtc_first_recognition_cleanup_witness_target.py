@@ -8,6 +8,7 @@ SCRIPTS = [
       (try_end),
       (try_begin),
         (gt, ":target_party", 0),
+        (neq, ":target_party", "p_main_party"),
         (party_is_active, ":target_party"),
         (remove_party, ":target_party"),
       (try_end),

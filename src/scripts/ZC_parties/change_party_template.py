@@ -3,13 +3,22 @@ SCRIPTS = [
 		(store_script_param_1, ":party_no"),
 		(store_script_param_2, ":template_no"),
 		
-		(party_get_template_id, ":cur_template", ":party_no"),
 		(try_begin),
+			(gt, ":party_no", 0),
+			(neq, ":party_no", "p_main_party"),
+			(neq, ":party_no", "p_temp_party"),
+			(neq, ":party_no", "p_camp_bandits"),
+			(party_is_active, ":party_no"),
+			(party_get_slot, ":party_type", ":party_no", slot_party_type),
+			(this_or_next|eq, ":party_type", spt_player_mercenaries),
+			(eq, ":party_type", spt_player_patrol),
+			(party_get_template_id, ":cur_template", ":party_no"),
 			(neq, ":cur_template", ":template_no"),
 			(str_store_party_name, s19, ":party_no"), # copy it's name
 			(set_spawn_radius, 0),
 			(spawn_around_party, ":party_no", ":template_no"),
 			(assign, ":new_party", reg0),
+			(gt, ":new_party", 0),
 			(party_set_name, ":new_party", s19),
 			(assign, "$g_move_heroes", 1), #twan new
 			(call_script, "script_party_add_party", ":new_party", ":party_no"),

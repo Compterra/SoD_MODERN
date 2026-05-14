@@ -11,8 +11,6 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.menus.camp import quest_journal_report
-from src.menus.camp import reports as camp_reports
 from src.quests.quest_runtime import QuestJournal, QuestRuntime
 
 
@@ -340,8 +338,8 @@ class QuestJournalContractTests(unittest.TestCase):
         self.assertIn("script_sod_quest_outcome_describe_to_s2", text)
 
     def test_report_menu_modules_import_and_export_menu_data(self) -> None:
-        self.assertTrue(hasattr(camp_reports, "MENUS"))
-        self.assertTrue(hasattr(quest_journal_report, "MENUS"))
+        self.assertIn("MENUS = [", read_source("src/menus/reports/report_submenus.py"))
+        self.assertIn("MENUS = [", read_source("src/menus/reports/quest_journal_report.py"))
 
     def test_runtime_contract_exposes_journal_summary_methods(self) -> None:
         for member in (

@@ -31,6 +31,7 @@ MENUS = [
         (select_enemy, 0),
         (assign, "$g_enemy_party", "$g_encountered_party"),
         (assign, "$g_ally_party", "$g_encountered_party_2"),
+        (assign, "$g_sod_joined_ongoing_ai_battle", 1),
         (jump_to_menu, "mnu_join_battle")
       ]),
 
@@ -49,6 +50,7 @@ MENUS = [
         (select_enemy, 1),
         (assign, "$g_enemy_party", "$g_encountered_party_2"),
         (assign, "$g_ally_party", "$g_encountered_party"),
+        (assign, "$g_sod_joined_ongoing_ai_battle", 1),
         (jump_to_menu, "mnu_join_battle")
       ]),
 

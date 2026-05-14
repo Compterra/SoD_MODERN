@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "gm_bastard_quest_brief", [],
-   "Sorry. I don't have time for this right now.", "gm_pretalk", []],
+   "Not now. This trouble will have to find a different hand.", "gm_pretalk", []],
 ]

@@ -1,6 +1,6 @@
 DIALOGS = [
 [anyone , "pretender_end", [
                      ],
-   "Farewell for now, then.", "close_window", [
+   "Go carefully. A claim survives on more than courage; it survives on who is still standing when the courage is spent.", "close_window", [
      ]],
 ]

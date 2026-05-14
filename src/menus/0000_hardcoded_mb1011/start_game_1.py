@@ -1,7 +1,7 @@
 MENUS = [
 (
     "start_game_1", mnf_disable_all_keys,
-    "Welcome, adventurer, to Mount&Blade. Before you can start playing the game you must create a character. To begin, select your character's gender.",
+    "Welcome, adventurer, to Mount & Blade. Before you can begin, you must create a character. To start, select your character's gender.",
     "none",
     [
       (set_background_mesh, "mesh_pic_chr1_gender"),

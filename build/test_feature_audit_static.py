@@ -113,7 +113,7 @@ def test_legacy_jester_and_formation_bugfixes() -> None:
         "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_10.py",
     ):
         raw = read(path)
-        assert_contains(raw, '"Thanks.", "close_window"')
+        assert_contains(raw, '"That trick is enough for now.", "close_window"')
 
     order = read("src/dialogs/_order_dialogs.txt")
     assert order.index("trp_sod_jester_plyr_jester_cheatc1_10.py") < order.index(
@@ -136,9 +136,12 @@ def test_legacy_jester_and_formation_bugfixes() -> None:
     assert castle_menu.index('"join_tournament"') < castle_menu.index('"town_castle"')
     assert castle_menu.index('"town_castle"') < castle_menu.index('"review_regional_threats"')
     assert_contains(castle_menu, '"town_castle_passages"')
-    assert_contains(castle_menu, "Castle interiors in this module can use the same variation number")
-    assert_contains(castle_menu, '"castle_passage_return_8"')
+    assert_contains(castle_menu, "preserve SoD's visible door labels")
+    assert_contains(castle_menu, '"castle_passage_dungeon_8"')
     assert_contains(castle_menu, '(call_script, "script_enter_town_center_from_passage")')
+    assert_contains(castle_menu, '"Leave Area."')
+    assert_contains(castle_menu, '"Door to the dungeon."')
+    assert_contains(castle_menu, '(call_script, "script_enter_dungeon", "$current_town", "mt_visit_town_castle")')
     passage_block = castle_menu[castle_menu.index('"town_castle_passages"'):]
     assert '(jump_to_menu, "mnu_town")' not in passage_block
     assert_contains(passage_script, '"enter_town_center_from_passage"')
@@ -351,6 +354,7 @@ def test_menu_fragments_are_not_empty_dead_ends() -> None:
     generated_option_files = {
         "src/menus/camp/sod_upgrade_camp.py",
         "src/menus/other/sod_upgrade.py",
+        "src/menus/other/sod_battle_commander_select.py",
     }
     offenders = []
     for path in iter_source_files("src/menus"):
@@ -384,7 +388,10 @@ def test_menu_fragments_are_not_empty_dead_ends() -> None:
                 if isinstance(options, ast.List):
                     if not options.elts and not any(token in raw for token in routing_tokens):
                         offenders.append((rel, f"{menu_id}: empty options without routing op"))
-                elif rel not in generated_option_files or "generate_upgrade_options()" not in raw:
+                elif rel not in generated_option_files or not (
+                    "generate_upgrade_options()" in raw
+                    or "generate_sod_battle_commander_select_options()" in raw
+                ):
                     offenders.append((rel, f"{menu_id}: nonliteral options without known generator"))
     assert not offenders, "empty or malformed menu fragments: " + repr(offenders[:30])
 
@@ -703,7 +710,9 @@ def test_invasion_arrival_and_report_surfaces_exist() -> None:
     game_start = read("src/scripts/ZA_hardcoded_game_scripts/game_start.py")
     assert_contains(game_start, "$g_sod_imperial_delay_total")
     assert_contains(game_start, "$g_sod_imperial_last_delay_day")
-    assert_contains(read("src/scripts/ZI_campaign_ai/ai_hire_mercenaries.py"), '(neq, ":troop_faction", "fac_kingdom_6")')
+    assert_contains(read("src/scripts/ZI_campaign_ai/ai_hire_mercenaries.py"), "script_sod_merc_market_weekly_pulse")
+    assert_contains(read("src/scripts/ZY_helper_scripts/sod_merc_market_weekly_pulse.py"), '(neq, ":kingdom_faction", "fac_kingdom_6")')
+    assert_contains(read("src/scripts/ZY_helper_scripts/sod_merc_market_try_accept_bid.py"), '(neq, ":kingdom_faction", "fac_kingdom_6")')
     assert_contains(read("src/dialogs/ZA02_sod_court_and_strategy/trp_sod_chancellor_plyr_chancellor_peace_2_06.py"), "(eq, 0, 1)")
     assert_contains(reports_menu, "mnu_invasion_status_report")
     assert_contains(order, "reports/invasion_status_report.py")
@@ -801,7 +810,7 @@ def test_player_can_buy_slaves_from_slaver_market() -> None:
     quote = read("src/dialogs/ZZ99_misc_dialogs/anyone_sod_slaver_buy_slaves_quote.py")
     confirm = read("src/dialogs/ZZ99_misc_dialogs/anyone_plyr_sod_slaver_buy_slaves_confirm.py")
     order = read("src/dialogs/_order_dialogs.txt")
-    assert_contains(ramun, "I want to buy slaves for my party")
+    assert_contains(ramun, "Show me the captives for sale, Ramun, and name your price.")
     assert_contains(guild, "slavers_guild_master")
     assert_contains(guild, "slavers_rep")
     assert_contains(quote, "script_sod_slavers_store_slave_purchase_quote")
@@ -1250,6 +1259,299 @@ def test_mini_faction_dashboard_links_reports() -> None:
         assert_contains(read(path), f"(str_clear, {scratch_register})")
 
 
+def test_post_defeat_spectator_follow_camera_is_shared() -> None:
+    constants = read("src/constants/module_constants.py")
+    preamble = read("src/mission_templates/_preamble/00_imports.py")
+    spectator = read("src/scripts/ZE_encounters/sod_post_defeat_spectator.py")
+    company_report = read("src/scripts/ZY_helper_scripts/companion_describe_company_report.py")
+    depth_report = read("src/scripts/ZY_helper_scripts/sod_companion_depth.py")
+    doc = read("docs/combat/POST_DEFEAT_SPECTATOR_HERO_SWITCHING.md")
+
+    assert_contains(constants, "slot_agent_sod_post_defeat_focus_index")
+    assert_contains(constants, "slot_troop_sod_times_took_command")
+    assert_contains(constants, "slot_troop_sod_post_fall_victories")
+    assert_contains(constants, "slot_troop_sod_post_fall_failures")
+    assert_contains(constants, "slot_troop_sod_last_took_command_hours")
+    for token in (
+        '"sod_post_defeat_init"',
+        '"sod_post_defeat_rebuild_watch_list"',
+        '"sod_post_defeat_choose_second_in_command"',
+        '"sod_post_defeat_on_player_fallen"',
+        '"sod_post_defeat_record_aftermath"',
+        '"sod_post_defeat_count_casualties_once"',
+        '"sod_post_defeat_describe_command_memory_to_s35"',
+        '"sod_post_defeat_select_next_agent"',
+        '"sod_post_defeat_focus_camera"',
+        '"cf_sod_post_defeat_agent_is_watchable_base"',
+        '"cf_sod_post_defeat_agent_is_watchable_hero"',
+        '"cf_sod_post_defeat_agent_is_watchable_officer"',
+        "slot_agent_sod_post_defeat_focus_index",
+        "(agent_is_ally, \":agent_no\")",
+        "(agent_slot_eq, \":agent_no\", slot_agent_is_hard_routed, 0)",
+        "(store_skill_level, \":leadership\", \"skl_leadership\", \":troop_no\")",
+        "(store_skill_level, \":tactics\", \"skl_tactics\", \":troop_no\")",
+        "(neg|troop_is_hero, \":troop_no\")",
+        "(ge, \":level\", 15)",
+        "slot_troop_sod_times_took_command",
+        "slot_troop_sod_post_fall_victories",
+        "slot_troop_sod_post_fall_failures",
+        "slot_troop_sod_last_took_command_hours",
+        "Command continuity:",
+        "$sod_post_defeat_next_rebuild_time",
+        "$sod_post_defeat_casualties_counted",
+        "$sod_post_defeat_aftermath_recorded",
+        "The company stands victorious after you fall",
+        "The company breaks after you fall",
+        "no surviving officer held the line",
+        "script_count_mission_casualties_from_agents",
+        "(store_mission_timer_a, \":mission_time\")",
+        "No surviving ally remains to follow. Free camera.",
+        "script_sod_battle_apply_courage_pressure",
+    ):
+        assert_contains(spectator, token)
+    assert_contains(company_report, "script_sod_post_defeat_describe_command_memory_to_s35")
+    assert_contains(company_report, "{s35}")
+    assert_contains(depth_report, "script_sod_post_defeat_describe_command_memory_to_s35")
+    assert_contains(depth_report, "{s35}")
+
+    shared_camera_templates = (
+        "src/mission_templates/0005_bandits_at_night/bandits_at_night.py",
+        "src/mission_templates/0010_lead_charge/lead_charge.py",
+        "src/mission_templates/0011_village_attack_bandits/village_attack_bandits.py",
+        "src/mission_templates/0012_village_raid/village_raid.py",
+        "src/mission_templates/0013_besiege_inner_battle_castle/besiege_inner_battle_castle.py",
+        "src/mission_templates/0014_besiege_inner_battle_town_center/besiege_inner_battle_town_center.py",
+        "src/mission_templates/0015_castle_attack_walls_defenders_sally/castle_attack_walls_defenders_sally.py",
+        "src/mission_templates/0016_castle_attack_walls_belfry/castle_attack_walls_belfry.py",
+        "src/mission_templates/0017_castle_attack_walls_ladder/castle_attack_walls_ladder.py",
+        "src/mission_templates/0050_custom_battle/custom_battle.py",
+    )
+    for path in shared_camera_templates:
+        template = read(path)
+        assert_contains(template, "camera_trigger_1")
+        assert_contains(template, "camera_trigger_8")
+    assert_contains(doc, "## Mission Classification Snapshot")
+    assert_contains(doc, "## Player-Agent And Fall-Defeat Audit")
+    assert_contains(doc, "`0005_bandits_at_night/bandits_at_night.py`")
+    assert_contains(doc, "`0050_custom_battle/custom_battle.py`")
+    assert_contains(doc, "No mission is currently classified as safe takeover.")
+    assert_contains(doc, "Formation command triggers in `_preamble/00_imports.py`")
+    assert_contains(doc, "`main_hero_fallen` force-defeat assumptions found:")
+
+    assert_contains(preamble, '(call_script, "script_sod_post_defeat_init")')
+    assert_contains(preamble, '(call_script, "script_sod_post_defeat_on_player_fallen")')
+    assert_contains(preamble, '(call_script, "script_sod_post_defeat_record_aftermath", 1)')
+    assert_contains(preamble, '(call_script, "script_sod_post_defeat_record_aftermath", -1)')
+    assert_contains(preamble, '(call_script, "script_sod_post_defeat_count_casualties_once")')
+    active_preamble = "\n".join(
+        line for line in preamble.splitlines() if not line.lstrip().startswith("#")
+    )
+    assert active_preamble.count('(call_script, "script_count_mission_casualties_from_agents")') == 0
+    safe_battle_templates = (
+        "src/mission_templates/0010_lead_charge/lead_charge.py",
+        "src/mission_templates/0011_village_attack_bandits/village_attack_bandits.py",
+        "src/mission_templates/0012_village_raid/village_raid.py",
+        "src/mission_templates/0013_besiege_inner_battle_castle/besiege_inner_battle_castle.py",
+        "src/mission_templates/0014_besiege_inner_battle_town_center/besiege_inner_battle_town_center.py",
+        "src/mission_templates/0015_castle_attack_walls_defenders_sally/castle_attack_walls_defenders_sally.py",
+        "src/mission_templates/0016_castle_attack_walls_belfry/castle_attack_walls_belfry.py",
+        "src/mission_templates/0017_castle_attack_walls_ladder/castle_attack_walls_ladder.py",
+        "src/mission_templates/0050_custom_battle/custom_battle.py",
+    )
+    for path in safe_battle_templates:
+        template = read(path)
+        active_template = "\n".join(
+            line for line in template.splitlines() if not line.lstrip().startswith("#")
+        )
+        for trigger_name in (
+            "camera_trigger_1",
+            "camera_trigger_2",
+            "camera_trigger_3",
+            "camera_trigger_4",
+            "camera_trigger_5",
+            "camera_trigger_6",
+        ):
+            assert_contains(template, trigger_name)
+        assert active_template.count('(call_script, "script_count_mission_casualties_from_agents")') == 0
+    excluded_takeover_templates = (
+        "src/mission_templates/0024_prison_break/prison_break.py",
+        "src/mission_templates/0044_tutorial_1/tutorial_1.py",
+        "src/mission_templates/0045_tutorial_2/tutorial_2.py",
+        "src/mission_templates/0046_tutorial_3/tutorial_3.py",
+        "src/mission_templates/0047_tutorial_3_2/tutorial_3_2.py",
+        "src/mission_templates/0048_tutorial_4/tutorial_4.py",
+        "src/mission_templates/0049_tutorial_5/tutorial_5.py",
+        "src/mission_templates/0060_companion_deshavi_trail_rescue/companion_deshavi_trail_rescue.py",
+        "src/mission_templates/0064_companion_jeremus_infirmary/companion_jeremus_infirmary.py",
+        "src/mission_templates/0065_companion_lezalit_drill_trial/companion_lezalit_drill_trial.py",
+        "src/mission_templates/0066_companion_artimenner_repair_watch/companion_artimenner_repair_watch.py",
+    )
+    for path in excluded_takeover_templates:
+        template = read(path)
+        for forbidden in (
+            "$sod_post_defeat_mission_allows_takeover",
+            "script_sod_post_defeat_agent_is_controllable",
+            "set_player_troop",
+            "spawn_agent",
+        ):
+            assert forbidden not in template, f"{path} must not wire post-defeat takeover"
+    for forbidden in (
+        "choose_fighter_in_battle",
+        "prsnt_choose_fighter_in_battle",
+        "set_player_troop",
+        "spawn_agent",
+    ):
+        assert forbidden not in spectator, "post-defeat spectator must not paste 108-WB takeover blocks"
+        assert forbidden not in preamble, "mission preamble must not paste 108-WB takeover blocks"
+    assert_contains(preamble, '(call_script, "script_sod_post_defeat_rebuild_watch_list")')
+    assert_contains(preamble, '(call_script, "script_sod_post_defeat_focus_camera")')
+    for trigger_name in (
+        "formations_1",
+        "formations_2",
+        "formations_3",
+        "formations_0",
+        "formations_j",
+        "formations_p",
+        "formations_k",
+        "formations_u",
+        "formations_end",
+        "formations_dismount",
+        "formations_move_infantry",
+        "formations_move_archers",
+        "formations_move_cavalry",
+        "formations_update_ally_infantry",
+        "formations_update_ally_archers",
+        "formations_update_ally_cavalry",
+        "formations_update_kill_count",
+    ):
+        block = preamble[preamble.index(f"{trigger_name} =") :]
+        block = block[: block.index("\n\n")]
+        assert_contains(block, "(neg|main_hero_fallen)")
+    for path in (
+        "src/mission_templates/0010_lead_charge/lead_charge.py",
+        "src/mission_templates/0012_village_raid/village_raid.py",
+    ):
+        template = read(path)
+        for entry_no in ("0", "3"):
+            reinforce = template[template.index(f"(add_reinforcements_to_entry, {entry_no},") :]
+            reinforce = reinforce[: reinforce.index(")]")]
+            assert "main_hero_fallen" not in reinforce
+            assert_contains(reinforce, "val_add")
+    for trigger_name in (
+        "common_siege_defender_reinforcement_check",
+        "common_siege_attacker_reinforcement_check",
+    ):
+        reinforce = preamble[preamble.index(f"{trigger_name} =") :]
+        reinforce = reinforce[: reinforce.index("\n\n")]
+        assert "main_hero_fallen" not in reinforce
+        assert_contains(reinforce, "add_reinforcements_to_entry")
+        assert_contains(reinforce, "val_add")
+    focus_camera = spectator[spectator.index('("sod_post_defeat_focus_camera"') :]
+    focus_camera = focus_camera[: focus_camera.index('("sod_post_defeat_describe_command_memory_to_s35"')]
+    assert_contains(focus_camera, "$sod_post_defeat_next_rebuild_time")
+    assert_contains(focus_camera, '(call_script, "script_sod_post_defeat_rebuild_watch_list")')
+    assert_contains(preamble, '(key_clicked, key_right_mouse_button)')
+    assert_contains(preamble, '(key_clicked, key_left_mouse_button)')
+    assert_contains(preamble, '"$camera_mode", 2')
+    custom_defeat = preamble[preamble.index("custom_battle_check_defeat_condition =") :]
+    custom_defeat = custom_defeat[: custom_defeat.index("common_battle_victory_display =")]
+    assert_contains(custom_defeat, "(num_active_teams_le, 1)")
+    assert_contains(custom_defeat, "(neg|all_enemies_defeated, 2)")
+    assert "(main_hero_fallen)" not in custom_defeat
+    assert custom_defeat.count('(call_script, "script_sod_post_defeat_clear")') == 1
+    assert preamble.count('(call_script, "script_sod_post_defeat_clear")') >= 5
+    assert_contains(doc, "- [x] List every mission template that currently includes `camera_trigger_1` through `camera_trigger_8`.")
+    assert_contains(doc, "- [x] Classify each mission as safe spectator, safe command continuity, safe takeover, or excluded.")
+    assert_contains(doc, "- [x] Confirm which missions currently end immediately on `main_hero_fallen`.")
+    assert_contains(doc, "- [x] Confirm which missions intentionally continue after player fall.")
+    assert_contains(doc, "- [x] Identify all scripts that assume the original player agent remains the active player agent.")
+    assert_contains(doc, "- [x] Identify all scripts that force defeat when `main_hero_fallen` is true.")
+    assert_contains(doc, "- [x] Reserve or define safe agent/troop slots for post-defeat focus tracking.")
+    assert_contains(doc, "- [x] Add static checks so new post-defeat globals are initialized and cleared.")
+    assert_contains(doc, "- [x] Add a follow-camera mode that tracks `$sod_post_defeat_focus_agent`.")
+    assert_contains(doc, "- [x] Treat alive allied captains/officers as second-priority watch targets.")
+    assert_contains(doc, "- [x] Rebuild the focus list when reinforcements arrive after player fall.")
+    assert_contains(doc, "- [x] Ensure casualty counting runs once and only once.")
+    assert_contains(doc, "- [x] Verify battle continuation does not break reinforcement triggers.")
+    assert_contains(doc, "- [x] Verify formation/order scripts do not spam orders after player fall.")
+    assert_contains(doc, "- [x] Add a static test that safe battle templates initialize post-defeat state.")
+    assert_contains(doc, "- [x] Add a static test that excluded mission templates do not include takeover triggers.")
+    assert_contains(doc, "- [x] Add a static test that no broad pasted 108-WB trigger block was copied into multiple templates.")
+    assert_contains(doc, "- [x] Add post-battle summary text for who took command.")
+    assert_contains(doc, "- [x] Add event text for no surviving officer.")
+    assert_contains(doc, "- [x] Add event text for victory after the captain fell.")
+    assert_contains(doc, "- [x] Add event text for collapse after the captain fell.")
+    assert_contains(doc, "- [x] Add `$sod_post_defeat_second_in_command`.")
+    assert_contains(doc, "- [x] Feed the result into battle ranking or company memory.")
+    assert_contains(doc, "- [ ] Add `$sod_post_defeat_mission_allows_takeover`.")
+
+
+def test_battle_commander_selection_uses_custom_commander_style_flow() -> None:
+    script = read("src/scripts/ZE_encounters/sod_battle_commander.py")
+    menu_preamble = read("src/menus/_preamble/00_imports.py")
+    selector = read("src/menus/other/sod_battle_commander_select.py")
+    debrief = read("src/menus/other/continue_05.py")
+    trigger_order = read("src/triggers/_order_simple_triggers.txt")
+    reset_trigger = read("src/triggers/ST01_every_frame/entry_0175_sod_battle_commander_reset.py")
+    mission_preamble = read("src/mission_templates/_preamble/00_imports.py")
+    doc = read("docs/combat/POST_DEFEAT_SPECTATOR_HERO_SWITCHING.md")
+
+    for token in (
+        '"cf_sod_battle_commander_troop_available"',
+        '"cf_sod_battle_commander_party_has_available_commander"',
+        '"sod_battle_commander_normalize"',
+        '"cf_sod_battle_commander_can_start"',
+        '"sod_battle_commander_apply_before_mission"',
+        '"sod_battle_commander_spawn_player_ally"',
+        '"sod_battle_commander_restore_player_health"',
+        '"sod_battle_commander_reset"',
+        "(set_player_troop, \":commander\")",
+        "(spawn_agent, \"trp_player\")",
+        "(troop_set_inventory_slot, \"trp_player\", ek_horse, -1)",
+        "slot_troop_sod_times_took_command",
+        "slot_troop_sod_last_took_command_hours",
+    ):
+        assert_contains(script, token)
+    assert_contains(menu_preamble, "build_sod_battle_commander_change_option")
+    assert_contains(menu_preamble, "generate_sod_battle_commander_select_options")
+    assert_contains(selector, '"sod_battle_commander_select"')
+    assert_contains(debrief, '(call_script, "script_sod_battle_commander_restore_player_health")')
+    assert_contains(trigger_order, "entry_0175_sod_battle_commander_reset.py")
+    assert_contains(reset_trigger, "(map_free)")
+    assert_contains(reset_trigger, '(call_script, "script_sod_battle_commander_reset")')
+    assert_contains(mission_preamble, "sod_battle_commander_spawn_player_ally =")
+    assert_contains(mission_preamble, "sod_battle_commander_spawn_player_ally_dismounted =")
+
+    for path, trigger_name in (
+        ("src/mission_templates/0010_lead_charge/lead_charge.py", "sod_battle_commander_spawn_player_ally"),
+        ("src/mission_templates/0011_village_attack_bandits/village_attack_bandits.py", "sod_battle_commander_spawn_player_ally"),
+        ("src/mission_templates/0012_village_raid/village_raid.py", "sod_battle_commander_spawn_player_ally_dismounted"),
+        ("src/mission_templates/0013_besiege_inner_battle_castle/besiege_inner_battle_castle.py", "sod_battle_commander_spawn_player_ally_dismounted"),
+        ("src/mission_templates/0014_besiege_inner_battle_town_center/besiege_inner_battle_town_center.py", "sod_battle_commander_spawn_player_ally_dismounted"),
+        ("src/mission_templates/0015_castle_attack_walls_defenders_sally/castle_attack_walls_defenders_sally.py", "sod_battle_commander_spawn_player_ally_dismounted"),
+        ("src/mission_templates/0016_castle_attack_walls_belfry/castle_attack_walls_belfry.py", "sod_battle_commander_spawn_player_ally_dismounted"),
+        ("src/mission_templates/0017_castle_attack_walls_ladder/castle_attack_walls_ladder.py", "sod_battle_commander_spawn_player_ally_dismounted"),
+    ):
+        assert_contains(read(path), trigger_name)
+
+    for path in (
+        "src/menus/0000_hardcoded_mb1011/simple_encounter.py",
+        "src/menus/encounter/join_attack.py",
+        "src/menus/centers/castle/siege_request_meeting.py",
+        "src/menus/centers/castle/talk_to_siege_commander.py",
+        "src/menus/centers/castle/siege_defender_join_battle.py",
+        "src/menus/centers/village/recruit_volunteers.py",
+        "src/menus/centers/village/village_raid_attack.py",
+        "src/menus/encounter/peasants_against_bandits_attack_resist.py",
+    ):
+        raw = read(path)
+        assert_contains(raw, "build_sod_battle_commander_change_option")
+        assert_contains(raw, "script_cf_sod_battle_commander_can_start")
+        assert_contains(raw, "script_sod_battle_commander_apply_before_mission")
+    assert_contains(doc, "Custom Commander-style pre-battle acting commander")
+    assert_contains(doc, "- [x] Add a pre-battle acting commander selector")
+
+
 if __name__ == "__main__":
     test_quest_journal_archive_entries_are_not_duplicated()
     test_quest_journal_surfaces_companion_personal_arcs()
@@ -1287,6 +1589,8 @@ if __name__ == "__main__":
     test_jotnar_hearthbound_kin_world_presence_exists()
     test_black_khergit_moving_horde_exists()
     test_mini_faction_dashboard_links_reports()
+    test_post_defeat_spectator_follow_camera_is_shared()
+    test_battle_commander_selection_uses_custom_commander_style_flow()
     print("test_feature_audit_static: OK")
 
 

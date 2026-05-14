@@ -37,6 +37,8 @@ SCRIPTS = [
       (quest_set_slot, "qst_rtc_last_smoke", slot_quest_rtc_method_seed, sod_rtc_method_none),
       (quest_set_slot, "qst_rtc_last_smoke", slot_quest_rtc_branch_seed, sod_rtc_branch_none),
       (quest_set_slot, "qst_rtc_last_smoke", slot_quest_rtc_flags, ":identity_flags"),
+      (quest_set_slot, "qst_rtc_last_smoke", slot_quest_target_troop, "trp_rtc_garran_ashwake"),
+      (quest_set_slot, "qst_rtc_last_smoke", slot_quest_object_troop, "trp_rtc_brother_odran"),
 
       (call_script, "script_sod_quest_chain_set", "qst_rtc_borrowed_names", sod_rtc_campaign_road_to_crown, 2, 0),
       (quest_set_slot, "qst_rtc_borrowed_names", slot_quest_sod_runtime_state, sod_quest_state_inactive),
@@ -49,6 +51,8 @@ SCRIPTS = [
       (quest_set_slot, "qst_rtc_borrowed_names", slot_quest_rtc_life, "$background_answer_3"),
       (quest_set_slot, "qst_rtc_borrowed_names", slot_quest_rtc_motive, "$background_answer_4"),
       (quest_set_slot, "qst_rtc_borrowed_names", slot_quest_rtc_flags, ":identity_flags"),
+      (quest_set_slot, "qst_rtc_borrowed_names", slot_quest_target_troop, "trp_rtc_lysara_veyne"),
+      (quest_set_slot, "qst_rtc_borrowed_names", slot_quest_object_troop, "trp_rtc_garran_ashwake"),
 
       (call_script, "script_sod_quest_chain_set", "qst_rtc_hound_sign", sod_rtc_campaign_road_to_crown, 3, 0),
       (quest_set_slot, "qst_rtc_hound_sign", slot_quest_sod_runtime_state, sod_quest_state_inactive),
@@ -61,6 +65,8 @@ SCRIPTS = [
       (quest_set_slot, "qst_rtc_hound_sign", slot_quest_rtc_life, "$background_answer_3"),
       (quest_set_slot, "qst_rtc_hound_sign", slot_quest_rtc_motive, "$background_answer_4"),
       (quest_set_slot, "qst_rtc_hound_sign", slot_quest_rtc_flags, ":identity_flags"),
+      (quest_set_slot, "qst_rtc_hound_sign", slot_quest_target_troop, "trp_rtc_imperial_courier"),
+      (quest_set_slot, "qst_rtc_hound_sign", slot_quest_object_troop, "trp_rtc_garran_ashwake"),
 
       (call_script, "script_sod_quest_chain_set", "qst_rtc_door_into_calradia", sod_rtc_campaign_road_to_crown, 4, 0),
       (quest_set_slot, "qst_rtc_door_into_calradia", slot_quest_sod_runtime_state, sod_quest_state_inactive),
@@ -182,6 +188,12 @@ SCRIPTS = [
       (quest_set_slot, "qst_rtc_final_confrontation", slot_quest_rtc_life, "$background_answer_3"),
       (quest_set_slot, "qst_rtc_final_confrontation", slot_quest_rtc_motive, "$background_answer_4"),
       (quest_set_slot, "qst_rtc_final_confrontation", slot_quest_rtc_flags, ":identity_flags"),
+
+      (store_add, ":rtc_quests_end", "qst_rtc_final_confrontation", 1),
+      (try_for_range, ":rtc_quest", "qst_rtc_last_smoke", ":rtc_quests_end"),
+        (quest_set_slot, ":rtc_quest", slot_quest_target_party, -1),
+        (quest_set_slot, ":rtc_quest", slot_quest_target_party_template, -1),
+      (try_end),
 
       (setup_quest_text, "qst_rtc_last_smoke"),
       (str_store_string, s2, "@The road behind you is smoke. Find survivors, choose what can still be saved, and reach the refugee camp before Imperial scouts overrun the road."),

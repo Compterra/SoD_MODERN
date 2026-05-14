@@ -28,6 +28,13 @@ def assert_not_contains(raw: str, needle: str) -> None:
         raise AssertionError(f"Unexpected token present: {needle}")
 
 
+def assert_before(raw: str, first: str, second: str) -> None:
+    assert_contains(raw, first)
+    assert_contains(raw, second)
+    if raw.index(first) >= raw.index(second):
+        raise AssertionError(f"Expected {first!r} before {second!r}")
+
+
 def main() -> int:
     reward = read("src/scripts/ZY_helper_scripts/sod_threat_board_calculate_reward.py")
     describe = read("src/scripts/ZY_helper_scripts/sod_threat_board_describe_offer.py")
@@ -53,6 +60,7 @@ def main() -> int:
     castle_menu = read("src/menus/centers/castle/castle_castle.py")
     village_menu = read("src/menus/centers/village/recruit_volunteers.py")
     finalize = read("src/scripts/ZC_parties/total_victory_finalize.py")
+    simulated = read("src/scripts/ZA_hardcoded_game_scripts/game_event_simulate_battle.py")
 
     assert_contains(reward, "sod_threat_board_calculate_reward")
     assert_contains(reward, "store_sub, \":urgency\", 12, \":deadline_days\"")
@@ -74,6 +82,7 @@ def main() -> int:
     assert_contains(fail, "call_script, \"script_sod_threat_board_clear_target_party_link\"")
     assert_contains(fail, "slot_party_sod_threat_active_quest")
     assert_contains(fail, "eq, \":active_quest\", \"qst_regional_threat_contract\"")
+    assert_before(fail, "remove_party, \":target_party\"", "call_script, \"script_sod_threat_board_clear_target_party_link\"")
     assert_contains(clear_link, "slot_party_sod_threat_active_quest, 0")
     assert_contains(defeated, "call_script, \"script_sod_threat_board_clear_target_party_link\", \":party_no\"")
     assert_contains(init_registry, "party_slot_eq, \":threat_party\", slot_party_sod_threat_active_quest, \"qst_regional_threat_contract\"")
@@ -105,10 +114,10 @@ def main() -> int:
     assert_contains(defeated, "add_quest_note_from_sreg, \"qst_regional_threat_contract\", 5")
     assert_contains(defeated, "gt, \":party_no\", 0")
     assert_contains(defeated, "party_is_active, \":party_no\"")
-    assert_contains(economy, "slot_center_sod_local_population")
+    assert_contains(economy, "script_sod_center_apply_population_delta")
     assert_contains(economy, "script_sod_change_center_local_prosperity")
     assert_contains(economy, "script_sod_change_center_wealth")
-    assert_contains(economy, "slot_village_number_of_cattle")
+    assert_contains(economy, "script_sod_center_apply_cattle_delta")
     assert_contains(economy, "script_change_center_prosperity")
     assert_contains(economy, "script_change_center_health")
     assert_contains(pressure, "script_sod_threat_board_apply_economy_effect\", \":threat_type\", \":sponsor_center\", -1")
@@ -121,7 +130,7 @@ def main() -> int:
     assert_contains(stakes, "slot_center_sod_local_prosperity")
     assert_contains(stakes, "slot_town_wealth")
     assert_contains(stakes, "slot_village_number_of_cattle")
-    assert_contains(stakes, "Local:")
+    assert_contains(stakes, "Local stakes:")
     assert_contains(stakes, "No valid center selected.")
     assert_contains(stakes, '(neg|is_between, ":center_no", centers_begin, centers_end)')
     assert_contains(active, "script_sod_threat_board_describe_center_stakes")
@@ -153,6 +162,8 @@ def main() -> int:
     assert_contains(finalize, "party_is_active, \"$g_enemy_party\"")
     assert_contains(finalize, "party_get_slot, \":sod_threat_active_quest\", \"$g_enemy_party\", slot_party_sod_threat_active_quest")
     assert_contains(finalize, "eq, \":sod_threat_active_quest\", \"qst_regional_threat_contract\"")
+    assert_contains(simulated, "slot_party_sod_threat_active_quest, \"qst_regional_threat_contract\"")
+    assert_before(simulated, "script_sod_threat_board_note_party_defeated", "script_clear_party_group")
 
     print("[threat_board_rewards] OK")
     return 0

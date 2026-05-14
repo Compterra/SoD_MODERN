@@ -28,7 +28,7 @@ SCRIPTS = [
             (gt, ":town_no", 0),
             (call_script, "script_store_troop_name_link", 4, ":troop_no"),
             (str_store_party_name_link, 5, ":town_no"),
-            (display_message, "@{s4} is in {s5}", debug_color),
+            (display_message, "@Companion tavern debug: {s4} is in {s5}", debug_color),
           (try_end),
         (try_end),
     ]),

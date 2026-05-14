@@ -25,5 +25,5 @@ DIALOGS = [
       (assign, ":lower_bound", "$g_talk_troop_relation"),
       (store_random_in_range, reg10, ":lower_bound", ":upper_bound"),
    ],
-   "I wish to make peace with {s4}.", "lord_ask_pardon", []],
+   "There has been enough blood between me and {s4}. Name the road back to peace.", "lord_ask_pardon", []],
 ]

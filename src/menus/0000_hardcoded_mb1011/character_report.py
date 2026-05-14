@@ -146,7 +146,7 @@ MENUS = [
           (else_try),
             (str_store_string, s7, "@is still secure for now"),
           (try_end),
-          (str_store_string, s9, "@Your mercenary contract {s7}.^{s9}"),
+          (str_store_string, s9, "@Your kingdom mercenary service {s7}.^{s9}"),
         (try_end),
         (assign, reg0, "$player_has_homage"),
         (str_store_string, s9, "@You are a {reg0?lord of:mercenary for} the {s8}.^{s9}"),

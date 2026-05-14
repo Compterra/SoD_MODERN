@@ -29,6 +29,7 @@ SIMPLE_TRIGGERS = [
           (neg|troop_slot_ge, ":troop_no", slot_troop_prisoner_of_party, 0),
           (troop_get_slot, ":party_no", ":troop_no", slot_troop_leaded_party),
           (gt, ":party_no", 0),
+          (party_is_active, ":party_no"),
           (store_troop_faction, ":troop_faction_no", ":troop_no"),
           (eq, ":troop_faction_no", ":besieger_faction"),
           (assign, ":continue", 0),
@@ -119,6 +120,7 @@ SIMPLE_TRIGGERS = [
             (neg|troop_slot_ge, ":troop_no", slot_troop_prisoner_of_party, 0),
             (troop_get_slot, ":party_no", ":troop_no", slot_troop_leaded_party),
             (gt, ":party_no", 0),
+            (party_is_active, ":party_no"),
 
             (assign, ":continue", 0),
             (try_begin),
@@ -150,6 +152,7 @@ SIMPLE_TRIGGERS = [
             (neg|troop_slot_ge, ":troop_no", slot_troop_prisoner_of_party, 0),
             (troop_get_slot, ":party_no", ":troop_no", slot_troop_leaded_party),
             (gt, ":party_no", 0),
+            (party_is_active, ":party_no"),
             (party_slot_eq, ":party_no", slot_party_ai_state, spai_besieging_center),
             (party_slot_eq, ":party_no", slot_party_ai_object, ":center_no"),
             (party_slot_eq, ":party_no", slot_party_ai_substate, 1),

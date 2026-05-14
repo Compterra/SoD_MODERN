@@ -82,9 +82,8 @@ SCRIPTS = [
       (gt, ":center_no", 0),
       (party_get_slot, ":old_wealth", ":center_no", slot_town_wealth),
       (val_max, ":old_wealth", 0),
-      (store_add, ":new_wealth", ":old_wealth", ":difference"),
-      (val_clamp, ":new_wealth", 0, 2000001),
-      (party_set_slot, ":center_no", slot_town_wealth, ":new_wealth"),
+      (call_script, "script_sod_center_apply_wealth_delta", ":center_no", ":difference"),
+      (assign, ":new_wealth", reg0),
     (try_end),
 
     (store_sub, ":actual_change", ":new_wealth", ":old_wealth"),
@@ -104,9 +103,8 @@ SCRIPTS = [
       (gt, ":center_no", 0),
       (party_get_slot, ":old_local_prosperity", ":center_no", slot_center_sod_local_prosperity),
       (val_clamp, ":old_local_prosperity", 0, 101),
-      (store_add, ":new_local_prosperity", ":old_local_prosperity", ":difference"),
-      (val_clamp, ":new_local_prosperity", 0, 101),
-      (party_set_slot, ":center_no", slot_center_sod_local_prosperity, ":new_local_prosperity"),
+      (call_script, "script_sod_center_apply_local_prosperity_delta", ":center_no", ":difference"),
+      (assign, ":new_local_prosperity", reg0),
     (try_end),
 
     (store_sub, ":actual_change", ":new_local_prosperity", ":old_local_prosperity"),

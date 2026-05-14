@@ -5,7 +5,12 @@ MENUS = [
     "none",
     [],
     [
-      ("reembark_yes", [], "Yes.",
+      ("reembark_yes", [
+        (gt, "$g_encountered_party", 0),
+        (neq, "$g_encountered_party", "p_main_party"),
+        (party_is_active, "$g_encountered_party"),
+        (party_slot_eq, "$g_encountered_party", slot_party_type, spt_ship),
+        ], "Yes.",
        [(assign, "$g_player_icon_state", pis_ship),
         (party_set_flags, "p_main_party", pf_is_ship, 1),
         (party_get_position, pos1, "p_main_party"),

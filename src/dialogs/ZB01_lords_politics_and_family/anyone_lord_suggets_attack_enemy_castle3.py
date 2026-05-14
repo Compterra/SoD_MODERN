@@ -5,7 +5,7 @@ DIALOGS = [
        (assign, ":sod_battle_willingness", reg0),
        (ge, ":sod_battle_willingness", 25),
        ],
-   "That should be possible. Very well, we'll attack {s1}.", "lord_pretalk",
+   "Then we test {s1}'s walls and the courage behind them. I will gather the men for a siege.", "lord_pretalk",
    [
        (call_script, "script_party_set_ai_state", "$g_talk_troop_party", spai_besieging_center, "$suggested_to_attack_center"),
 

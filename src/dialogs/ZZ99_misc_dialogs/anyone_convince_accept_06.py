@@ -13,7 +13,7 @@ DIALOGS = [
                                (str_store_faction_name, s14, ":quest_object_faction"),
                              (try_end),
                              ],
-   "You... have convinced me, {playername}. Very well then, you've my blessing to bring a peace offer to {s14}. I cannot guarantee they will accept it, but on the off-chance they do, I will stand by it.", "close_window",
+   "You have not made peace easy, {playername}; you have made war harder to defend. Carry my offer to {s14}. If they answer with honor instead of appetite, I will stand by the bargain.", "close_window",
    [(store_mul, ":new_value", "$g_talk_troop", -1),
     (try_begin),
       (quest_slot_eq, "qst_persuade_lords_to_make_peace", slot_quest_target_troop, "$g_talk_troop"),

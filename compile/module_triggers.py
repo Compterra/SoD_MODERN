@@ -206,9 +206,10 @@ triggers = [
 
   (2.0, 0, 0, [(store_random_party_of_template, reg(2), "pt_prisoner_train_party"),
                (party_is_in_any_town, reg(2)),
+               (neg|party_slot_eq, reg(2), slot_party_sod_support_type, spt_prisoner_train),
                ],
-              [(store_faction_of_party, ":faction_no", reg(2)),
-               (call_script, "script_cf_select_random_walled_center_with_faction", ":faction_no", -1),
+   [(store_faction_of_party, ":faction_no", reg(2)),
+    (call_script, "script_cf_select_random_walled_center_with_faction", ":faction_no", -1),
                (party_set_ai_behavior, reg(2), ai_bhvr_travel_to_party),
                (party_set_ai_object, reg(2), reg0),
                (party_set_flags, reg(2), pf_default_behavior, 0),
@@ -274,6 +275,7 @@ triggers = [
 
   (1.5, 0, 0, [(store_random_party_of_template, reg(2), "pt_messenger_party"),
                (party_is_in_any_town, reg(2)),
+               (party_slot_eq, reg(2), slot_party_sod_messenger_role, sod_messenger_role_none),
                ],
    [(store_faction_of_party, ":faction_no", reg(2)),
     (call_script, "script_cf_select_random_walled_center_with_faction", ":faction_no", -1),

@@ -1,0 +1,93 @@
+DIALOGS = [
+[anyone, "start", [(eq, "$g_sod_company_spokesperson_dialogue_active", 1),
+                   (gt, "$g_sod_company_spokesperson_type", sod_company_spokesperson_none),
+                   (call_script, "script_sod_company_dialogue_describe_spokesperson_to_s60")],
+   "{s61}", "sod_company_spokesperson_response", []],
+
+[anyone|plyr, "sod_company_spokesperson_response", [(call_script, "script_sod_company_accounts_get_due_to_regs"),
+                                                    (gt, reg22, 0)],
+   "Then the company will be paid now.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_pay_now),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+
+[anyone|plyr, "sod_company_spokesperson_response", [(call_script, "script_sod_company_accounts_get_due_to_regs"),
+                                                    (gt, reg22, 0)],
+   "I will name a day for the pay and be held to it.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_promise),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+
+[anyone|plyr, "sod_company_spokesperson_response", [(call_script, "script_sod_company_accounts_get_due_to_regs"),
+                                                    (gt, reg22, 0)],
+   "The next battle will settle the account.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_battle_promise),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+
+[anyone|plyr, "sod_company_spokesperson_response", [],
+   "Open the stores. The bowls will be fuller.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_ration_change),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+
+[anyone|plyr, "sod_company_spokesperson_response", [(gt, "$g_sod_company_casualty_compensation_pressure", 0)],
+   "The wounded will be cared for, and dependents paid.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_rites_wounded),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+
+[anyone|plyr, "sod_company_spokesperson_response", [(gt, "$g_sod_company_siege_hazard_pressure", 0)],
+   "Wall work earns hazard silver. Issue it.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_hazard_pay),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+
+[anyone|plyr, "sod_company_spokesperson_response", [(store_current_day, ":cur_day"),
+                                                    (store_sub, ":days_since_victory", ":cur_day", "$g_sod_company_last_victory_day"),
+                                                    (le, ":days_since_victory", 3)],
+   "The company has earned public honors.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_public_honors),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+
+[anyone|plyr, "sod_company_spokesperson_response", [(store_current_day, ":cur_day"),
+                                                    (store_sub, ":days_since_victory", ":cur_day", "$g_sod_company_last_victory_day"),
+                                                    (le, ":days_since_victory", 3),
+                                                    (call_script, "script_count_edible_food"),
+                                                    (ge, reg0, 6)],
+   "Make a victory feast before pride turns sour.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_victory_feast),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+
+[anyone|plyr, "sod_company_spokesperson_response", [(store_current_day, ":cur_day"),
+                                                    (store_sub, ":days_since_victory", ":cur_day", "$g_sod_company_last_victory_day"),
+                                                    (le, ":days_since_victory", 3)],
+   "No spectacle. We keep marching.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_refuse_spectacle),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+
+[anyone|plyr, "sod_company_spokesperson_response", [(gt, "$g_sod_company_faith_count", 0)],
+   "Make an offering for the company.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_company_offering),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+
+[anyone|plyr, "sod_company_spokesperson_response", [],
+   "Give the camp rest and firelight. Let tempers cool.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_recreation),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+
+[anyone|plyr, "sod_company_spokesperson_response", [(gt, "$g_sod_company_spokesperson_mediator", 0),
+                                                    (str_store_troop_name, s64, "$g_sod_company_spokesperson_mediator")],
+   "{s64} will speak between command and camp.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_mediation),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+
+[anyone|plyr, "sod_company_spokesperson_response", [],
+   "I will answer this plainly, and the company will listen.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_persuade),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+
+[anyone|plyr, "sod_company_spokesperson_response", [],
+   "This is still an army. Discipline holds.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_threaten),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+
+[anyone|plyr, "sod_company_spokesperson_response", [],
+   "No. Return to the ranks.", "close_window",
+   [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_dismiss),
+    (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
+]

@@ -4,6 +4,7 @@ MENUS = [
    "none",
     [
       (set_background_mesh, "mesh_pic_camp"),
+      (assign, "$g_sod_retinue_return_menu", "mnu_companion_retinue_report"),
       (call_script, "script_sod_companion_retinue_repair_all"),
       (call_script, "script_sod_companion_retinue_describe_report_to_s1"),
     ],
@@ -239,8 +240,15 @@ MENUS = [
           (jump_to_menu, "mnu_companion_retinue_reclaim_troops"),
         ]
       ),
-      ("companion_retinue_manage_back", [], "Return to retinue overview.",
-        [(jump_to_menu, "mnu_companion_retinue_report")]
+      ("companion_retinue_manage_back", [], "Back.",
+        [
+          (try_begin),
+            (gt, "$g_sod_retinue_return_menu", 0),
+            (jump_to_menu, "$g_sod_retinue_return_menu"),
+          (else_try),
+            (change_screen_return),
+          (try_end),
+        ]
       ),
     ]
   ),

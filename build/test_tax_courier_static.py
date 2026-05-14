@@ -67,6 +67,7 @@ def test_tax_courier_scripts_are_wired() -> None:
         '("sod_try_dispatch_player_tax_courier_from_center"',
         '("sod_try_dispatch_ai_tax_courier_from_center"',
         '("sod_process_tax_courier_parties"',
+        '("sod_tax_courier_cleanup_party"',
         '("sod_tax_courier_resolve_defeated_by_party"',
         '("sod_tax_courier_apply_nonhostile_coercion_consequence"',
         '("sod_tax_courier_award_payload_to_player"',
@@ -77,6 +78,16 @@ def test_tax_courier_scripts_are_wired() -> None:
 
 def test_dispatch_accounting_and_safety_are_conservative() -> None:
     scripts = read("src/scripts/ZY_helper_scripts/sod_tax_couriers.py")
+    party_templates = read("compile/module_party_templates.py")
+    triggers = read("compile/module_triggers.py")
+
+    assert_contains(party_templates, '("messenger_party","Messenger"')
+    assert_contains(party_templates, "merchant_personality,[])")
+    assert_contains(scripts, "(faction_get_slot, \":messenger_troop\", \":origin_faction\", slot_faction_messenger_troop)")
+    assert_contains(scripts, "(assign, \":messenger_troop\", \"trp_swadian_messenger\")")
+    assert_contains(scripts, "(party_add_leader, \":courier_party\", \":messenger_troop\")")
+    assert_contains(triggers, '(store_random_party_of_template, reg(2), "pt_messenger_party")')
+    assert_contains(triggers, "(party_slot_eq, reg(2), slot_party_sod_messenger_role, sod_messenger_role_none)")
     assert_contains(scripts, "(val_div, \":center_reserve\", 5)")
     assert_contains(scripts, "(val_mul, \":direct_share\", 60)")
     assert_contains(scripts, "(val_sub, \":courier_share\", \":direct_share\")")
@@ -91,8 +102,9 @@ def test_dispatch_accounting_and_safety_are_conservative() -> None:
     assert_contains(scripts, "(call_script, \"script_cf_sod_tax_courier_destination_safe\", \":new_destination\")")
     assert_contains(scripts, "(assign, \":danger_radius\", 7)")
     assert_contains(scripts, "(party_set_ai_behavior, \":courier_party\", ai_bhvr_travel_to_party)")
-    assert_contains(scripts, "(party_set_slot, \":center_no\", slot_center_accumulated_rents, 0)")
-    assert_contains(scripts, "(party_set_slot, \":center_no\", slot_center_accumulated_tariffs, 0)")
+    assert_contains(scripts, "@Your Tax Courier from {s1}")
+    assert_contains(scripts, "@Tax Courier from {s1}")
+    assert_contains(scripts, "script_sod_center_clear_revenue_accounts")
 
 
 def test_player_courier_collection_and_toggle_are_wired() -> None:
@@ -183,6 +195,10 @@ def test_processing_handles_delivery_expiry_and_loss_cleanup() -> None:
     assert_contains(scripts, "(party_set_slot, \":courier_party\", slot_party_sod_tax_courier_amount, 0)")
     assert_contains(scripts, "(party_set_slot, \":courier_party\", slot_party_sod_tax_courier_status, sod_tax_courier_status_expired)")
     assert_contains(scripts, "(party_set_slot, \":courier_party\", slot_party_sod_tax_courier_status, sod_tax_courier_status_lost)")
+    assert_contains(scripts, "script_sod_tax_courier_cleanup_party")
+    assert_contains(scripts, "(party_set_slot, \":courier_party\", slot_party_sod_messenger_role, sod_messenger_role_none)")
+    assert_contains(scripts, "(party_set_slot, \":courier_party\", slot_party_sod_tax_courier_destination_party, -1)")
+    assert_contains(scripts, "(remove_party, \":courier_party\")")
 
 
 def test_interception_dialog_and_battle_hooks_are_wired() -> None:
@@ -212,6 +228,55 @@ def test_nonhostile_courier_coercion_has_reputation_consequences() -> None:
     assert_contains(scripts, '"script_change_player_honor", -2')
     assert_contains(scripts, "sod_diplomacy_memory_caravan_attack")
     assert_contains(scripts, "Relations with {s3} suffer")
+
+
+def test_tax_courier_social_dialogue_is_wired() -> None:
+    scripts = read("src/scripts/ZY_helper_scripts/sod_tax_couriers.py")
+    game_start = read("src/scripts/ZA_hardcoded_game_scripts/game_start.py")
+    dialog_order = read("src/dialogs/_order_dialogs.txt")
+    courier_dialog = read("src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_messenger_party_start.py")
+    lord = read("src/dialogs/ZA01_startup_and_dispatch/anyone_lord_start_tax_courier_rumor.py")
+    tavern = read("src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_tax_courier_rumor.py")
+    merchant = read("src/dialogs/ZC01_centers_and_economy/anyone_goods_merchant_tax_courier_rumor.py")
+    companion = read("src/dialogs/ZE01_companions_and_named_npcs/anyone_member_chat_tax_courier_jeremus.py")
+
+    assert_contains(scripts, '("sod_tax_courier_record_social_event"')
+    assert_contains(scripts, '("sod_store_tax_courier_rumor_to_s12"')
+    assert_contains(scripts, "(assign, \"$g_sod_tax_courier_last_social_event\", \":event_type\")")
+    assert_contains(scripts, "(val_add, \"$g_sod_tax_courier_nonhostile_coercions\", 1)")
+    assert_contains(scripts, "The room lowers its voice around strongboxes now")
+    assert_contains(scripts, "A realm does not run on frightened clerks")
+    assert_contains(scripts, "Taxes move like blood")
+    assert_contains(game_start, "(assign, \"$g_sod_tax_courier_last_social_event\", 0)")
+    assert_contains(game_start, "(assign, \"$g_sod_tax_courier_companion_rumor_seen_day\", -100)")
+    assert_contains(courier_dialog, "Couriers trade stories")
+    assert_contains(courier_dialog, "script_sod_tax_courier_record_social_event")
+    assert_contains(lord, "script_sod_store_tax_courier_rumor_to_s12\", 2")
+    assert_contains(tavern, "script_sod_store_tax_courier_rumor_to_s12\", 1")
+    assert_contains(merchant, "script_sod_store_tax_courier_rumor_to_s12\", 3")
+    assert_contains(companion, "trp_npc12")
+    assert_contains(companion, "script_sod_companion_shift_approval")
+    assert_contains(companion, "teaching harmless men to fear our shadow")
+    assert_before(
+        dialog_order,
+        "ZA01_startup_and_dispatch/anyone_lord_start_tax_courier_rumor.py",
+        "ZA01_startup_and_dispatch/anyone_lord_start_30.py",
+    )
+    assert_before(
+        dialog_order,
+        "ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_tax_courier_rumor.py",
+        "ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_pretalk.py",
+    )
+    assert_before(
+        dialog_order,
+        "ZC01_centers_and_economy/anyone_goods_merchant_tax_courier_rumor.py",
+        "ZC01_centers_and_economy/anyone_goods_merchant_pretalk.py",
+    )
+    assert_before(
+        dialog_order,
+        "ZE01_companions_and_named_npcs/anyone_member_chat_tax_courier_jeremus.py",
+        "ZA01_startup_and_dispatch/anyone_member_chat_06.py",
+    )
 
 
 def test_daily_processing_trigger_is_wired() -> None:
@@ -254,6 +319,7 @@ if __name__ == "__main__":
     test_processing_handles_delivery_expiry_and_loss_cleanup()
     test_interception_dialog_and_battle_hooks_are_wired()
     test_nonhostile_courier_coercion_has_reputation_consequences()
+    test_tax_courier_social_dialogue_is_wired()
     test_daily_processing_trigger_is_wired()
     test_generated_compile_contains_tax_courier_system()
     print("test_tax_courier_static: OK")

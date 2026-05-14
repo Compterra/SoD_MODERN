@@ -10,6 +10,10 @@ SCRIPTS = [
       (quest_set_slot, "qst_rtc_door_into_calradia", slot_quest_rtc_salvage_choice, ":salvage_choice"),
       (quest_set_slot, "qst_rtc_price_of_bread", slot_quest_rtc_salvage_choice, ":salvage_choice"),
       (assign, "$g_sod_rtc_starting_salvage_choice", ":salvage_choice"),
+      (quest_get_slot, ":road_target_party", "qst_rtc_last_smoke", slot_quest_target_party),
+      (quest_get_slot, ":road_target_template", "qst_rtc_last_smoke", slot_quest_target_party_template),
+      (quest_set_slot, "qst_rtc_borrowed_names", slot_quest_target_party, ":road_target_party"),
+      (quest_set_slot, "qst_rtc_borrowed_names", slot_quest_target_party_template, ":road_target_template"),
 
       (try_begin),
         (eq, ":salvage_choice", sod_rtc_salvage_wounded),
@@ -47,6 +51,14 @@ SCRIPTS = [
         (add_quest_note_from_sreg, "qst_rtc_last_smoke", 3, s49, 0),
         (call_script, "script_sod_companion_apply_player_action", sod_companion_action_retreat_or_fail, 3),
         (call_script, "script_sod_companion_apply_player_action", sod_companion_action_ymira_refugee_expedience, 2),
+      (try_end),
+
+      (try_begin),
+        (gt, ":road_target_party", 0),
+        (party_is_active, ":road_target_party"),
+        (str_store_party_name_link, s48, ":road_target_party"),
+        (str_store_string, s49, "@Road event: the survivors' first choice is tied to {s48}, the visible scout trail and witness marker left behind in the smoke."),
+        (add_quest_note_from_sreg, "qst_rtc_last_smoke", 6, s49, 0),
       (try_end),
 
       (try_begin),

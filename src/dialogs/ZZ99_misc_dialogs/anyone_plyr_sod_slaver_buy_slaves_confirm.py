@@ -6,7 +6,7 @@ DIALOGS = [
      (store_troop_gold, ":player_gold", "trp_player"),
      (ge, ":player_gold", reg3),
    ],
-   "Buy them.", "sod_slaver_buy_slaves_done",
+   "Count the chains and take the silver.", "sod_slaver_buy_slaves_done",
    [
      (call_script, "script_sod_slavers_store_slave_purchase_quote"),
      (call_script, "script_sod_slavers_buy_slaves_for_player", reg2),

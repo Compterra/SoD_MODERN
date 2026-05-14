@@ -1,6 +1,6 @@
 DIALOGS = [
 [anyone, "lord_challenge_duel_for_lady_3", [], "You are challenging me to a duel? How droll!\
- As you wish, {playername}, it will be good sport to bash your head in.", "close_window",
+ Come then, {playername}. If you mean to make a court matter into bloodsport, I will oblige you.", "close_window",
    [(call_script, "script_change_player_relation_with_troop", "$g_talk_troop", -20),
     (assign, "$g_leave_encounter", 1),
     (assign, ":duel_target", "$g_talk_troop"),
@@ -32,5 +32,6 @@ DIALOGS = [
     (jump_to_scene, ":arena_scene"),
     (jump_to_menu, "mnu_arena_duel_fight"),
     (try_end),
+    (finish_mission),
     ]],
 ]

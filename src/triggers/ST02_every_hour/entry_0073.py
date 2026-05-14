@@ -1,5 +1,6 @@
 SIMPLE_TRIGGERS = [
 (12, [(try_for_parties, ":cur_party"),
+          (neq, ":cur_party", "p_main_party"),
           (party_slot_eq, ":cur_party", slot_party_type, spt_cattle_herd),
           (store_distance_to_party_from_party, ":dist", ":cur_party", "p_main_party"),
           (try_begin),

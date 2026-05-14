@@ -1,9 +1,12 @@
 MENUS = [
 ("sod_upgrade_camp", 0,
-	"{reg1?{reg1}:No} mercenaries in your party can be promoted from camp.{s19}",
+	"{s1}",
 	"none", [	
+		(str_clear, s1),
+		(str_clear, s20),
 		(assign, "$jump_menu", "mnu_camp"),
 		(assign, "$g_encountered_party", -1),
+		(assign, "$g_sod_upgrade_center", -1),
 		(str_store_string, s18, "@The Commoners, The Slavers"),
 		(try_for_range, ":guild", "fac_sod_merc_guild1", "fac_kingdom_6_mercenaries"),
 			(neq, ":guild", "fac_sod_merc_guild6"),
@@ -12,7 +15,7 @@ MENUS = [
 			(str_store_string, s18, "@{s18}, {s0}"),
 		(try_end),
 
-		(str_store_string, s19, "@^^^Authorized promotion sources:^^{s18}.^^Guild promotions remain camp-based; noble and faith doctrines require proper centers."),
+		(str_store_string, s20, "@^^^Authorized promotion sources:^^{s18}.^^Guild promotions remain camp-based; noble and faith doctrines require proper centers."),
 			
 		(assign, ":total", 0),
 		(assign, reg1, 0),
@@ -37,6 +40,12 @@ MENUS = [
 			(val_add, ":total", ":troop_count"),
 		(try_end),
 		(assign, reg1, ":total"),
+		(try_begin),
+			(gt, ":total", 0),
+			(str_store_string, s1, "@{reg1} mercenaries in your party can be promoted from camp.{s20}"),
+		(else_try),
+			(str_store_string, s1, "@No mercenaries in your party can be promoted from camp.{s20}"),
+		(try_end),
 	],
 		generate_upgrade_options()
 	),

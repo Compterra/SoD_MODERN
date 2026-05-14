@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "lord_suggest_action", [],
-   "Cheat:I want to know your leaded party ID.", "lord_suggest_learn_party_id", []],
+   "Cheat: reveal your commanded party ID.", "lord_suggest_learn_party_id", []],
 ]

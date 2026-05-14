@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "gm_talk", [
-   ], "I want to hire some soldiers.", "gm_hire",[]],
+   ], "Put your available soldiers before me. I may have coin for them.", "gm_hire",[]],
 ]

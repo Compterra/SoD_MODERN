@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "goods_merchant_talk", [], "I want to buy a few items... and perhaps sell some.", "goods_trade_requested", []],
+[anyone|plyr, "goods_merchant_talk", [], "Put the scales out. I have goods to buy, sell, or weigh against better judgment.", "goods_trade_requested", []],
 ]

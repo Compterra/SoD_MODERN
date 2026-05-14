@@ -3,9 +3,9 @@ DIALOGS = [
                                            (store_distance_to_party_from_party, ":dist", ":quest_target_center", "$g_encountered_party"),
                                            (lt, ":dist", 4),
                                            ],
-   "Well, we have almost reached {s21}. We can cover the rest of the way ourselves.\
- Here's your pay... {reg14} denars.\
- Thanks for escorting us. Good luck.", "close_window", [(quest_get_slot, ":quest_target_party", "qst_slavers_escort_merchant_caravan", slot_quest_target_party),
+   "We are close enough to {s21}. The chains and wagons can make the last stretch without you.\
+ Here is your pay: {reg14} denars.\
+ Spend it before the road takes it back.", "close_window", [(quest_get_slot, ":quest_target_party", "qst_slavers_escort_merchant_caravan", slot_quest_target_party),
                                                        (quest_get_slot, ":quest_target_center", "qst_slavers_escort_merchant_caravan", slot_quest_target_center),
                                                        (quest_get_slot, ":quest_giver_troop", "qst_slavers_escort_merchant_caravan", slot_quest_giver_troop),
                                                        (quest_get_slot, ":quest_gold_reward", "qst_slavers_escort_merchant_caravan", slot_quest_gold_reward),
@@ -24,6 +24,13 @@ DIALOGS = [
                                                        (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_dirty_profit, 2),
                                                        (assign, reg14, ":quest_gold_reward"),
                                                        (assign, "$g_leave_encounter", 1),
-													   (remove_party, ":quest_target_party"), 
+                                                       (try_begin),
+                                                         (gt, ":quest_target_party", 0),
+                                                         (neq, ":quest_target_party", "p_main_party"),
+                                                         (party_is_active, ":quest_target_party"),
+                                                         (party_get_template_id, ":target_template", ":quest_target_party"),
+                                                         (eq, ":target_template", "pt_slavers_caravan"),
+													     (remove_party, ":quest_target_party"), 
+                                                       (try_end),
                                                        ]],
 ]

@@ -13,7 +13,7 @@ SCRIPTS = [
       (try_end),
       (store_character_level, ":current_level", ":troop_no"),
       (troop_set_slot, ":troop_no", slot_troop_level_up, ":current_level"),
-      (call_script, "script_store_troop_name_link", s6, ":troop_no"),
+      (str_store_troop_name, s6, ":troop_no"),
       (display_message, "@{s6} has joined your party", bannana),
   ]),
 ]

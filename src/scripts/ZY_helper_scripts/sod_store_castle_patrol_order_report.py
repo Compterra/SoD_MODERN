@@ -21,7 +21,7 @@ SCRIPTS = [
      (gt, ":target", 0),
      (str_store_party_name, s2, ":target"),
    (else_try),
-     (str_store_string, s2, "@no valid target"),
+     (str_store_string, s2, "@no urgent road target"),
    (try_end),
    (try_begin),
      (eq, ":role", sod_castle_patrol_role_village_shield),

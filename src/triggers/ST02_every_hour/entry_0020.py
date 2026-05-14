@@ -14,6 +14,7 @@ SIMPLE_TRIGGERS = [
     (try_begin),
       (neg|map_free),
       (ge, "$g_last_rest_center", 0),
+      (party_is_active, "$g_last_rest_center"),
       (this_or_next|party_slot_eq, "$g_last_rest_center", slot_center_has_manor, 1),
       (is_between, "$g_last_rest_center", walled_centers_begin, walled_centers_end),
       (assign, ":resting_at_manor_or_walled_center", 1),

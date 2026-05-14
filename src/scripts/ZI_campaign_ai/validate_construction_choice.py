@@ -329,6 +329,14 @@ def _build_validate_construction_choice_ops():
         (assign, reg0, 0),
         (assign, reg1, BUILDING_VALIDATION_UNKNOWN),
         (assign, reg2, 0),
+        (assign, ":center_valid", 0),
+        (try_begin,),
+        (is_between, ":center_no", centers_begin, centers_end),
+        (party_is_active, ":center_no"),
+        (assign, ":center_valid", 1),
+        (try_end,),
+        (try_begin,),
+        (eq, ":center_valid", 1),
     ]
 
     for index, definition in enumerate(BUILDING_REGISTRY):
@@ -343,6 +351,11 @@ def _build_validate_construction_choice_ops():
         (else_try,),
         (assign, reg0, 0),
         (assign, reg1, BUILDING_VALIDATION_UNKNOWN),
+        (assign, reg2, 0),
+        (try_end,),
+        (else_try,),
+        (assign, reg0, 0),
+        (assign, reg1, BUILDING_VALIDATION_WRONG_CENTER),
         (assign, reg2, 0),
         (try_end,),
     ])

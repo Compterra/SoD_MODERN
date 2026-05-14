@@ -50,6 +50,12 @@ MENUS = [
         ]
       ),
 
+      ("camp_jobs", [], "Manage camp jobs and expedition roles.",
+        [
+          (jump_to_menu, "mnu_camp_jobs"),
+        ]
+      ),
+
       ("camp_strategy_advisor",
         [(main_party_has_troop, "trp_sod_strategy_advisor"),
         ],
@@ -499,7 +505,12 @@ MENUS = [
                 (store_sub, reg0, ":count", 1),
                 (str_store_troop_name_by_count, s1, ":troop", ":count"),
                 (str_store_party_name, s2, ":party"),
-                (display_message, "@{reg0?{reg1} {s1}:{s1}} in {s2} ...deleted", red),
+                (try_begin),
+                  (gt, ":count", 1),
+                  (display_message, "@{reg1} {s1} in {s2} ...deleted", red),
+                (else_try),
+                  (display_message, "@{s1} in {s2} ...deleted", red),
+                (try_end),
                 (val_add, ":fixed", 1),
 
                 # adjust indexes for removing this stack

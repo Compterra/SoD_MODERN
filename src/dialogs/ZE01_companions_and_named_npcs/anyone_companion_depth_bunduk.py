@@ -84,7 +84,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc10", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Soldiers can forgive danger. They do not forgive being spent by men who call it discipline, glory, or necessity because those words sound cleaner than waste. Right now my trust in your command is {s2}.",
   "member_talk",
@@ -96,7 +96,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The line knows you listened. Not because you gave a speech. Because watches changed, stores changed, and fewer orders smell like officer pride. Right now my trust in your command is {s2}.",
   "member_talk",
@@ -106,7 +106,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The line obeys. Aye, that matters. But men remember the difference between being led and being used. So do I. Right now my trust in your command is {s2}.",
   "member_talk",
@@ -116,7 +116,7 @@ DIALOGS = [
   [
     (eq, "$g_sod_bunduk_line_pending", 1),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The men are listening for your answer, even the ones pretending to sharpen bolts. Boots, pay, watches, burial, blame. That is command too. Right now my trust in your command is {s2}.",
   "member_talk",
@@ -126,7 +126,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "This is not about making soldiers comfortable. Comfortable soldiers are rare as honest taxmen. It is about not making them pay for every officer's mistake twice. Right now my trust in your command is {s2}.",
   "member_talk",
@@ -136,7 +136,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Men in the line know when officers are spending them. They know before the officers do. Question is whether anyone with command cares before the graves are dug. Right now my trust in your command is {s2}.",
   "member_talk",
@@ -146,7 +146,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc10", slot_troop_companion_approval, 70),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You keep the line fed, paid, and ordered like men instead of ammunition. I complain because I am awake, not because I am leaving. Right now my trust in your command is {s2}.",
   "member_talk",
@@ -161,7 +161,7 @@ DIALOGS = [
 [anyone, "companion_depth_bunduk",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The line sees more than officers think. Boots, food, pay, who gets buried, who gets blamed. Right now my trust in your command is {s2}.",
   "member_talk",

@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "convince_options", [], "Never mind.", "lord_pretalk", []],
+[anyone|plyr, "convince_options", [], "No. I will not press the matter today.", "lord_pretalk", []],
 ]

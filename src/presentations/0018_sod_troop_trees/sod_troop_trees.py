@@ -69,6 +69,8 @@ PRESENTATIONS = [
 		(else_try),
 			(eq, "$g_sod_sa_talk_subject", 8),
 			(create_mesh_overlay, reg1, "mesh_faith_troop_tree"),
+		(else_try),
+			(create_mesh_overlay, reg1, "mesh_random_merc_troop_tree"),
 		(try_end),
 		(position_set_x, pos1, 0),
         (position_set_y, pos1, 0),

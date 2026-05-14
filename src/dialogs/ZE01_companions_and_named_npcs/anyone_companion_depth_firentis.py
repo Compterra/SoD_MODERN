@@ -94,7 +94,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc6", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "I have hidden behind obedience before. It is a fine shield until a man notices whose blood is on the rim. My faith in your command is {s2}, but I need the truth named.",
   "member_talk",
@@ -106,7 +106,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Restitution did not raise the dead. It did give the living something more honest than another speech beside a sword. My faith in your command is {s2}.",
   "member_talk",
@@ -116,7 +116,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The matter is quiet now. Quiet can be mercy, or cowardice, or only a grave with grass over it. I remain, but my faith in your command is {s2}.",
   "member_talk",
@@ -126,7 +126,7 @@ DIALOGS = [
   [
     (eq, "$g_sod_firentis_restitution_pending", 1),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The village is saved, and still something in it asks payment from every armed hand. I would have your order before I mistake silence for discipline. My faith in your command is {s2}.",
   "member_talk",
@@ -136,7 +136,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "There will come a village, a prisoner, or a frightened face that asks whether this sword has changed hands or merely changed banners. My faith in your command is {s2}.",
   "member_talk",
@@ -146,7 +146,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "A sword remembers what the hand asks of it. So do the living. I think I am near a reckoning, and my faith in your command is {s2}.",
   "member_talk",
@@ -156,7 +156,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc6", slot_troop_companion_approval, 70),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You have shown me that strength can kneel without becoming weak. That is a harder lesson than any fencing master ever gave. My faith in your command is {s2}.",
   "member_talk",
@@ -171,7 +171,7 @@ DIALOGS = [
 [anyone, "companion_depth_firentis",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Conscience is not a thing I would trust to comfort, my friend. It is a watchman. At present, my faith in your command is {s2}.",
   "member_talk",

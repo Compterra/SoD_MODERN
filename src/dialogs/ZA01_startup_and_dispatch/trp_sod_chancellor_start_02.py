@@ -1,3 +1,3 @@
 DIALOGS = [
-[trp_sod_chancellor, "start", [], "Yes my Liege?", "chancellor_talk", []],
+[trp_sod_chancellor, "start", [], "What matter shall we put before the council, my liege?", "chancellor_talk", []],
 ]

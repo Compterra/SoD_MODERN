@@ -1,5 +1,5 @@
 DIALOGS = [
 [anyone|plyr, "gm_mission_told_bc", [],
- "I can't do this.", "gm_pretalk",
+ "No. I will not promise prisoners when I cannot spare the men or stomach for the work.", "gm_pretalk",
    []],
 ]

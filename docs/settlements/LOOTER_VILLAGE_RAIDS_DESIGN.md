@@ -268,6 +268,7 @@ Implemented eligibility behavior:
 Implemented target behavior:
 
 - Candidate villages must be active, normal-state villages, not infested, in range, and off looter-raid cooldown.
+- Candidate raid villages must have at least one actual defender or militia volunteer, so looters do not start a village assault against an empty party. Separate population-desperation spawns may still originate from a collapsing village, but those village-origin parties are rebuilt as looter-only bands rather than mixed bandits.
 - Strong nearby player, lord, patrol, player patrol, and player mercenary forces reject the village outright.
 - Existing active looter raids against the same target faction count against the looter raid cap to prevent one faction from being dogpiled by independent looter mobs.
 - The score favors nearby, vulnerable, low-security, low-patrol villages and penalizes existing pressure plus recent raids or recent defenses.

@@ -67,7 +67,12 @@ MENUS = [
         (assign, "$talk_context", tc_siege_commander),
         (change_screen_map_conversation, ":siege_leader_id")]),
 
-      ("join_siege_with_allies", [(neg|troop_is_wounded, "trp_player")], "Join the next assault.", [
+      build_sod_battle_commander_change_option(
+        "change_commander_besiegers_camp_with_allies",
+        "mnu_besiegers_camp_with_allies",
+      ),
+
+      ("join_siege_with_allies", [(call_script, "script_cf_sod_battle_commander_can_start")], "Join the next assault.", [
         (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
         (try_begin),
           (check_quest_active, "qst_join_siege_with_army"),
@@ -106,6 +111,7 @@ MENUS = [
         (assign, "$g_next_menu", "mnu_castle_besiege_inner_battle"),
 ##           (assign, "$g_next_menu", "mnu_besiegers_camp_with_allies"),
         (jump_to_menu, "mnu_battle_debrief"),
+        (call_script, "script_sod_battle_commander_apply_before_mission"),
         (change_screen_mission),
       ]),
 
@@ -129,6 +135,7 @@ MENUS = [
           (call_script, "script_start_quest", "qst_follow_army", ":faction_marshall"),
           (assign, "$g_player_follow_army_warnings", 0),
         (try_end),
+        (call_script, "script_sod_battle_commander_reset"),
         (jump_to_menu, "mnu_castle_attack_walls_with_allies_simulate")
       ]),
 

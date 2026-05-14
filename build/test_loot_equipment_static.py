@@ -172,6 +172,9 @@ def main() -> int:
         "troop_add_gold",
         "target_variety",
         "max_purchases",
+        "started_variety",
+        "Food variety is now {reg25}/{reg26}",
+        "only buys non-rotten food types you do not already carry",
     ):
         assert_contains(auto_buy_food, token)
 
@@ -186,8 +189,9 @@ def main() -> int:
 
     assert_contains(town_merchant_dialog, "Sell low-value spare gear carried by my companions.")
     assert_contains(town_merchant_dialog, "Sell ordinary spare gear carried by my companions.")
-    assert_contains(goods_dialog, "Buy the food types my party is missing.")
-    assert_contains(village_dialog, "Buy the food types my party is missing.")
+    assert_contains(town_trade, "Buy up to 4 food varieties missing from your stores.")
+    assert_contains(goods_dialog, "Buy up to four food types my party is missing.")
+    assert_contains(village_dialog, "Buy up to four food types my party is missing.")
 
     for token in (
         "imod_cracked",
@@ -274,13 +278,18 @@ def main() -> int:
         "sod_repair_armor",
         "sod_repair_horses",
         "script_sod_repair_player_party_equipment",
+        "(party_slot_ge, \"$current_town\", slot_center_has_blacksmith, 1)",
+        "(party_slot_ge, \"$current_town\", slot_center_has_stables, 1)",
     ):
         assert_contains(town_trade, token)
 
     assert_contains(total_victory, "script_sod_degrade_player_party_equipment_after_battle")
-    assert_contains(weapon_dialog, "Can you repair damaged weapons carried by my company?")
-    assert_contains(armor_dialog, "Can you repair damaged armor and shields carried by my company?")
-    assert_contains(horse_dialog, "Can you tend to injured mounts in my company?")
+    assert_contains(weapon_dialog, "My company's weapons have earned scars. Put an edge back on them.")
+    assert_contains(weapon_dialog, "slot_center_has_blacksmith")
+    assert_contains(armor_dialog, "My company's armor has taken honest blows. Make it fit for another fight.")
+    assert_contains(armor_dialog, "slot_center_has_blacksmith")
+    assert_contains(horse_dialog, "My mounts are carrying old pain. See what can be mended.")
+    assert_contains(horse_dialog, "slot_center_has_stables")
 
     for token in (
         "- [x] Audit every `$pool_troop` use",

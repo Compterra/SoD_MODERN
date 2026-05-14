@@ -1,3 +1,3 @@
 DIALOGS = [
-[trp_sod_chancellor|plyr, "chancellor_talk", [], "I want to assign fiefs.", "chancellor_fiefs_prelude", []],
+[trp_sod_chancellor|plyr, "chancellor_talk", [], "Bring out the fief rolls. I need to grant land.", "chancellor_fiefs_prelude", []],
 ]

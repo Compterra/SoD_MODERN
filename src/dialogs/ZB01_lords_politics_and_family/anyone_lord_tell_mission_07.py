@@ -11,7 +11,7 @@ DIALOGS = [
      (call_script, "script_store_troop_name_link", s9, "$g_talk_troop"),
      (str_store_party_name_link, s3, ":quest_target_center"),
      (call_script, "script_get_name_from_dna_to_s50", ":quest_target_dna"),
-     (str_store_string, s4, s50),
+     (str_store_string_reg, s4, s50),
      (setup_quest_text, "$random_quest_no"),
      (str_store_string, s2, "@{s9} asked you to hunt down a fugitive named {s4}. He is believed to be at {s3}."),
    ]],

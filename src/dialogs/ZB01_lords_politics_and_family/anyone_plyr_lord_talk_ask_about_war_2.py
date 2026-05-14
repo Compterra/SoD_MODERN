@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "lord_talk_ask_about_war_2", [], "That's all I wanted to know. Thank you.", "lord_pretalk", []],
+[anyone|plyr, "lord_talk_ask_about_war_2", [], "That tells me where the fires are hottest. Enough for now.", "lord_pretalk", []],
 ]

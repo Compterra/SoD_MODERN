@@ -130,7 +130,7 @@ SCRIPTS = [
       (quest_set_slot, "qst_seven_ash_ultimatum", slot_quest_seven_ash_ending_flags, ":ending_flags"),
       (assign, reg3, ":memorial"),
       (assign, reg4, ":ending_flags"),
-      (str_store_string, s49, "@Aftermath archive: compact ending flags are stored for Seven Oaths Kept, Ashwick Stands, Wall of Names, Empty Houses, Wulfred Broken, Wulfred Escaped, Bargain Brand, Blood for Ash, Long Road From Ashwick, Palisade Grave, New Wolf, and Common Bell."),
+      (str_store_string, s49, "@Ashwick's last record names the endings left behind: Seven Oaths Kept, Ashwick Stands, Wall of Names, Empty Houses, Wulfred Broken, Wulfred Escaped, Bargain Brand, Blood for Ash, Long Road From Ashwick, Palisade Grave, New Wolf, and Common Bell."),
       (add_quest_note_from_sreg, "qst_seven_ash_aftermath", 9, s49, 0),
       (try_begin),
         (gt, ":memorial", 0),

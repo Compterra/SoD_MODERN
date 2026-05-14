@@ -18,6 +18,7 @@ from build_presentations import build as build_presentations
 from build_quests import build as build_quests
 from build_scripts import build as build_scripts
 from build_simple_triggers import build as build_simple_triggers
+from audit_string_registers import main as audit_string_registers_main
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPILE_DIR = ROOT / "compile"
@@ -78,6 +79,7 @@ def main() -> None:
         raise SystemExit(1)
     print(f"[doctor] M&B 1.011 compile-source hardcoded contract OK: {len(contract_warnings)} warning(s).")
 
+    audit_string_registers_main()
     _backup_successful_compile(profile)
 
 

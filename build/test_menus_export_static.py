@@ -99,7 +99,7 @@ def test_mb1011_hardcoded_start_menus_keep_native_indices() -> None:
 
 
 def test_quest_journal_report_uses_caret_breaks_not_literal_newlines() -> None:
-    raw = (ROOT / "src" / "menus" / "camp" / "quest_journal_report.py").read_text(
+    raw = (ROOT / "src" / "menus" / "reports" / "quest_journal_report.py").read_text(
         encoding="utf-8", errors="replace"
     )
     assert "Quest Journal^^[Active Log and Companion Arcs]" in raw

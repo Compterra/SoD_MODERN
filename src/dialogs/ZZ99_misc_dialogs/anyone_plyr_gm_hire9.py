@@ -4,6 +4,7 @@ DIALOGS = [
 					(store_troop_gold, ":gold", "trp_player"),
 					(ge, ":gold", reg19),
 					(eq, "$g_sod_merc_player_hire_blocked", 0),
+					(ge, "$g_sod_merc_player_hire_market_limit", "$temp1"),
     ],"All right. Here is the {reg19} denar retainer.", "gm_hire10", [
 		(call_script, "script_sod_player_charge_gold", "$merc_cost"),]],
 ]

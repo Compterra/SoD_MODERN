@@ -6,5 +6,5 @@ DIALOGS = [
                              (eq, "$players_kingdom", "$g_talk_troop_faction"),
                              (eq, "$player_has_homage", 1),
                             ],
-   "{s66}, I wish to be released from my oath to you.", "lord_ask_leave_service", []],
+   "{s66}, my oath has reached its end. Release me from your service.", "lord_ask_leave_service", []],
 ]

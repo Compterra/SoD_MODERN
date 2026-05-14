@@ -225,8 +225,18 @@ SIMPLE_TRIGGERS = [
 		     (else_try), 
 			     (party_slot_eq, ":kingdom_hero_party", slot_party_ai_state, spai_undefined),  # then party following someone
                  (party_get_slot, ":commander_party", ":kingdom_hero_party", slot_party_commander_party),
+                 (assign, ":valid_commander_party", 0),
+                 (try_begin),
+                     (eq, ":commander_party", "p_main_party"),
+                     (eq, ":hero_fac", "$players_kingdom"),
+                     (assign, ":valid_commander_party", 1),
+                 (else_try),
+                     (gt, ":commander_party", 0),
+                     (party_is_active, ":commander_party"),
+                     (assign, ":valid_commander_party", 1),
+                 (try_end),
                      (try_begin),
-                     (party_is_active, ":commander_party"),   # follow your commander instead of doing nothing !
+                     (eq, ":valid_commander_party", 1),   # follow your commander instead of doing nothing !
 					 (party_get_battle_opponent, ":commander_opponent", ":commander_party"),
 
                                (try_begin),
@@ -271,10 +281,11 @@ SIMPLE_TRIGGERS = [
               (try_begin),
 				   (party_slot_eq, ":kingdom_hero_party", slot_party_ai_state, spai_besieging_center),		
                    (party_get_slot, ":center_no", ":kingdom_hero_party", slot_party_ai_object),
-                   (store_faction_of_party, ":center_fac", ":center_no"),
-                   (store_relation, ":relation", ":hero_fac", ":center_fac"), 
-                    
+
 					(try_begin),
+                      (is_between, ":center_no", walled_centers_begin, walled_centers_end),
+                      (store_faction_of_party, ":center_fac", ":center_no"),
+                      (store_relation, ":relation", ":hero_fac", ":center_fac"), 
 					  (this_or_next|eq, ":hero_fac", ":center_fac"),
 					  (ge, ":relation", 0),
 					  (eq, ":retreat_to_center", 0),
@@ -341,18 +352,18 @@ SIMPLE_TRIGGERS = [
                 (try_end),
 				
 				(try_begin),
-				  (ge, ":best_faction_center", 1), #twan 453
+				  (is_between, ":best_faction_center", walled_centers_begin, walled_centers_end), #twan 453
 				  (lt, ":compare1", 60),  
 				  (call_script, "script_party_set_ai_state", ":kingdom_hero_party", spai_retreating_to_center, ":best_faction_center"),
                   (else_try),
-				  (ge, ":best_friendly_center", 1),
+				  (is_between, ":best_friendly_center", walled_centers_begin, walled_centers_end),
 				  (lt, ":compare2", ":compare1"), 
 				  (call_script, "script_party_set_ai_state", ":kingdom_hero_party", spai_retreating_to_center, ":best_friendly_center"),
 				  (else_try),
-				  (ge, ":best_faction_center", 1),
+				  (is_between, ":best_faction_center", walled_centers_begin, walled_centers_end),
 				  (call_script, "script_party_set_ai_state", ":kingdom_hero_party", spai_retreating_to_center, ":best_faction_center"),
 				  (else_try),
-				  (ge, ":best_friendly_center", 1), #twan 453 end
+				  (is_between, ":best_friendly_center", walled_centers_begin, walled_centers_end), #twan 453 end
 				  (call_script, "script_party_set_ai_state", ":kingdom_hero_party", spai_retreating_to_center, ":best_friendly_center"),
 				  (else_try),
 				  (call_script, "script_party_set_ai_state", ":kingdom_hero_party", spai_undefined, -1),

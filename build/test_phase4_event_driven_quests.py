@@ -1,9 +1,15 @@
 from __future__ import annotations
 
 import inspect
+import sys
 import unittest
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any, Callable, Iterable
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from src.quests.quest_event_sources import (
     emit_agent_killed,
@@ -610,7 +616,7 @@ class Phase4EventDrivenQuestTests(unittest.TestCase):
                 "quest_runtimes",
                 "_quest_runtimes",
             )
-            if hasattr(journal, attribute)
+            if hasattr(journal, attribute) and not callable(getattr(journal, attribute))
         ]
         archived_collections = [
             getattr(journal, attribute)
@@ -624,7 +630,7 @@ class Phase4EventDrivenQuestTests(unittest.TestCase):
                 "terminal_runtimes",
                 "_terminal_runtimes",
             )
-            if hasattr(journal, attribute)
+            if hasattr(journal, attribute) and not callable(getattr(journal, attribute))
         ]
 
         active_contains_runtime = any(_collection_contains_runtime(collection, runtime_a) for collection in active_collections)

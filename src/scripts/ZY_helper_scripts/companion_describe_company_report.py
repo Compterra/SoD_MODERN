@@ -126,5 +126,7 @@ SCRIPTS = [
    (try_end),
    (call_script, "script_sod_companion_describe_company_depth_to_s30"),
    (str_store_string, s1, "@{s1}^^{s30}"),
+   (call_script, "script_sod_post_defeat_describe_command_memory_to_s35"),
+   (str_store_string, s1, "@{s1}^^{s35}"),
  ]),
 ]

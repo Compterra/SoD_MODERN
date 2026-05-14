@@ -29,8 +29,8 @@ MENUS = [
             (party_get_slot, ":center_population", "$temp", slot_center_sod_local_population),
             (assign, ":temp_center_population", ":center_population"),
             (val_div, ":temp_center_population", 10),
-            (val_sub, ":center_population", ":temp_center_population"),
-            (party_set_slot, "$temp", slot_center_sod_local_population, ":center_population"),
+            (store_mul, ":population_delta", ":temp_center_population", -1),
+            (call_script, "script_sod_center_apply_population_delta", "$temp", ":population_delta"),
           (try_end),
           (change_screen_return),
         ]
@@ -41,8 +41,8 @@ MENUS = [
         (party_get_slot, ":center_population", "$temp", slot_center_sod_local_population),
         (assign, ":temp_center_population", ":center_population"),
         (val_div, ":temp_center_population", 10),
-        (val_sub, ":center_population", ":temp_center_population"),
-        (party_set_slot, "$temp", slot_center_sod_local_population, ":center_population"),
+        (store_mul, ":population_delta", ":temp_center_population", -1),
+        (call_script, "script_sod_center_apply_population_delta", "$temp", ":population_delta"),
         (display_message, "@Many people have left {s1}.", quest_fail_color),
         (change_screen_return),
       ]

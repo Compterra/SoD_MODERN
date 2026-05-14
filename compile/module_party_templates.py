@@ -38,9 +38,9 @@ party_templates = [
   ("cattle_herd","Cattle Herd",icon_cattle|carries_goods(10),0,fac_neutral,merchant_personality,[(trp_cattle,80,120)]),
 
   ("mercenaries", "Jobless Mercenaries", icon_vaegir_knight|carries_goods(3), 0, fac_commoners, soldier_personality, [(trp_watchman, 5, 10),(trp_refugee, 5, 10),(trp_manhunter, 5, 10)]),
-  ("boar_clan_fighters","Boar Clan Fighters",icon_flagbearer_a|carries_goods(2),0,fac_sod_merc_guild7,bandit_personality,[(trp_boar_clan_tusk_rider, 1, 1),(trp_boar_clan_warrior,10,15),(trp_boar_clan_rider,7,12),(trp_boar_clan_vet_warrior,3,8),(trp_boar_clan_vet_rider,3,8), (trp_boar_clan_clansman, 0, 5),]),
-  ("boar_clan_fighters_desert","Boar Clan Fighters",icon_flagbearer_a|carries_goods(2),0,fac_sod_merc_guild7,bandit_personality,[(trp_boar_clan_tusk_rider, 1, 1),(trp_boar_clan_warrior,10,15),(trp_boar_clan_rider,7,12),(trp_boar_clan_vet_warrior,3,8),(trp_boar_clan_vet_rider,3,8),(trp_boar_clan_clansman, 0, 5),]),
-  ("boar_clan_reinforcements","Boar Clan Fighters",icon_flagbearer_a|carries_goods(2),0,fac_outlaws,bandit_personality,[(trp_boar_clan_warrior,0,5),(trp_boar_clan_rider,0,5),(trp_boar_clan_vet_warrior,0,3),(trp_boar_clan_vet_rider,0,3)]),
+  ("boar_clan_fighters","Boar Clan Fighters",icon_flagbearer_a|carries_goods(2),0,fac_sod_merc_guild7,soldier_personality,[(trp_boar_clan_tusk_rider, 1, 1),(trp_boar_clan_warrior,10,15),(trp_boar_clan_rider,7,12),(trp_boar_clan_vet_warrior,3,8),(trp_boar_clan_vet_rider,3,8), (trp_boar_clan_clansman, 0, 5),]),
+  ("boar_clan_fighters_desert","Boar Clan Fighters",icon_flagbearer_a|carries_goods(2),0,fac_sod_merc_guild7,soldier_personality,[(trp_boar_clan_tusk_rider, 1, 1),(trp_boar_clan_warrior,10,15),(trp_boar_clan_rider,7,12),(trp_boar_clan_vet_warrior,3,8),(trp_boar_clan_vet_rider,3,8),(trp_boar_clan_clansman, 0, 5),]),
+  ("boar_clan_reinforcements","Boar Clan Fighters",icon_flagbearer_a|carries_goods(2),0,fac_sod_merc_guild7,soldier_personality,[(trp_boar_clan_warrior,0,5),(trp_boar_clan_rider,0,5),(trp_boar_clan_vet_warrior,0,3),(trp_boar_clan_vet_rider,0,3)]),
   ("jotnar_clan_warriors","Jotnar Clan warriors",icon_axeman|carries_goods(20)|pf_auto_remove_in_town|pf_quest_party,0,fac_no_faction,soldier_personality,[(trp_jotnar_clan_armsman,15,15)]),
   ("sod_deserters","Deserters",icon_vaegir_knight|carries_goods(3),0,fac_deserters,bandit_personality,[(trp_watchman,8,14),(trp_sod_mercenary_footman,4,9),(trp_mercenary_crossbowman,1,4)]),
   ("sod_merc_deserters","Deserters",icon_vaegir_knight|carries_goods(3),0,fac_deserters,bandit_personality,[(trp_mercenary_swordsman,6,12),(trp_mercenary_crossbowman,4,8),(trp_mercenary_cavalry,2,5),(trp_hired_blade,1,3)]),
@@ -79,7 +79,7 @@ party_templates = [
 ##  ("peasant","Peasant",icon_peasant,0,fac_commoners,merchant_personality,[(trp_farmer,1,6),(trp_peasant_woman,0,7)]),
 
   ("black_khergit_raiders","Black Khergit Raiders",icon_khergit_horseman_b|carries_goods(8),0,fac_black_khergits,bandit_personality,[(trp_black_khergit_guard,1,4),(trp_black_khergit_horseman,8,16)]),
-  ("black_khergit_horde_camp","Black Khergit Horde Camp",icon_khergit_horseman_b|carries_goods(40),0,fac_black_khergits,hold_personality,[(trp_black_khergit_khan,1,1),(trp_black_khergit_guard,8,14),(trp_black_khergit_horseman,20,35)]),
+  ("black_khergit_horde_camp","Black Khergit Horde Camp",icon_khergit_horseman_b|carries_goods(80),0,fac_black_khergits,hold_personality,[(trp_black_khergit_khan,1,1),(trp_black_khergit_guard,25,45),(trp_black_khergit_horseman,80,130)]),
   ("black_khergit_night_guard","Black Khergit Night Guard",icon_khergit_horseman_b|carries_goods(4),0,fac_black_khergits,bandit_personality,[(trp_black_khergit_guard,3,7),(trp_black_khergit_horseman,8,14)]),
 
 # Old Bandits (comment these out in order to start using Jason's)
@@ -121,7 +121,7 @@ party_templates = [
 
 
   ("forager_party","Foraging Party",icon_gray_knight|carries_goods(5)|pf_show_faction,0,fac_commoners,merchant_personality,[]),
-  ("scout_party","Scouts",icon_gray_knight|carries_goods(1)|pf_show_faction,0,fac_commoners,bandit_personality,[]),
+  ("scout_party","Scouts",icon_gray_knight|carries_goods(1)|pf_show_faction,0,fac_commoners,bandit_personality,[(trp_caravan_guard,2,4),(trp_watchman,4,8)]),
   ("patrol_party","Patrol",icon_gray_knight|carries_goods(2)|pf_show_faction,0,fac_commoners,soldier_personality,[]),
 #  ("war_party", "War Party",icon_gray_knight|carries_goods(3),0,fac_commoners,soldier_personality,[]),
   ("messenger_party","Messenger",icon_gray_knight|pf_show_faction,0,fac_commoners,merchant_personality,[]),

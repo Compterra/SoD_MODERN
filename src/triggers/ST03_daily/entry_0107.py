@@ -157,8 +157,8 @@ SIMPLE_TRIGGERS = [
 				(gt, ":garrisoned", 0),
 
 				# remove the total population garrisoned from the local populace
-				(val_sub, ":center_population", ":garrisoned"),
-				(party_set_slot, ":population_center", slot_center_sod_local_population, ":center_population"),
+				(store_mul, ":population_delta", ":garrisoned", -1),
+				(call_script, "script_sod_center_apply_population_delta", ":population_center", ":population_delta"),
 
 				# inform the player, so they have a sense of how many and how fast garrison is proceeding
 				(try_begin),
@@ -166,14 +166,22 @@ SIMPLE_TRIGGERS = [
 
 					# generate the text for what was actually garrisoned
 					(assign, reg1, ":soldiers"),
-					(store_sub, reg0, ":soldiers", 1),
 					(str_store_troop_name_by_count, s1, ":soldier_id", ":soldiers"),
-					(str_store_string, s2, "@{reg0?{reg1}:an} {s1}"),
+					(try_begin),
+						(gt, ":soldiers", 1),
+						(str_store_string, s2, "@{reg1} {s1}"),
+					(else_try),
+						(str_store_string, s2, "@an {s1}"),
+					(try_end),
 
 					(assign, reg1, ":ranged"),
-					(store_sub, reg0, ":ranged", 1),
 					(str_store_troop_name_by_count, s1, ":ranged_id", ":ranged"),
-					(str_store_string, s3, "@{reg0?{reg1}:an} {s1}"),
+					(try_begin),
+						(gt, ":ranged", 1),
+						(str_store_string, s3, "@{reg1} {s1}"),
+					(else_try),
+						(str_store_string, s3, "@an {s1}"),
+					(try_end),
 
 					(try_begin),
 						(neq, ":soldiers", 0),
@@ -287,9 +295,12 @@ SIMPLE_TRIGGERS = [
 			(call_script, "script_store_troop_name_link", s1, ":nobles_id"),
 			(str_store_party_name_link, s2, "$g_sod_nobles_gather_at", faith_color),
 			(assign, reg1, ":nobles"),
-			(store_sub, reg0, ":nobles", 1),
-			(str_store_string, s1, "@{reg0?{reg1}:An} {s1} came to {s2} from the Old World."),
-			(display_message, s1, faith_color),
+			(try_begin),
+				(gt, ":nobles", 1),
+				(display_message, "@{reg1} {s1} came to {s2} from the Old World.", faith_color),
+			(else_try),
+				(display_message, "@An {s1} came to {s2} from the Old World.", faith_color),
+			(try_end),
 		(try_end),
     (try_end),
 	

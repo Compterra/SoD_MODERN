@@ -1,6 +1,8 @@
 DIALOGS = [
 [anyone, "start",
     [
+      (gt, "$g_encountered_party", 0),
+      (party_is_active, "$g_encountered_party"),
       (store_faction_of_party, ":cur_faction", "$g_encountered_party"),
       (eq, ":cur_faction", "fac_player_faction"),
       (this_or_next|party_slot_eq, "$g_encountered_party", slot_party_type, spt_player_mercenaries),

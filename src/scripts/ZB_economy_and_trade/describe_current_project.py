@@ -6,6 +6,8 @@ SCRIPTS = [
 
                         (str_clear, ":sreg"),
                         (try_begin),
+                          (is_between, ":center", centers_begin, centers_end),
+                          (party_is_active, ":center"),
                           (party_get_slot, ":cur_improvement", ":center", slot_center_current_improvement),
                           (gt, ":cur_improvement", 0),
                           (call_script, "script_sod_ensure_center_construction_state", ":center"),

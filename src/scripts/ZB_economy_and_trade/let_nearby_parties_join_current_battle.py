@@ -121,7 +121,7 @@ SCRIPTS = [
             (assign, ":do_join", 1),
           (try_end),
           (eq, ":do_join", 1),
-          (party_get_slot, ":party_type", ":party_no"),
+          (party_get_slot, ":party_type", ":party_no", slot_party_type),
           (eq, ":party_type", spt_kingdom_hero_party),
           (party_stack_get_troop_id, ":leader", ":party_no", 0),
           (call_script, "script_troop_get_player_relation", ":leader"),

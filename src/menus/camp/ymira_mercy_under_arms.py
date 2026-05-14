@@ -130,7 +130,8 @@ MENUS = [
           (ge, ":gold", 450),
         ], "Pay the riders to lose the trail tonight.",
         [
-          (troop_remove_gold, "trp_player", 450),
+          (call_script, "script_sod_player_charge_gold", 450),
+          (eq, reg1, 1),
           (assign, "$g_sod_ymira_refugee_confronted", 1),
           (assign, "$g_sod_ymira_refugee_result_grade", 2),
           (quest_set_slot, "qst_companion_ymira_mercy_under_arms", slot_quest_sod_runtime_progress, 75),

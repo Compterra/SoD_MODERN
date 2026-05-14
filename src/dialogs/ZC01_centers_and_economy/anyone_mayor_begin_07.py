@@ -3,10 +3,10 @@ DIALOGS = [
                           (check_quest_succeeded, "qst_troublesome_bandits"),
                           (quest_slot_eq, "qst_troublesome_bandits", slot_quest_giver_troop, "$g_talk_troop"),
                           ],
-   "I have heard about your deeds. You have given those bandits the punishment they deserved.\
- You are really as good as they say.\
+   "The town has heard what you did. Those bandits will not be counting our purses again.\
+ You have given the streets a little room to breathe.\
  Here is your reward: {reg5} denars.\
- I would like to give more but those bandits almost brought me to bankruptcy.",
+ I would pay more if those bandits had not nearly emptied the town's accounts.",
    "mayor_friendly_pretalk", [(quest_get_slot, ":quest_gold_reward", "qst_troublesome_bandits", slot_quest_gold_reward),
                               (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),
                               (assign, ":xp_reward", ":quest_gold_reward"),

@@ -1,5 +1,6 @@
 DIALOGS = [
 [anyone, "request_meeting_castle_lord", [(party_get_slot, ":castle_lord", "$g_encountered_party", slot_town_lord),
+                                         (is_between, ":castle_lord", 0, "trp_last_troop"),
                                          (call_script, "script_get_troop_attached_party", ":castle_lord"),
                                          (eq, "$g_encountered_party", reg0),
                                          (call_script, "script_store_troop_name", s2, ":castle_lord"),

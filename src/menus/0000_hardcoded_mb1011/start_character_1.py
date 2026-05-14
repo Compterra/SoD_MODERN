@@ -1,7 +1,7 @@
 MENUS = [
 (
     "start_character_1", mnf_disable_all_keys,
-    "As you left your burned land you realized there is no returning. Calradia with it's petty constant wars lies before you. You have no doubt that this small kingdom will be the next target of the Imperial Hound, Legate Gaius Marius. And Calradia will fall just like your beloved motherland...",
+    "As you left your burned homeland, you realized there was no returning. Calradia, with its petty and constant wars, lies before you. You have no doubt that these small kingdoms will be the next target of the Imperial Hound, Legate Gaius Marius. Without warning, Calradia may fall just as your beloved motherland did...",
     "none",
     [
       (set_background_mesh, "mesh_pic_chr2_faction"),
@@ -17,21 +17,21 @@ MENUS = [
       ("start_antares", [], "Ancient Empire of Antares.", [
         (assign, "$background_type", cb_antares),
         (assign, reg3, "$character_gender"),
-        (str_store_string, s10, "@You came into the world a {reg3?daughter:son} of Antarian nobility, owning vast areas of land with many villages and an ancient castle. You received, the best education and were trained from childhood for the rigors of aristocracy and life at court."),
+        (str_store_string, s10, "@You came into the world as a {reg3?daughter:son} of Antarian nobility, heir to broad lands, many villages, and an ancient castle. You received the finest education and were trained from childhood for the rigors of aristocracy and life at court."),
         (jump_to_menu, "mnu_start_character_2"),
       ]),
 
       ("start_marina", [], "Wealthy Republic of Marina.", [
         (assign, "$background_type", cb_marina),
         (assign, reg3, "$character_gender"),
-        (str_store_string, s10, "@You were born the {reg3?daughter:son} of a merchant. Your family was insanely rich even for standards of Marina. Your family banner was borne by merchants, warehouses, royal envoys and shops all over the country. A fleet of your ships were travelling to the borders of the known world."),
+        (str_store_string, s10, "@You were born the {reg3?daughter:son} of a merchant. Your family was wealthy even by the standards of Marina. Your family banner was borne by merchants, warehouses, royal envoys, and shops across the country. A fleet of your ships traveled to the borders of the known world."),
         (jump_to_menu, "mnu_start_character_2"),
       ]),
 
       ("start_aden", [], "Proud Kingdom of Aden.", [
         (assign, "$background_type", cb_aden),
         (assign, reg3, "$character_gender"),
-        (str_store_string, s10, "@As a child, you ware under the sole supervision of your father, a gallant Lord in service of King of Aden. You spent all your days training at the courtyard of the castle. You wanted to be just like him, strong and brave."),
+        (str_store_string, s10, "@As a child, you were under the sole supervision of your father, a gallant lord in service to the King of Aden. You spent your days training in the castle courtyard. You wanted to be just like him: strong, brave, and worthy of command."),
         (jump_to_menu, "mnu_start_character_2"),
       ]),
 
@@ -39,7 +39,7 @@ MENUS = [
         (assign, "$background_type", cb_villian),
         (assign, reg3, "$character_gender"),
         (str_store_string, s11, "@{reg3?daughter:son}"),
-        (str_store_string, s10, "@You were the {reg3?daughter:son} of a noble Villianese family. They were spending whole days on royal hunts and nights at feasts."),
+        (str_store_string, s10, "@You were the {reg3?daughter:son} of a noble Villianese family. They spent their days on royal hunts and their nights at feasts."),
         (jump_to_menu, "mnu_start_character_2"),
       ]),
 

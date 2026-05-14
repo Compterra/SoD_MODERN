@@ -20,6 +20,7 @@ MISSION_TEMPLATES = [
 
       common_battle_tab_press, 
 	  common_battle_horse_health, 
+      sod_battle_commander_spawn_player_ally_dismounted,
 
       (ti_question_answered, 0, 0, [],
        [(store_trigger_param_1, ":answer"),
@@ -29,7 +30,9 @@ MISSION_TEMPLATES = [
         (call_script, "script_simulate_retreat", 5, 20),
         (assign, "$g_battle_result", -1),
         (set_mission_result, -1),
-        (call_script, "script_count_mission_casualties_from_agents"),
+        (call_script, "script_sod_post_defeat_record_aftermath", -1),
+        (call_script, "script_sod_post_defeat_count_casualties_once"),
+        (call_script, "script_sod_post_defeat_clear"),
         (finish_mission, 0),
         ]),
 

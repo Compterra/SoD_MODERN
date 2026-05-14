@@ -195,10 +195,20 @@ MENUS = [
           (change_screen_return),
           ]),
 
+      build_sod_battle_commander_change_option(
+        "change_commander_castle_besiege",
+        "mnu_castle_besiege",
+        [
+          (ge, "$g_siege_method", 1),
+          (gt, "$g_friend_fit_for_battle", 3),
+          (store_current_hours, ":cur_hours"),
+          (ge, ":cur_hours", "$g_siege_method_finish_hours"),
+        ],
+      ),
 
       ("castle_lead_attack",
        [
-         (neg|troop_is_wounded, "trp_player"),
+         (call_script, "script_cf_sod_battle_commander_can_start"),
          (ge, "$g_siege_method", 1),
          (gt, "$g_friend_fit_for_battle", 3),
          (store_current_hours, ":cur_hours"),
@@ -243,6 +253,7 @@ MENUS = [
              (jump_to_menu, "mnu_siege_attack_meets_sally"),
            (else_try),
              (jump_to_menu, "mnu_battle_debrief"),
+             (call_script, "script_sod_battle_commander_apply_before_mission"),
              (change_screen_mission),
            (try_end),
        ]),
@@ -253,7 +264,7 @@ MENUS = [
          (store_current_hours, ":cur_hours"),
          (ge, ":cur_hours", "$g_siege_method_finish_hours"),
          ],
-       "Order your soldiers to attack while you stay back...", [(assign, "$cant_talk_to_enemy", 0), (jump_to_menu, "mnu_castle_attack_walls_simulate")]),
+       "Order your soldiers to attack while you stay back...", [(assign, "$cant_talk_to_enemy", 0), (call_script, "script_sod_battle_commander_reset"), (jump_to_menu, "mnu_castle_attack_walls_simulate")]),
 
       ("build_ladders", [(party_slot_eq, "$current_town", slot_center_siege_with_belfry, 0), (eq, "$g_siege_method", 0)],
        "Prepare ladders to attack the walls.", [(jump_to_menu, "mnu_construct_ladders")]),

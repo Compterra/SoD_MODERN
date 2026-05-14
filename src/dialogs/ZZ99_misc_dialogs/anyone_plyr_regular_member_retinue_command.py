@@ -9,6 +9,7 @@ DIALOGS = [
       (assign, "$g_sod_retinue_focus_companion", "$g_talk_troop"),
       (assign, "$g_sod_retinue_selected_troop", 0),
       (assign, "$g_sod_retinue_selected_count", 0),
+      (assign, "$g_sod_retinue_return_menu", 0),
     ]],
 
 [anyone, "regular_member_retinue_command",
@@ -22,6 +23,7 @@ DIALOGS = [
     "Show me your command rolls.", "close_window",
     [
       (jump_to_menu, "mnu_companion_retinue_manage"),
+      (finish_mission),
     ]],
 
 [anyone|plyr, "regular_member_retinue_command_choice", [],

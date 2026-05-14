@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone, "cpehus_sane_1", [], "I can't agree to such conditions, {playername} ! As much as I want to avoid crossing swords with you, the Legate keeps me on a leash. I hope you understand that I prefer to keep my head on my neck. ", "cpehus_sane_2", [] ],
+[anyone, "cpehus_sane_1", [], "I cannot agree to those terms, {playername}. I would rather avoid crossing swords with you, but the Legate keeps a short leash, and I prefer my head where it is.", "cpehus_sane_2", [] ],
 ]

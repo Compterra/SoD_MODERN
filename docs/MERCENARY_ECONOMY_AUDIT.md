@@ -204,6 +204,8 @@ Recommended direction:
   - `script_sod_merc_guild_apply_missed_payment`
   - `script_sod_merc_guild_describe_finances_to_sXX`
 - Keep Slavers and Boar Clan special if intended, but document their exclusion from classic employer rotation.
+- The old guild-employer fallback no longer picks a random active kingdom. It now scores eligible kingdoms using current demand, budget, urgency, preferred guild, last hire, and kingdom-to-guild weight, then assigns the guild pact to the best candidate.
+- Kingdom mercenary demand now explicitly models mercenaries as a gold-for-manpower substitute: low center population only increases demand when lord/ruler wealth is high enough to pay outsiders. Poor, depopulated kingdoms still need help, but they cannot bid as if coin were unlimited.
 
 ### 4. Guild Stock, Promotions, and Tavern-Like Purchase Pools
 
@@ -266,6 +268,8 @@ Economic meaning:
 
 - AI mercs convert lord wealth into temporary force projection.
 - Their presence contributes to faction power.
+- Accepted guild-market contracts now preflight the hiring kingdom's actual lord/ruler wealth and then drain that wealth on acceptance, so rich low-population kingdoms can buy time but cannot hire forever from an abstract budget alone.
+- Mercenary battle outcomes now feed back into future market choice: successful service improves kingdom-to-guild relations and eases price pressure, while costly losses sour that relation and make future contracts more expensive.
 
 Audit concerns:
 
@@ -710,7 +714,7 @@ Best as a later campaign-economy feature, not a first refactor.
 - Add static tests for:
   - external player mercenaries being included in weekly wages, if intended;
   - guild pact discount affecting wage and join cost;
-  - guild 1-5 classic employer rotation being explicit;
+  - guild 1-5 classic employer rotation being explicit and demand-scored;
   - Slaver/Boar special handling;
   - player hire and renewal routes using known helpers.
 

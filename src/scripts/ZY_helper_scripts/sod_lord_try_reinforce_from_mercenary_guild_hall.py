@@ -1,0 +1,38 @@
+# COST: trivial
+SCRIPTS = [
+("sod_lord_try_reinforce_from_mercenary_guild_hall",
+ [
+   (store_script_param_1, ":lord_party"),
+
+   (assign, ":troops_added", 0),
+   (try_begin),
+     (gt, ":lord_party", 0),
+     (party_slot_eq, ":lord_party", slot_party_type, spt_kingdom_hero_party),
+     (party_get_attached_to, ":attached_center", ":lord_party"),
+     (is_between, ":attached_center", castles_begin, castles_end),
+     (party_slot_eq, ":attached_center", slot_party_type, spt_castle),
+     (party_slot_eq, ":attached_center", slot_center_has_mercenary_guild_hall, 1),
+     (party_slot_eq, ":attached_center", slot_center_is_besieged_by, -1),
+     (store_faction_of_party, ":lord_faction", ":lord_party"),
+     (store_faction_of_party, ":center_faction", ":attached_center"),
+     (eq, ":lord_faction", ":center_faction"),
+     (call_script, "script_sod_center_refresh_mercenary_guild_hall_stock", ":attached_center"),
+     (party_get_slot, ":troop", ":attached_center", slot_center_sod_merc_hall_troop_type),
+     (party_get_slot, ":amount", ":attached_center", slot_center_sod_merc_hall_troop_amount),
+     (gt, ":troop", 0),
+     (gt, ":amount", 0),
+     (call_script, "script_party_get_ideal_size", ":lord_party"),
+     (assign, ":ideal_size", reg0),
+     (party_get_num_companions, ":party_size", ":lord_party"),
+     (lt, ":party_size", ":ideal_size"),
+     (store_sub, ":need", ":ideal_size", ":party_size"),
+     (val_min, ":need", 3),
+     (val_min, ":need", ":amount"),
+     (gt, ":need", 0),
+     (call_script, "script_sod_center_mercenary_guild_hall_consume_stock", ":attached_center", ":lord_party", ":need"),
+     (assign, ":troops_added", reg0),
+   (try_end),
+
+   (assign, reg0, ":troops_added"),
+ ]),
+]

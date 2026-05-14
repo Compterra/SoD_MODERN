@@ -5,7 +5,9 @@ SIMPLE_TRIGGERS = [
          (party_slot_eq, ":party_no", slot_party_type, spt_village_farmer),
          (party_is_in_any_town, ":party_no"),
          (party_get_slot, ":home_center", ":party_no", slot_party_home_center),
+         (is_between, ":home_center", villages_begin, villages_end),
          (party_get_cur_town, ":cur_center", ":party_no"),
+         (is_between, ":cur_center", centers_begin, centers_end),
 
          (assign, ":can_leave", 1),
          (try_begin),
@@ -64,25 +66,29 @@ SIMPLE_TRIGGERS = [
              (val_sub, ":total_change", ":home_tax_friction"),
 
              #Adding tax revenue to the center
-             (party_get_slot, ":accumulated_tariffs", ":home_center", slot_center_accumulated_tariffs),
-             (val_max, ":accumulated_tariffs", 0),
              (val_max, ":total_change", 0),
-             (val_add, ":accumulated_tariffs", ":total_change"),
-             (val_min, ":accumulated_tariffs", 2000000),
-             (party_set_slot, ":home_center", slot_center_accumulated_tariffs, ":accumulated_tariffs"),
+             (call_script, "script_sod_center_apply_tariffs_delta", ":home_center", ":total_change"),
 
              #Moving farmers to the market town immediately after village trade
              (party_get_slot, ":market_town", ":home_center", slot_village_market_town),
-             (is_between, ":market_town", towns_begin, towns_end),
-             (party_set_slot, ":party_no", slot_party_ai_object, ":market_town"),
-             (party_set_slot, ":party_no", slot_party_ai_state, spai_trading_with_town),
-             (party_set_ai_behavior, ":party_no", ai_bhvr_travel_to_party),
-             (party_set_ai_object, ":party_no", ":market_town"),
+             (try_begin),
+               (is_between, ":market_town", towns_begin, towns_end),
+               (party_set_slot, ":party_no", slot_party_ai_object, ":market_town"),
+               (party_set_slot, ":party_no", slot_party_ai_state, spai_trading_with_town),
+               (party_set_ai_behavior, ":party_no", ai_bhvr_travel_to_party),
+               (party_set_ai_object, ":party_no", ":market_town"),
+             (else_try),
+               (party_set_slot, ":party_no", slot_party_ai_object, ":home_center"),
+               (party_set_slot, ":party_no", slot_party_ai_state, spai_trading_with_town),
+               (party_set_ai_behavior, ":party_no", ai_bhvr_travel_to_party),
+               (party_set_ai_object, ":party_no", ":home_center"),
+             (try_end),
            (try_end),
          (else_try),
            (try_begin),
              (party_get_slot, ":cur_ai_state", ":party_no", slot_party_ai_state),
              (party_get_slot, ":cur_ai_object", ":party_no", slot_party_ai_object),
+             (is_between, ":cur_ai_object", towns_begin, towns_end),
              (eq, ":cur_ai_state", spai_trading_with_town),
              (eq, ":cur_center", ":cur_ai_object"),
 
@@ -135,20 +141,12 @@ SIMPLE_TRIGGERS = [
              (val_div, ":home_tariff_change", 100),
 
              #Adding tax revenue to the center
-             (party_get_slot, ":accumulated_tariffs", ":cur_ai_object", slot_center_accumulated_tariffs),
-             (val_max, ":accumulated_tariffs", 0),
              (val_max, ":market_tariff_change", 0),
-             (val_add, ":accumulated_tariffs", ":market_tariff_change"),
-             (val_min, ":accumulated_tariffs", 2000000),
-             (party_set_slot, ":cur_ai_object", slot_center_accumulated_tariffs, ":accumulated_tariffs"),
+             (call_script, "script_sod_center_apply_tariffs_delta", ":cur_ai_object", ":market_tariff_change"),
 
              #Adding tax revenue to the home center
-             (party_get_slot, ":accumulated_tariffs", ":home_center", slot_center_accumulated_tariffs),
-             (val_max, ":accumulated_tariffs", 0),
              (val_max, ":home_tariff_change", 0),
-             (val_add, ":accumulated_tariffs", ":home_tariff_change"),
-             (val_min, ":accumulated_tariffs", 2000000),
-             (party_set_slot, ":home_center", slot_center_accumulated_tariffs, ":accumulated_tariffs"),
+             (call_script, "script_sod_center_apply_tariffs_delta", ":home_center", ":home_tariff_change"),
 
              # Increasing food stocks of the town based on actual trade volume,
              # but scaled to town storage capacity rather than huge flat imports.
@@ -182,9 +180,8 @@ SIMPLE_TRIGGERS = [
              (val_clamp, ":food_import_cap", 0, 20),
              (val_max, ":trade_food_import", 2),
              (val_min, ":trade_food_import", ":food_import_cap"),
-             (val_add, ":town_food_store", ":trade_food_import"),
-             (val_min, ":town_food_store", ":food_store_limit"),
-             (party_set_slot, ":cur_ai_object", slot_party_food_store, ":town_food_store"),
+             (call_script, "script_sod_center_apply_food_delta", ":cur_ai_object", ":trade_food_import"),
+             (assign, ":town_food_store", reg0),
 
              # Let trade throughput materially influence both producer and market outcomes.
              (assign, ":trade_strength", ":trade_value"),
@@ -263,6 +260,7 @@ SIMPLE_TRIGGERS = [
            (try_end),
 
            #Moving farmers to their home village
+           (is_between, ":home_center", villages_begin, villages_end),
            (party_set_slot, ":party_no", slot_party_ai_object, ":home_center"),
            (party_set_slot, ":party_no", slot_party_ai_state, spai_trading_with_town),
            (party_set_ai_behavior, ":party_no", ai_bhvr_travel_to_party),

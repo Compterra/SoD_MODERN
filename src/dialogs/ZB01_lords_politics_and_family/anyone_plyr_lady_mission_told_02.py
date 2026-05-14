@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "lady_mission_told", [], "{s66}, I fear I cannot help you right now.", "lady_mission_rejected", []],
+[anyone|plyr, "lady_mission_told", [], "{s66}, I would rather refuse honestly than give you a promise that fails when you need it.", "lady_mission_rejected", []],
 ]

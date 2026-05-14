@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "lord_suggets_attack_enemy_castle2", [],
-   "Never mind my lord.", "lord_pretalk", []],
+   "Hold that thought, my lord. I will name no target yet.", "lord_pretalk", []],
 ]

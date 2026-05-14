@@ -14,6 +14,7 @@ MENUS = [
         (assign, ":cur_center", reg0),
         (val_add, ":center_count", 1),
         (str_store_party_name, s1, ":cur_center"),
+        (call_script, "script_sod_trade_network_describe_center_identity_to_s23", ":cur_center"),
 
         (call_script, "script_sod_get_center_goods_market_profile", ":cur_center"),
         (assign, ":food_balance", reg0),
@@ -104,7 +105,7 @@ MENUS = [
         (else_try),
           (str_store_string, s11, "@wealth should stay roughly steady"),
         (try_end),
-        (str_store_string, s8, "@{s1}: {s2}.^Goods: {s4}; {s5}; {s6}; {s7}.^Market mood: {s10}.^Outlook: {s11}; prosperity signal shows {s3}."),
+        (str_store_string, s8, "@{s1}: locally known as a {s23}; {s2}.^Goods: {s4}; {s5}; {s6}; {s7}.^Market mood: {s10}.^Outlook: {s11}; prosperity signal shows {s3}."),
 
         (try_begin),
           (eq, ":first", 1),
@@ -119,7 +120,7 @@ MENUS = [
         (eq, ":center_count", 0),
         (str_store_string, s9, "@You do not personally hold any centers."),
       (try_end),
-      (str_store_string, s9, "@Center Goods Market Report:^^Trade goods now matter as consumption, caravan flow, and center wealth/liquidity. Villages mainly export food and raw materials, towns turn rural surplus and services into liquid markets, and castles consume food and strategic goods for military support. Scarcity raises demand, but low security and high tax friction reduce willingness to trade.^^{s9}"),
+      (str_store_string, s9, "@Center Goods Market Report:^^This is a steward's summary, not fresh road gossip. Trade goods matter as consumption, caravan flow, and center wealth. Villages mainly export food and raw materials, towns turn rural surplus and services into coin, and castles consume food and strategic goods for military support. Scarcity raises demand, but sickness, poor security, and heavy tolls make merchants cautious.^^{s9}"),
     ],
     [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_fief_reports")]),

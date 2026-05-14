@@ -102,9 +102,8 @@ SCRIPTS = [
         (party_get_num_companions, ":size_after", ":village_no"),
         (store_sub, ":added", ":size_after", ":size_before"),
         (val_min, ":added", ":population_surplus"),
-        (val_sub, ":population", ":added"),
-        (val_max, ":population", village_pop_min),
-        (party_set_slot, ":village_no", slot_center_sod_local_population, ":population"),
+        (store_mul, ":population_delta", ":added", -1),
+        (call_script, "script_sod_center_apply_population_delta", ":village_no", ":population_delta"),
       (try_end),
   ]),
 ]

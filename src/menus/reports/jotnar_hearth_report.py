@@ -18,7 +18,7 @@ MENUS = [
       (store_num_parties_of_template, ":wintering_camps", "pt_jotnar_wintering_camp"),
       (store_num_parties_of_template, ":slaver_transports", "pt_slavers_caravan"),
       (store_relation, ":standing", "fac_player_supporters_faction", "fac_sod_merc_guild4"),
-      (str_store_string, s3, "@no formal standing"),
+      (str_store_string, s3, "@unproven hearth friend"),
       (try_begin),
         (ge, ":standing", 20),
         (str_store_string, s3, "@trusted"),

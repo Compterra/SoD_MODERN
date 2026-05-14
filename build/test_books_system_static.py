@@ -64,16 +64,16 @@ def test_bookseller_dialogue_has_advice_surface() -> None:
 def test_camp_reading_and_reports_use_book_ledger() -> None:
     menu_order = read("src/menus/_order_game_menus.txt")
     assert_contains(menu_order, "reports/book_ledger_report.py")
-    assert_contains(read("src/menus/0000_hardcoded_mb1011/reports.py"), "mnu_book_ledger_report")
+    assert_contains(read("src/menus/reports/report_submenus.py"), "mnu_book_ledger_report")
     assert_contains(read("src/menus/reports/book_ledger_report.py"), "script_sod_books_describe_library_report_to_s20")
-    assert_contains(read("src/menus/camp/camp_action.py"), "Choose a book for the road")
-    read_menu = read("src/menus/camp/camp_action_read_book.py")
+    assert_contains(read("src/menus/0000_hardcoded_mb1011/camp_action.py"), "Choose a book for the road")
+    read_menu = read("src/menus/0000_hardcoded_mb1011/camp_action_read_book.py")
     assert_contains(read_menu, "({reg1}% read)")
     assert_contains(read_menu, "Review your book ledger")
     assert_contains(read_menu, "Stop reading {s1} for now")
     assert_contains(read_menu, "You have no unread study books ready")
-    assert_contains(read("src/menus/camp/camp_action_read_book_start.py"), "script_sod_books_describe_book_to_s20")
-    assert_contains(read("src/menus/camp/character_report.py"), "script_sod_books_describe_current_reading_to_s20")
+    assert_contains(read("src/menus/0000_hardcoded_mb1011/camp_action_read_book_start.py"), "script_sod_books_describe_book_to_s20")
+    assert_contains(read("src/menus/0000_hardcoded_mb1011/character_report.py"), "script_sod_books_describe_current_reading_to_s20")
 
 
 def test_book_completion_message_is_polished() -> None:
@@ -106,8 +106,13 @@ def test_new_readable_stat_books_exist_and_are_sold() -> None:
     items = read("compile/module_items.py")
     troops = read("compile/module_troops.py")
     game_start = read("src/scripts/ZA_hardcoded_game_scripts/game_start.py")
-    read_menu = read("src/menus/camp/camp_action_read_book.py")
+    item_extra_text = read("src/scripts/ZA_hardcoded_game_scripts/game_get_item_extra_text.py")
+    protected = read("src/scripts/ZB_economy_and_trade/sod_auto_loot_item_is_protected.py")
+    book_helpers = read("src/scripts/ZY_helper_scripts/sod_books.py")
+    read_menu = read("src/menus/0000_hardcoded_mb1011/camp_action_read_book.py")
     for token in (
+        "book_administration",
+        "Administration of the Rhodok Republik",
         "book_chirurgeons_ledger",
         "The Chirurgeon's Ledger",
         "book_anatomy_of_mercy",
@@ -120,9 +125,12 @@ def test_new_readable_stat_books_exist_and_are_sold() -> None:
         "The Quartermaster's Burden",
         "book_embassies_in_wartime",
         "Embassies in Wartime",
+        "book_pathfinding_reference",
+        "Cartography",
     ):
         assert_contains(items, token)
     for token in (
+        "itm_book_administration",
         "itm_book_chirurgeons_ledger",
         "itm_book_anatomy_of_mercy",
         "itm_book_drill_camp_company",
@@ -133,6 +141,14 @@ def test_new_readable_stat_books_exist_and_are_sold() -> None:
         assert_contains(troops, token)
         assert_contains(game_start, token)
         assert_contains(read_menu, token)
+        assert_contains(item_extra_text, token)
+        assert_contains(protected, token)
+        assert_contains(book_helpers, token)
+    assert_contains(troops, "itm_book_pathfinding_reference")
+    assert_contains(game_start, "itm_book_pathfinding_reference")
+    assert_contains(item_extra_text, "itm_book_pathfinding_reference")
+    assert_contains(protected, "itm_book_pathfinding_reference")
+    assert_contains(book_helpers, "itm_book_pathfinding_reference")
 
 
 if __name__ == "__main__":

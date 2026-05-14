@@ -110,6 +110,7 @@ SCRIPTS = [
       (quest_set_slot, "qst_rtc_door_into_calradia", slot_quest_rtc_flags, ":flags"),
       (quest_set_slot, "qst_rtc_price_of_bread", slot_quest_rtc_flags, ":flags"),
       (call_script, "script_sod_rtc_price_of_bread_bind_world"),
+      (call_script, "script_sod_rtc_act_i_cleanup_targets"),
       (call_script, "script_succeed_quest", "qst_rtc_door_into_calradia"),
       (call_script, "script_sod_quest_chain_branch_success", "qst_rtc_door_into_calradia", "qst_rtc_price_of_bread", 0),
   ]),

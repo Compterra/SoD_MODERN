@@ -435,8 +435,8 @@ SAMPLE_MOTIF_DOT = quest_graph_dot(SAMPLE_MOTIF_CHAIN)
 
 # [ src/quests/0013_seven_oaths_of_ash_quests.py ]
 # -*- coding: utf-8 -*-
-# The Seven Oaths of Ash campaign quest foundation.
-# This fragment establishes the executable quest records before live scene wiring.
+# The Seven Oaths of Ash campaign quest spine.
+# These records mirror the implemented dialogue, menu, mission, and aftermath wiring.
 
 # [ src/quests/9999_quests_end.py ]
 # Keep the terminal quest sentinel in its own final fragment.

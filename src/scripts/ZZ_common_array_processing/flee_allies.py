@@ -103,6 +103,7 @@ SCRIPTS = [
                             (agent_get_position, pos2, ":agent"),
                             (position_move_z, pos2, 200, 0),
                             (agent_clear_scripted_mode, ":agent"),
+                            (agent_set_slot, ":agent", slot_agent_is_hard_routed, 1),
                             (agent_set_scripted_destination, ":agent", pos4, 1),
                           (try_end),
                         (end_try),

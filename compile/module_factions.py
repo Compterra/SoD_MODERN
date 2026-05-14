@@ -16,7 +16,7 @@ from header_factions import *
 #  7) Faction color (default is gray)
 ####################################################################################################################
 
-default_kingdom_relations = [("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.05), ("mountain_bandits", -0.02), ("forest_bandits", -0.02), ("sod_merc_guild7", -0.02)]
+default_kingdom_relations = [("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.05), ("mountain_bandits", -0.02), ("forest_bandits", -0.02), ("sod_merc_guild7", 0.0)]
 factions = [
   ("no_faction", "No Faction", 0, 0.9, [], []),
   ("commoners", "Commoners", 0, 0.1, [("player_faction", 0.1)], []),
@@ -49,7 +49,7 @@ factions = [
 	("sod_merc_guild4","The Jotnar Clan", ff_always_hide_label, 0.5,[("outlaws", -1), ("peasant_rebels", -1), ("deserters", -1), ("mountain_bandits", -1), ("forest_bandits", -1)],[],0xFFFFFFFF),
 	("sod_merc_guild5","The Serpent Host", ff_always_hide_label, 0.5,[("outlaws", -1), ("peasant_rebels", -1), ("deserters", -1), ("mountain_bandits", -1), ("forest_bandits", -1)],[],0xFFFFFFFF),
 	("sod_merc_guild6","The Slavers", ff_always_hide_label, 0.5,[("outlaws", -1), ("peasant_rebels", -1), ("deserters", -1), ("mountain_bandits", -1), ("forest_bandits", -1)],[],0xFFFFFF),
-	("sod_merc_guild7","The Boar Clan", ff_always_hide_label, 0.5,[("commoners", -0.6), ("player_faction", -0.05)],[],0xCDBA96),
+	("sod_merc_guild7","The Boar Clan", ff_always_hide_label, 0.5,[("commoners", 0.0), ("player_faction", 0.0), ("player_supporters_faction", 0.0), ("outlaws", -0.2), ("deserters", -0.2), ("mountain_bandits", -0.1), ("forest_bandits", -0.1)],[],0xCDBA96),
 #SoD mercenary guilds end
 
 	# additional mercenary guild
@@ -59,18 +59,18 @@ factions = [
 #  ("vaegir_caravans", "Vaegir Caravans", 0, 0.5, [("outlaws", -0.8), ("dark_knights", -0.2)], []),
 
   ("player_faction", "Player Faction", 0, 0.9, [], []),
-  ("player_supporters_faction", "Player Faction", 0, 0.9, [("sod_merc_guild7", -0.05), ("player_faction", 1.00), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.05), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], []),
-  ("kingdom_1",  "Kingdom of Swadia", 0, 0.9, [("sod_merc_guild7", -0.05), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0xDD8844),
-  ("kingdom_2",  "Kingdom of Vaegirs",    0, 0.9, [("sod_merc_guild7", -0.05), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0x33DD33),
-  ("kingdom_3",  "Khergit Khanate", 0, 0.9, [("sod_merc_guild7", -0.05), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0xCC99FF),
-  ("kingdom_4",  "Kingdom of Nords",    0, 0.9, [("sod_merc_guild7", -0.05), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0xDDDD33),
-  ("kingdom_5",  "Rhodok Republic",  0, 0.9, [("sod_merc_guild7", -0.05), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0x33DDDD),
+  ("player_supporters_faction", "Player Faction", 0, 0.9, [("sod_merc_guild7", 0.0), ("player_faction", 1.00), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.05), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], []),
+  ("kingdom_1",  "Kingdom of Swadia", 0, 0.9, [("sod_merc_guild7", 0.0), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0xDD8844),
+  ("kingdom_2",  "Kingdom of Vaegirs",    0, 0.9, [("sod_merc_guild7", 0.0), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0x33DD33),
+  ("kingdom_3",  "Khergit Khanate", 0, 0.9, [("sod_merc_guild7", 0.0), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0xCC99FF),
+  ("kingdom_4",  "Kingdom of Nords",    0, 0.9, [("sod_merc_guild7", 0.0), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0xDDDD33),
+  ("kingdom_5",  "Rhodok Republic",  0, 0.9, [("sod_merc_guild7", 0.0), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0x33DDDD),
   ("kingdom_6",  "Imperial Expeditionary Force", max_player_rating(-100), 0.9, [("player_faction", -1), ("player_supporters_faction", -1), ("kingdom_1", -1), ("kingdom_2", -1), ("kingdom_3", -1), ("kingdom_4", -1), ("kingdom_5", -1)], [], 0xFF0000),
-  ("kingdom_1_rebels",  "Swadian Claimant Rebels", 0, 0.9, [("sod_merc_guild7", -0.05), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0xAA4422),
-  ("kingdom_2_rebels",  "Vaegir Claimant Rebels", 0, 0.9, [("sod_merc_guild7", -0.05), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0x229922),
-  ("kingdom_3_rebels",  "Khergit Claimant Rebels", 0, 0.9, [("sod_merc_guild7", -0.05), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0x9966CC),
-  ("kingdom_4_rebels",  "Nord Claimant Rebels", 0, 0.9, [("sod_merc_guild7", -0.05), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0xAAAA22),
-  ("kingdom_5_rebels",  "Rhodok Claimant Rebels", 0, 0.9, [("sod_merc_guild7", -0.05), ("outlaws", -0.05), ("peasant_rebels", -0.1), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0x229999),
+  ("kingdom_1_rebels",  "Swadian Claimant Rebels", 0, 0.9, [("kingdom_1", -1.0), ("peasant_rebels", 0.35), ("sod_merc_guild7", 0.0), ("outlaws", -0.05), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0xAA4422),
+  ("kingdom_2_rebels",  "Vaegir Claimant Rebels", 0, 0.9, [("kingdom_2", -1.0), ("peasant_rebels", 0.35), ("sod_merc_guild7", 0.0), ("outlaws", -0.05), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0x229922),
+  ("kingdom_3_rebels",  "Khergit Claimant Rebels", 0, 0.9, [("kingdom_3", -1.0), ("peasant_rebels", 0.35), ("sod_merc_guild7", 0.0), ("outlaws", -0.05), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0x9966CC),
+  ("kingdom_4_rebels",  "Nord Claimant Rebels", 0, 0.9, [("kingdom_4", -1.0), ("peasant_rebels", 0.35), ("sod_merc_guild7", 0.0), ("outlaws", -0.05), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0xAAAA22),
+  ("kingdom_5_rebels",  "Rhodok Claimant Rebels", 0, 0.9, [("kingdom_5", -1.0), ("peasant_rebels", 0.35), ("sod_merc_guild7", 0.0), ("outlaws", -0.05), ("deserters", -0.02), ("mountain_bandits", -0.05), ("forest_bandits", -0.05)], [], 0x229999),
 
   ("kingdoms_end", "kingdoms_end", 0, 0, [], []),
 	("elephant_guard", "kingdoms_end", 0, 0, [], []),
@@ -78,7 +78,7 @@ factions = [
   ("robber_knights",  "robber_knights", 0, 0.1, [], []),
 
   ("khergits", "Khergits", 0, 0.5, [("player_faction", 0.0)], []),
-  ("black_khergits", "Black Khergits", 0, 0.5, [("player_faction", -0.3), ("kingdom_1", -0.02), ("kingdom_2", -0.02)], []),
+  ("black_khergits", "Black Khergits", 0, 0.5, [("player_faction", -0.3), ("kingdom_1", -0.15), ("kingdom_2", -0.15), ("kingdom_3", -0.15), ("kingdom_4", -0.15), ("kingdom_5", -0.15), ("kingdom_6", -0.15)], [], 0x0B1B3D),
 
 ##  ("rebel_peasants", "Rebel Peasants", 0, 0.5, [("vaegirs", -0.5), ("player_faction", 0.0)], []),
 

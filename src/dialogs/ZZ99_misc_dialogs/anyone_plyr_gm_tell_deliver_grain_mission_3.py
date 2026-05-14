@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "gm_tell_deliver_grain_mission_3", [],
-   "Then I will go and find you the {s13} you need.", "gm_deliver_grain_mission_accept", []],
+   "Then I will bring the {s13} before shortage starts setting your prices for you.", "gm_deliver_grain_mission_accept", []],
 ]

@@ -1,7 +1,7 @@
 MENUS = [
 (
     "oath_fulfilled", 0,
-    "You had a contract with {s1} to serve him for a certain duration. Your contract has now expired. What will you do?",
+  "Your term of mercenary service with {s1} has expired. What will you do?",
     "none",
     [
       (faction_get_slot, ":faction_leader", "$players_kingdom", slot_faction_leader),
@@ -11,7 +11,7 @@ MENUS = [
       ("renew_oath",
         [(faction_get_slot, ":faction_leader", "$players_kingdom", slot_faction_leader),
          (call_script, "script_store_troop_name", s1, ":faction_leader")],
-        "Renew your contract with {s1} for another month.",
+        "Renew your kingdom service with {s1} for another month.",
         [(store_current_day, ":cur_day"),
          (store_add, "$mercenary_service_next_renew_day", ":cur_day", 30),
          (change_screen_return), ]),

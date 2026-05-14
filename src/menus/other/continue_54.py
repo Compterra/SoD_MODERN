@@ -11,7 +11,7 @@ MENUS = [
         (str_clear, s9),
         (try_begin),
           (eq, reg0, 1), #troop is found and text is correct
-          (str_store_string, s9, s1),
+          (str_store_string_reg, s9, s1),
         (try_end),
         (call_script, "script_store_troop_name", s8, ":quest_target_troop"),
         (assign, reg13, ":quest_target_amount"),

@@ -26,6 +26,7 @@ SCRIPTS = [
 
       (store_mul, "$g_strength_contribution_of_player", "$g_starting_strength_main_party", 100), # reduce contribution if we are helping someone.
       (val_div, "$g_strength_contribution_of_player", "$g_starting_strength_friends"),
+      (val_clamp, "$g_strength_contribution_of_player", 0, 100), # keep player contribution in a sane range for XP/loot scaling
 
       #      (try_begin),
       #        (gt, "$g_ally_party", 0),

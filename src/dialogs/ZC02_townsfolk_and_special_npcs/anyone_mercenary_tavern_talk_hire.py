@@ -19,6 +19,7 @@ DIALOGS = [
                                           (try_end), ],
    "{s17}", "close_window", [
                                           (party_get_slot, ":mercenary_troop", "$g_encountered_party", slot_center_mercenary_troop_type),
+                                          (party_get_slot, ":mercenary_amount", "$g_encountered_party", slot_center_mercenary_troop_amount),
                                           (call_script, "script_game_get_join_cost", ":mercenary_troop"),
                                           (store_mul, ":total_cost", "$temp", reg0),
                                           (call_script, "script_sod_player_charge_gold", ":total_cost"),
@@ -27,7 +28,9 @@ DIALOGS = [
                                             (play_sound, "snd_money_paid"),
                                             (val_add, "$g_sod_weekly_troops_hired", ":total_cost"),
                                             (party_add_members, "p_main_party", ":mercenary_troop", "$temp"),
-                                            (party_set_slot, "$g_encountered_party", slot_center_mercenary_troop_amount, 0),
+                                            (val_sub, ":mercenary_amount", "$temp"),
+                                            (val_max, ":mercenary_amount", 0),
+                                            (party_set_slot, "$g_encountered_party", slot_center_mercenary_troop_amount, ":mercenary_amount"),
                                             (try_begin),
                                               (party_slot_eq, "$g_encountered_party", slot_party_type, spt_town),
                                               (party_get_slot, ":pop", "$g_encountered_party", slot_center_sod_local_population),

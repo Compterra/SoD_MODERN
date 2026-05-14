@@ -3,7 +3,7 @@ DIALOGS = [
     [
       (call_script, "script_sod_chancellor_lord_recruitment_refresh"),
     ],
-    "It requires one income producing center per lord, plus an additional one for yourself.^^{s1}", "chancellor_lord_action",
+    "A lord needs an income-producing fief, and the crown must keep one in reserve.^^{s60}", "chancellor_lord_action",
     [
     ]
   ],

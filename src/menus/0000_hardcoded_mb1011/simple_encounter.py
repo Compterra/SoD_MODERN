@@ -48,6 +48,7 @@ MENUS = [
           (try_begin),
             (lt, "$g_encountered_party_relation", 0),
             (assign, "$encountered_party_hostile", 1),
+            (call_script, "script_sod_camp_mark_interrupted_battle_readiness"),
             (try_begin),
               (encountered_party_is_attacker),
               (assign, "$cant_leave_encounter", 1),
@@ -160,9 +161,15 @@ MENUS = [
         (try_end),
     ],
     [
+      build_sod_battle_commander_change_option(
+        "change_commander_simple_encounter",
+        "mnu_simple_encounter",
+        [(eq, "$encountered_party_friendly", 0)],
+      ),
+
       ("encounter_attack", [
         (eq, "$encountered_party_friendly", 0),
-        (neg|troop_is_wounded, "trp_player"),
+        (call_script, "script_cf_sod_battle_commander_can_start"),
 ##         (store_troop_health, reg(5)),
 ##         (ge, reg(5), 5),
       ],
@@ -191,6 +198,7 @@ MENUS = [
         (try_end),
         (assign, "$g_next_menu", "mnu_simple_encounter"),
         (jump_to_menu, "mnu_battle_debrief"),
+        (call_script, "script_sod_battle_commander_apply_before_mission"),
         (change_screen_mission),
       ]),
 
@@ -200,6 +208,7 @@ MENUS = [
         (ge, reg(0), 4),
       ],
       "Order your troops to attack without you.", [
+        (call_script, "script_sod_battle_commander_reset"),
         (jump_to_menu, "mnu_order_attack_begin"),
         #(simulate_battle, 3)
       ]),

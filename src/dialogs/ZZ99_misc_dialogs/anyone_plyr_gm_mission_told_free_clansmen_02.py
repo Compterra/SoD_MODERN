@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "gm_mission_told_free_clansmen", [],
-   "Sorry. I don't have time for this right now.", "gm_pretalk", []],
+   "Not now. I cannot pull clansmen out of chains today.", "gm_pretalk", []],
 ]

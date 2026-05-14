@@ -1,6 +1,6 @@
 DIALOGS = [
 [anyone|plyr, "gm_revange_quest_brief", [],
-   "Alright. I will help them.", "gm_merchant_quest_taken_bandits",
+   "I will help them settle the account in blood and witnesses.", "gm_merchant_quest_taken_bandits",
    [
 	(quest_get_slot, ":quest_target_center", "qst_jotnar_clan_revenge", slot_quest_target_center),
 	(quest_get_slot, ":quest_target_troop", "qst_jotnar_clan_revenge", slot_quest_target_troop),

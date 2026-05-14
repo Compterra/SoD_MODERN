@@ -45,6 +45,18 @@ SCRIPTS = [
 
 		(assign, "$g_sod_weekly_scoutage", 0),
 		(assign, "$g_sod_player_tax_couriers_enabled", 1),
+		(assign, "$g_sod_tax_courier_last_social_event", 0),
+		(assign, "$g_sod_tax_courier_last_social_event_day", -100),
+		(assign, "$g_sod_tax_courier_last_social_event_faction", 0),
+		(assign, "$g_sod_tax_courier_last_social_event_center", 0),
+		(assign, "$g_sod_tax_courier_last_social_event_amount", 0),
+		(assign, "$g_sod_tax_courier_nonhostile_coercions", 0),
+		(assign, "$g_sod_tax_courier_hostile_seizures", 0),
+		(assign, "$g_sod_tax_courier_safe_passages", 0),
+		(assign, "$g_sod_tax_courier_tavern_rumor_seen_day", -100),
+		(assign, "$g_sod_tax_courier_lord_rumor_seen_day", -100),
+		(assign, "$g_sod_tax_courier_merchant_rumor_seen_day", -100),
+		(assign, "$g_sod_tax_courier_companion_rumor_seen_day", -100),
 		(assign, "$g_sod_house_politics_active", 0),
 		(assign, "$g_sod_house_last_incident_day", 0),
 		(assign, "$g_sod_house_last_incident_troop", 0),
@@ -714,7 +726,7 @@ SCRIPTS = [
 	  (faction_set_slot, "fac_sod_merc_guild4", slot_guild_tier_1_unit_1, jotnar_clan_tier_1_unit_1),
 	  (faction_set_slot, "fac_sod_merc_guild5", slot_guild_tier_1_unit_1, serpent_host_tier_1_unit_1),
 	  (faction_set_slot, "fac_sod_merc_guild6", slot_guild_tier_1_unit_1, slavers_tier_1_unit_1),
-	  (faction_set_slot, "fac_sod_merc_guild7", slot_guild_tier_1_unit_1, "trp_boar_clan_clansman"),
+	  (faction_set_slot, "fac_sod_merc_guild7", slot_guild_tier_1_unit_1, boar_clan_tier_1_unit_1),
 
 	  (faction_set_slot, "fac_sod_merc_guild1", slot_guild_tier_1_unit_2, black_army_tier_1_unit_2),
 	  (faction_set_slot, "fac_sod_merc_guild2", slot_guild_tier_1_unit_2, conquistadors_tier_1_unit_2),
@@ -722,7 +734,7 @@ SCRIPTS = [
 	  (faction_set_slot, "fac_sod_merc_guild4", slot_guild_tier_1_unit_2, jotnar_clan_tier_1_unit_2),
 	  (faction_set_slot, "fac_sod_merc_guild5", slot_guild_tier_1_unit_2, serpent_host_tier_1_unit_2),
 	  (faction_set_slot, "fac_sod_merc_guild6", slot_guild_tier_1_unit_2, slavers_tier_1_unit_2),
-	  (faction_set_slot, "fac_sod_merc_guild7", slot_guild_tier_1_unit_2, "trp_boar_clan_clansman"),
+	  (faction_set_slot, "fac_sod_merc_guild7", slot_guild_tier_1_unit_2, boar_clan_tier_1_unit_2),
 
 	  (faction_set_slot, "fac_sod_merc_guild1", slot_guild_noble, black_army_noble),
 	  (faction_set_slot, "fac_sod_merc_guild2", slot_guild_noble, conquistadors_noble),
@@ -730,7 +742,7 @@ SCRIPTS = [
 	  (faction_set_slot, "fac_sod_merc_guild4", slot_guild_noble, jotnar_clan_noble),
 	  (faction_set_slot, "fac_sod_merc_guild5", slot_guild_noble, serpent_host_noble),
 	  (faction_set_slot, "fac_sod_merc_guild6", slot_guild_noble, slavers_noble),
-	  (faction_set_slot, "fac_sod_merc_guild7", slot_guild_noble, "trp_boar_clan_tusk_rider"),
+	  (faction_set_slot, "fac_sod_merc_guild7", slot_guild_noble, boar_clan_noble),
 
 	  (faction_set_slot, "fac_sod_merc_guild1", slot_guild_troop_proportion, 16),
 	  (faction_set_slot, "fac_sod_merc_guild2", slot_guild_troop_proportion, 18),
@@ -1175,6 +1187,7 @@ SCRIPTS = [
       #NPC companion changes begin
       (call_script, "script_initialize_npcs"),
       (call_script, "script_sod_companion_initialize_depth"),
+      (call_script, "script_sod_camp_initialize_companion_jobs"),
       (call_script, "script_sod_strategy_advisor_initialize_mentor"),
       (assign, "$disable_npc_complaints", 0),
       #NPC companion changes end
@@ -2435,6 +2448,7 @@ SCRIPTS = [
 	  (call_script, "script_free_lords_estimate_their_situation"),  # Init for AI end
 
 	  (call_script, "script_ai_hire_mercenaries"),
+	  (call_script, "script_sod_black_khergits_initialize_world_presence"),
 	  (call_script, "script_sod_quest_runtime_init_metadata"),
 	  (call_script, "script_update_titles"),
   ]),

@@ -80,13 +80,13 @@ SCRIPTS = [
               (try_end),
             (try_end),
 
-            (try_begin),
-              (gt, "$npc_with_grievance", 0),
-              (eq, "$npc_praise_not_complaint", 0),
-              (call_script, "script_store_troop_name_link", 4, "$npc_with_grievance"),
-              (display_message, "@{s4} looks upset.", warning_color),
-            (try_end),
+          (try_end),
 
+          (try_begin),
+            (gt, "$npc_with_grievance", 0),
+            (eq, "$npc_praise_not_complaint", 0),
+            (call_script, "script_store_troop_name_link", 4, "$npc_with_grievance"),
+            (display_message, "@{s4} takes offense.", warning_color),
           (try_end),
 
 

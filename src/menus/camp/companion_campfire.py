@@ -1314,7 +1314,7 @@ MENUS = [
             (main_party_has_troop, ":companion"),
             (troop_slot_eq, ":companion", slot_troop_companion_warning_state, sod_companion_warning_pending),
             (call_script, "script_sod_companion_warning_to_s0", ":companion"),
-            (display_message, "@{s0}", 0xCC9966),
+            (display_message, "@Companion warning: {s0}", 0xCC9966),
             (troop_set_slot, ":companion", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
             (call_script, "script_sod_companion_shift_approval", ":companion", 3),
           (try_end),
@@ -1343,10 +1343,18 @@ MENUS = [
             (lt, ":approval", 45),
             (call_script, "script_sod_companion_shift_approval", ":companion", 8),
             (call_script, "script_sod_companion_reconciliation_to_s0", ":companion"),
-            (display_message, "@{s0}", 0x99CCFF),
+            (display_message, "@Companion reconciliation: {s0}", 0x99CCFF),
             (troop_set_slot, ":companion", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
           (try_end),
           (display_message, "@Promises are made in plain language tonight. They will need deeds later, but the worst silences have loosened.", 0x99CCFF),
+          (jump_to_menu, "mnu_companion_campfire"),
+        ]
+      ),
+      ("companion_campfire_diego_chainbreaker", [
+          (main_party_has_troop, "trp_diego_companion"),
+        ], "Ask Diego to watch for captives who can still run.",
+        [
+          (display_message, "@Diego nods once. 'Give them a gap in the road and a name to follow. Some will find us.'", 0x99CCFF),
           (jump_to_menu, "mnu_companion_campfire"),
         ]
       ),

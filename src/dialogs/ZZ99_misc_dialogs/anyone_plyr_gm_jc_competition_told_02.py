@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "gm_jc_competition_told", [],
-  "I don't have time for this.", "gm_pretalk", [],],
+  "Not today. Let another contender bleed for the crowd.", "gm_pretalk", [],],
 ]

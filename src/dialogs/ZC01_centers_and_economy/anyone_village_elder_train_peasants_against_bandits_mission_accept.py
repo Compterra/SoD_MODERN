@@ -1,8 +1,7 @@
 DIALOGS = [
-[anyone, "village_elder_train_peasants_against_bandits_mission_accept", [], "You will? Oh, splendid!\
- We would be deeply indebted to you, {sir/madam}.\
- I'll instruct the village folk to assemble here and receive your training.\
- If you can teach us how to defend ourselves, I promise you'll receive everything we can give you in return for your efforts.", "close_window",
+[anyone, "village_elder_train_peasants_against_bandits_mission_accept", [], "Then we still have a chance.\
+ I will gather the ones with steady hands and enough anger to stand in a line.\
+ Teach them how to live through a raid, and the village will give what it can without hollowing itself out.", "close_window",
    [
      (assign, "$g_leave_encounter", 1),
      (call_script, "script_sod_companion_apply_player_action", sod_companion_action_train_troops, 2),

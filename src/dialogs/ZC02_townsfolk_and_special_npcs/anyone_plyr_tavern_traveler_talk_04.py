@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "tavern_traveler_talk", [],
-   "Farewell.", "close_window", []],
+   "Keep your roads, traveler. I have my own to test.", "close_window", []],
 ]

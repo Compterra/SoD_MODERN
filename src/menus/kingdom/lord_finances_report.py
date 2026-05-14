@@ -32,7 +32,7 @@ MENUS = [
           (str_store_string, s2, "@{s3} {s4}."),
           (try_begin),
             (eq, ":count", 0),
-            (str_store_string, s1, s2),
+            (str_store_string_reg, s1, s2),
           (else_try),
             (str_store_string, s1, "@{s1}^{s2}"),
           (try_end),

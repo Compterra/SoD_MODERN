@@ -26,6 +26,7 @@ MISSION_TEMPLATES = [
 
       common_battle_tab_press, 
 	  common_battle_horse_health, 
+      sod_battle_commander_spawn_player_ally_dismounted,
 
       (ti_question_answered, 0, 0, [],
        [(store_trigger_param_1, ":answer"),
@@ -33,7 +34,9 @@ MISSION_TEMPLATES = [
         (assign, "$pin_player_fallen", 0),
         (str_store_string, s5, "str_retreat"),
         (call_script, "script_simulate_retreat", 5, 20),
-        (call_script, "script_count_mission_casualties_from_agents"),
+        (call_script, "script_sod_post_defeat_record_aftermath", -1),
+        (call_script, "script_sod_post_defeat_count_casualties_once"),
+        (call_script, "script_sod_post_defeat_clear"),
         (finish_mission, 0), ]),
 
       (0, 0, ti_once, [], [(assign, "$battle_won", 0),
@@ -56,7 +59,9 @@ MISSION_TEMPLATES = [
                         (assign, "$g_siege_method", 1), #reset siege timer
                         (call_script, "script_play_victorious_sound"),
                         ],
-           [(call_script, "script_count_mission_casualties_from_agents"),
+           [(call_script, "script_sod_post_defeat_record_aftermath", 1),
+            (call_script, "script_sod_post_defeat_count_casualties_once"),
+            (call_script, "script_sod_post_defeat_clear"),
             (finish_mission, 1)]),
 
       common_battle_victory_display,

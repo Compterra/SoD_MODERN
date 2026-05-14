@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "arena_master_talk", [], "I need to leave now. Good bye.", "close_window", []],
+[anyone|plyr, "arena_master_talk", [], "Enough sand and shouting for now.", "close_window", []],
 ]

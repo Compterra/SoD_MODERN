@@ -4,7 +4,7 @@ SCRIPTS = [
 					  	(try_begin),
 							(store_party_size,":size","p_sod_merc_rb"),
 							(lt, ":size", 15),
-							(store_sub, ":dif", ":size", 15),
+							(store_sub, ":dif", 15, ":size"),
 							(val_min, ":dif", 5),
 							(val_add, ":dif", 1),
 							(store_random_in_range, ":rand", 1, ":dif"),

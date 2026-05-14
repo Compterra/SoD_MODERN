@@ -9,5 +9,5 @@ DIALOGS = [
                                       (try_end),
                                       (eq, ":quest_village", 0),
                                       ],
-   "I want to buy some cattle.", "village_elder_buy_cattle", []],
+   "If the herd can spare cattle, I will buy them cleanly.", "village_elder_buy_cattle", []],
 ]

@@ -107,7 +107,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc5", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "A forced oath is a rope with better words. My trust in your saddle hand is {s2}, and I am watching which roads you call free.",
   "member_talk",
@@ -119,7 +119,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Those who stayed did so by their own word. Now they ride with us, not under us. My trust in your saddle hand is {s2}.",
   "member_talk",
@@ -129,7 +129,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The riders obey. Obedience is not loyalty. A broken saddle carries weight until the horse finds a cliff. My trust in your saddle hand is {s2}.",
   "member_talk",
@@ -141,7 +141,7 @@ DIALOGS = [
     (eq, "$g_sod_baheshtur_saddle_witnessed", 1),
     (eq, "$g_sod_baheshtur_saddle_confronted", 0),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The rider has given us a living witness. Now run the rider oath trial with me, and we will see who calls the saddle free when steel is near. My trust in your saddle hand is {s2}.",
   "member_talk",
@@ -151,7 +151,7 @@ DIALOGS = [
   [
     (eq, "$g_sod_baheshtur_saddle_pending", 1),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The horde riders are beaten enough to listen and proud enough to remember. First we need a living witness, then an oath tested under open sky. My trust in your saddle hand is {s2}.",
   "member_talk",
@@ -161,7 +161,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The Unbroken Saddle is simple enough. A road chosen can be hard and still be free. A road forced is a chain, even under open sky. My trust is {s2}.",
   "member_talk",
@@ -171,7 +171,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "A saddle can carry a man or mark him owned. The difference is who chose the road. My trust in your saddle hand is {s2}.",
   "member_talk",
@@ -181,7 +181,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc5", slot_troop_companion_approval, 70),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You understand that open ground is not freedom if another man holds the reins. That is worth riding beside. My trust in your saddle hand is {s2}.",
   "member_talk",
@@ -196,7 +196,7 @@ DIALOGS = [
 [anyone, "companion_depth_baheshtur",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "A road chosen can be hard and still be free. A road forced is a chain, even under open sky. My trust in your saddle hand is {s2}.",
   "member_talk",

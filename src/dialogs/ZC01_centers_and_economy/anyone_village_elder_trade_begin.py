@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone , "village_elder_trade_begin", [], "Of course, {sir/madam}. Do you want to buy goods or cattle?", "village_elder_trade_talk", []],
+[anyone , "village_elder_trade_begin", [], "We can speak of goods, and perhaps cattle if the village can spare them.", "village_elder_trade_talk", []],
 ]

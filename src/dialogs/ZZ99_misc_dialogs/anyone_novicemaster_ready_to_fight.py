@@ -1,5 +1,5 @@
 DIALOGS = [
-[anyone, "novicemaster_ready_to_fight", [], "Here you go then. Good luck.", "close_window",
+[anyone, "novicemaster_ready_to_fight", [], "Step in, keep your guard high, and learn before the bruises do.", "close_window",
    [
      (assign, "$training_fight_won", 0),
      (assign, "$waiting_for_training_fight_result", 1),

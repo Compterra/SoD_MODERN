@@ -3,6 +3,7 @@ DIALOGS = [
   "So be it. Defend yourself!", "close_window", [
   (try_begin),
     (gt, "$g_encountered_party", 0),
+    (neq, "$g_encountered_party", "p_main_party"),
     (party_is_active, "$g_encountered_party"),
     (party_get_num_companions, ":num_companions", "$g_encountered_party"),
     (gt, ":num_companions", 0),
@@ -10,6 +11,7 @@ DIALOGS = [
     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
   (else_try),
     (gt, "$g_encountered_party", 0),
+    (neq, "$g_encountered_party", "p_main_party"),
     (party_is_active, "$g_encountered_party"),
     (remove_party, "$g_encountered_party"),
     (call_script, "script_sod_safe_leave_encounter"),

@@ -2,7 +2,6 @@ SIMPLE_TRIGGERS = [
 (24*15,
    [
     (try_for_range, ":village_no", villages_begin, villages_end),
-      (party_get_slot, ":num_cattle", ":village_no", slot_village_number_of_cattle),
       (party_get_slot, ":land_quality", ":village_no", slot_village_land_quality),
 
       (call_script, "script_sod_get_village_output_profile", ":village_no"),
@@ -56,9 +55,7 @@ SIMPLE_TRIGGERS = [
         (val_sub, ":herd_delta", ":herd_noise"),
       (try_end),
 
-      (val_add, ":num_cattle", ":herd_delta"),
-      (val_clamp, ":num_cattle", 0, 101),
-      (party_set_slot, ":village_no", slot_village_number_of_cattle, ":num_cattle"),
+      (call_script, "script_sod_center_apply_cattle_delta", ":village_no", ":herd_delta"),
 
       # Reassign root trade-good production from the village output profile.
       (store_sub, ":item_to_production_slot", slot_town_trade_good_productions_begin, trade_goods_begin),

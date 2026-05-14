@@ -2,5 +2,9 @@ from header_dialogs import *
 from module_constants import *
 
 DIALOGS = [
-    [anyone, "event_triggered", [], "You want the rest of my story? Very well. I have followed roads that taught me caution and camps that taught me the price of trust. If I ride with you, I will do it with my eyes open.", "companion_recruit_backstory_response", []],
+    [anyone, "companion_recruit_backstory_c",
+     [(troop_get_slot, ":backstory_c", "$g_talk_troop", slot_troop_backstory_c),
+      (str_store_string, 5, ":backstory_c"),
+      ],
+     "{s5}", "companion_recruit_backstory_response", []],
 ]

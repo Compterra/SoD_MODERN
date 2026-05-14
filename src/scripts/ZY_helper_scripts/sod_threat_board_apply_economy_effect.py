@@ -111,19 +111,13 @@ SCRIPTS = [
 
    (call_script, "script_sod_change_center_local_prosperity", ":sponsor_center", ":local_prosperity_delta"),
 
-   (party_get_slot, ":population", ":sponsor_center", slot_center_sod_local_population),
-   (val_add, ":population", ":population_delta"),
-   (val_max, ":population", 0),
-   (party_set_slot, ":sponsor_center", slot_center_sod_local_population, ":population"),
+   (call_script, "script_sod_center_apply_population_delta", ":sponsor_center", ":population_delta"),
 
    (call_script, "script_sod_change_center_wealth", ":sponsor_center", ":wealth_delta"),
 
    (try_begin),
      (neq, ":cattle_delta", 0),
-     (party_get_slot, ":cattle", ":sponsor_center", slot_village_number_of_cattle),
-     (val_add, ":cattle", ":cattle_delta"),
-     (val_max, ":cattle", 0),
-     (party_set_slot, ":sponsor_center", slot_village_number_of_cattle, ":cattle"),
+     (call_script, "script_sod_center_apply_cattle_delta", ":sponsor_center", ":cattle_delta"),
    (try_end),
 
     (assign, reg(0), ":prosperity_delta"),

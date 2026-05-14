@@ -9,6 +9,7 @@ DIALOGS = [
 							
                      (troop_get_type, reg65, "$g_talk_troop"),
                      (try_begin),
+                       (ge, "$g_talk_troop_faction", 0),
                        (faction_slot_eq, "$g_talk_troop_faction", slot_faction_leader, "$g_talk_troop"),
                        (str_store_string, s64, "@{reg65?my Lady:my Lord}"), #bug fix
                        (str_store_string, s65, "@{reg65?my Lady:my Lord}"),

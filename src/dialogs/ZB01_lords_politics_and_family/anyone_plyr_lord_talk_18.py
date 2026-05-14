@@ -4,5 +4,5 @@ DIALOGS = [
                              (store_partner_quest, ":lords_quest"),
                              (lt, ":lords_quest", 0),
                              ],
-   "Do you have any tasks for me?", "lord_request_mission_ask", []],
+   "What needs doing that you would trust to my hands?", "lord_request_mission_ask", []],
 ]

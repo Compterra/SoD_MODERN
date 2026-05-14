@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "sacrificed_messenger_3", [], "Arggh! I can't do this. I can't send you to your own death!", "sacrificed_messenger_cancel", []],
+[anyone|plyr, "sacrificed_messenger_3", [], "No. I will not dress murder as necessity. There has to be another way.", "sacrificed_messenger_cancel", []],
 ]

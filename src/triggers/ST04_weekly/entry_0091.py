@@ -40,9 +40,6 @@ SIMPLE_TRIGGERS = [
         (call_script, "script_sod_get_center_faith_profile", ":center_no"),
         (assign, ":faith", reg2),
       (try_end),
-      (val_add, "$g_sod_global_faith", "$g_sod_building_monastery_global_faith"),
-      (val_clamp, "$g_sod_global_faith", -2000, 2001),
-
       # Monasteries should also provide care, charity, and steadier local confidence.
       (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
       (party_get_slot, ":center_prosperity", ":center_no", slot_town_prosperity),
@@ -87,8 +84,8 @@ SIMPLE_TRIGGERS = [
         (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
         (str_store_party_name_link, s1, ":center_no"),
         (store_add, reg0, "str_sod_monastery_improve_0", "$g_sod_faith"),
-        (str_store_string, s1, reg0),
-        (display_message, "@{s1}", dark_green),
+        (str_store_string, s2, reg0),
+        (display_message, "@Monastery report: {s2}", dark_green),
       (try_end),
     (try_end),
 
@@ -98,8 +95,8 @@ SIMPLE_TRIGGERS = [
       (ge, ":count", 1),
       (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
       (store_add, reg0, "str_sod_monastery_summary_0", "$g_sod_faith"),
-      (str_store_string, s1, reg0),
-      (display_message, "@{s1}", dark_green),
+      (str_store_string, s2, reg0),
+      (display_message, "@Monastery report: {s2}", dark_green),
     (try_end),
 
     (try_begin),

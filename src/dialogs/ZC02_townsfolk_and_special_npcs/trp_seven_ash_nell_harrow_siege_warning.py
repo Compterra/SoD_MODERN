@@ -30,6 +30,7 @@ DIALOGS = [
       (str_store_string, s2, "@Nell's final count named Wulfred's expanded host: Maud's wagons, Rafe's pressure, hired brigands, deserters, and an elite core held for the breach. The siege must be fought in sectors, not as one honest field battle."),
       (call_script, "script_sod_quest_chain_branch_success", "qst_seven_ash_oath_council", "qst_seven_ash_outer_fields"),
       (jump_to_menu, "mnu_seven_ash_outer_fields"),
+      (finish_mission),
     ]],
 [trp_seven_ash_nell_harrow, "seven_ash_scout_report_captains", [],
     "They will hate it. Better angry captains than surprised ones.",
@@ -40,6 +41,7 @@ DIALOGS = [
       (str_store_string, s2, "@The captains heard Nell's final count before sunrise. Wulfred's larger host has been named plainly, giving the sectors steadier command before the outer fields open."),
       (call_script, "script_sod_quest_chain_branch_success", "qst_seven_ash_oath_council", "qst_seven_ash_outer_fields"),
       (jump_to_menu, "mnu_seven_ash_outer_fields"),
+      (finish_mission),
     ]],
 [trp_seven_ash_nell_harrow, "seven_ash_scout_report_torches", [],
     "A lie made of fire. Mirelle would approve. Garric will hate the wasted pitch, then use the dark it buys.",
@@ -53,5 +55,6 @@ DIALOGS = [
       (str_store_string, s2, "@Nell arranged false torchlines through the night. Wulfred's host remains large, but his first attack may hesitate against shadows he cannot count."),
       (call_script, "script_sod_quest_chain_branch_success", "qst_seven_ash_oath_council", "qst_seven_ash_outer_fields"),
       (jump_to_menu, "mnu_seven_ash_outer_fields"),
+      (finish_mission),
     ]],
 ]

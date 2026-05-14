@@ -6,5 +6,5 @@ DIALOGS = [
 	(neq, ":mercenaries", "$g_talk_troop_faction"),
 	(eq, "$g_sod_king", 1),
 	(neq, "$g_rep", "$g_talk_troop"),
-	], "I want to seal a pact with your guild.", "gm_pact1",[]],
+	], "Let us speak of a formal pact between my realm and your guild.", "gm_pact1",[]],
 ]

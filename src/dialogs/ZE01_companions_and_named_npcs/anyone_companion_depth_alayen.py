@@ -89,7 +89,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc9", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "A banner used as ornament soon becomes a rag. At present, my trust in your honor is {s2}, and I am watching the cloth closely.",
   "member_talk",
@@ -101,7 +101,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The standard meant duty when duty cost us something. That is the only test worth naming. At present, my trust in your honor is {s2}.",
   "member_talk",
@@ -111,7 +111,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The standard drew eyes and obedience. It did not draw my respect. Those are different victories. At present, my trust in your honor is {s2}.",
   "member_talk",
@@ -121,7 +121,7 @@ DIALOGS = [
   [
     (eq, "$g_sod_alayen_standard_pending", 1),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The standard is raised, and people are watching what it promises. Ask a witness, stand the public test, and then decide whether it means duty or display. At present, my trust in your honor is {s2}.",
   "member_talk",
@@ -131,7 +131,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The Standard and the Self asks a simple question with no easy answer, who is the banner for when pride and duty part ways? My trust in your honor is {s2}.",
   "member_talk",
@@ -141,7 +141,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "A standard is not decoration. It is a promise men die believing. I mean to learn whether your promises can bear that weight. My trust in your honor is {s2}.",
   "member_talk",
@@ -151,7 +151,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc9", slot_troop_companion_approval, 70),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You have shown that honor can kneel beside common need without becoming common. That is rarer than a polished lineage. My trust in your honor is {s2}.",
   "member_talk",
@@ -166,7 +166,7 @@ DIALOGS = [
 [anyone, "companion_depth_alayen",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "A standard is not honored by polish, but by what is done beneath it. At present, my trust in your honor is {s2}.",
   "member_talk",

@@ -103,7 +103,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc1", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc1"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Roads feed people who respect them. They also remember who sold warning by the purse. My trust is {s2}.",
   "member_talk",
@@ -115,7 +115,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc1"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "That road will still lie, but now it lies badly. Travelers hear the warning before the wheels turn. My trust is {s2}.",
   "member_talk",
@@ -125,7 +125,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc1"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Profit is a road too. Short, usually. Sometimes it ends in a ditch with a rich man swearing he knew the way. My trust is {s2}.",
   "member_talk",
@@ -134,7 +134,7 @@ DIALOGS = [
 [anyone, "companion_depth_borcha",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc1"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
     (troop_get_slot, reg2, "trp_npc1", slot_troop_companion_personal_quest_stage),
   ],
   "Road says plenty. Mud says who passed. Grass says who lied about passing. Men say less useful things. I am still watching your road, and right now my trust is {s2}. The hidden-route matter stands at {reg2}.",

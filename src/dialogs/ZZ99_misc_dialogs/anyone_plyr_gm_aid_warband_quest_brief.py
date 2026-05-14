@@ -1,6 +1,6 @@
 DIALOGS = [
 [anyone|plyr, "gm_aid_warband_quest_brief", [],
-   "Alright. I will help them.", "gm_merchant_quest_taken_bandits",
+   "I will help them before the road swallows the rest.", "gm_merchant_quest_taken_bandits",
    [
 	(quest_get_slot, ":quest_target_center", "qst_black_army_aid_warband", slot_quest_target_center),
 	(quest_get_slot, ":quest_target_troop", "qst_black_army_aid_warband", slot_quest_target_troop),

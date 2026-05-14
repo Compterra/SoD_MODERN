@@ -59,6 +59,8 @@ def test_boar_clan_hire_payment_never_spends_raw_register_value():
     assert '(assign, "$g_sod_boar_hire_cost", 0)' in text
     assert '(call_script, "script_sod_boar_clan_convert_to_player_mercenaries")' in text
     assert '(spawn_around_party, "$g_encountered_party", "pt_player_mercenaries")' in helper
+    assert '(gt, ":mercs", 0)' in helper
+    assert helper.index('(gt, ":mercs", 0)') < helper.index('(remove_party, "$g_encountered_party")')
 
 
 def test_boar_clan_hire_price_is_cleared_when_refused():

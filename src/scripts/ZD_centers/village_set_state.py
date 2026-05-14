@@ -3,6 +3,8 @@ SCRIPTS = [
     [
       (store_script_param_1, ":village_no"),
       (store_script_param_2, ":new_state"),
+      (try_begin),
+      (is_between, ":village_no", villages_begin, villages_end),
       #      (party_get_slot, ":old_state", ":village_no", slot_village_state),
       (try_begin),
         (eq, ":new_state", 0),
@@ -31,15 +33,14 @@ SCRIPTS = [
 			(store_random_in_range, ":rand", 20, ":max"),
             (call_script, "script_sod_apply_center_raid_resistance", ":village_no", ":rand"),
             (assign, ":rand", reg0),
-            (val_sub, ":center_population", ":rand"),
-            #MORDACHAI - don't allow the population to go below minimum village size!
-            (val_max, ":center_population", village_pop_min),
-            (party_set_slot, ":village_no", slot_center_sod_local_population, ":center_population"),
+            (store_mul, ":population_delta", ":rand", -1),
+            (call_script, "script_sod_center_apply_population_delta", ":village_no", ":population_delta"),
             #SOD END
       (else_try),
         (eq, ":new_state", svs_under_siege),
         (party_set_extra_text, ":village_no", "@(Under Siege)"),
       (try_end),
       (party_set_slot, ":village_no", slot_village_state, ":new_state"),
+      (try_end),
   ]),
 ]

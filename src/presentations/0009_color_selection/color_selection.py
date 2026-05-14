@@ -8,6 +8,9 @@ PRESENTATIONS = [
         (position_set_x, pos1, 500),
         (position_set_y, pos1, 600),
         (overlay_set_position, reg1, pos1),
+        (try_for_range, ":trp_slot_index", 0, 128),
+          (troop_set_slot, "trp_temp_array_a", ":trp_slot_index", -1),
+        (try_end),
 
         (assign, ":pos_x", 125),
         (assign, ":pos_y", 450),

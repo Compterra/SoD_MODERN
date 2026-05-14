@@ -11,6 +11,8 @@ MENUS = [
         (call_script, "script_change_troop_renown", "trp_player", "$battle_renown_value"),
       (try_end),
 
+     (call_script, "script_sod_battle_commander_restore_player_health"),
+
      (call_script, "script_encounter_calculate_fit"),
 
      (call_script, "script_party_count_fit_regulars", "p_main_party"),

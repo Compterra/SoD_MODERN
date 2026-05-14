@@ -82,7 +82,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc12", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "I can bind wounds made by steel. I do not know how to bind the habit of deciding some lives are easier to leave behind. As for my faith in this company, it is {s2}.",
   "member_talk",
@@ -94,7 +94,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "We did not save everyone. We never do. But we did not let rank or usefulness become the measure of breath, and that matters more than reports can say. As for my faith in this company, it is {s2}.",
   "member_talk",
@@ -104,7 +104,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The company recovered. I will not pretend that means nothing. I also will not pretend the people left waiting were only numbers. As for my faith in this company, it is {s2}.",
   "member_talk",
@@ -114,7 +114,7 @@ DIALOGS = [
   [
     (eq, "$g_sod_jeremus_triage_pending", 1),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "There are too many wounded and too little time. I need you to hear the wounded, face the infirmary crisis, and then choose what sort of order will guide my hands. As for my faith in this company, it is {s2}.",
   "member_talk",
@@ -124,7 +124,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "I used to think hard choices changed a healer into something else. Now I fear refusing to choose can do the same. As for my faith in this company, it is {s2}.",
   "member_talk",
@@ -134,7 +134,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "There will be a day when we have too many wounded and too little time. I fear what that day will teach us. As for my faith in this company, it is {s2}.",
   "member_talk",
@@ -144,7 +144,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc12", slot_troop_companion_approval, 70),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You still look for another road before ordering blood onto this one. That is not softness. It is discipline of another kind. As for my faith in this company, it is {s2}.",
   "member_talk",
@@ -159,7 +159,7 @@ DIALOGS = [
 [anyone, "companion_depth_jeremus",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The wounded mend as bodies do: slowly, honestly, and never quite as cleanly as reports suggest. As for my faith in this company, it is {s2}.",
   "member_talk",

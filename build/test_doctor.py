@@ -105,6 +105,7 @@ def _run_in_repo(root: Path, **kwargs) -> doctor.DoctorResult:
         doctor.BASELINE_FINDINGS_PATH = doctor.DOCS_EDIT / "doctor_baseline_findings.txt"
         kwargs.setdefault("check_feature_integrations", False)
         kwargs.setdefault("check_refs", False)
+        kwargs.setdefault("check_generated_contract", False)
         return doctor.run_doctor(**kwargs)
     finally:
         doctor.ROOT = old_root
@@ -135,6 +136,15 @@ def main() -> None:
     _assert("report_artifacts" in report_json, "json report missing report artifacts")
     _assert(any(item.get("name") == "doctor_report.txt" for item in report_json["report_artifacts"]), "report artifacts missing text report")
     _assert("stub_detection_scripts" in res.timings_ms, "timings missing")
+
+    high_reg = root / "src" / "scripts" / "bad_high_register.py"
+    _write(
+        high_reg,
+        'SCRIPTS = [("bad_high_register", [(assign, reg64, 1), (assign, reg(70), 2), (str_store_string, s100, "@Bad {reg70} {s100}")])]\n',
+    )
+    res = _run_in_repo(root)
+    _assert(any("[REG]" in e for e in res.errors), "unsupported high register error not detected")
+    high_reg.unlink()
 
     _write(root / "src" / "scripts" / "stub_empty.py", 'SCRIPTS = [("x", [])]\n')
     res = _run_in_repo(root)

@@ -4,5 +4,5 @@ DIALOGS = [
       (store_party_size, ":size", ":party"),
       (store_mul, ":size", ":size", 50),
       (assign, reg0, ":size"),
-   ], "we consider your offer for {reg0} denars", "bandit_recruit_2", []],
+   ], "For {reg0} denars, we might pretend your banner was our idea all along.", "bandit_recruit_2", []],
 ]

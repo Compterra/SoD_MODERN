@@ -95,7 +95,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc8", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Blood-price is easy. Wisdom is harder, and less fun to sing about. My trust in your courage is {s2}, but courage is not just who dies loudest.",
   "member_talk",
@@ -107,7 +107,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The line stood and lived enough to stand again. That is courage with teeth, not courage with an empty skull. My trust in your courage is {s2}.",
   "member_talk",
@@ -117,7 +117,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "No one calls us soft. Good. Some also do not answer when names are called. Less good. My trust in your courage is {s2}.",
   "member_talk",
@@ -129,7 +129,7 @@ DIALOGS = [
     (eq, "$g_sod_matheld_no_backward_step_witnessed", 1),
     (eq, "$g_sod_matheld_no_backward_step_confronted", 0),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The line has spoken. Now run the shield-line test with me. Then we can decide what courage should teach. My trust in your courage is {s2}.",
   "member_talk",
@@ -139,7 +139,7 @@ DIALOGS = [
   [
     (eq, "$g_sod_matheld_no_backward_step_pending", 1),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The line learned something in that fight. Ask a ranker what it was, then test the lesson with shields in hand. My trust in your courage is {s2}.",
   "member_talk",
@@ -149,7 +149,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "No Backward Step is not about never moving. It is about keeping your face toward the danger even when the feet must be clever. My trust is {s2}.",
   "member_talk",
@@ -159,7 +159,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "There are days a company learns whether its back is bone or smoke. I am waiting for that day. My trust in your courage is {s2}.",
   "member_talk",
@@ -169,7 +169,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc8", slot_troop_companion_approval, 70),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You know a shield wall must breathe if it means to last. Good. I prefer courage that can fight again tomorrow. My trust in your courage is {s2}.",
   "member_talk",
@@ -184,7 +184,7 @@ DIALOGS = [
 [anyone, "companion_depth_matheld",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Courage is not a song. It is what remains when the shield is heavy and the road behind you looks kinder than the one ahead. My trust in your courage is {s2}.",
   "member_talk",

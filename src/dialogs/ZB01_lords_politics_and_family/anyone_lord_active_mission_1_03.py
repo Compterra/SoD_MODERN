@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone, "lord_active_mission_1", [], "Yes, have you made any progress on it?", "lord_active_mission_2", []],
+[anyone, "lord_active_mission_1", [], "Good. Tell me the matter has moved since last we spoke.", "lord_active_mission_2", []],
 ]

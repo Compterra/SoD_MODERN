@@ -144,6 +144,8 @@ SCRIPTS = [
        (call_script, "script_cf_party_upgrade_with_xp", ":merc_lord_party", 7500, 0),
      (try_end),
      (party_set_ai_behavior, ":merc_lord_party", ai_bhvr_patrol_location),
+     (party_get_position, pos1, ":base"),
+     (party_set_ai_target_position, ":merc_lord_party", pos1),
      (party_set_ai_patrol_radius, ":merc_lord_party", ":patrol_radius"),
 
      (val_sub, ":manpower", ":party_size"),

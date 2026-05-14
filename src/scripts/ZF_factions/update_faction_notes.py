@@ -328,10 +328,22 @@ SCRIPTS = [
 			(str_store_string, s14, "@^It has no active enemies."),
 		(try_end),
 
-		(str_store_string, s49, "@{s5} is ruled by {s6}.^Court reports place it {s21} among the powers of Calradia, and its momentum is {s22}.^{reg22?{s17}^:}Its holdings are {s8}.^Its vassals are {s10}.^{reg21?{s16}^:}{s14}{s15}"),
-
-
+		(str_store_string, s49, "@{s5} is ruled by {s6}.^Court reports place it {s21} among the powers of Calradia, and its momentum is {s22}."),
 		(add_faction_note_from_sreg, ":faction_no", 0, s49, 0),
+		(try_begin),
+			(eq, reg22, 1),
+			(str_store_string, s49, "@^{s17}"),
+			(add_faction_note_from_sreg, ":faction_no", 0, s49, 0),
+		(try_end),
+		(str_store_string, s49, "@^Its holdings are {s8}.^Its vassals are {s10}."),
+		(add_faction_note_from_sreg, ":faction_no", 0, s49, 0),
+		(try_begin),
+			(eq, reg21, 1),
+			(str_store_string, s49, "@^{s16}"),
+			(add_faction_note_from_sreg, ":faction_no", 0, s49, 0),
+		(try_end),
+		(add_faction_note_from_sreg, ":faction_no", 0, s14, 0),
+		(add_faction_note_from_sreg, ":faction_no", 0, s15, 0),
 		(str_store_string, s49, "@^Council brief: score {reg23}, pressure {reg24}, {reg25} centers, {reg26} enemies, {reg27} truces, and {reg28} vassals."),
 
 		(add_faction_note_from_sreg, ":faction_no", 0, s49, 0),
@@ -341,8 +353,7 @@ SCRIPTS = [
 		(call_script, "script_sod_faction_describe_campaign_posture_to_s31", ":faction_no"),
 		(add_faction_note_from_sreg, ":faction_no", 0, s31, 0),
 		(call_script, "script_sod_lord_describe_landless_politics_to_s68", ":faction_no"),
-		(str_store_string, s49, "@^{s60}"),
-		(add_faction_note_from_sreg, ":faction_no", 0, s49, 0),
+		(add_faction_note_from_sreg, ":faction_no", 0, s68, 0),
 		(str_store_string, s49, "@^Realm systems: {reg29} known laws, power {reg34}, militarization {reg30}, centralization {reg31}, legitimacy {reg32}, unrest {reg33}. {s19}"),
 
 		(add_faction_note_from_sreg, ":faction_no", 0, s49, 0),

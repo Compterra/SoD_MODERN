@@ -1,7 +1,7 @@
 MENUS = [
 (
     "event_10", mnf_disable_all_keys,
-    "My Liege. You sow fear in hearts of your subjects. People are leaving {s1} to live under better ruler.",
+    "My Liege. You sow fear in hearts of your subjects. People are leaving {s1} to live under a better ruler.",
     "none",
     [
       (assign, ":stop", 0),
@@ -29,9 +29,9 @@ MENUS = [
           (party_get_slot, ":center_population", "$temp", slot_center_sod_local_population),
           (assign, ":temp_center_population", ":center_population"),
           (val_div, ":temp_center_population", 10),
-          (val_sub, ":center_population", ":temp_center_population"),
+          (store_mul, ":population_delta", ":temp_center_population", -1),
           (display_message, "@Many people have left {s1}.", quest_fail_color),
-          (party_set_slot, "$temp", slot_center_sod_local_population, ":center_population"),
+          (call_script, "script_sod_center_apply_population_delta", "$temp", ":population_delta"),
         (try_end),
         (change_screen_return),
         ]
@@ -42,9 +42,9 @@ MENUS = [
         (party_get_slot, ":center_population", "$temp", slot_center_sod_local_population),
         (assign, ":temp_center_population", ":center_population"),
         (val_div, ":temp_center_population", 10),
-        (val_sub, ":center_population", ":temp_center_population"),
+        (store_mul, ":population_delta", ":temp_center_population", -1),
         (display_message, "@Many people have left {s1}.", quest_fail_color),
-        (party_set_slot, "$temp", slot_center_sod_local_population, ":center_population"),
+        (call_script, "script_sod_center_apply_population_delta", "$temp", ":population_delta"),
         (change_screen_return),
       ]
       ),

@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone, "lord_buy_prisoner_deny", [],
-   "Mmm. As you wish, {playername}, but you'll not get a better offer. Take it from me.", "lord_pretalk", []],
+   "Mmm. Refuse it if you must, {playername}, but you will not hear a kinder price from my camp.", "lord_pretalk", []],
 ]

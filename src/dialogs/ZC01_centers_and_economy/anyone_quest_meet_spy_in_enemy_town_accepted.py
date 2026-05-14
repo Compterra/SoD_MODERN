@@ -1,5 +1,5 @@
 DIALOGS = [
-[anyone, "quest_meet_spy_in_enemy_town_accepted", [], "Excellent! Make your way to {s13} as soon as you can, the spy will be waiting.", "quest_meet_spy_in_enemy_town_accepted_response",
+[anyone, "quest_meet_spy_in_enemy_town_accepted", [], "Then go to {s13} quickly, and remember that a spy who waits too long starts looking like a corpse or a trap.", "quest_meet_spy_in_enemy_town_accepted_response",
    [
      (quest_get_slot, ":quest_target_center", "$random_quest_no", slot_quest_target_center),
      (quest_get_slot, ":secret_sign", "$random_quest_no", slot_quest_target_amount),

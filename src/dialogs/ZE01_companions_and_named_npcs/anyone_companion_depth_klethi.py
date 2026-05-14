@@ -124,7 +124,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc16", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Belonging is a pretty word right up until someone starts pricing it. My trust is {s2}, and I am counting the doors again.",
   "member_talk",
@@ -136,7 +136,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "I chose the door and came back through it. That is not nothing. Might even be trust, if we both squint. My trust is {s2}.",
   "member_talk",
@@ -146,7 +146,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The secret bought what you wanted. Very efficient. People like that word when the cost is someone else. My trust is {s2}.",
   "member_talk",
@@ -156,7 +156,7 @@ DIALOGS = [
   [
     (eq, "$g_sod_klethi_old_job_pending", 1),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Old work found my knife by name. We can cut a clean exit, or you can sell the name and pretend it was strategy. My trust is {s2}.",
   "member_talk",
@@ -166,7 +166,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "A Knife With a Name is not about whether I can open a lock. It is about whether I get to decide what the opened door means. My trust is {s2}.",
   "member_talk",
@@ -176,7 +176,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "One old face, one old knife, one old job. Funny how a person can carry all three and still be asked why she keeps her packs light. My trust is {s2}.",
   "member_talk",
@@ -186,7 +186,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc16", slot_troop_companion_approval, 70),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You leave me room to choose the lock and the exit. Dangerous kindness. Makes a person consider staying. My trust is {s2}.",
   "member_talk",
@@ -201,7 +201,7 @@ DIALOGS = [
 [anyone, "companion_depth_klethi",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Plenty. That is why I still have all my fingers. But I will say this: people show you the lock before they show you the knife. My trust is {s2}.",
   "member_talk",

@@ -25,7 +25,7 @@ def main() -> int:
     assert_contains(refresh, "merchandise_batches")
     assert_contains(refresh, "market_refresh_cost")
     assert_contains(refresh, "troop_add_merchandise")
-    assert_contains(refresh, "party_set_slot, \":village_no\", slot_town_wealth")
+    assert_contains(refresh, "script_sod_center_apply_wealth_delta")
 
     print("[village_market_recovery] OK")
     return 0

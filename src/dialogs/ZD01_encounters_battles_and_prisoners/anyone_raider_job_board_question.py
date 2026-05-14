@@ -1,5 +1,7 @@
 DIALOGS = [
 [anyone, "sod_raider_job_board_question", [
+    (gt, "$g_encountered_party", 0),
+    (party_is_active, "$g_encountered_party"),
     (party_get_slot, ":origin_center", "$g_encountered_party", slot_party_sod_threat_sponsor_center),
     (try_begin),
       (gt, ":origin_center", 0),

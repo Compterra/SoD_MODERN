@@ -41,7 +41,11 @@ MENUS = [
           (str_store_string, s8, "@{s8}, {s7}"),
         (try_end),
       (try_end),
-      (str_store_string, s1, "@{s1}^^Your estates are: {s8}."),
+      (try_begin),
+        (eq, ":no_centers", 0),
+        (str_store_string, s8, "@no estates held in your own name"),
+      (try_end),
+      (str_store_string, s1, "@{s1}^^Estates: {s8}."),
       # add on the accumulated income / rents
       (assign, ":total_income", 0),
       (try_for_range, ":center_no", centers_begin, centers_end),
@@ -52,7 +56,9 @@ MENUS = [
         (val_add, ":total_income", ":accumulated_tariffs"),
       (try_end),
       (assign, reg1, ":total_income"),
-      (str_store_string, s1, "@{s1}^^Accumulated taxes & rents: {reg1} denars."),
+      (str_store_string, s1, "@{s1}^^Treasury awaiting collection: {reg1} denars."),
+      (call_script, "script_sod_describe_player_mercenary_guild_halls_to_s20"),
+      (str_store_string, s1, "@{s1}^^Mercenary Guild Halls:^{s20}"),
     ],
     [
       ("view_prosperity_report", [], "View prosperity report.", [(jump_to_menu, "mnu_fief_prosperity_report")]),
@@ -69,8 +75,16 @@ MENUS = [
         ],
         "Issue prisoner train orders.",
         [(jump_to_menu, "mnu_prisoner_train_orders")]),
-      ("view_construction_report", [], "View current construction report.", [(jump_to_menu, "mnu_fief_under_construction_report")]),
-      ("view_available_construction_report", [], "View available construction report.", [(jump_to_menu, "mnu_fief_available_construction_report")]),
+      ("view_construction_report", [], "View current construction report.",
+        [
+          (assign, "$g_sod_construction_report_return_menu", "mnu_fief_reports"),
+          (jump_to_menu, "mnu_fief_under_construction_report"),
+        ]),
+      ("view_available_construction_report", [], "View available construction report.",
+        [
+          (assign, "$g_sod_construction_report_return_menu", "mnu_fief_reports"),
+          (jump_to_menu, "mnu_fief_available_construction_report"),
+        ]),
       ("invest_personal_relief",
         [
           (store_troop_gold, ":gold", "trp_player"),

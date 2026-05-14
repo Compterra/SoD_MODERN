@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "gm_jc_escort_told", [],
-  "You can count on me.", "gm_jc_escort_accepted", [],],
+  "I will see them guarded from gate to road's end.", "gm_jc_escort_accepted", [],],
 ]

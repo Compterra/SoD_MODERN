@@ -89,7 +89,17 @@ SCRIPTS = [
         (try_begin), #tr8
           (ge, ":commander_party", 0),
           (try_begin), #tr9
-            (party_is_active, ":commander_party"),
+            (assign, ":valid_commander_party", 0),
+            (try_begin),
+              (eq, ":commander_party", "p_main_party"),
+              (eq, ":faction_no", "$players_kingdom"),
+              (assign, ":valid_commander_party", 1),
+            (else_try),
+              (gt, ":commander_party", 0),
+              (party_is_active, ":commander_party"),
+              (assign, ":valid_commander_party", 1),
+            (try_end),
+            (eq, ":valid_commander_party", 1),
             (try_begin), #tr10
               (store_faction_of_party, ":commander_faction", ":commander_party"),
               (neq, ":faction_no", ":commander_faction"),
@@ -146,7 +156,8 @@ SCRIPTS = [
           (neg|troop_slot_ge, ":faction_marshall", slot_troop_prisoner_of_party, 0),
           (troop_get_slot, ":faction_marshall_party", ":faction_marshall", slot_troop_leaded_party),
           (neq, ":faction_marshall", ":troop_no"),
-          (ge, ":faction_marshall_party", 0),
+          (gt, ":faction_marshall_party", 0),
+          (party_is_active, ":faction_marshall_party"),
 
 
           (try_begin), #tr15
@@ -225,7 +236,11 @@ SCRIPTS = [
 
           (assign, ":old_target_to_follow_other_party", -1),
           (try_begin), #tr19
-            (ge, ":commander_party", 0),
+            (eq, ":commander_party", "p_main_party"),
+            (eq, ":faction_no", "$players_kingdom"),
+            (assign, ":old_target_to_follow_other_party", ":commander_party"),
+          (else_try),
+            (gt, ":commander_party", 0),
             (assign, ":old_target_to_follow_other_party", ":commander_party"),
           (try_end), #end tr19
 
@@ -233,6 +248,7 @@ SCRIPTS = [
 
           (assign, ":num_available_to_follow", 0),
           (try_begin), #tr20
+            (eq, ":faction_no", "$players_kingdom"),
             (eq, "p_main_party", ":old_target_to_follow_other_party"),
             (val_add, ":num_available_to_follow", 1),
             (eq, "p_main_party", ":old_target_to_follow_other_party"),
@@ -243,10 +259,22 @@ SCRIPTS = [
             (store_troop_faction, ":troop_faction", ":other_hero"),
             (eq, ":troop_faction", ":faction_no"),
             (troop_get_slot, ":other_party", ":other_hero", slot_troop_leaded_party),
-            (ge, ":other_party", 0),
+            (gt, ":other_party", 0),
+            (party_is_active, ":other_party"),
             (troop_get_slot, ":other_hero_renown", ":other_hero", slot_troop_renown),
             (lt, ":hero_renown", ":other_hero_renown"),
-            (neg|party_slot_ge, ":other_party", slot_party_commander_party, 0), #other party is not under command itself.
+            (party_get_slot, ":other_commander_party", ":other_party", slot_party_commander_party),
+            (assign, ":other_has_valid_commander", 0),
+            (try_begin),
+              (eq, ":other_commander_party", "p_main_party"),
+              (eq, ":faction_no", "$players_kingdom"),
+              (assign, ":other_has_valid_commander", 1),
+            (else_try),
+              (gt, ":other_commander_party", 0),
+              (party_is_active, ":other_commander_party"),
+              (assign, ":other_has_valid_commander", 1),
+            (try_end),
+            (eq, ":other_has_valid_commander", 0), #other party is not under command itself.
             (store_distance_to_party_from_party, ":dist", ":other_party", ":party_no"),
             (lt, ":dist", 25),
             (party_slot_eq, ":other_party", slot_party_follow_me, 1),
@@ -257,6 +285,7 @@ SCRIPTS = [
           (gt, ":num_available_to_follow", 0),
           (store_random_in_range, ":random_party_to_follow", 0, ":num_available_to_follow"),
           (try_begin), #tr22
+            (eq, ":faction_no", "$players_kingdom"),
             (eq, "p_main_party", ":old_target_to_follow_other_party"),
             (val_sub, ":random_party_to_follow", 1),
             (try_begin), #tr23
@@ -280,10 +309,22 @@ SCRIPTS = [
             (store_troop_faction, ":troop_faction", ":other_hero"),
             (eq, ":troop_faction", ":faction_no"),
             (troop_get_slot, ":other_party", ":other_hero", slot_troop_leaded_party),
-            (ge, ":other_party", 0),
+            (gt, ":other_party", 0),
+            (party_is_active, ":other_party"),
             (troop_get_slot, ":other_hero_renown", ":other_hero", slot_troop_renown),
             (lt, ":hero_renown", ":other_hero_renown"),
-            (neg|party_slot_ge, ":other_party", slot_party_commander_party, 0), #other party is not under command itself.
+            (party_get_slot, ":other_commander_party", ":other_party", slot_party_commander_party),
+            (assign, ":other_has_valid_commander", 0),
+            (try_begin),
+              (eq, ":other_commander_party", "p_main_party"),
+              (eq, ":faction_no", "$players_kingdom"),
+              (assign, ":other_has_valid_commander", 1),
+            (else_try),
+              (gt, ":other_commander_party", 0),
+              (party_is_active, ":other_commander_party"),
+              (assign, ":other_has_valid_commander", 1),
+            (try_end),
+            (eq, ":other_has_valid_commander", 0), #other party is not under command itself.
             (store_distance_to_party_from_party, ":dist", ":other_party", ":party_no"),
             (lt, ":dist", 25),
             (party_slot_eq, ":other_party", slot_party_follow_me, 1),
@@ -361,11 +402,26 @@ SCRIPTS = [
 		(assign, ":sum_chances", ":chance_to_follow_other_party"),
 		
         (val_add, ":sum_chances", 600),
-        (store_random_in_range, ":random_no", 0, ":sum_chances"),
+        (assign, ":valid_target_to_follow", 0),
+        (try_begin),
+          (eq, ":target_to_follow_other_party", "p_main_party"),
+          (eq, ":faction_no", "$players_kingdom"),
+          (assign, ":valid_target_to_follow", 1),
+        (else_try),
+          (gt, ":target_to_follow_other_party", 0),
+          (party_is_active, ":target_to_follow_other_party"),
+          (assign, ":valid_target_to_follow", 1),
+        (try_end),
         (try_begin), #tr25
-          (val_sub, ":random_no", ":chance_to_follow_other_party"),
-          (lt, ":random_no", 0),
-          (party_set_slot, ":party_no", slot_party_commander_party, ":target_to_follow_other_party"),
+          (eq, ":valid_target_to_follow", 1),
+          (store_random_in_range, ":random_no", 0, ":sum_chances"),
+          (try_begin),
+            (val_sub, ":random_no", ":chance_to_follow_other_party"),
+            (lt, ":random_no", 0),
+            (party_set_slot, ":party_no", slot_party_commander_party, ":target_to_follow_other_party"),
+          (else_try),
+            (party_set_slot, ":party_no", slot_party_commander_party, -1),
+          (try_end),
         (else_try),
           (party_set_slot, ":party_no", slot_party_commander_party, -1),
         (try_end), #end tr25

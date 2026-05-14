@@ -5,6 +5,7 @@ SCRIPTS = [
 
       (call_script, "script_calculate_main_party_shares"),
       (assign, ":num_player_party_shares", reg0),
+      (val_max, ":num_player_party_shares", 1),
 
       #      (assign, ":num_ally_shares", reg1),
       #     (store_add, ":num_total_shares",  ":num_player_party_shares", ":num_ally_shares"),
@@ -20,13 +21,15 @@ SCRIPTS = [
         (val_mul, ":gain", ":gain"),
         (val_div, ":gain", 10),
         (store_mul, ":stack_gain", ":gain", ":stack_size"),
+        (val_clamp, ":stack_gain", 0, 20001),
         (val_add, ":total_gain", ":stack_gain"),
+        (val_clamp, ":total_gain", 0, 20001),
       (try_end),
 
       (val_mul, ":total_gain", "$g_strength_contribution_of_player"),
       (val_div, ":total_gain", 100),
 
-      (val_min, ":total_gain", 40000), #eliminate negative results
+      (val_clamp, ":total_gain", 0, 20001), # sanity cap on per-battle XP to avoid runaway gains
 
 
       #      (store_mul, ":player_party_xp_gain", ":total_gain", ":num_player_party_shares"),
@@ -41,11 +44,12 @@ SCRIPTS = [
       (party_add_xp, "p_main_party", ":player_party_xp_gain"),
 
       (store_mul, ":player_gold_gain", ":total_gain", player_loot_share),
-      (val_min, ":player_gold_gain", 60000), #eliminate negative results
+      (val_clamp, ":player_gold_gain", 0, 60001), #eliminate negative or runaway results
       (store_random_in_range, ":r", 50, 100),
       (val_mul, ":player_gold_gain", ":r"),
       (val_div, ":player_gold_gain", 100),
       (val_div, ":player_gold_gain", ":num_player_party_shares"),
+      (val_clamp, ":player_gold_gain", 0, 60001),
 
       #add gold now
       (party_get_num_companion_stacks, ":num_stacks", "p_main_party"),
@@ -60,6 +64,10 @@ SCRIPTS = [
       #Add morale
       (assign, ":morale_gain", ":total_gain"),
       (val_div, ":morale_gain", ":num_player_party_shares"),
-      (call_script, "script_change_player_party_morale", ":morale_gain"),
+      (val_clamp, ":morale_gain", 0, 16),
+      (try_begin),
+        (gt, ":morale_gain", 0),
+        (call_script, "script_change_player_party_morale", ":morale_gain"),
+      (try_end),
   ]),
 ]

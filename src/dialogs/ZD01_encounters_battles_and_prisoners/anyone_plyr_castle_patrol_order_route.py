@@ -2,7 +2,7 @@ DIALOGS = [
 [anyone|plyr, "castle_patrol_talk", [
     (call_script, "script_sod_player_can_command_castle_patrol", "$g_encountered_party"),
     (eq, reg0, 1),
-], "Shift your patrol to another nearby road.", "close_window", [
+], "Shift your patrol. I want another road counted before dusk.", "close_window", [
     (party_get_slot, ":origin", "$g_encountered_party", slot_party_sod_patrol_origin_castle),
     (store_faction_of_party, ":faction_no", "$g_encountered_party"),
     (call_script, "script_sod_find_castle_patrol_route_endpoint", ":origin", ":faction_no"),

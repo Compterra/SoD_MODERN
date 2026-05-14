@@ -3,9 +3,9 @@ DIALOGS = [
                           (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 4),
                           (quest_slot_eq, "qst_kidnapped_girl", slot_quest_giver_troop, "$g_talk_troop"),
                           ],
-   "Dear {playername}. I am in your debt for bringing back my friend's daughter.\
-  Please take these {reg8} denars that I promised you.\
-  My friend wished he could give more but paying that ransom brought him to his knees.", "close_window",
+   "Dear {playername}. You brought my friend's daughter home, and that has done more for this town than a dozen speeches.\
+  Here are the {reg8} denars I promised.\
+  My friend wished he could give more, but the ransom left his house counting candles.", "close_window",
    [(quest_get_slot, ":quest_gold_reward", "qst_kidnapped_girl", slot_quest_gold_reward),
     (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),
     (assign, reg8, ":quest_gold_reward"),

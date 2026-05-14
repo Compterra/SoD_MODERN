@@ -37,10 +37,12 @@ SCRIPTS = [
 	 
     (troop_get_slot, ":relative_wealth", ":lord_no", slot_troop_wealth),
     (val_mul, ":relative_wealth", 100),
+    (val_max, "$g_average_lord_wealth", 1),
     (val_div, ":relative_wealth", "$g_average_lord_wealth"),
  
     (party_get_slot, ":army_strength", ":party", slot_party_cached_strength),
     (store_mul, ":relative_strength", ":army_strength", 100),
+    (val_max, "$g_average_lord_army_strength", 1),
     (val_div, ":relative_strength", "$g_average_lord_army_strength"),
 
      # RAIDING FACTOR
@@ -68,7 +70,7 @@ SCRIPTS = [
      (else_try),
      (gt, ":number_of_centers", 1), # when lords with big demesnes or a town don't really need raids
      (val_mul, ":raiding_factor", 2),
-	 (assign, ":demesne_factor", ":town_lord", 2),
+	 (store_mul, ":demesne_factor", ":town_lord", 2),
 	 (val_add, ":demesne_factor", ":number_of_centers"),
      (val_div, ":raiding_factor", ":demesne_factor"),
      (try_end),
@@ -265,7 +267,17 @@ SCRIPTS = [
      (party_get_slot, ":commander_party", ":party", slot_party_commander_party),
 
      (try_begin),
-     (ge, ":commander_party", 0),   # lord already in the army
+     (assign, ":has_valid_commander", 0),
+     (try_begin),
+       (eq, ":commander_party", "p_main_party"),
+       (eq, ":faction", "$players_kingdom"),
+       (assign, ":has_valid_commander", 1),
+     (else_try),
+       (gt, ":commander_party", 0),
+       (party_is_active, ":commander_party"),
+       (assign, ":has_valid_commander", 1),
+     (try_end),
+     (eq, ":has_valid_commander", 1),   # lord already in the army
 	 (val_sub, ":readiness_bonus", 1),
      (val_min, ":readiness_bonus", 2),   #a bonus of 3 would mean no readiness decay at all
      (try_end),             
@@ -441,7 +453,7 @@ SCRIPTS = [
      (val_div, ":self_confidence", 2),   # mitigation
 
      (try_begin),
-     (eq, ":lord_no", slot_lord_reputation_type, lrep_upstanding), # pragmatic lords estimate their forces more correctly
+     (troop_slot_eq, ":lord_no", slot_lord_reputation_type, lrep_upstanding), # pragmatic lords estimate their forces more correctly
      (val_clamp, ":self_confidence", 90, 110),
      (else_try), 
 	 (troop_slot_eq, ":lord_no", slot_lord_reputation_type, lrep_cunning), # some have a prudent nature
@@ -495,7 +507,7 @@ SCRIPTS = [
      (gt, ":number_of_centers", 0), # lords with no center have no preference	 
      (troop_get_slot, ":personnal_objective", ":lord_no", slot_lord_personnal_objective),
        (try_begin),
-       (gt, ":personnal_objective", 0),
+       (is_between, ":personnal_objective", centers_begin, centers_end),
        (store_faction_of_party, ":objective_fac", ":personnal_objective"),
        (store_relation, ":rln", ":objective_fac", ":faction"),
          (try_begin),
@@ -503,6 +515,12 @@ SCRIPTS = [
          (troop_set_slot, ":lord_no", slot_lord_personnal_objective, -1),
          (assign, ":personnal_objective", -1),
          (try_end),
+       (try_end),
+       (try_begin),
+       (gt, ":personnal_objective", 0),
+       (neg|is_between, ":personnal_objective", centers_begin, centers_end),
+       (troop_set_slot, ":lord_no", slot_lord_personnal_objective, -1),
+       (assign, ":personnal_objective", -1),
        (try_end),
        (try_begin),
        (le, ":personnal_objective", 0),

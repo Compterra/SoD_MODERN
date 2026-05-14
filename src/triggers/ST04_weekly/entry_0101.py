@@ -7,6 +7,7 @@ SIMPLE_TRIGGERS = [
     (try_end),
 
     (try_for_range, ":center_no", towns_begin, towns_end),
+      (call_script, "script_sod_normalize_center_population", ":center_no"),
       (party_get_slot, ":center_population", ":center_no", slot_center_sod_local_population),
       (party_get_slot, ":center_health", ":center_no", slot_center_sod_local_health),
       (party_get_slot, ":prosperity", ":center_no", slot_town_prosperity),
@@ -208,9 +209,11 @@ SIMPLE_TRIGGERS = [
       (try_begin),
         (neq, ":center_growth", 0),
         # update the population after growth or shrinkage
-        (party_set_slot, ":center_no", slot_center_sod_local_population, ":new_population"),
-        # Only surface population news when it is player-relevant or severe enough
-        # to feel like a report rather than routine background census noise.
+        (store_sub, ":population_delta", ":new_population", ":center_population"),
+        (call_script, "script_sod_center_apply_population_delta", ":center_no", ":population_delta"),
+        # Only surface routine population news for centers under the player's
+        # direct rule or faction. Foreign center health belongs in reports and
+        # rumors, not the world-map message log.
         (assign, ":should_report_population_change", 0),
         (try_begin),
           (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
@@ -219,34 +222,6 @@ SIMPLE_TRIGGERS = [
           (gt, "$players_kingdom", 0),
           (store_faction_of_party, ":center_faction", ":center_no"),
           (eq, ":center_faction", "$players_kingdom"),
-          (assign, ":should_report_population_change", 1),
-        (else_try),
-          (assign, ":abs_growth", ":center_growth"),
-          (try_begin),
-            (lt, ":abs_growth", 0),
-            (val_mul, ":abs_growth", -1),
-          (try_end),
-          (ge, ":abs_growth", 20),
-          (assign, ":should_report_population_change", 1),
-        (else_try),
-          (lt, ":center_growth", 0),
-          (le, ":food_store", 0),
-          (assign, ":should_report_population_change", 1),
-        (else_try),
-          (lt, ":center_growth", 0),
-          (lt, ":food_security", 300),
-          (assign, ":should_report_population_change", 1),
-        (else_try),
-          (lt, ":center_growth", 0),
-          (lt, ":center_health", 35),
-          (assign, ":should_report_population_change", 1),
-        (else_try),
-          (lt, ":center_growth", 0),
-          (lt, ":prosperity", 30),
-          (assign, ":should_report_population_change", 1),
-        (else_try),
-          (lt, ":center_growth", 0),
-          (lt, ":cur_relation", -5),
           (assign, ":should_report_population_change", 1),
         (try_end),
         # inform the player of the new census
@@ -296,6 +271,7 @@ SIMPLE_TRIGGERS = [
           (try_end),
         (try_end),
       (try_end),
+      (call_script, "script_sod_normalize_center_population", ":center_no"),
     (try_end),
 
     (try_begin),

@@ -3,7 +3,7 @@ DIALOGS = [
                                                      (quest_get_slot, ":quest_target_amount", "qst_deliver_wine", slot_quest_target_amount),
                                                      (ge, ":capacity", ":quest_target_amount"),
                                                      ],
-      "Alright. I will make the delivery.", "merchant_quest_taken",
+      "I will carry the wine and keep the casks out of greedy hands.", "merchant_quest_taken",
    [(quest_get_slot, ":quest_target_amount", "qst_deliver_wine", slot_quest_target_amount),
     (quest_get_slot, ":quest_target_item", "qst_deliver_wine", slot_quest_target_item),
     (troop_add_items, "trp_player", ":quest_target_item", ":quest_target_amount"),

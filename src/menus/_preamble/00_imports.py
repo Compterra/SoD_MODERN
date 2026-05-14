@@ -333,6 +333,7 @@ def build_upgrade_troop_selection_option(troop_no):
     return (
         "troop%d" % troop_no,
         [
+            (assign, ":upgrade_center", "$g_sod_upgrade_center"),
             (party_count_companions_of_type, ":troop_count", "p_main_party", troop_no),
             (gt, ":troop_count", 0),
             (assign, ":can_up1", 0),
@@ -340,13 +341,13 @@ def build_upgrade_troop_selection_option(troop_no):
             (troop_get_slot, ":upgrade1", troop_no, slot_troop_sod_upgrade1),
             (try_begin),
                 (is_between, ":upgrade1", 0, "trp_last_troop"),
-                (call_script, "script_sod_can_upgrade_troops_here", ":upgrade1", "$g_encountered_party"),
+                (call_script, "script_sod_can_upgrade_troops_here", ":upgrade1", ":upgrade_center"),
                 (assign, ":can_up1", reg0),
             (try_end),
             (troop_get_slot, ":upgrade2", troop_no, slot_troop_sod_upgrade2),
             (try_begin),
                 (is_between, ":upgrade2", 0, "trp_last_troop"),
-                (call_script, "script_sod_can_upgrade_troops_here", ":upgrade2", "$g_encountered_party"),
+                (call_script, "script_sod_can_upgrade_troops_here", ":upgrade2", ":upgrade_center"),
                 (assign, ":can_up2", reg0),
             (try_end),
             (this_or_next | eq, ":can_up1", 1),
@@ -367,8 +368,69 @@ def generate_upgrade_options():
     return result
 
 
+def build_sod_battle_commander_change_option(option_id, return_menu, extra_conditions=None):
+    conditions = list(extra_conditions or [])
+    conditions.extend([
+        (call_script, "script_cf_sod_battle_commander_party_has_available_commander"),
+        (call_script, "script_sod_battle_commander_store_current_name_to_s7"),
+    ])
+    return (
+        option_id,
+        conditions,
+        "Choose acting commander ({s7}).",
+        [
+            (assign, "$g_sod_battle_commander_return_menu", return_menu),
+            (jump_to_menu, "mnu_sod_battle_commander_select"),
+        ],
+    )
+
+
+def build_sod_battle_commander_select_option(troop_no):
+    return (
+        "sod_battle_commander_%s" % troop_no,
+        [
+            (call_script, "script_cf_sod_battle_commander_troop_available", troop_no),
+            (str_store_troop_name, s3, troop_no),
+        ],
+        "Let {s3} lead.",
+        [
+            (call_script, "script_sod_battle_commander_select", troop_no),
+            (jump_to_menu, "mnu_sod_battle_commander_select"),
+        ],
+    )
+
+
+def generate_sod_battle_commander_select_options():
+    result = [
+        (
+            "sod_battle_commander_player",
+            [(call_script, "script_cf_sod_battle_commander_troop_available", "trp_player")],
+            "Lead personally.",
+            [
+                (call_script, "script_sod_battle_commander_select", "trp_player"),
+                (jump_to_menu, "mnu_sod_battle_commander_select"),
+            ],
+        )
+    ]
+    result.extend(
+        build_sod_battle_commander_select_option("trp_npc%d" % npc_no)
+        for npc_no in range(1, 17)
+    )
+    result.append(
+        (
+            "sod_battle_commander_done",
+            [],
+            "Done.",
+            [(jump_to_menu, "$g_sod_battle_commander_return_menu")],
+        )
+    )
+    return result
+
+
 __all__ = [
     "BUILDING_REGISTRY",
+    "build_sod_battle_commander_change_option",
+    "generate_sod_battle_commander_select_options",
     "game_menus",
     "generate_building_options",
     "get_building_build_time",

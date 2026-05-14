@@ -28,7 +28,7 @@ DIALOGS = [
                                       (str_store_item_name, s3, ":cur_good"),
                                       (try_begin),
                                         (eq, reg20, 0),
-                                        (str_store_string, s5, s3),
+                                        (str_store_string_reg, s5, s3),
                                       (else_try),
                                         (eq, reg20, 1),
                                         (str_store_string, s5, "@{s3} and {s5}"),

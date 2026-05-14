@@ -140,10 +140,47 @@ s61 = 61
 s62 = 62
 s63 = 63
 
+# SoD/M&B 1.011 string-register lanes:
+# s0-s19: volatile Native/dialog/display scratch.
+# s20-s67: legacy Native/SoD report scratch; check nearby code before reuse.
+# s68-s99: preferred safe lane for new SoD feature text and debug probes.
+# Do not use direct {s100+} placeholders; M&B 1.011 renders them as UNRECOGNIZED TOKEN.
 s64 = 64
 s65 = 65
 s66 = 66
 s67 = 67
+s68 = 68
+s69 = 69
+s70 = 70
+s71 = 71
+s72 = 72
+s73 = 73
+s74 = 74
+s75 = 75
+s76 = 76
+s77 = 77
+s78 = 78
+s79 = 79
+s80 = 80
+s81 = 81
+s82 = 82
+s83 = 83
+s84 = 84
+s85 = 85
+s86 = 86
+s87 = 87
+s88 = 88
+s89 = 89
+s90 = 90
+s91 = 91
+s92 = 92
+s93 = 93
+s94 = 94
+s95 = 95
+s96 = 96
+s97 = 97
+s98 = 98
+s99 = 99
 
 
 pos0  =  0

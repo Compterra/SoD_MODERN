@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "town_dweller_quest_meet_spy_in_enemy_town_dont_know", [],
-   "Never mind.", "close_window", []],
+   "Forget I asked. Safer for both of us.", "close_window", []],
 ]

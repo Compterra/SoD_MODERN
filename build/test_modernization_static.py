@@ -1598,9 +1598,6 @@ def test_company_troop_dialogue_terminal_safety_and_focus() -> None:
         "company_spokesperson_rations",
         "company_spokesperson_wounded",
         "company_spokesperson_hazard_pay",
-        "company_spokesperson_honors",
-        "company_spokesperson_victory_feast",
-        "company_spokesperson_refuse_spectacle",
         "company_spokesperson_offering",
         "company_spokesperson_recreation",
         "company_spokesperson_persuade",
@@ -1627,12 +1624,13 @@ def test_company_mutiny_desertion_dialogue_closure_paths() -> None:
         assert_contains(raw, menu_id)
     for target in (
         'jump_to_menu, "mnu_company_accounts"',
-        'jump_to_menu, "mnu_company_desertion_petition"',
         'jump_to_menu, "mnu_company_mutiny_warning"',
         'jump_to_menu, "mnu_company_mutiny_resolution"',
         'jump_to_menu, "mnu_simple_encounter"',
     ):
         assert_contains(raw, target)
+    assert_not_contains(raw, "company_accounts_desertion")
+    assert_not_contains(raw, "company_accounts_mutiny")
     company_block = raw[raw.index('("company_desertion_petition"'):]
     assert "change_screen_return" not in company_block
     for option in (

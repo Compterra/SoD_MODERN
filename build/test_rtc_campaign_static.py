@@ -15,9 +15,14 @@ def assert_contains(raw: str, token: str) -> None:
     assert token in raw, f"missing token: {token}"
 
 
+def assert_not_contains(raw: str, token: str) -> None:
+    assert token not in raw, f"unexpected token: {token}"
+
+
 def test_act_i_salvage_paths_exist_but_are_parked_from_startup() -> None:
     menu = read("src/menus/start_game/rtc_last_smoke.py")
     script = read("src/scripts/ZG_quests/sod_rtc_last_smoke_resolve.py")
+    init = read("src/scripts/ZG_quests/sod_rtc_initialize_campaign_state.py")
     start = read("src/menus/0000_hardcoded_mb1011/choose_skill.py")
     party = read("src/scripts/ZC_parties/sod_initialize_party.py")
     assert_contains(start, '(assign, "$g_sod_rtc_enabled", 0)')
@@ -26,6 +31,19 @@ def test_act_i_salvage_paths_exist_but_are_parked_from_startup() -> None:
     assert '(jump_to_menu, "mnu_rtc_last_smoke")' not in start
     assert_contains(party, '"sod_apply_rtc_starting_salvage_bonus"')
     assert_contains(party, "party_wound_members")
+    assert_contains(init, "qst_rtc_final_confrontation")
+    assert_contains(init, "slot_quest_target_party")
+    assert_contains(init, "slot_quest_target_party_template")
+    assert_contains(init, '(quest_set_slot, "qst_rtc_last_smoke", slot_quest_target_troop, "trp_rtc_garran_ashwake")')
+    assert_contains(init, '(quest_set_slot, "qst_rtc_borrowed_names", slot_quest_target_troop, "trp_rtc_lysara_veyne")')
+    assert_contains(init, '(quest_set_slot, "qst_rtc_hound_sign", slot_quest_target_troop, "trp_rtc_imperial_courier")')
+    assert_contains(init, "(try_for_range, \":rtc_quest\", \"qst_rtc_last_smoke\", \":rtc_quests_end\")")
+    party_templates = read("compile/module_party_templates.py")
+    assert_contains(party_templates, '("sod_diplomatic_envoy"')
+    assert_contains(party_templates, "trp_swadian_messenger")
+    assert_contains(menu, '"script_sod_rtc_prepare_temporary_target", "qst_rtc_last_smoke", "pt_sod_diplomatic_envoy"')
+    assert_contains(script, "Road event: the survivors' first choice is tied to")
+    assert_contains(script, "slot_quest_target_party")
     assert_contains(menu, "Antares taught you")
     assert_contains(menu, "Marina taught you")
     assert_contains(menu, "The One asks")
@@ -64,6 +82,11 @@ def test_borrowed_names_identity_paths_are_wired() -> None:
     assert_contains(script, "slot_quest_rtc_merchant_trust")
     assert_contains(script, "sod_rtc_method_trade")
     assert_contains(script, "sod_rtc_pressure_rising")
+    assert_contains(script, "Camp event: Lysara's ledger closed over testimony")
+    assert_contains(script, '(neq, ":camp_target_party", "p_main_party")')
+    assert_contains(script, "remove_party")
+    assert_contains(script, '(quest_set_slot, "qst_rtc_borrowed_names", slot_quest_target_party, -1)')
+    assert_contains(script, '(quest_set_slot, "qst_rtc_hound_sign", slot_quest_target_party, -1)')
     assert menu.count('(jump_to_menu, "mnu_rtc_hound_sign")') == 5
 
 
@@ -72,11 +95,15 @@ def test_hound_sign_and_door_methods_are_interactive() -> None:
     hound_resolve = read("src/scripts/ZG_quests/sod_rtc_hound_sign_resolve.py")
     door_menu = read("src/menus/start_game/rtc_door_into_calradia.py")
     door_contact = read("src/scripts/ZG_quests/sod_rtc_door_into_calradia_choose_contact.py")
+    act_i_cleanup = read("src/scripts/ZG_quests/sod_rtc_act_i_cleanup_targets.py")
     assert_contains(hound_menu, "The camp expects you to take proof openly")
     assert_contains(hound_menu, "The camp expects quiet hands")
     assert_contains(hound_menu, "The wounded you saved can still speak")
     assert_contains(hound_menu, "The stores you saved give Garran")
     assert_contains(hound_menu, "The papers you saved make the pattern sharper")
+    assert_contains(hound_menu, '"script_sod_rtc_prepare_temporary_target", "qst_rtc_hound_sign", "pt_sod_diplomatic_envoy", "p_main_party", 2, 1')
+    assert_contains(hound_resolve, "World event: the Hound sign now points to")
+    assert_contains(hound_resolve, "slot_quest_target_party")
     assert_contains(hound_resolve, "Hound Sign method: you took the proof openly")
     assert_contains(hound_resolve, "Hound Sign method: you traced supply marks")
     assert_contains(hound_resolve, "The wounded survivors made the Hound sign")
@@ -94,6 +121,11 @@ def test_hound_sign_and_door_methods_are_interactive() -> None:
     assert_contains(door_contact, "The wounded you saved matched the first door")
     assert_contains(door_contact, "The baggage you saved matched the guild door")
     assert_contains(door_contact, "The papers you saved matched the first door")
+    assert_contains(door_contact, "script_sod_rtc_act_i_cleanup_targets")
+    assert_contains(act_i_cleanup, '"sod_rtc_act_i_cleanup_targets"')
+    assert_contains(act_i_cleanup, '(try_for_range, ":quest_no", "qst_rtc_last_smoke", "qst_rtc_price_of_bread")')
+    assert_contains(act_i_cleanup, "remove_party")
+    assert_contains(act_i_cleanup, "slot_quest_target_party_template")
 
 
 def test_price_of_bread_listed_paths_are_wired() -> None:
@@ -122,6 +154,18 @@ def test_price_of_bread_world_memory_contract_is_wired() -> None:
     rumor = read("src/scripts/ZG_quests/sod_rtc_price_of_bread_describe_aftermath_to_s49.py")
     prepare_bandits = read("src/scripts/ZG_quests/sod_rtc_price_of_bread_prepare_bandit_target.py")
     cleanup_bandits = read("src/scripts/ZG_quests/sod_rtc_price_of_bread_cleanup_bandit_target.py")
+    prepare_helper = read("src/scripts/ZG_quests/sod_rtc_prepare_temporary_target.py")
+    rtc_world_target_sources = (
+        read("src/menus/start_game/rtc_last_smoke.py"),
+        read("src/menus/start_game/rtc_hound_sign.py"),
+        read("src/scripts/ZG_quests/sod_rtc_three_offers_prepare_route_target.py"),
+        read("src/scripts/ZG_quests/sod_rtc_first_recognition_prepare_witness_target.py"),
+        read("src/scripts/ZG_quests/sod_rtc_war_of_witnesses_prepare_target.py"),
+        read("src/scripts/ZG_quests/sod_rtc_last_road_prepare_strategy_target.py"),
+        read("src/scripts/ZG_quests/sod_rtc_final_confrontation_prepare_target.py"),
+    )
+    for raw in rtc_world_target_sources:
+        assert_not_contains(raw, '"pt_scout_party"')
     for token in (
         "slot_quest_target_center",
         "slot_quest_target_troop",
@@ -140,6 +184,11 @@ def test_price_of_bread_world_memory_contract_is_wired() -> None:
     assert_contains(rumor, "str_store_party_name_link")
     assert_contains(prepare_bandits, '"pt_bandits"')
     assert_contains(prepare_bandits, "slot_quest_target_party")
+    assert_contains(prepare_bandits, "script_sod_rtc_prepare_temporary_target")
+    assert_contains(prepare_helper, '"sod_rtc_prepare_temporary_target"')
+    assert_contains(prepare_helper, "spawn_around_party")
+    assert_contains(prepare_helper, "slot_quest_target_party_template")
+    assert_contains(prepare_helper, "(quest_set_slot, \":quest_no\", slot_quest_target_party, -1)")
     assert_contains(cleanup_bandits, "remove_party")
 
 
@@ -191,6 +240,7 @@ def test_three_offers_route_proof_target_is_wired() -> None:
     assert_contains(constants, "sod_rtc_offer_books_oath")
     assert_contains(constants, "sod_rtc_offer_witness_oath")
     assert_contains(choose, "script_sod_rtc_three_offers_prepare_route_target")
+    assert_contains(prepare, "script_sod_rtc_prepare_temporary_target")
     assert_contains(choose, "slot_quest_target_party")
     assert_contains(choose, "slot_quest_target_party_template")
     assert_contains(choose, "You swore the bread oath")
@@ -206,7 +256,6 @@ def test_three_offers_route_proof_target_is_wired() -> None:
     for template in (
         '"pt_sod_diplomatic_envoy"',
         '"pt_merchant_caravan"',
-        '"pt_scout_party"',
         '"pt_bandits"',
     ):
         assert_contains(prepare, template)
@@ -223,6 +272,7 @@ def test_first_recognition_witness_target_is_wired() -> None:
     assert_contains(menu, "sod_rtc_offer_books_oath")
     assert_contains(menu, "sod_rtc_offer_witness_oath")
     assert_contains(resolve, "script_sod_rtc_first_recognition_prepare_witness_target")
+    assert_contains(prepare, "script_sod_rtc_prepare_temporary_target")
     assert_contains(resolve, "slot_quest_target_party")
     assert_contains(resolve, "slot_quest_target_party_template")
     assert_contains(resolve, "The bread oath shaped first recognition")
@@ -231,7 +281,6 @@ def test_first_recognition_witness_target_is_wired() -> None:
     assert_contains(council, "script_sod_rtc_first_recognition_cleanup_witness_target")
     for template in (
         '"pt_sod_diplomatic_envoy"',
-        '"pt_scout_party"',
         '"pt_merchant_caravan"',
         '"pt_bandits"',
     ):
@@ -298,8 +347,8 @@ def test_hounds_terms_envoy_world_target_is_wired() -> None:
     assert_contains(handle, "sod_companion_action_scout_warning")
     assert_contains(witness_war_menu, ":envoy_handling")
     assert_contains(prepare, '"pt_sod_diplomatic_envoy"')
+    assert_contains(prepare, "script_sod_rtc_prepare_temporary_target")
     assert_contains(prepare, "slot_quest_target_party")
-    assert_contains(prepare, "slot_quest_target_party_template")
     assert_contains(cleanup, "remove_party")
 
 
@@ -338,6 +387,7 @@ def test_war_of_witnesses_world_target_is_wired() -> None:
     assert_contains(menu, "sod_rtc_witness_war_envoy_leverage")
     assert_contains(constants, "sod_rtc_witness_war_envoy_leverage")
     assert_contains(hounds, "script_sod_rtc_war_of_witnesses_prepare_target")
+    assert_contains(prepare, "script_sod_rtc_prepare_temporary_target")
     assert_contains(resolve, ":envoy_handling")
     assert_contains(resolve, "slot_quest_sod_chain_choice")
     assert_contains(resolve, "slot_quest_object_troop")
@@ -352,13 +402,11 @@ def test_war_of_witnesses_world_target_is_wired() -> None:
     for template in (
         '"pt_sod_diplomatic_envoy"',
         '"pt_merchant_caravan"',
-        '"pt_scout_party"',
         '"pt_bandits_awaiting_ransom"',
         '"pt_bandits"',
     ):
         assert_contains(prepare, template)
     assert_contains(prepare, "slot_quest_target_party")
-    assert_contains(prepare, "slot_quest_target_party_template")
     assert_contains(cleanup, "remove_party")
 
 
@@ -393,16 +441,15 @@ def test_last_road_strategy_world_target_is_wired() -> None:
     assert_contains(resolve, "qst_rtc_final_confrontation")
     assert_contains(resolve, "slot_quest_sod_chain_choice")
     assert_contains(prepare, ":force_refresh")
+    assert_contains(prepare, "script_sod_rtc_prepare_temporary_target")
     assert_contains(prepare, "sod_rtc_last_road_turn_accusation")
     for template in (
-        '"pt_scout_party"',
         '"pt_kingdom_caravan_party"',
         '"pt_sod_diplomatic_envoy"',
         '"pt_bandits"',
     ):
         assert_contains(prepare, template)
     assert_contains(prepare, "slot_quest_target_party")
-    assert_contains(prepare, "slot_quest_target_party_template")
     assert_contains(cleanup, "remove_party")
 
 
@@ -436,14 +483,13 @@ def test_final_confrontation_world_target_is_wired() -> None:
     assert_contains(resolve, "sod_companion_action_honorable_peace")
     assert_contains(resolve, "script_change_player_relation_with_center")
     assert_contains(prepare, ":force_refresh")
+    assert_contains(prepare, "script_sod_rtc_prepare_temporary_target")
     for template in (
-        '"pt_scout_party"',
         '"pt_sod_diplomatic_envoy"',
         '"pt_bandits"',
     ):
         assert_contains(prepare, template)
     assert_contains(prepare, "slot_quest_target_party")
-    assert_contains(prepare, "slot_quest_target_party_template")
     assert_contains(cleanup, "remove_party")
 
 

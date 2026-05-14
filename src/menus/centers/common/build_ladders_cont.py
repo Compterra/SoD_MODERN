@@ -49,6 +49,8 @@ MENUS = [
            (store_sub, ":hours_takes", 12, reg0),
            (val_mul, ":hours_takes", 2),
            (val_div, ":hours_takes", 3),
+           (call_script, "script_sod_camp_apply_artimenner_siege_preparation_to_hours", ":hours_takes", 1),
+           (assign, ":hours_takes", reg0),
            (store_add, "$g_siege_method_finish_hours", ":cur_hours", ":hours_takes"),
            (call_script, "script_sod_companion_apply_player_action", sod_companion_action_siege_preparation, 2),
            (call_script, "script_sod_companion_try_artimenner_siege_incident", 1, 2),

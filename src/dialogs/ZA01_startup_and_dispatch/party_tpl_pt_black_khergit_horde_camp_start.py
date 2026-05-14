@@ -1,4 +1,26 @@
 DIALOGS = [
-[party_tpl|pt_black_khergit_horde_camp, "start", [],
+[party_tpl|pt_black_khergit_horde_camp, "start", [
+    (store_current_hours, ":cur_hours"),
+    (store_mod, ":hour_of_day", ":cur_hours", 24),
+    (assign, ":is_night", 0),
+    (try_begin),
+      (this_or_next|ge, ":hour_of_day", 18),
+      (lt, ":hour_of_day", 6),
+      (assign, ":is_night", 1),
+    (try_end),
+    (eq, ":is_night", 1),
+  ],
    "Black tents crowd the horizon. Horsemen watch every approach, and the Khan's standard hangs over the camp like a warning.", "black_khergit_camp_talk", []],
+[party_tpl|pt_black_khergit_horde_camp, "start", [
+    (store_current_hours, ":cur_hours"),
+    (store_mod, ":hour_of_day", ":cur_hours", 24),
+    (assign, ":is_night", 0),
+    (try_begin),
+      (this_or_next|ge, ":hour_of_day", 18),
+      (lt, ":hour_of_day", 6),
+      (assign, ":is_night", 1),
+    (try_end),
+    (eq, ":is_night", 0),
+  ],
+   "The Black Khergit horde is on the move. Riders spread wide across the grass, and the Khan's standard marks the heart of the column.", "black_khergit_khan_field_audience", []],
 ]

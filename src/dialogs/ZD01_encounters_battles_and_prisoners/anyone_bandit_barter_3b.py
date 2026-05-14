@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone, "bandit_barter_3b", [],
-   "That's too bad. I guess we'll just have to sell you into slavery. Take {him/her}, lads!", "close_window", [[encounter_attack]]],
+   "Then your purse was wiser than your mouth. Take {him/her}, lads, and leave the boots for later.", "close_window", [[encounter_attack]]],
 ]

@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "merc_lord_talk", [],
-   "Who are you?", "merc_lord_intro", [],],
+   "Your banner is familiar, but your face is not. Tell me who commands these men.", "merc_lord_intro", [],],
 ]

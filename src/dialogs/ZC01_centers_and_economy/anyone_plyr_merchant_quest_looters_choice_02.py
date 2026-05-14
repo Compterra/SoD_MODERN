@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "merchant_quest_looters_choice", [], "I'm afraid I can't take the job at the moment.", "merchant_quest_stall", []],
+[anyone|plyr, "merchant_quest_looters_choice", [], "No. If I go after looters, I mean to finish the chase; today I cannot.", "merchant_quest_stall", []],
 ]

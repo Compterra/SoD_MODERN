@@ -6,6 +6,7 @@ SCRIPTS = [
       (quest_set_slot, "qst_rtc_hound_sign", slot_quest_rtc_reputation, ":reputation"),
       (quest_set_slot, "qst_rtc_door_into_calradia", slot_quest_rtc_reputation, ":reputation"),
       (quest_set_slot, "qst_rtc_price_of_bread", slot_quest_rtc_reputation, ":reputation"),
+      (quest_get_slot, ":camp_target_party", "qst_rtc_borrowed_names", slot_quest_target_party),
 
       (try_begin),
         (eq, ":reputation", sod_rtc_reputation_foreign_noble),
@@ -65,6 +66,22 @@ SCRIPTS = [
 
         (add_quest_note_from_sreg, "qst_rtc_borrowed_names", 3, s49, 0),
       (try_end),
+
+      (try_begin),
+        (gt, ":camp_target_party", 0),
+        (neq, ":camp_target_party", "p_main_party"),
+        (party_is_active, ":camp_target_party"),
+        (str_store_party_name_link, s48, ":camp_target_party"),
+        (str_store_string, s49, "@Camp event: Lysara's ledger closed over testimony from {s48}. The public name was chosen in front of surviving road witnesses, not in private."),
+        (add_quest_note_from_sreg, "qst_rtc_borrowed_names", 5, s49, 0),
+        (remove_party, ":camp_target_party"),
+      (try_end),
+      (quest_set_slot, "qst_rtc_last_smoke", slot_quest_target_party, -1),
+      (quest_set_slot, "qst_rtc_last_smoke", slot_quest_target_party_template, -1),
+      (quest_set_slot, "qst_rtc_borrowed_names", slot_quest_target_party, -1),
+      (quest_set_slot, "qst_rtc_borrowed_names", slot_quest_target_party_template, -1),
+      (quest_set_slot, "qst_rtc_hound_sign", slot_quest_target_party, -1),
+      (quest_set_slot, "qst_rtc_hound_sign", slot_quest_target_party_template, -1),
 
       (call_script, "script_succeed_quest", "qst_rtc_borrowed_names"),
       (call_script, "script_sod_quest_chain_branch_success", "qst_rtc_borrowed_names", "qst_rtc_hound_sign", 0),

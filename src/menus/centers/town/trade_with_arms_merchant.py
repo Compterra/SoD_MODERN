@@ -72,25 +72,28 @@ MENUS = [
         ]),
 
       ("sod_auto_buy_missing_food", [(party_slot_ge, "$current_town", slot_town_merchant, 1)],
-       "Buy missing food types.",
+       "Buy up to 4 food varieties missing from your stores.",
        [
            (party_get_slot, ":merchant_troop", "$current_town", slot_town_merchant),
            (call_script, "script_sod_auto_buy_food_from_merchant", ":merchant_troop"),
         ]),
 
-      ("sod_repair_weapons", [(party_slot_ge, "$current_town", slot_town_weaponsmith, 1)],
+      ("sod_repair_weapons", [(party_slot_ge, "$current_town", slot_town_weaponsmith, 1),
+                               (party_slot_ge, "$current_town", slot_center_has_blacksmith, 1)],
        "Have damaged weapons repaired.",
        [
            (call_script, "script_sod_repair_player_party_equipment", sod_repair_service_weapons),
         ]),
 
-      ("sod_repair_armor", [(party_slot_ge, "$current_town", slot_town_armorer, 1)],
+      ("sod_repair_armor", [(party_slot_ge, "$current_town", slot_town_armorer, 1),
+                             (party_slot_ge, "$current_town", slot_center_has_blacksmith, 1)],
        "Have battered armor and shields repaired.",
        [
            (call_script, "script_sod_repair_player_party_equipment", sod_repair_service_armor),
         ]),
 
-      ("sod_repair_horses", [(party_slot_ge, "$current_town", slot_town_horse_merchant, 1)],
+      ("sod_repair_horses", [(party_slot_ge, "$current_town", slot_town_horse_merchant, 1),
+                              (party_slot_ge, "$current_town", slot_center_has_stables, 1)],
        "Have injured mounts cared for.",
        [
            (call_script, "script_sod_repair_player_party_equipment", sod_repair_service_horses),

@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "boar_clan_meet", [], "I want to hire you.", "boar_clan_recruit", []],
+[anyone|plyr, "boar_clan_meet", [], "My road needs hard fighters. Name your price.", "boar_clan_recruit", []],
 ]

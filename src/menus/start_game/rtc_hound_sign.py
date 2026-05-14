@@ -8,6 +8,7 @@ MENUS = [
         (neq, "$g_sod_rtc_enabled", 1),
         (jump_to_menu, "mnu_start_phase_2"),
       (try_end),
+      (call_script, "script_sod_rtc_prepare_temporary_target", "qst_rtc_hound_sign", "pt_sod_diplomatic_envoy", "p_main_party", 2, 1),
       (quest_get_slot, ":salvage", "qst_rtc_hound_sign", slot_quest_rtc_salvage_choice),
       (try_begin),
         (eq, ":salvage", sod_rtc_salvage_wounded),

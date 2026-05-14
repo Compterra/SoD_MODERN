@@ -74,9 +74,7 @@ SIMPLE_TRIGGERS = [
          (store_sub, ":wealth_cost", 0, ":resupply_cost"),
          (call_script, "script_sod_change_center_wealth", ":center_no", ":wealth_cost"),
 
-         (val_add, ":center_food_store", ":daily_restock"),
-         (val_min, ":center_food_store", ":food_store_limit"),
-         (party_set_slot, ":center_no", slot_party_food_store, ":center_food_store"),
+         (call_script, "script_sod_center_apply_food_delta", ":center_no", ":daily_restock"),
        (try_end),
     ]),
 ]

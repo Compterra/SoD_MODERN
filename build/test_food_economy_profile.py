@@ -52,7 +52,7 @@ def main() -> int:
 
     assert_contains(trade, "script_sod_get_center_food_profile")
     assert_contains(trade, ":food_pressure")
-    assert_contains(trade, ":food_trade_pressure")
+    assert_contains(trade, "script_sod_center_apply_food_delta")
     assert_contains(trade, "slot_party_food_store")
 
     assert_contains(construction, "script_sod_get_center_food_profile")

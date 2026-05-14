@@ -1,5 +1,5 @@
 DIALOGS = [
 [anyone|plyr, "companion_rehire", [
-      ],  "Sorry, I can't take on anyone else right now now.", "companion_rehire_refused", [
+      ],  "Not yet. My company is too crowded to take another oath.", "companion_rehire_refused", [
           ]],
 ]

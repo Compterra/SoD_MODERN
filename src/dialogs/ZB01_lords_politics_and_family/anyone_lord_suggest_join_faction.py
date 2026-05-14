@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone, "lord_suggest_join_faction", [],
-   "Alright then.", "lord_give_oath_5", []],
+   "Then let us speak plainly of oaths.", "lord_give_oath_5", []],
 ]

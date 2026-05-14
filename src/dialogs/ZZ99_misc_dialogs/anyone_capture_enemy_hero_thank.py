@@ -1,6 +1,6 @@
 DIALOGS = [
 [anyone, "capture_enemy_hero_thank", [],
-   "Many thanks, my friend. He will serve very well for a bargain. You've done a fine work here. Please accept these {reg5} denars for your help.", "capture_enemy_hero_thank_2",
+   "You brought me more than a prisoner; you brought leverage with a pulse. The bargain can finally move. Take these {reg5} denars, and know that this cell will speak louder than any envoy.", "capture_enemy_hero_thank_2",
    [(quest_get_slot, ":quest_target_troop", "qst_capture_enemy_hero", slot_quest_target_troop),
      (quest_get_slot, ":quest_target_faction", "qst_capture_enemy_hero", slot_quest_target_faction),
      (party_remove_prisoners, "p_main_party", ":quest_target_troop", 1),

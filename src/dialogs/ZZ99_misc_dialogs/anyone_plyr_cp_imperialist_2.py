@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "cp_imperialist_2", [], "Thanks. I worked really hard to earn my title.", "cp_imperialist_3", [] ],
+[anyone|plyr, "cp_imperialist_2", [], "I paid for that title in sweat and scars.", "cp_imperialist_3", [] ],
 ]

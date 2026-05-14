@@ -119,6 +119,10 @@ _REF_IDENT_PREFIXES = ("trp_", "itm_", "fac_", "p_", "pt_", "qst_", "scn_")
 # Forbidden pattern: string-literal slot symbols accidentally used in arithmetic like ":pool_begin" + 1.
 # This usually indicates a bad copy/paste from pseudo-code and will crash the build.
 _FORBIDDEN_SLOT_MATH_RE = re.compile(r"[\"']:[A-Za-z0-9_]+[\"']\s*\+\s*\d+")
+_DIRECT_REG_RE = re.compile(r"(?<![A-Za-z0-9_])reg(\d+)(?![A-Za-z0-9_])")
+_DIRECT_SREG_RE = re.compile(r"(?<![A-Za-z0-9_])s(\d+)(?![A-Za-z0-9_])")
+_REG_FUNC_RE = re.compile(r"(?<![A-Za-z0-9_])reg\s*\(\s*(\d+)\s*\)")
+_FORMAT_REG_RE = re.compile(r"\{(reg|s)(\d+)\}")
 
 # Forbidden pattern: a this_or_next conditional chain whose next meaningful line is an action.
 # In Warband's operation block syntax, this usually means the final condition was accidentally
@@ -3578,6 +3582,86 @@ def _check_forbidden_code_patterns(
         errors.extend(hits)
 
 
+def _load_header_defined_registers(prefix: str) -> Set[int]:
+    header_path = ROOT / "compile" / "headers" / "header_common.py"
+    if not header_path.exists():
+        if prefix == "reg":
+            return set(range(64))
+        return set(range(68))
+    raw = _read_text(header_path)
+    pattern = re.compile(rf"(?m)^\s*{re.escape(prefix)}(\d+)\s*=")
+    return {int(match.group(1)) for match in pattern.finditer(raw)}
+
+
+def _check_unsupported_register_references(
+    files: List[Path],
+    errors: List[str],
+    *,
+    allowlist: List[re.Pattern] | None,
+    max_examples: int = 40,
+) -> None:
+    """Catch register names that the 1.011 Python headers do not define.
+
+    Direct tokens such as reg64/s68 crash the process pipeline on import.
+    Format references such as {reg70}/{s68} usually indicate the same mistake in
+    a delayed display string, so Doctor treats them as source errors too.
+    """
+    allowed_regs = _load_header_defined_registers("reg")
+    allowed_sregs = _load_header_defined_registers("s")
+    max_reg_func = max(allowed_regs) if allowed_regs else 63
+    hits: List[str] = []
+    extended_string_probe = "src/triggers/ST02_every_hour/entry_0173_string_probe.py"
+
+    def add_hit(kind: str, rel: str, ln_no: int, token: str, line: str) -> None:
+        hits.append(f"[REG] {kind} {rel}:{ln_no}: {token} in {line.strip()}")
+
+    for fp in files:
+        rel = fp.relative_to(ROOT).as_posix()
+        if _path_is_allowlisted(rel, allowlist):
+            continue
+        if rel == extended_string_probe:
+            # Deliberate debug-only runtime experiment: stores into numeric string
+            # register ids above the Native header names to verify engine limits.
+            continue
+        for ln_no, line in enumerate(_read_text(fp).splitlines(), start=1):
+            stripped = line.lstrip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            hash_i = line.find("#")
+            code_line = line if hash_i == -1 else line[:hash_i]
+            for match in _DIRECT_REG_RE.finditer(code_line):
+                value = int(match.group(1))
+                token = f"reg{value}"
+                if value not in allowed_regs:
+                    add_hit("unsupported register", rel, ln_no, token, line)
+            for match in _DIRECT_SREG_RE.finditer(code_line):
+                value = int(match.group(1))
+                token = f"s{value}"
+                if value not in allowed_sregs:
+                    add_hit("unsupported string register", rel, ln_no, token, line)
+            for match in _REG_FUNC_RE.finditer(code_line):
+                value = int(match.group(1))
+                token = f"reg({value})"
+                if value > max_reg_func:
+                    add_hit("high computed register", rel, ln_no, token, line)
+            for match in _FORMAT_REG_RE.finditer(code_line):
+                kind, raw_value = match.group(1), match.group(2)
+                value = int(raw_value)
+                token = f"{{{kind}{value}}}"
+                if kind == "reg" and value not in allowed_regs:
+                    add_hit("unsupported format register", rel, ln_no, token, line)
+                if kind == "s" and value not in allowed_sregs:
+                    add_hit("unsupported format string register", rel, ln_no, token, line)
+            if len(hits) >= max_examples:
+                break
+        if len(hits) >= max_examples:
+            break
+
+    if hits:
+        errors.append(f"[REG] Found unsupported register reference(s): {len(hits)} example(s) shown.")
+        errors.extend(hits)
+
+
 def _check_non_ascii_in_build_and_bats(
     warnings: List[str],
     errors: List[str],
@@ -4470,6 +4554,14 @@ def run_doctor(
         run_timed(
             "forbidden_patterns",
             lambda: _check_forbidden_code_patterns(
+                _iter_all_src_py_files(),
+                errors,
+                allowlist=allow_forbidden,
+            ),
+        )
+        run_timed(
+            "register_bounds",
+            lambda: _check_unsupported_register_references(
                 _iter_all_src_py_files(),
                 errors,
                 allowlist=allow_forbidden,

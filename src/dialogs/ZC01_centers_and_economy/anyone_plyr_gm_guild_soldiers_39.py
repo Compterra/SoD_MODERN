@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "gm_guild_soldiers", [
-   ],"Never mind", "gm_pretalk", []],
+   ],"That is enough of the rolls for now.", "gm_pretalk", []],
 ]

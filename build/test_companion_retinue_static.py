@@ -164,7 +164,7 @@ def test_effective_party_helpers_keep_retinue_capacity_separate() -> None:
 
 
 def test_party_size_audit_covers_recruitment_and_reward_flows() -> None:
-    audit = read("docs/reports/companion_retinue_party_size_audit.md")
+    audit = read("docs/reports/companions/companion_retinue_party_size_audit.md")
 
     for token in [
         "party_get_num_companions",
@@ -206,7 +206,7 @@ def test_retinue_storage_transfer_and_treasury_helpers_exist() -> None:
         "neg|troop_is_hero",
         '"sod_companion_retinue_add_gold"',
         '"sod_companion_retinue_remove_gold"',
-        "troop_remove_gold, \"trp_player\"",
+        "script_sod_player_charge_gold",
         "script_troop_add_gold",
         "slot_troop_sod_retinue_treasury",
         "slot_troop_sod_retinue_wage_reserve",
@@ -370,7 +370,7 @@ def test_autonomous_recruiting_uses_preferences_budget_and_target() -> None:
 
 def test_companion_identity_preferences_are_flavorful_not_locking() -> None:
     retinues = read("src/scripts/ZC_parties/sod_companion_retinues.py")
-    checklist = read("docs/COMPANION_RETINUE_IMPLEMENTATION_CHECKLIST.md")
+    checklist = read("docs/companions/COMPANION_RETINUE_IMPLEMENTATION_CHECKLIST.md")
 
     identity = retinues[retinues.index('"sod_companion_retinue_get_identity"'):retinues.index('"sod_companion_retinue_get_capacity"')]
     for token in [
@@ -752,10 +752,10 @@ def test_retinue_supply_morale_and_training_are_separate_from_player_overcrowdin
 
     assert_contains(morale, "$g_player_party_morale_modifier_retinue_cohesion")
     assert_contains(morale, "script_sod_companion_retinue_get_account_totals_to_regs")
-    assert_contains(morale, "lt, reg(75), 45")
+    assert_contains(morale, "lt, reg58, 45")
     assert_contains(morale, "val_sub, \":new_morale\", \"$g_player_party_morale_modifier_retinue_cohesion\"")
-    assert_contains(accounts, "Companion command accounts:")
-    assert_contains(accounts, "Companion retinue supply pressure:")
+    assert_contains(accounts, "Retinue:")
+    assert_contains(accounts, "Retinue supply pressure:")
     assert_contains(start, "$g_sod_retinue_wage_shortage_policy")
 
 
@@ -821,7 +821,7 @@ def test_retinue_battle_bridge_uses_hidden_allied_parties_not_main_party_merge()
     simple_encounter = read("src/menus/0000_hardcoded_mb1011/simple_encounter.py")
     victory = read("src/scripts/ZC_parties/total_victory_finalize.py")
     defeat = read("src/menus/other/total_defeat.py")
-    qa = read("docs/COMPANION_RETINUE_BATTLE_QA.md")
+    qa = read("docs/companions/COMPANION_RETINUE_BATTLE_QA.md")
 
     for token in [
         '"sod_companion_retinue_join_current_battle"',
@@ -1047,7 +1047,7 @@ def test_retinue_exploit_and_edge_case_controls_are_hardened() -> None:
     for token in [
         "store_troop_gold, \":player_gold\", \"trp_player\"",
         "ge, \":player_gold\", \":amount\"",
-        "troop_remove_gold, \"trp_player\", \":amount\"",
+        "script_sod_player_charge_gold",
         "val_max, \":treasury\", 0",
         "val_min, \":treasury\", sod_retinue_max_command_purse",
         "ge, \":treasury\", \":amount\"",
@@ -1162,8 +1162,8 @@ def test_retinue_integration_audit_surfaces_are_covered() -> None:
     ]:
         assert_contains(morale, token)
     for token in [
-        "Companion command accounts",
-        "Companion retinue supply pressure",
+        "Retinue:",
+        "Retinue supply pressure",
         "script_sod_companion_retinue_get_account_totals_to_regs",
     ]:
         assert_contains(accounts, token)

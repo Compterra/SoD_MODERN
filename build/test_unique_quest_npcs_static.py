@@ -89,6 +89,122 @@ def test_diego_secret_quest_has_idempotent_start_guards() -> None:
     assert_contains(refusal, 'script_end_quest", "qst_slave_q2"')
 
 
+def test_diego_becomes_unique_non_tavern_companion_after_success() -> None:
+    troops = read("compile/module_troops.py")
+    mission = read("src/mission_templates/0024_prison_break/prison_break.py")
+    taverns = read("src/scripts/ZH_heroes/update_companion_candidates_in_taverns.py")
+    constants = read("src/constants/module_constants.py")
+    assert_contains(troops, '"diego_companion"')
+    assert_contains(troops, '"Diego"')
+    assert_contains(troops, "tf_hero|tf_unmoveable_in_party_window")
+    assert_contains(troops, "itm_slave_neck_chain")
+    assert_contains(mission, 'script_sod_special_companion_recruit", "trp_diego_companion", 60, sod_companion_role_spymaster')
+    assert_contains(mission, 'neg|main_party_has_troop, "trp_diego_companion"')
+    assert_contains(mission, 'script_sod_quest_dialogue_record_event", "qst_slave_q3", "trp_diego_companion"')
+    assert_contains(mission, 'script_sod_quest_journal_update')
+    assert_contains(constants, 'companions_end = "trp_diego_companion"')
+    assert_contains(constants, 'special_companions_begin = "trp_diego_companion"')
+    assert_contains(constants, 'special_companions_end = "trp_kingdom_heroes_including_player_begin"')
+    assert_not_contains(taverns, "trp_diego_companion")
+
+
+def test_diego_has_post_rescue_dialogue_and_slaver_reactions() -> None:
+    order = read("src/dialogs/_order_dialogs.txt")
+    slavers = read("src/scripts/ZY_helper_scripts/sod_slavers_black_market.py")
+    for token in (
+        "trp_diego_companion_member_chat.py",
+        "trp_diego_companion_plyr_talk_about.py",
+        "trp_diego_companion_about.py",
+        "trp_diego_companion_plyr_role.py",
+        "trp_diego_companion_role.py",
+        "trp_diego_companion_plyr_chainbreaker.py",
+        "trp_diego_companion_chainbreaker.py",
+        "trp_diego_companion_plyr_warning.py",
+        "trp_diego_companion_warning.py",
+        "trp_diego_companion_plyr_reconcile.py",
+        "trp_diego_companion_reconcile.py",
+        "trp_diego_companion_plyr_late_reflection.py",
+        "trp_diego_companion_late_reflection.py",
+        "trp_diego_companion_plyr_leave.py",
+        "trp_diego_companion_departure_confirm.py",
+        "trp_diego_companion_plyr_departure_confirm_yes.py",
+        "trp_diego_companion_plyr_departure_confirm_no.py",
+        "trp_diego_companion_departure.py",
+        "anyone_plyr_ransom_broker_find_diego.py",
+        "anyone_ransom_broker_find_diego.py",
+    ):
+        assert_contains(order, token)
+    assert_contains(read("src/dialogs/ZA01_startup_and_dispatch/trp_diego_companion_member_chat.py"), "long memory for chains")
+    assert_contains(read("src/dialogs/ZZ99_misc_dialogs/trp_diego_companion_chainbreaker.py"), "slot_faction_slaver_market_heat")
+    assert_contains(slavers, "Diego helps the runaways scatter")
+    assert_contains(slavers, "Diego says buying chains")
+    assert_contains(slavers, "Diego walks the broken Slaver line")
+    assert_contains(slavers, "slot_troop_companion_approval")
+    assert_contains(slavers, "$g_sod_diego_warning_pending")
+    assert_contains(slavers, "$g_sod_diego_anti_slaver_proof")
+    assert_contains(slavers, "trp_refugee")
+    assert_contains(slavers, "chainbreaker_chance")
+    assert_contains(slavers, 'main_party_has_troop, "trp_diego_companion"')
+    assert_contains(read("src/dialogs/ZZ99_misc_dialogs/trp_diego_companion_warning.py"), "A chain bought cleanly")
+    assert_contains(read("src/dialogs/ZZ99_misc_dialogs/trp_diego_companion_reconcile.py"), "Cages opened")
+    assert_contains(read("src/dialogs/ZZ99_misc_dialogs/trp_diego_companion_late_reflection.py"), "Counting names")
+    assert_contains(read("src/dialogs/ZZ99_misc_dialogs/trp_diego_companion_role.py"), "Put me near prisoners")
+    assert_contains(read("src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_ransom_broker_diego_watch.py"), "counts keys")
+    assert_contains(read("src/dialogs/ZZ99_misc_dialogs/trp_diego_companion_departure.py"), "script_sod_diego_cleanup_departure")
+    assert_contains(read("src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_ransom_broker_find_diego.py"), "script_sod_diego_rejoin_from_underroad")
+    depth = read("src/scripts/ZY_helper_scripts/sod_companion_depth.py")
+    campfire = read("src/menus/camp/companion_campfire.py")
+    assert_contains(depth, "sod_diego_companion_describe_to_s34")
+    assert_contains(depth, "His Chainbreaker work")
+    assert_contains(depth, "Chainbreaker work is disabled")
+    assert_contains(depth, "Lezalit's talk of discipline")
+    assert_contains(depth, "Marnid's ledgers")
+    assert_contains(depth, "sod_diego_cleanup_departure")
+    assert_contains(depth, "sod_diego_rejoin_from_underroad")
+    assert_contains(depth, "sod_special_companion_process_daily")
+    assert_contains(depth, "sod_special_companion_apply_player_action")
+    assert_contains(depth, "sod_special_companion_recruit")
+    assert_contains(depth, "sod_special_companion_role_eligibility_to_reg")
+    assert_contains(depth, "sod_companion_action_elephant_guard_support")
+    assert_contains(depth, "sod_companion_action_jotnar_support")
+    assert_contains(depth, "sod_companion_action_defeat_imperials")
+    assert_contains(depth, "sod_companion_action_abuse_village")
+    assert_contains(depth, "sod_companion_action_threatened_troops")
+    assert_contains(depth, "sod_companion_action_execute_lord")
+    assert_contains(depth, "sod_companion_role_spymaster")
+    assert_contains(depth, "special_companions_begin")
+    assert_contains(depth, "special_companions_end")
+    assert_contains(depth, 'script_recruit_troop_as_companion", ":companion"')
+    assert_contains(depth, 'troop_set_slot, "trp_diego_companion", slot_troop_playerparty_history, pp_history_dismissed')
+    assert_contains(depth, 'troop_set_slot, "trp_diego_companion", slot_troop_playerparty_history, pp_history_indeterminate')
+    assert_contains(depth, "{s16}{s34}")
+    assert_contains(campfire, "companion_campfire_diego_chainbreaker")
+    assert_contains(campfire, "Ask Diego to watch for captives")
+
+
+def test_special_companion_static_safety_rules_for_diego() -> None:
+    troops = read("compile/module_troops.py")
+    mission = read("src/mission_templates/0024_prison_break/prison_break.py")
+    taverns = read("src/scripts/ZH_heroes/update_companion_candidates_in_taverns.py")
+    dialogs = read("src/dialogs/_order_dialogs.txt")
+    notes = read("src/scripts/ZH_heroes/update_troop_notes.py")
+    locations = read("src/scripts/ZH_heroes/update_troop_location_notes.py")
+    assert_contains(troops, '"slave_hero"')
+    assert_contains(troops, '"slave_hero", "One-Eyed Slave", "One-Eyed Slave", tf_hero|tf_inactive')
+    assert_contains(troops, '"diego_companion"')
+    assert_contains(mission, 'neg|main_party_has_troop, "trp_diego_companion"')
+    assert_contains(mission, 'script_sod_special_companion_recruit", "trp_diego_companion"')
+    assert_not_contains(taverns, "trp_diego_companion")
+    assert_contains(dialogs, "trp_slave_hero_start.py")
+    assert_contains(dialogs, "trp_diego_companion_member_chat.py")
+    assert_contains(notes, '(eq, ":troop_no", "trp_slave_hero")')
+    assert_contains(notes, '(add_troop_note_from_sreg, ":troop_no", 0, s49, 0)')
+    assert_contains(notes, '(add_troop_note_from_sreg, ":troop_no", 1, s49, 0)')
+    assert_contains(notes, '(add_troop_note_from_sreg, ":troop_no", 2, s49, 0)')
+    assert_contains(locations, '(eq, ":troop_no", "trp_slave_hero")')
+    assert_contains(locations, '(add_troop_note_from_sreg, ":troop_no", 2, s49, 0)')
+
+
 def test_kidnapped_girl_no_room_preserves_quest_party_identity() -> None:
     map_join = read("src/dialogs/ZE01_companions_and_named_npcs/anyone_kidnapped_girl_join.py")
     map_wait = read("src/dialogs/ZE01_companions_and_named_npcs/anyone_kidnapped_girl_wait.py")

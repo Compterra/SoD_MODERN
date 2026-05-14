@@ -6,5 +6,5 @@ DIALOGS = [
                              (store_partner_quest, ":lords_quest"),
                              (neq, ":lords_quest", "qst_join_faction"),
                             ],
-   "{s66}, I wish to become your sworn {man/woman} and fight for your honour.", "lord_ask_enter_service", []],
+   "{s66}, take my oath and I will carry your banner into the field.", "lord_ask_enter_service", []],
 ]

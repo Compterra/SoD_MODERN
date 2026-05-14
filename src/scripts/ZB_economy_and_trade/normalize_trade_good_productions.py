@@ -24,6 +24,7 @@ SCRIPTS = [
           (is_between, ":center_no", villages_begin, villages_end),
           (party_get_slot, ":center_production", ":center_no", ":cur_good_slot"),
           (val_sub, ":center_production", ":new_production_difference"),
+          (val_clamp, ":center_production", -10000, 10001),
           (party_set_slot, ":center_no", ":cur_good_slot", ":center_production"),
         (try_end),
         (try_end),

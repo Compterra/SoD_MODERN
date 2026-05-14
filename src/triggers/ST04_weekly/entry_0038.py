@@ -78,7 +78,9 @@ SIMPLE_TRIGGERS = [
 			(try_end),
 			(val_max, ":multiplier", 1),
 			# fix it
-			(party_set_slot, ":center_no", slot_town_prosperity, ":multiplier"),
+			(party_get_slot, ":old_prosperity", ":center_no", slot_town_prosperity),
+			(store_sub, ":prosperity_delta", ":multiplier", ":old_prosperity"),
+			(call_script, "script_change_center_prosperity", ":center_no", ":prosperity_delta"),
 		(try_end),
 		
 		#modify productivity by population health
@@ -247,11 +249,7 @@ SIMPLE_TRIGGERS = [
         (try_end),
 
         # accumulate the rents & taxes
-        (party_get_slot, ":accumulated_rents", ":center_no", slot_center_accumulated_rents),
-        (val_add, ":accumulated_rents", ":cur_rents"),
-        # Safety: prevent negative stored totals.
-        (val_max, ":accumulated_rents", 0),
-        (party_set_slot, ":center_no", slot_center_accumulated_rents, ":accumulated_rents"),
+        (call_script, "script_sod_center_apply_rents_delta", ":center_no", ":cur_rents"),
     (try_end),
     ]
   ),

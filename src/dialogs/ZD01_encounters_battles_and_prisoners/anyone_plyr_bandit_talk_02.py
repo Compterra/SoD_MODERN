@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "bandit_talk", [], "There's no need to fight. I can pay for free passage.", "bandit_barter", []],
+[anyone|plyr, "bandit_talk", [], "Name the price for quiet road, and do not mistake payment for fear.", "bandit_barter", []],
 ]

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# The Seven Oaths of Ash campaign quest foundation.
-# This fragment establishes the executable quest records before live scene wiring.
+# The Seven Oaths of Ash campaign quest spine.
+# These records mirror the implemented dialogue, menu, mission, and aftermath wiring.
 
 QUESTS = [
  *quest_chain_from_specs(

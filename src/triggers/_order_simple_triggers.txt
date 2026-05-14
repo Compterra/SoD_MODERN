@@ -173,3 +173,7 @@ ST02_every_hour/entry_0168.py
 ST01_every_frame/entry_0169.py
 ST04_weekly/entry_0170.py
 ST03_daily/entry_0171.py
+ST02_every_hour/entry_0172.py
+ST02_every_hour/entry_0173_string_probe.py
+ST04_weekly/entry_0174.py
+ST01_every_frame/entry_0175_sod_battle_commander_reset.py

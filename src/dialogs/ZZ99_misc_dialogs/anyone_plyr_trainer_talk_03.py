@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "trainer_talk", [],
-   "I need to leave now. Farewell.", "close_window", []],
+   "Enough bruises for now. I am done in the yard.", "close_window", []],
 ]

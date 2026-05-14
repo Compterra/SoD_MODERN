@@ -6,7 +6,7 @@ DIALOGS = [
   (faction_get_slot, ":message_text", "$g_talk_troop_faction", slot_guild_fugitive_text),
   (quest_get_slot, ":quest_target_dna", "qst_elephant_guard_hunt_down_fugitive", slot_quest_target_dna),
   (call_script, "script_get_name_from_dna_to_s50", ":quest_target_dna"),
-  (str_store_string, s4, s50),
+  (str_store_string_reg, s4, s50),
   (quest_get_slot, ":quest_target_center", "$random_quest_no", slot_quest_target_center),
   (str_store_party_name_link, s3, ":quest_target_center"),
   (str_store_string, s15, ":message_text"),

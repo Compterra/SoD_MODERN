@@ -6,11 +6,18 @@ DIALOGS = [
                      (assign, "$g_talk_troop_relation", reg0),
 
                      (try_begin),
+                       (gt, "$current_town", 0),
+                       (party_is_active, "$current_town"),
                        (this_or_next|is_between, "$g_talk_troop", village_elders_begin, village_elders_end),
                        (is_between, "$g_talk_troop", mayors_begin, mayors_end),
                        (party_get_slot, "$g_talk_troop_relation", "$current_town", slot_center_player_relation),
                      (try_end),
-                     (store_relation, "$g_talk_troop_faction_relation", "$g_talk_troop_faction", "fac_player_faction"),
+                     (try_begin),
+                       (ge, "$g_talk_troop_faction", 0),
+                       (store_relation, "$g_talk_troop_faction_relation", "$g_talk_troop_faction", "fac_player_faction"),
+                     (else_try),
+                       (assign, "$g_talk_troop_faction_relation", 0),
+                     (try_end),
 
                      (assign, "$g_talk_troop_party", "$g_encountered_party"),
                      (try_begin),
@@ -55,6 +62,7 @@ DIALOGS = [
 
                      (troop_get_type, reg65, "$g_talk_troop"),
                      (try_begin),
+                       (ge, "$g_talk_troop_faction", 0),
                        (faction_slot_eq, "$g_talk_troop_faction", slot_faction_leader, "$g_talk_troop"),
                        (str_store_string, s64, "@{reg65?my Lady:my Lord}"), #bug fix
                        (str_store_string, s65, "@{reg65?my Lady:my Lord}"),

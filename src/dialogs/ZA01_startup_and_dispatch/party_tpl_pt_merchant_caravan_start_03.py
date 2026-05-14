@@ -3,5 +3,5 @@ DIALOGS = [
                                            (eq, "$g_encountered_party", ":quest_target_party"),
                                            (quest_slot_eq, "qst_escort_merchant_caravan", slot_quest_current_state, 0),
                                            ],
-   "Greetings. You must be our escort, right?", "merchant_caravan_intro_1", [(quest_set_slot, "qst_escort_merchant_caravan", slot_quest_current_state, 1), ]],
+   "Greetings. You must be our escort, right? Good. The road clerks say taxes are one thing, but losing the cargo to raiders is a tax with knives.", "merchant_caravan_intro_1", [(quest_set_slot, "qst_escort_merchant_caravan", slot_quest_current_state, 1), ]],
 ]

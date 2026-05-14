@@ -9,6 +9,7 @@ MENUS = [
         (jump_to_menu, "mnu_start_phase_2"),
       (try_end),
       (set_background_mesh, "mesh_pic_chr6_depart"),
+      (call_script, "script_sod_rtc_prepare_temporary_target", "qst_rtc_last_smoke", "pt_sod_diplomatic_envoy", "p_main_party", 3, 0),
       (quest_get_slot, ":origin", "qst_rtc_last_smoke", slot_quest_rtc_origin),
       (quest_get_slot, ":faith", "qst_rtc_last_smoke", slot_quest_rtc_faith),
       (try_begin),

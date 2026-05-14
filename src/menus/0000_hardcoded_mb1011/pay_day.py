@@ -44,8 +44,7 @@ MENUS = [
             (val_max, ":accumulated_tariffs", 0),
             (val_add, ":total_income", ":accumulated_rents"),
             (val_add, ":total_income", ":accumulated_tariffs"),
-            (party_set_slot, ":center_no", slot_center_accumulated_rents, 0),
-            (party_set_slot, ":center_no", slot_center_accumulated_tariffs, 0),
+            (call_script, "script_sod_center_clear_revenue_accounts", ":center_no"),
           (try_end),
 		  
 		  #Economic difficulty
@@ -80,11 +79,22 @@ MENUS = [
           (str_clear, s20),
         (try_end),
 
-        # determine total wages
-        # Safety: avoid divide-by-zero and negative wages.
-        (val_max, "$g_sod_wages", 0),
-        (val_max, "$g_sod_times_wages_added", 1),
-        (store_div, ":total_wages", "$g_sod_wages", "$g_sod_times_wages_added"),
+        # determine total wages from accrued half-day snapshots.
+        # Current party wage is only an estimate elsewhere; payday must pay for who served during the period.
+        (call_script, "script_sod_company_accounts_get_current_company_weekly_wage_to_reg"),
+        (assign, ":current_company_weekly_wage", reg0),
+        (val_max, ":current_company_weekly_wage", 0),
+        (val_max, "$g_sod_company_accrued_wages", 0),
+        (assign, ":total_wages", "$g_sod_company_accrued_wages"),
+        (val_clamp, ":total_wages", 0, 2000001),
+        (try_begin),
+          (le, ":current_company_weekly_wage", 0),
+          (assign, ":total_wages", 0),
+          (assign, "$g_sod_company_accrued_wages", 0),
+          (assign, "$g_sod_company_wage_samples", 0),
+          (assign, "$g_sod_wages", 0),
+          (assign, "$g_sod_times_wages_added", 0),
+        (try_end),
 		(assign, "$g_sod_wages", 0),
 		(assign, "$g_sod_times_wages_added", 0),
         (call_script, "script_sod_companion_retinue_pay_weekly_wages"),
@@ -101,10 +111,19 @@ MENUS = [
           (str_store_string, s20, "@{s20}Companion command cost: {reg10} denars^{reg9?Command purses paid {reg9} denars^:}{reg12?Retinue shortages covered by this wage bill: {reg12} denars^:}{reg13?Unpaid retinue shortages: {reg13} denars^:}"),
         (try_end),
 
-        # determine total debt to troops SoD - Kuba: small fix, add -> sub
+        # determine total debt to troops
         # Safety: debt should never be negative when used here.
+        (call_script, "script_sod_company_accounts_decay_stale_debt"),
         (val_max, "$g_player_debt_to_party_members", 0),
-        (store_sub, ":total_debt", ":total_wages", "$g_player_debt_to_party_members"),
+        (try_begin),
+          (le, ":current_company_weekly_wage", 0),
+          (assign, "$g_player_debt_to_party_members", 0),
+        (else_try),
+          (store_mul, ":max_live_debt", ":current_company_weekly_wage", 3),
+          (gt, "$g_player_debt_to_party_members", ":max_live_debt"),
+          (assign, "$g_player_debt_to_party_members", ":max_live_debt"),
+        (try_end),
+        (store_add, ":total_debt", ":total_wages", "$g_player_debt_to_party_members"),
 
         # determine the net change in wealth (and the resulting total wealth)
         (store_sub, ":net_change", ":total_income", ":total_debt"),
@@ -173,6 +192,13 @@ MENUS = [
           (assign, "$g_sod_weekly_troops_hired", 0),
           (assign, "$g_sod_weekly_troops_upgraded", 0),
           (assign, "$g_sod_weekly_construction", 0),
+        (try_end),
+        (assign, "$g_sod_company_accrued_wages", 0),
+        (assign, "$g_sod_company_wage_samples", 0),
+        (store_current_day, "$g_sod_company_last_pay_day"),
+        (try_begin),
+          (le, "$g_player_debt_to_party_members", 0),
+          (assign, "$g_sod_company_last_full_pay_day", "$g_sod_company_last_pay_day"),
         (try_end),
     ],
     [

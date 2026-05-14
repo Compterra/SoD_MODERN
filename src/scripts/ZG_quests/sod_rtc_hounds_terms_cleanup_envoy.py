@@ -4,6 +4,7 @@ SCRIPTS = [
       (quest_get_slot, ":envoy_party", "qst_rtc_hounds_terms", slot_quest_target_party),
       (try_begin),
         (gt, ":envoy_party", 0),
+        (neq, ":envoy_party", "p_main_party"),
         (party_is_active, ":envoy_party"),
         (remove_party, ":envoy_party"),
       (try_end),

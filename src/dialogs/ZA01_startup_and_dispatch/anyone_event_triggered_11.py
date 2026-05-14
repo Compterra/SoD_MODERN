@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone, "event_triggered", [], "Sorry -- just talking to myself [ERROR]", "close_window", []],
+[anyone, "event_triggered", [], "Pay me no mind. The road has a way of making a person mutter.", "close_window", []],
 ]

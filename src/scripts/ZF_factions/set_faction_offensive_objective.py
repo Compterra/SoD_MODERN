@@ -24,7 +24,7 @@ SCRIPTS = [
 		(val_mul, ":nearby_str", 2),
         (val_add, ":garrison_str", ":nearby_str"),
 		(try_begin),
-		(ge, ":central_center", 1),
+		(is_between, ":central_center", centers_begin, centers_end),
         (store_distance_to_party_from_party, ":dist", ":central_center", ":center_no"),
         (try_begin),
           (lt, ":dist", 40), 
@@ -93,6 +93,11 @@ SCRIPTS = [
         (try_end),
 		
 		(try_end),
+
+        (try_begin),
+          (neg|is_between, ":objective", walled_centers_begin, walled_centers_end),
+          (assign, ":objective", -1),
+        (try_end),
 
         (faction_set_slot, ":faction_no", slot_faction_offensive_objective, ":objective"), 
 		

@@ -15,7 +15,7 @@ DIALOGS = [
      (eq, ":continue", 0),
      #Meaning that hero does not want to follow player orders for a while.
      ],
-   "I am sorry. I need to attend my own business at the moment.", "lord_pretalk",
+   "Not now. My own business has teeth in it, and I cannot pull away.", "lord_pretalk",
    [
      (troop_set_slot, "$g_talk_troop", slot_troop_player_order_state, spai_undefined),
      (troop_set_slot, "$g_talk_troop", slot_troop_player_order_object, -1),

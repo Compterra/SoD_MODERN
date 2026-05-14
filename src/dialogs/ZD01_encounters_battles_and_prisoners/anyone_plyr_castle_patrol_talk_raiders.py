@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "castle_patrol_talk", [], "Have you seen raiders or deserters nearby?", "castle_patrol_raiders", []],
+[anyone|plyr, "castle_patrol_talk", [], "What trouble has this road seen: raiders, deserters, smugglers?", "castle_patrol_raiders", []],
 ]

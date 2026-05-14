@@ -5,11 +5,8 @@ SCRIPTS = [
 		(store_script_param_2, ":troop"),
 
 	(try_begin),
-		(troop_get_slot, ":title", ":troop", slot_troop_title),
-		(is_between, ":title", "str_sod_c1_ruler", "str_bc_random_warrior1_1"),
-		(str_store_troop_name_link, s37, ":troop"),
-		(str_store_string, s27, ":title"),
-		(str_store_string, ":string", "@{s27} {s37}"),
+		(neg|is_between, ":troop", 0, "trp_last_troop"),
+		(str_store_string, ":string", "@an unknown commander"),
 	(else_try),
 		(str_store_troop_name_link, ":string", ":troop"),
 	(try_end),

@@ -59,6 +59,9 @@ def test_constants_slots_and_trigger_exist() -> None:
 
 def test_eligibility_and_target_selection_guardrails() -> None:
     raids = read("src/scripts/ZY_helper_scripts/sod_looter_village_raids.py")
+    pressure_origin = read("src/scripts/ZY_helper_scripts/sod_select_bandit_pressure_origin.py")
+    desperation = read("src/triggers/ST04_weekly/entry_0105.py")
+    spawn_bandits = read("src/scripts/ZZ_common_array_processing/spawn_bandits.py")
 
     assert_contains(raids, '"cf_sod_looter_party_can_consider_village_raid"')
     assert_contains(raids, '"pt_bandits"')
@@ -78,6 +81,9 @@ def test_eligibility_and_target_selection_guardrails() -> None:
     assert_contains(raids, '"sod_looter_find_village_raid_target"')
     assert_contains(raids, "slot_village_state, 0")
     assert_contains(raids, "slot_village_infested_by_bandits")
+    assert_contains(raids, "party_get_num_companions, \":village_defender_count\", \":village_no\"")
+    assert_contains(raids, "slot_center_npc_volunteer_troop_amount")
+    assert_contains(raids, "gt, \":village_defender_count\", 0")
     assert_contains(raids, "slot_center_sod_looter_raid_cooldown_until")
     assert_contains(raids, "sod_looter_raid_target_radius")
     assert_contains(raids, ":faction_active_raids")
@@ -89,6 +95,13 @@ def test_eligibility_and_target_selection_guardrails() -> None:
     assert_contains(raids, "slot_center_sod_looter_last_defense_day")
     assert_contains(raids, "assign, reg0, \":best_village\"")
     assert_contains(raids, "assign, \":best_village\", -1")
+    assert_contains(desperation, "party_clear, \":looter_party\"")
+    assert_contains(desperation, "party_add_members, \":looter_party\", \"trp_looter\", \":bandit_count\"")
+    assert_contains(desperation, "walled_centers_begin, walled_centers_end")
+    assert_contains(spawn_bandits, ":spawned_from_village")
+    assert_contains(spawn_bandits, "party_clear, \":spawned_party_id\"")
+    assert_contains(spawn_bandits, "party_add_members, \":spawned_party_id\", \"trp_looter\", \":population_loss\"")
+    assert_contains(spawn_bandits, "pt_bandit_reinfocements")
 
     design = read("docs/settlements/LOOTER_VILLAGE_RAIDS_DESIGN.md")
     assert_contains(design, "- [x] Add `script_cf_sod_looter_party_can_consider_village_raid`.")
@@ -109,6 +122,8 @@ def test_assignment_tick_and_resolution_are_separate_from_lord_raids() -> None:
     assert_contains(raids, "gt, \"$g_sod_active_looter_raids\", sod_looter_raid_global_cap")
     assert_contains(raids, "party_get_template_id, \":party_template\", \":looter_party\"")
     assert_contains(raids, "eq, \":party_template\", \"pt_bandits\"")
+    assert_contains(raids, "party_get_num_companions, \":village_defender_count\", \":target_village\"")
+    assert_contains(raids, "gt, \":village_defender_count\", 0")
     assert_contains(raids, "neq, \":party_type\", spt_kingdom_hero_party")
     assert_contains(raids, "neq, \":party_type\", spt_player_patrol")
     assert_contains(raids, "neq, \":party_type\", spt_player_mercenaries")
@@ -217,6 +232,8 @@ def test_player_interruption_and_elder_feedback_exist() -> None:
 
     assert_contains(raids, "neg|party_slot_eq, \":target_village\", slot_village_state, 0")
     assert_contains(raids, "assign, \":result\", 0")
+    assert_contains(raids, "lt, \":raid_state\", sod_looter_raid_state_plundering")
+    assert_contains(raids, "le, \":village_defender_count\", 0")
     assert_contains(raids, "slot_center_is_besieged_by")
     assert_contains(raids, "slot_party_sod_looter_raid_origin_region")
     assert_contains(raids, "neq, \":current_faction\", \":original_faction\"")

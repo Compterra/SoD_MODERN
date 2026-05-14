@@ -59,6 +59,7 @@ SCRIPTS = [
         (is_between, ":spawn_center", centers_begin, centers_end),
         (spawn_around_party, ":spawn_center", ":party_template"),
         (assign, ":result", reg0),
+        (gt, ":result", 0),
         (party_set_faction, ":result", ":faction_no"),
         (try_begin),
           (eq, ":party_type", spt_kingdom_caravan),

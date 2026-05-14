@@ -86,7 +86,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc13", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "A legend that spends everyone else first is only vanity with better horses. My faith in our legend is {s2}, though the poets are being kept outside until further notice.",
   "member_talk",
@@ -98,7 +98,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The charge broke them, and the living came home. A rare triumph: the song need not lie about the ending. My faith in our legend is {s2}.",
   "member_talk",
@@ -108,7 +108,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The story will travel. So will the names of those who did not. I am discovering that applause can echo like an accusation. My faith in our legend is {s2}.",
   "member_talk",
@@ -120,7 +120,7 @@ DIALOGS = [
     (eq, "$g_sod_nizar_charge_witnessed", 1),
     (eq, "$g_sod_nizar_charge_confronted", 0),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The field setup is drawn. Run the charge lane with me, then we decide whether the song deserves survivors. My faith in our legend is {s2}.",
   "member_talk",
@@ -130,7 +130,7 @@ DIALOGS = [
   [
     (eq, "$g_sod_nizar_charge_pending", 1),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "There is a charge waiting outside camp, beautiful enough to be dangerous and dangerous enough to be memorable. First mark it in the field, then test the lane. My faith in our legend is {s2}.",
   "member_talk",
@@ -140,7 +140,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The Impossible Charge asks its question with spurs. Is this courage, theater, or blood pretending to be both? My faith in our legend is {s2}.",
   "member_talk",
@@ -150,7 +150,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "There is a charge men call impossible because they lack imagination. There is also the other kind. I would prefer we learn the difference before dawn. My faith in our legend is {s2}.",
   "member_talk",
@@ -160,7 +160,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc13", slot_troop_companion_approval, 70),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You have the rare gift of making danger feel chosen instead of merely suffered. Try not to become too sensible; I am attached to my work. My faith in our legend is {s2}.",
   "member_talk",
@@ -175,7 +175,7 @@ DIALOGS = [
 [anyone, "companion_depth_nizar",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Worthy? It has moments. A charge here, a rumor there, a few silences I would edit before the poets arrive. My faith in our legend is {s2}.",
   "member_talk",

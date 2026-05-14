@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "gm_hire77", [
-   ],"Never mind.", "gm_pretalk", []],
+   ],"No contract for them today. Let the hall keep its coin and noise.", "gm_pretalk", []],
 ]

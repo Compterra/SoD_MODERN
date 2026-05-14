@@ -27,9 +27,15 @@ DIALOGS = [
       (call_script, "script_troop_get_player_relation", ":new_lord"),
       (call_script, "script_describe_troop_relation", s3, reg0),
       (call_script, "script_get_number_of_hero_centers", ":new_lord"),
+      (try_begin),
+        (gt, reg0, 0),
+        (str_store_string, s4, "@{reg0} fiefs"),
+      (else_try),
+        (str_store_string, s4, "@no fiefs"),
+      (try_end),
     ],
 #    "Assign {s1} to {s2} ({reg0?{reg0}:no} fiefs, {s3})", "chancellor_fiefs_prelude",
-    "Assign to {s2} ({reg0?{reg0}:no} fiefs, {s3})", "chancellor_fiefs_prelude",
+    "Assign to {s2} ({s4}, {s3})", "chancellor_fiefs_prelude",
     [
       (store_repeat_object, "$temp_lord"),
 

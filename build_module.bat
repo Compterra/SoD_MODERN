@@ -69,7 +69,11 @@ for %%F in (
 )
 
 popd
-%PY% "%ROOT%build\tools\printc.py" step "3) Doctor hardcoded ID contract"
+%PY% "%ROOT%build\tools\printc.py" step "3) Post-process text/export audit"
+%PY% "%ROOT%build\tools\run_color.py" "%ROOT%build\audit_string_registers.py" --fail-on-critical
+if errorlevel 1 goto fail
+
+%PY% "%ROOT%build\tools\printc.py" step "4) Doctor hardcoded ID contract"
 %PY% "%ROOT%build\tools\run_color.py" "%ROOT%build\doctor.py" -- --doctor-hardcoded-postprocess
 if errorlevel 1 goto fail
 

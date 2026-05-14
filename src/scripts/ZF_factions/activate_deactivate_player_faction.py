@@ -250,8 +250,9 @@ SCRIPTS = [
 	           (try_end),
 			
 			   (store_sub, ":missing_kingdoms", 5, ":num_kingdoms"),
-			   (val_mul, ":missing_kingdoms", 4),
+			   (val_mul, ":missing_kingdoms", 2),
 			   (val_add, ":total_badboy_effect", ":missing_kingdoms"),
+			   (val_min, ":total_badboy_effect", 24),
 			   
 				
 				(try_begin),

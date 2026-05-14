@@ -8,7 +8,7 @@ content model.
 from __future__ import annotations
 
 import builtins
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime, timezone
 from dataclasses import dataclass
 from typing import Any
@@ -1172,6 +1172,18 @@ class QuestRuntime:
     def handle_event(self, event: Any) -> list[Any]:
         return self.dispatch_event(event)
 
+    def handle_hook(self, hook_name: str, *, context: Any = None) -> list[Any]:
+        event = QuestProgressEvent(
+            quest_id=self.quest_id,
+            stage_id=_normalize_identifier(_first_value(context, "stage_id", "stage")) or "",
+            event_name=str(hook_name or ""),
+            payload=_as_dict(context),
+        )
+        return self.dispatch_event(event)
+
+    def handle_quest_hook(self, hook_name: str, *, context: Any = None) -> list[Any]:
+        return self.handle_hook(hook_name, context=context)
+
     def advance_stage(self, stage: Any | None = None, *, stage_index: int | None = None, metadata: Mapping[str, Any] | None = None, status: str | None = None) -> Any:
         if stage_index is not None:
             self.stage_index = _coerce_int(stage_index, self.stage_index)
@@ -1189,6 +1201,14 @@ class QuestRuntime:
 
 class QuestJournal:
     """Active quest journal with capacity, pinning, and archive tracking."""
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        # Keep duck-typed tests and external adapters from shadowing journal methods.
+        if name == "_active_runtimes" and not callable(value):
+            name = "_active_runtime_store"
+        elif name == "_archived_runtimes" and not callable(value):
+            name = "_archived_runtime_store"
+        super().__setattr__(name, value)
 
     def __init__(
         self,
@@ -1420,6 +1440,32 @@ class QuestJournal:
             for key, value in list(mapping.items()):
                 if value is runtime or (key in candidate_ids):
                     mapping.pop(key, None)
+
+        for attr_name in (
+            "active_runtimes",
+            "active_quests",
+            "active_entries",
+            "runtimes",
+            "_runtimes",
+            "quests",
+            "_quests",
+            "quest_runtimes",
+            "_active_runtime_store",
+            "_active_quests",
+            "_active_entries",
+            "_quest_runtimes",
+        ):
+            collection = getattr(self, attr_name, None)
+            if isinstance(collection, MutableMapping):
+                for key, value in list(collection.items()):
+                    if value is runtime or key in candidate_ids:
+                        collection.pop(key, None)
+            elif isinstance(collection, list):
+                collection[:] = [
+                    value
+                    for value in collection
+                    if value is not runtime and _runtime_identity(value) not in candidate_ids
+                ]
 
     def _active_runtimes(self) -> list[Any]:
         self._sync_journal_storage_aliases()
@@ -1977,7 +2023,7 @@ class QuestJournal:
     def dispatch_event(self, event: Any) -> list[Any]:
         results: list[Any] = []
         active_runtimes = list(self._active_runtimes())
-        target_quest_id = _normalize_identifier(_first_value(event, "quest_id", "id", "uid")) if _first_value(event, "quest_id", "id", "uid") is not None else None
+        target_quest_id = _normalize_identifier(_first_value(event, "target_quest_id", "quest_target_id")) if _first_value(event, "target_quest_id", "quest_target_id") is not None else None
 
         for runtime in active_runtimes:
             if target_quest_id is not None and _runtime_identity(runtime) != target_quest_id:
@@ -1997,12 +2043,56 @@ class QuestJournal:
                     result = handler(event, self)
                 results.append(result)
 
-            if _runtime_display_status(runtime) in _TERMINAL_STATUSES:
-                self.archive_runtime(runtime, outcome=_runtime_display_status(runtime))
+            terminal_status = _runtime_display_status(runtime)
+            terminal_flag = _coerce_bool(_first_value(runtime, "is_terminal", "terminal", "done", "finished", "archived"))
+            if terminal_status in _TERMINAL_STATUSES or terminal_flag:
+                outcome = terminal_status if terminal_status in _TERMINAL_STATUSES else "completed"
+                if _coerce_bool(_first_value(runtime, "failed", "is_failed")):
+                    outcome = "failed"
+                self.archive_runtime(runtime, outcome=outcome)
         return results
 
     def dispatch(self, event: Any) -> list[Any]:
         return self.dispatch_event(event)
+
+    def progress_hook(self, hook_name: str, *, context: Any = None, quest_id: str | None = None, stage_id: str | None = None, **extra: Any) -> list[Any]:
+        hook = str(hook_name or _first_value(context, "hook_name", "event_name", "name") or "")
+        target_quest_id = _normalize_identifier(quest_id or _first_value(context, "quest_id", "id", "uid"))
+        target_stage_id = _normalize_identifier(stage_id or _first_value(context, "stage_id", "stage"))
+        payload = _as_dict(context)
+        payload.update(extra)
+        if target_quest_id is not None:
+            payload.setdefault("quest_id", target_quest_id)
+        if target_stage_id is not None:
+            payload.setdefault("stage_id", target_stage_id)
+
+        results: list[Any] = []
+        for runtime in list(self._active_runtimes()):
+            if target_quest_id is not None and _runtime_identity(runtime) != target_quest_id:
+                continue
+            runtime_stage = _normalize_identifier(_first_value(runtime, "stage_id", "stage"))
+            if target_stage_id is not None and runtime_stage is not None and runtime_stage != target_stage_id:
+                continue
+
+            for handler_name in ("progress_hook", "handle_hook", "handle_quest_hook"):
+                handler = getattr(runtime, handler_name, None)
+                if not callable(handler):
+                    continue
+                try:
+                    results.append(handler(hook, context=payload))
+                except TypeError:
+                    try:
+                        results.append(handler(hook, payload))
+                    except TypeError:
+                        results.append(handler(hook))
+                break
+        return results
+
+    def handle_hook(self, hook_name: str, *, context: Any = None, **extra: Any) -> list[Any]:
+        return self.progress_hook(hook_name, context=context, **extra)
+
+    def handle_quest_hook(self, hook_name: str, *, context: Any = None, **extra: Any) -> list[Any]:
+        return self.progress_hook(hook_name, context=context, **extra)
 
     def register(self, runtime: Any, *, quest_id: str | None = None, allow_overflow: bool = False) -> Any:
         return self.register_runtime(runtime, quest_id=quest_id, allow_overflow=allow_overflow)

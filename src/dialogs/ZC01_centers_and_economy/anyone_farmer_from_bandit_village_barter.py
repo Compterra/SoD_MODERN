@@ -1,6 +1,6 @@
 DIALOGS = [
 [anyone, "farmer_from_bandit_village_barter", [],
-   "We are but poor farmers {sir/madam}, and the bandits have already got most of what we have on this world.\
- but we'll be glad to share with you whatever we have got.\
- And we'll always be in your gratitude if you help us.", "farmer_from_bandit_village_5", [(assign, "$temp", 1)]],
+   "We have counted the jars, the dowries, even the seed hidden under floorboards.\
+ There is not much left, but we will share what the knives have not taken.\
+ Help us, and every door in the village will remember who stood between us and ruin.", "farmer_from_bandit_village_5", [(assign, "$temp", 1)]],
 ]

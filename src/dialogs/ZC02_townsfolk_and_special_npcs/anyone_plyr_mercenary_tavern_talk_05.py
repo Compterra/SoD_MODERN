@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "mercenary_tavern_talk", [],
-   "Sorry. I don't need any other men right now.", "close_window", []],
+   "Keep your blades warm. I am not hiring today.", "close_window", []],
 ]

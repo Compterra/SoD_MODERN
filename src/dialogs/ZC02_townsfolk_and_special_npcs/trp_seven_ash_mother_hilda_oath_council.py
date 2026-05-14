@@ -33,6 +33,7 @@ DIALOGS = [
     [
       (call_script, "script_sod_seven_ash_resolve_oath_council_plan", sod_seven_ash_plan_hold_palisade),
       (jump_to_menu, "mnu_seven_ash_sector_commitment"),
+      (finish_mission),
     ]],
 [trp_seven_ash_mother_hilda, "seven_ash_oath_depth", [],
     "We give up ground before we give up people. Some will call it cowardice because smoke speaks louder than living children.",
@@ -40,6 +41,7 @@ DIALOGS = [
     [
       (call_script, "script_sod_seven_ash_resolve_oath_council_plan", sod_seven_ash_plan_defense_in_depth),
       (jump_to_menu, "mnu_seven_ash_sector_commitment"),
+      (finish_mission),
     ]],
 [trp_seven_ash_mother_hilda, "seven_ash_oath_counterstroke", [],
     "Ashwick bares its teeth before Wulfred settles his jaw. Bold plans leave fewer minutes for regret.",
@@ -47,6 +49,7 @@ DIALOGS = [
     [
       (call_script, "script_sod_seven_ash_resolve_oath_council_plan", sod_seven_ash_plan_counterstroke),
       (jump_to_menu, "mnu_seven_ash_sector_commitment"),
+      (finish_mission),
     ]],
 [trp_seven_ash_mother_hilda, "seven_ash_oath_cut_head", [],
     "The village becomes a hand reaching for one throat. I hope the hand does not miss.",
@@ -54,6 +57,7 @@ DIALOGS = [
     [
       (call_script, "script_sod_seven_ash_resolve_oath_council_plan", sod_seven_ash_plan_cut_head),
       (jump_to_menu, "mnu_seven_ash_sector_commitment"),
+      (finish_mission),
     ]],
 [trp_seven_ash_mother_hilda, "seven_ash_oath_empty", [],
     "We admit the village is its people before its roofs. I can say that. I cannot make it painless.",
@@ -61,5 +65,6 @@ DIALOGS = [
     [
       (call_script, "script_sod_seven_ash_resolve_oath_council_plan", sod_seven_ash_plan_empty_village),
       (jump_to_menu, "mnu_seven_ash_sector_commitment"),
+      (finish_mission),
     ]],
 ]

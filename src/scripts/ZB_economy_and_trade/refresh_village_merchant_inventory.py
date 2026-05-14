@@ -74,9 +74,8 @@ SCRIPTS = [
       (try_end),
       (troop_add_merchandise, ":merchant_troop", itp_type_goods, ":merchandise_batches"),
       (store_mul, ":market_refresh_cost", ":merchandise_batches", 35),
-      (val_sub, ":village_wealth", ":market_refresh_cost"),
-      (val_max, ":village_wealth", 0),
-      (party_set_slot, ":village_no", slot_town_wealth, ":village_wealth"),
+      (store_mul, ":wealth_delta", ":market_refresh_cost", -1),
+      (call_script, "script_sod_center_apply_wealth_delta", ":village_no", ":wealth_delta"),
       (troop_ensure_inventory_space, ":merchant_troop", 80),
 
       #MORDACHAI - changed it from 3000 to 1000 per point of prosperity (3k for a village?!  get serious!)

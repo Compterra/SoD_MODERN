@@ -13,10 +13,13 @@ MISSION_TEMPLATES = [
        [
          (store_trigger_param_1, ":agent_no"),
          (call_script, "script_agent_reassign_team", ":agent_no"),
+         (call_script, "script_sod_battle_initialize_agent_courage", ":agent_no"),
+         (call_script, "script_sod_battle_apply_late_join_spawn_pressure", ":agent_no"),
          ]),
 
       common_battle_tab_press, 
 	  common_battle_horse_health,
+      sod_battle_commander_spawn_player_ally,
 	  
 
       (ti_question_answered, 0, 0, [],
@@ -29,7 +32,9 @@ MISSION_TEMPLATES = [
           (str_store_string, s5, "str_retreat"),
           (call_script, "script_simulate_retreat", 10, 20),
         (try_end),
-        (call_script, "script_count_mission_casualties_from_agents"),
+        (call_script, "script_sod_post_defeat_record_aftermath", -1),
+        (call_script, "script_sod_post_defeat_count_casualties_once"),
+        (call_script, "script_sod_post_defeat_clear"),
         (finish_mission, 0), ]),
 
       (ti_before_mission_start, 0, 0, [],
@@ -52,6 +57,12 @@ MISSION_TEMPLATES = [
                            (call_script, "script_place_player_banner_near_inventory"),
                            (call_script, "script_combat_music_set_situation_with_culture"),
                            ]),
+
+      (1, 0, ti_once, [(eq, "$g_sod_joined_ongoing_ai_battle", 1)],
+          [(call_script, "script_sod_battle_compress_late_join_ai_lines")]),
+
+      (5, 0, ti_once, [(eq, "$g_sod_joined_ongoing_ai_battle", 1)],
+          [(assign, "$g_sod_joined_ongoing_ai_battle", 0)]),
 
       common_music_situation_update,
       common_battle_check_friendly_kills,
@@ -148,6 +159,7 @@ MISSION_TEMPLATES = [
       formations_start_coherence,
       formations_update_morale,
       formations_update_route,
+      common_battle_enemy_surrender_check,
     ],
   ),
 ]

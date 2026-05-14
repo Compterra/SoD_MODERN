@@ -1,5 +1,5 @@
 DIALOGS = [
-[anyone, "gm_tell_mission_raise_troops_2", [], "If you could recruit {reg1} {s13} to our company, you may earn our gratitude and respect.", "gm_mission_raise_troops_told",
+[anyone, "gm_tell_mission_raise_troops_2", [], "Our contracts are outpacing our barracks. Bring us {reg1} {s13}, trained enough to stand inspection, and the guild will remember who filled the gap.", "gm_mission_raise_troops_told",
    [
      (quest_get_slot, reg1, "$random_quest_no", slot_quest_target_amount),
 	 (quest_get_slot, ":quest_troop", "$random_quest_no", slot_quest_target_troop),

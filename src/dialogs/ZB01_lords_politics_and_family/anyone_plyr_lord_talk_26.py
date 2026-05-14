@@ -6,6 +6,6 @@ DIALOGS = [
      (neg|troop_slot_ge, "$g_talk_troop", slot_troop_prisoner_of_party, 0),
      (faction_slot_eq, "$players_kingdom", slot_faction_ai_state, sfai_default),
      ],
-   "I want to start a new campaign. Let us assemble the army here.", "lord_give_order_call_to_arms_verify",
+   "Send the summons. The army gathers here, and the campaign begins.", "lord_give_order_call_to_arms_verify",
    []],
 ]

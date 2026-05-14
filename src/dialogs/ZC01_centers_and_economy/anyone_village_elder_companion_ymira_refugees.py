@@ -34,6 +34,7 @@ DIALOGS = [
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc3"),
     (display_message, "@The elder agrees to hear the refugees by name. Ymira asks you to stay for the riders the village fears.", 0x99CCFF),
     (jump_to_menu, "mnu_ymira_refugee_standoff"),
+    (finish_mission),
   ]],
 
 [anyone|plyr, "village_elder_companion_ymira_refugees_choice",
@@ -49,7 +50,8 @@ DIALOGS = [
   "Coin buys grain. Silence costs trust. We will take the weakest and the sick, but if riders follow the tracks, coin will not stand in the road.",
   "village_elder_talk",
   [
-    (troop_remove_gold, "trp_player", 300),
+    (call_script, "script_sod_player_charge_gold", 300),
+    (eq, reg1, 1),
     (party_count_members_of_type, ":male_slaves", "p_main_party", "trp_slave"),
     (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
     (store_add, ":slave_count", ":male_slaves", ":female_slaves"),
@@ -64,6 +66,7 @@ DIALOGS = [
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc3"),
     (display_message, "@The village takes your coin and names the risk aloud. Ymira waits to see whether coin is followed by protection.", 0xCC9966),
     (jump_to_menu, "mnu_ymira_refugee_standoff"),
+    (finish_mission),
   ]],
 
 [anyone|plyr, "village_elder_companion_ymira_refugees_choice", [],

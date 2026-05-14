@@ -5,6 +5,7 @@ SIMPLE_TRIGGERS = [
         (troop_slot_eq, ":troop_no", slot_troop_occupation, slto_kingdom_hero),
         (troop_get_slot, ":troop_party_no", ":troop_no", slot_troop_leaded_party),
         (ge, ":troop_party_no", 1),
+        (party_is_active, ":troop_party_no"),
 		(party_slot_eq, ":troop_party_no", slot_party_type, spt_kingdom_hero_party), #exclude mercs
         (party_get_attached_to, ":cur_attached_town", ":troop_party_no"),
         (lt, ":cur_attached_town", 1),
@@ -16,6 +17,8 @@ SIMPLE_TRIGGERS = [
 			(party_attach_to_party, ":troop_party_no", ":destination"),
 			(call_script, "script_cf_party_upgrade_with_xp", ":troop_party_no", 1),
         (else_try),
+			(get_party_ai_current_behavior, ":ai_bhvr", ":troop_party_no"),
+			(neq, ":ai_bhvr", ai_bhvr_hold),
 			(party_set_ai_behavior, ":troop_party_no", ai_bhvr_hold),
         (try_end),
         (try_begin),

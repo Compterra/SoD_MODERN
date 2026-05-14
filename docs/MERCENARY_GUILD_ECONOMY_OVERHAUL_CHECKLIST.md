@@ -137,6 +137,10 @@ The overhaul should preserve each guild's personality while centralizing the sha
 - [x] Include existing guild pact.
 - [x] Include kingdom-to-guild relation weighting.
 - [x] Reduce demand if already over-supported by mercenaries.
+- [x] Let low population plus high lord wealth create gold-for-manpower mercenary demand.
+- [x] Make lord wealth materially affect kingdom mercenary budget and bid ceiling.
+- [x] Make accepted AI kingdom contracts drain actual ruler/lord wealth after a successful payment preflight.
+- [x] Make contract success and losses adjust kingdom-to-guild relation and guild price pressure.
 - [x] Exclude inactive, defeated, eliminated, or invalid factions.
 - [x] Exclude `fac_kingdom_6` if the design still wants IEF out of this market.
 
@@ -421,7 +425,10 @@ The overhaul should preserve each guild's personality while centralizing the sha
 - [ ] Assert new ledger slots exist.
 - [ ] Assert all seven guilds initialize ledger values.
 - [ ] Assert guild profile helper references all seven guilds.
-- [ ] Assert classic employer rotation uses a helper instead of magic `fac_sod_merc_guild6` end range.
+- [x] Assert classic employer rotation uses a helper instead of magic `fac_sod_merc_guild6` end range.
+- [x] Modernize legacy guild-employer fallback to score kingdoms by demand, budget, urgency, preferred guild, and kingdom-to-guild relation/history instead of assigning a random active kingdom.
+- [x] Assert accepted AI kingdom contracts touch `slot_troop_wealth` and fully collect payment before accepting.
+- [x] Assert contract outcome handling updates kingdom-to-guild relation and guild price pressure.
 - [ ] Assert player hire quote routes through shared market quote helper.
 - [ ] Assert AI hire routes through shared bid/market helper.
 - [ ] Assert `spt_player_mercenaries` wage inclusion or exclusion matches chosen model.

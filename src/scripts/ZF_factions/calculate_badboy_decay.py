@@ -37,8 +37,8 @@ SCRIPTS = [
 	(try_end),
 	
 	(val_add, ":badboy_decay", "$player_honor"),
-	(val_div, ":badboy_decay", 20),
-	(val_max, ":badboy_decay", 1),
+	(val_div, ":badboy_decay", 18),
+	(val_max, ":badboy_decay", 2),
 	                                                                                                # kingdom size effect
     (faction_get_slot, ":num_castles", "fac_player_supporters_faction", slot_faction_num_castles),  # help the player to deal with starting badboy
 	(faction_get_slot, ":num_armies", "fac_player_supporters_faction", slot_faction_num_armies),
@@ -69,7 +69,7 @@ SCRIPTS = [
 	
 	(try_begin),
 	(faction_slot_eq, "fac_player_supporters_faction", slot_faction_badboy_rating, 40),
-	(assign, ":badboy_decay", 8), # twan456 make badboy decrease to 32 the first week after a badboy war has started
+	(assign, ":badboy_decay", 10), # make badboy wars cool down faster after the first shock
 	(try_end),
 	
 	(assign, reg0, ":badboy_decay"),

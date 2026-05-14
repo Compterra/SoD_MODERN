@@ -16,8 +16,14 @@ DIALOGS = [
       (str_store_party_name, s1, ":center_no"),
       (troop_get_slot, ":here", "trp_sod_marshal", slot_troop_sod_court),
       (store_sub, reg0, ":center_no", ":here"),
+      (try_begin),
+        (neq, reg0, 0),
+        (str_store_string, s2, "@at {s1}"),
+      (else_try),
+        (str_store_string, s2, "@them here"),
+      (try_end),
     ],
-    "Recruit {reg0?at {s1}:them here}.", "marshal_nobles",
+    "Recruit {s2}.", "marshal_nobles",
     [
       # simply store their new choice
       (store_repeat_object, "$g_sod_nobles_gather_at"),

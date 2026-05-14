@@ -50,7 +50,7 @@ SCRIPTS = [
    (val_clamp, ":pace", 2, 17),
    (assign, reg24, ":pace"),
    (assign, "$g_sod_books_last_reading_pace", ":pace"),
-   (str_store_string, s25, s24),
+   (str_store_string_reg, s25, s24),
  ]),
 
 ("sod_books_describe_book_to_s20",
@@ -197,7 +197,7 @@ SCRIPTS = [
 ("sod_books_describe_library_report_to_s20",
  [
    (call_script, "script_sod_books_describe_current_reading_to_s20"),
-   (str_store_string, s21, s20),
+   (str_store_string_reg, s21, s20),
    (assign, reg22, 0),
    (assign, reg23, 0),
    (try_for_range, ":book_no", readable_books_begin, readable_books_end),

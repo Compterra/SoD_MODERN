@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "lord_suggest_action", [],
-   "I want to join your faction.", "lord_suggest_join_faction", []],
+   "Your faction may have room for my sword and name.", "lord_suggest_join_faction", []],
 ]

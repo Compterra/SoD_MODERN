@@ -21,7 +21,7 @@ HOOKS = (
     ("Construction labor", "src/scripts/ZY_helper_scripts/sod_population_based_construction.py", ":food_security"),
     ("Security/internal threat", "src/scripts/ZY_helper_scripts/sod_center_security_profile.py", ":food_unrest_pressure"),
     ("Caravan route selection", "src/scripts/ZB_economy_and_trade/cf_select_random_town_at_peace_with_faction_in_trade_route.py", ":food_security"),
-    ("Caravan town trade", "src/scripts/ZB_economy_and_trade/do_merchant_town_trade.py", ":food_trade_pressure"),
+    ("Caravan town trade", "src/scripts/ZB_economy_and_trade/do_merchant_town_trade.py", ":food_pressure"),
     ("Recon report", "src/scripts/ZD_centers/update_center_recon_notes.py", "Food security"),
 )
 

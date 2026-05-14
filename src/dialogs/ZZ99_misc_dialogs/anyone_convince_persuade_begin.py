@@ -5,5 +5,5 @@ DIALOGS = [
    (store_add, ":valid_time", ":last_persuasion_time", 24),
    (gt, ":cur_hours", ":valid_time"),
    ],
-   "Very well. Make your case.", "convince_persuade_begin_2", []],
+   "Speak, then. A lord may reject counsel, but only a fool refuses to hear it first.", "convince_persuade_begin_2", []],
 ]

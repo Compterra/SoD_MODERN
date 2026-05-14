@@ -63,6 +63,7 @@ SCRIPTS = [
 			 
 			(party_get_slot, ":besieger_party", ":cur_center_no", slot_center_is_besieged_by),
               (try_begin), #tr5
+               (this_or_next|le, ":besieger_party", 0),
                (neg|party_is_active, ":besieger_party"),
                (assign, ":besieger_party", -1),
                (try_end),  #end tr5
@@ -272,6 +273,12 @@ SCRIPTS = [
 					(call_script, "script_cf_select_random_walled_center_with_faction_and_less_strength_priority", ":faction_no", ":old_target_move_to_other_center"),
 					(assign, ":target_move_to_other_center", reg0),
 					(assign, ":chance_move_to_other_center", 10),
+					(try_begin),
+					  (neg|is_between, ":target_move_to_other_center", walled_centers_begin, walled_centers_end),
+					  (assign, ":target_move_to_other_center", -1),
+					  (assign, ":chance_move_to_other_center", 0),
+					(try_end),
+					(is_between, ":target_move_to_other_center", walled_centers_begin, walled_centers_end),
 					(party_get_slot, ":lord_of_center", ":target_move_to_other_center", slot_town_lord),
 						(try_begin), #tr27
 						  (call_script, "script_cf_troop_check_troop_is_enemy", ":troop_no", ":lord_of_center"),
@@ -663,6 +670,7 @@ SCRIPTS = [
 				  (lt, ":player_relation", 0),
 				  (store_sub, ":multiplier", 50, ":player_relation"),
 				  (faction_get_slot, ":badboy", "fac_player_supporters_faction", slot_faction_badboy_rating), #twan454
+				  (val_div, ":badboy", 2),
 				  (val_add, ":multiplier", ":badboy"),
 				  (val_mul, ":center_score", ":multiplier"),
 				  (val_div, ":center_score", 50),
@@ -814,6 +822,43 @@ SCRIPTS = [
 
 	
 ########## FINAL CHANCES ADJUSTMENTS	
+
+        (try_begin),
+          (gt, ":chance_move_to_home_center", 0),
+          (neg|is_between, ":target_move_to_home_center", centers_begin, centers_end),
+          (assign, ":chance_move_to_home_center", 0),
+          (assign, ":target_move_to_home_center", -1),
+        (try_end),
+        (try_begin),
+          (gt, ":chance_move_to_other_center", 0),
+          (neg|is_between, ":target_move_to_other_center", centers_begin, centers_end),
+          (assign, ":chance_move_to_other_center", 0),
+          (assign, ":target_move_to_other_center", -1),
+        (try_end),
+        (try_begin),
+          (gt, ":chance_recruit_troops", 0),
+          (neg|is_between, ":target_recruit_troops", centers_begin, centers_end),
+          (assign, ":chance_recruit_troops", 0),
+          (assign, ":target_recruit_troops", -1),
+        (try_end),
+        (try_begin),
+          (gt, ":chance_raid_around_center", 0),
+          (neg|is_between, ":target_raid_around_center", centers_begin, centers_end),
+          (assign, ":chance_raid_around_center", 0),
+          (assign, ":target_raid_around_center", -1),
+        (try_end),
+        (try_begin),
+          (gt, ":chance_besiege_enemy_center", 0),
+          (neg|is_between, ":target_besiege_enemy_center", walled_centers_begin, walled_centers_end),
+          (assign, ":chance_besiege_enemy_center", 0),
+          (assign, ":target_besiege_enemy_center", -1),
+        (try_end),
+        (try_begin),
+          (gt, ":chance_patrol_around_center", 0),
+          (neg|is_between, ":target_patrol_around_center", centers_begin, centers_end),
+          (assign, ":chance_patrol_around_center", 0),
+          (assign, ":target_patrol_around_center", -1),
+        (try_end),
 
 	  # (try_begin),
       # (eq, "$g_sod_debug", 1),	  

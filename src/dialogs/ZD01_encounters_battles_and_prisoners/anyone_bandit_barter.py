@@ -7,5 +7,5 @@ DIALOGS = [
     (val_add, "$bandit_tribute", 100),
     (val_mul, "$bandit_tribute", 10),
     (assign, reg5, "$bandit_tribute")
-    ], "Silver without blood, that's our favourite kind. Pay us {reg5} denars and we'll let you be on your way.", "bandit_barter_2", []],
+    ], "Silver without blood is the only bargain the road ever keeps. Pay {reg5} denars, and we forget the shape of your banner.", "bandit_barter_2", []],
 ]

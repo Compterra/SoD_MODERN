@@ -7,7 +7,12 @@ MENUS = [
     (str_store_party_name, s3, "$current_town"),
      ],
     [
-      ("peasants_against_bandits_attack_resist", [], "Prepare for a fight!",
+      build_sod_battle_commander_change_option(
+        "change_commander_train_peasants_against_bandits_attack",
+        "mnu_train_peasants_against_bandits_attack",
+      ),
+
+      ("peasants_against_bandits_attack_resist", [(call_script, "script_cf_sod_battle_commander_can_start")], "Prepare for a fight!",
        [
         (store_random_in_range, ":random_no", 0, 3),
         (try_begin),
@@ -38,6 +43,7 @@ MENUS = [
         (assign, "$g_next_menu", "mnu_train_peasants_against_bandits_attack_result"),
         (jump_to_menu, "mnu_battle_debrief"),
         (assign, "$g_mt_mode", vba_after_training),
+        (call_script, "script_sod_battle_commander_apply_before_mission"),
         (change_screen_mission),
         ]),
       ]

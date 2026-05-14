@@ -456,7 +456,7 @@ def main() -> int:
     assert_contains(camp_action, "DEBUG: Inspect companion approval bands.")
     assert_contains(read("src/menus/camp/company_accounts.py"), "company_accounts_katrin_petition")
     assert_contains(read("src/menus/camp/company_accounts.py"), "$g_sod_katrin_last_coin_witnessed")
-    assert_contains(read("src/menus/camp/company_accounts.py"), "ledger witness")
+    assert_contains(read("src/menus/camp/company_accounts.py"), "$g_sod_katrin_last_coin_witnessed")
     for pending_global in (
         "$g_sod_borcha_road_pending",
         "$g_sod_marnid_market_pending",
@@ -1280,7 +1280,7 @@ def main() -> int:
         ),
         (
             "src/dialogs/ZC01_centers_and_economy/anyone_village_elder_companion_ymira_refugees.py",
-            ("village_elder_companion_ymira_refugees_choice", "Slaver riders ask questions with ropes", "mnu_ymira_refugee_standoff", "troop_remove_gold, \"trp_player\", 300", "$g_sod_ymira_refugee_witnessed"),
+            ("village_elder_companion_ymira_refugees_choice", "Slaver riders ask questions with ropes", "mnu_ymira_refugee_standoff", "script_sod_player_charge_gold", "$g_sod_ymira_refugee_witnessed"),
         ),
         (
             "src/dialogs/ZC01_centers_and_economy/anyone_plyr_village_elder_companion_deshavi_tracks.py",

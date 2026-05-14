@@ -55,12 +55,25 @@ common_battle_horse_health = (
     (start_presentation, "prsnt_horse_health"),
     ])
 
+sod_battle_commander_spawn_player_ally = (
+  0, 0, ti_once, [],
+  [
+    (call_script, "script_sod_battle_commander_spawn_player_ally", 0),
+    ])
+
+sod_battle_commander_spawn_player_ally_dismounted = (
+  0, 0, ti_once, [],
+  [
+    (call_script, "script_sod_battle_commander_spawn_player_ally", 1),
+    ])
+
 common_battle_tab_press = (
   ti_tab_pressed, 0, 0, [],
   [
     (try_begin),
       (eq, "$battle_won", 1),
-      (call_script, "script_count_mission_casualties_from_agents"),
+      (call_script, "script_sod_post_defeat_count_casualties_once"),
+      (call_script, "script_sod_post_defeat_clear"),
       (finish_mission, 0),
     (else_try),
 #SoD begin
@@ -86,6 +99,7 @@ common_custom_battle_tab_press = (
   [
     (try_begin),
       (neq, "$g_battle_result", 0),
+      (call_script, "script_sod_post_defeat_clear"),
       (call_script, "script_custom_battle_end"),
       (finish_mission),
     (else_try),
@@ -106,6 +120,8 @@ custom_battle_check_victory_condition = (
     (assign, "$g_battle_result", 1),
     ],
   [
+    (call_script, "script_sod_post_defeat_record_aftermath", 1),
+    (call_script, "script_sod_post_defeat_clear"),
     (call_script, "script_custom_battle_end"),
     (finish_mission, 1),
     ])
@@ -113,10 +129,15 @@ custom_battle_check_victory_condition = (
 custom_battle_check_defeat_condition = (
   1, 4, ti_once,
   [
-    (main_hero_fallen),
+    (store_mission_timer_a, reg(1)),
+    (ge, reg(1), 10),
+    (num_active_teams_le, 1),
+    (neg|all_enemies_defeated, 2),
     (assign, "$g_battle_result", -1),
     ],
   [
+    (call_script, "script_sod_post_defeat_record_aftermath", -1),
+    (call_script, "script_sod_post_defeat_clear"),
     (call_script, "script_custom_battle_end"),
     (finish_mission),
     ])
@@ -145,7 +166,8 @@ common_siege_question_answered = (
        (str_store_string, s5, "str_retreat"),
        (call_script, "script_simulate_retreat", 5, 20),
      (try_end),
-     (call_script, "script_count_mission_casualties_from_agents"),
+     (call_script, "script_sod_post_defeat_count_casualties_once"),
+     (call_script, "script_sod_post_defeat_clear"),
      (finish_mission, 0),
      ])
 
@@ -155,6 +177,7 @@ common_custom_battle_question_answered = (
      (store_trigger_param_1, ":answer"),
      (eq, ":answer", 0),
      (assign, "$g_battle_result", -1),
+     (call_script, "script_sod_post_defeat_clear"),
      (call_script, "script_custom_battle_end"),
      (finish_mission),
      ])
@@ -316,7 +339,9 @@ common_battle_check_victory_condition = (
     (call_script, "script_play_victorious_sound"),
     ],
   [
-    (call_script, "script_count_mission_casualties_from_agents"),
+    (call_script, "script_sod_post_defeat_record_aftermath", 1),
+    (call_script, "script_sod_post_defeat_count_casualties_once"),
+    (call_script, "script_sod_post_defeat_clear"),
     (finish_mission, 1),
     ])
 
@@ -425,12 +450,31 @@ common_siege_assign_men_to_belfry = (
 ################################
 
 ## Allow the camera view to move after player death - Jinnai
-camera_trigger_1 = (ti_before_mission_start, 0, 0, [], [(assign, "$camera_mode", 0)])
+## Extended with SoD post-defeat follow camera support.
+camera_trigger_1 = (ti_before_mission_start, 0, 0, [], [
+        (assign, "$camera_mode", 0),
+        (call_script, "script_sod_post_defeat_init"),
+        ])
 
 camera_trigger_2 = (0, 0, 1, [(main_hero_fallen), (game_key_clicked, gk_jump)], [
         (try_begin),
           (eq, "$camera_mode", 0),
-          (assign, "$camera_mode", 1),
+          (call_script, "script_sod_post_defeat_rebuild_watch_list"),
+          (try_begin),
+            (gt, "$sod_post_defeat_focus_count", 0),
+            (assign, "$camera_mode", 2),
+            (assign, "$sod_post_defeat_state", 3),
+            (mission_cam_set_mode, 1),
+            (call_script, "script_sod_post_defeat_show_focus_message"),
+            (try_begin),
+              (eq, "$sod_post_defeat_help_shown", 0),
+              (display_message, "@You have fallen. Jump cycles follow/free/normal camera; mouse buttons switch focus.", 0xDDDDDD),
+              (assign, "$sod_post_defeat_help_shown", 1),
+            (try_end),
+          (else_try),
+            (assign, "$camera_mode", 1),
+            (assign, "$sod_post_defeat_state", 2),
+          (try_end),
           (set_fixed_point_multiplier, 100),
           (assign, "$camera_height", 250),
           (mission_cam_set_mode, 1),
@@ -445,12 +489,28 @@ camera_trigger_2 = (0, 0, 1, [(main_hero_fallen), (game_key_clicked, gk_jump)], 
           (mission_cam_set_position, pos2),
           (mission_cam_set_aparture, 97),
         (else_try),
+          (eq, "$camera_mode", 2),
+          (assign, "$camera_mode", 1),
+          (assign, "$sod_post_defeat_state", 2),
+          (display_message, "@Free camera.", 0xDDDDDD),
+        (else_try),
           (assign, "$camera_mode", 0),
+          (assign, "$sod_post_defeat_state", 0),
           (mission_cam_set_mode, 0, 1000, 0),
         (try_end),
         ])
 
-camera_trigger_3 = (0, 0, 0, [(main_hero_fallen), (game_key_is_down, gk_move_forward), (eq, "$camera_mode", 1)], [
+camera_trigger_3 = (0, 0, 0, [(main_hero_fallen)], [
+        (try_begin),
+          (eq, "$sod_post_defeat_state", 0),
+          (call_script, "script_sod_post_defeat_on_player_fallen"),
+        (try_end),
+        (try_begin),
+          (eq, "$camera_mode", 2),
+          (call_script, "script_sod_post_defeat_focus_camera"),
+        (else_try),
+          (game_key_is_down, gk_move_forward),
+          (eq, "$camera_mode", 1),
         (set_fixed_point_multiplier, 100),
         (mission_cam_get_position, pos1),
         (position_rotate_x, pos1, 5),
@@ -471,6 +531,7 @@ camera_trigger_3 = (0, 0, 0, [(main_hero_fallen), (game_key_is_down, gk_move_for
         (position_move_z, pos1, "$camera_height"),
         (position_rotate_x, pos1, -5),
         (mission_cam_animate_to_position, pos1, 10, 0),
+        (try_end),
         ])
 
 camera_trigger_4 = (0, 0, 0, [(main_hero_fallen), (game_key_is_down, gk_move_backward), (eq, "$camera_mode", 1)], [
@@ -496,7 +557,15 @@ camera_trigger_4 = (0, 0, 0, [(main_hero_fallen), (game_key_is_down, gk_move_bac
         (mission_cam_animate_to_position, pos1, 10, 0),
         ])
 
-camera_trigger_5 = (0, 0, 0, [(main_hero_fallen), (game_key_is_down, gk_move_right), (eq, "$camera_mode", 1)], [
+camera_trigger_5 = (0, 0, 0, [(main_hero_fallen)], [
+        (try_begin),
+          (eq, "$camera_mode", 2),
+          (key_clicked, key_right_mouse_button),
+          (call_script, "script_sod_post_defeat_select_next_agent", 1),
+          (call_script, "script_sod_post_defeat_show_focus_message"),
+        (else_try),
+          (game_key_is_down, gk_move_right),
+          (eq, "$camera_mode", 1),
         (set_fixed_point_multiplier, 100),
         (mission_cam_get_position, pos1),
         (position_rotate_x, pos1, 5),
@@ -508,9 +577,18 @@ camera_trigger_5 = (0, 0, 0, [(main_hero_fallen), (game_key_is_down, gk_move_rig
         (try_end),
         (position_rotate_x, pos1, -5),
         (mission_cam_animate_to_position, pos1, 10, 0),
+        (try_end),
         ])
 
-camera_trigger_6 = (0, 0, 0, [(main_hero_fallen), (game_key_is_down, gk_move_left), (eq, "$camera_mode", 1)], [
+camera_trigger_6 = (0, 0, 0, [(main_hero_fallen)], [
+        (try_begin),
+          (eq, "$camera_mode", 2),
+          (key_clicked, key_left_mouse_button),
+          (call_script, "script_sod_post_defeat_select_next_agent", -1),
+          (call_script, "script_sod_post_defeat_show_focus_message"),
+        (else_try),
+          (game_key_is_down, gk_move_left),
+          (eq, "$camera_mode", 1),
         (set_fixed_point_multiplier, 100),
         (mission_cam_get_position, pos1),
         (position_rotate_x, pos1, 5),
@@ -522,6 +600,7 @@ camera_trigger_6 = (0, 0, 0, [(main_hero_fallen), (game_key_is_down, gk_move_lef
         (try_end),
         (position_rotate_x, pos1, -5),
         (mission_cam_animate_to_position, pos1, 10, 0),
+        (try_end),
         ])
 
 camera_trigger_7 = (0, 0, 0, [(main_hero_fallen), (game_key_is_down, gk_attack), (eq, "$camera_mode", 1)], [
@@ -558,6 +637,7 @@ formations_init = (ti_before_mission_start, 0, 0, [],
     [
       (assign, "$rout", 0),
       (assign, "$airout", 0),
+      (assign, "$g_enemy_surrenders", 0),
       (assign, "$formation", 0),
       (assign, "$infantryformationtype", 0),
       (assign, "$archerformationtype", 0),
@@ -566,15 +646,16 @@ formations_init = (ti_before_mission_start, 0, 0, [],
   )
 
 # 1, 2, 3 - choose which troops to order
-formations_1 = (0, 0, 0, [(key_clicked, key_2), (assign, "$formation", grc_infantry), ], [])
-formations_2 = (0, 0, 0, [(key_clicked, key_3), (assign, "$formation", grc_archers), ], [])
-formations_3 = (0, 0, 0, [(key_clicked, key_4), (assign, "$formation", grc_cavalry), ], [])
+formations_1 = (0, 0, 0, [(neg|main_hero_fallen), (key_clicked, key_2), (assign, "$formation", grc_infantry), ], [])
+formations_2 = (0, 0, 0, [(neg|main_hero_fallen), (key_clicked, key_3), (assign, "$formation", grc_archers), ], [])
+formations_3 = (0, 0, 0, [(neg|main_hero_fallen), (key_clicked, key_4), (assign, "$formation", grc_cavalry), ], [])
 
 # 1 - native everyone selection also releases scripted formation movement.
 # This keeps normal orders from inheriting stale scripted destinations.
 formations_0 = (0, 0, 0,
     [
       (neq, "$g_disable_formations", 1),
+      (neg|main_hero_fallen),
       (key_clicked, key_1),
       (get_player_agent_no, ":player"),
       (agent_get_team, reg0, ":player"),
@@ -595,6 +676,7 @@ formations_0 = (0, 0, 0,
 formations_j =  (0, 0, 0,
     [
       (neq, "$g_disable_formations", 1),
+      (neg|main_hero_fallen),
       (key_clicked, key_j),
       (neg|key_is_down, key_left_control),
       (neg|key_is_down, key_right_control),
@@ -621,6 +703,7 @@ formations_j =  (0, 0, 0,
 formations_p =  (0, 0, 0,
     [
       (neq, "$g_disable_formations", 1),
+      (neg|main_hero_fallen),
       (key_clicked, key_p),
       (get_player_agent_no, ":player"),
       (agent_get_team, reg0, ":player"),
@@ -646,6 +729,7 @@ formations_p =  (0, 0, 0,
 formations_k =  (0, 0, 0,
     [
       (neq, "$g_disable_formations", 1),
+      (neg|main_hero_fallen),
       (key_clicked, key_k),
       (get_player_agent_no, ":player"),
       (agent_get_team, reg0, ":player"),
@@ -671,6 +755,7 @@ formations_k =  (0, 0, 0,
 formations_u = (0, 0, 0,
     [
       (neq, "$g_disable_formations", 1),
+      (neg|main_hero_fallen),
       (key_clicked, key_u),
       (get_player_agent_no, ":player"),
       (agent_get_team, reg0, ":player"),
@@ -748,6 +833,7 @@ formations_ai_dismount =  (5.0, 0, 0,
 formations_end = (5.0, 0, 0,
     [
       (neq, "$g_disable_formations", 1),
+      (neg|main_hero_fallen),
       (eq, "$rout", 0),
       (get_player_agent_no, ":player"),
       (agent_get_team, reg0, ":player"),
@@ -767,6 +853,7 @@ formations_dismount = (5.0, 0, 0,
     [
       (neq, "$g_disable_formations", 1),
 	  (neq, "$g_disable_formations_dismount", 1),
+      (neg|main_hero_fallen),
       (neq, "$battle_won", 1),
       (assign, ":infantry", 0),
       (assign, ":cavalry", 0),
@@ -804,6 +891,7 @@ formations_dismount = (5.0, 0, 0,
 formations_move_infantry = (0.2, 0, 0,
     [
       (neq, "$g_disable_formations", 1),
+      (neg|main_hero_fallen),
       (eq, "$rout", 0),
       (get_player_agent_no, ":player"),
       (agent_get_team, reg0, ":player"),
@@ -828,6 +916,7 @@ formations_move_infantry = (0.2, 0, 0,
 formations_move_archers = (0.2, 0, 0,
     [
       (neq, "$g_disable_formations", 1),
+      (neg|main_hero_fallen),
       (eq, "$rout", 0),
       (get_player_agent_no, ":player"),
       (agent_get_team, reg0, ":player"),
@@ -852,6 +941,7 @@ formations_move_archers = (0.2, 0, 0,
 formations_move_cavalry = (0.2, 0, 0,
     [
       (neq, "$g_disable_formations", 1),
+      (neg|main_hero_fallen),
       (eq, "$rout", 0),
       (get_player_agent_no, ":player"),
       (agent_get_team, reg0, ":player"),
@@ -936,6 +1026,7 @@ formations_update_ai_cavalry = (0.2, 0, 0,
 formations_update_ally_infantry = (0.2, 0, 0,
     [
       (neq, "$g_disable_formations", 1),
+      (neg|main_hero_fallen),
       (eq, "$rout", 0),
       (neq, "$battle_won", 1),
       (eq, "$rout", 0),
@@ -954,6 +1045,7 @@ formations_update_ally_infantry = (0.2, 0, 0,
 formations_update_ally_archers = (0.2, 0, 0,
     [
       (neq, "$g_disable_formations", 1),
+      (neg|main_hero_fallen),
       (eq, "$rout", 0),
       (neq, "$battle_won", 1),
       (eq, "$rout", 0),
@@ -972,6 +1064,7 @@ formations_update_ally_archers = (0.2, 0, 0,
 formations_update_ally_cavalry = (0.2, 0, 0,
     [
       (neq, "$g_disable_formations", 1),
+      (neg|main_hero_fallen),
       (eq, "$rout", 0),
       (neq, "$battle_won", 1),
       (eq, "$rout", 0),
@@ -997,7 +1090,7 @@ formations_init_kill_count = (1, 0, ti_once, [],
   )
 
 # update kill count
-formations_update_kill_count = (3, 0, 3, [],
+formations_update_kill_count = (3, 0, 3, [(neg|main_hero_fallen)],
     [
       (get_player_agent_kill_count, ":more_kills", 0),
       (val_sub, ":more_kills", "$base_kills"),
@@ -1030,6 +1123,7 @@ formations_t = (0, 0, 2,
       (key_clicked, key_t),
       (assign, ":allow_healthbars", 1),
       (try_begin),
+        (eq, "$ponavosa_duel_disabled_this_battle", 0),
         (eq, "$ponavosa_duel_active", 0),
         (store_mission_timer_a, ":now"),
         (ge, ":now", "$ponavosa_duel_cooldown_until"),
@@ -1096,6 +1190,11 @@ commander_duel_init = (ti_before_mission_start, 0, 0, [],
       (assign, "$ponavosa_duel_player_involved", 0),
       (assign, "$ponavosa_duel_camera_active", 0),
       (assign, "$ponavosa_duel_nemesis", 0),
+      (assign, "$ponavosa_duel_disabled_this_battle", 0),
+      (try_begin),
+        (eq, "$g_sod_joined_ongoing_ai_battle", 1),
+        (assign, "$ponavosa_duel_disabled_this_battle", 1),
+      (try_end),
       (assign, "$g_sod_battle_ally_duel_momentum", 0),
       (assign, "$g_sod_battle_enemy_duel_momentum", 0),
       (assign, "$g_sod_battle_player_morale_wavered", 0),
@@ -1105,6 +1204,7 @@ commander_duel_init = (ti_before_mission_start, 0, 0, [],
 
 commander_duel_player_challenge = (0, 0, 1,
     [
+      (eq, "$ponavosa_duel_disabled_this_battle", 0),
       (eq, "$ponavosa_duel_active", 0),
       (store_mission_timer_a, ":now"),
       (ge, ":now", "$ponavosa_duel_cooldown_until"),
@@ -1119,6 +1219,7 @@ commander_duel_player_challenge = (0, 0, 1,
 
 commander_duel_player_feedback = (0, 0, 1,
     [
+      (eq, "$ponavosa_duel_disabled_this_battle", 0),
       (eq, "$ponavosa_duel_active", 0),
       (key_clicked, key_t),
     ],
@@ -1138,6 +1239,7 @@ commander_duel_player_feedback = (0, 0, 1,
 
 commander_duel_ai_challenge = (15, 0, 30,
     [
+      (eq, "$ponavosa_duel_disabled_this_battle", 0),
       (eq, "$ponavosa_duel_active", 0),
       (store_mission_timer_a, ":now"),
       (ge, ":now", "$ponavosa_duel_cooldown_until"),
@@ -1206,6 +1308,10 @@ commander_duel_camera_tick = (0, 0, 0,
     [
       (eq, "$ponavosa_duel_active", 1),
       (eq, "$ponavosa_duel_player_involved", 0),
+      (ge, "$ponavosa_duel_ally_agent", 0),
+      (ge, "$ponavosa_duel_enemy_agent", 0),
+      (agent_is_human, "$ponavosa_duel_ally_agent"),
+      (agent_is_human, "$ponavosa_duel_enemy_agent"),
     ],
     [
       (assign, "$ponavosa_duel_camera_active", 1),
@@ -1258,6 +1364,24 @@ formations_update_route = (5, 0, 3,
     [
       (call_script, "script_coherence"),
       (call_script, "script_rout_check"),
+    ]
+  )
+
+common_battle_enemy_surrender_check = (5, 0, 5,
+    [
+      (neq, "$g_disable_morale", 1),
+      (eq, "$battle_won", 0),
+    ],
+    [
+      (call_script, "script_coherence"),
+      (call_script, "script_sod_battle_enemy_surrender_check"),
+      (try_begin),
+        (eq, reg0, 1),
+        (call_script, "script_sod_post_defeat_record_aftermath", 1),
+        (call_script, "script_sod_post_defeat_count_casualties_once"),
+        (call_script, "script_sod_post_defeat_clear"),
+        (finish_mission, 1),
+      (try_end),
     ]
   )
 

@@ -5,11 +5,7 @@ SCRIPTS = [
       (try_begin),
         (this_or_next|le, ":envoy_party", 0),
         (neg|party_is_active, ":envoy_party"),
-        (set_spawn_radius, 2),
-        (spawn_around_party, "p_main_party", "pt_sod_diplomatic_envoy"),
-        (assign, ":envoy_party", reg0),
-        (quest_set_slot, "qst_rtc_hounds_terms", slot_quest_target_party, ":envoy_party"),
-        (quest_set_slot, "qst_rtc_hounds_terms", slot_quest_target_party_template, "pt_sod_diplomatic_envoy"),
+        (call_script, "script_sod_rtc_prepare_temporary_target", "qst_rtc_hounds_terms", "pt_sod_diplomatic_envoy", "p_main_party", 2, 0),
       (try_end),
   ]),
 ]

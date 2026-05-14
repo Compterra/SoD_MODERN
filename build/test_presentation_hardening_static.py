@@ -16,6 +16,18 @@ def main():
         '(val_max, ":value", 1)',
         '(val_clamp, ":value", 1, "$pres_sod_fief_buildings")',
         '(val_clamp, ":value", 0, ":daily_garrisoning")',
+        '(create_game_button_overlay, "$g_presentation_obj_8", "@>", tf_center_justify)',
+        '(create_game_button_overlay, "$g_presentation_obj_9", "@<", tf_center_justify)',
+        '(create_game_button_overlay, "$g_presentation_obj_14", "@<", tf_center_justify)',
+        '(create_game_button_overlay, "$g_presentation_obj_15", "@>", tf_center_justify)',
+        '(create_game_button_overlay, "$g_presentation_obj_17", "@<", tf_center_justify)',
+        '(create_game_button_overlay, "$g_presentation_obj_18", "@>", tf_center_justify)',
+        '(create_game_button_overlay, "$g_presentation_obj_20", "@<", tf_center_justify)',
+        '(create_game_button_overlay, "$g_presentation_obj_21", "@>", tf_center_justify)',
+        '(create_game_button_overlay, "$g_presentation_obj_27", "@>", tf_center_justify)',
+        '(create_game_button_overlay, "$g_presentation_obj_28", "@<", tf_center_justify)',
+        '(eq, ":object", "$g_presentation_obj_11")',
+        '(display_message, "@Not enough funds.", dark_red)',
     ]:
         assert token in fief, f"missing fief presentation slider hardening: {token}"
 

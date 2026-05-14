@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "trainer_talk_combat", [], "Tell me about fighting on horseback.", "trainer_explain_horseback", []],
+[anyone|plyr, "trainer_talk_combat", [], "Teach me how to fight from the saddle without trusting the ground.", "trainer_explain_horseback", []],
 ]

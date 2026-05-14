@@ -100,7 +100,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc11", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Do not ask people to clap for glory while their bellies are arguing with their ribs. My trust in your sense is {s2}, and that is me being polite.",
   "member_talk",
@@ -112,7 +112,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The coin went where it should: food, wages, medicine, and fewer foolish deaths. It was not grand. Grand things are usually expensive and poorly packed. My trust in your sense is {s2}.",
   "member_talk",
@@ -122,7 +122,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "We spent the coin on momentum and patched the consequences with boiled water and bad tempers. I kept the camp standing. Do not mistake that for approval. My trust in your sense is {s2}.",
   "member_talk",
@@ -134,7 +134,7 @@ DIALOGS = [
     (eq, "$g_sod_katrin_last_coin_witnessed", 1),
     (eq, "$g_sod_katrin_last_coin_confronted", 0),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The ledger is no longer private. Run the supply watch with me before you spend the last coin. My trust in your sense is {s2}.",
   "member_talk",
@@ -144,7 +144,7 @@ DIALOGS = [
   [
     (eq, "$g_sod_katrin_last_coin_pending", 1),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The camp has reached the part of command where coins, bread, and promises stop pretending to be separate things. First hear the ledger witness, then stand the supply watch. My trust in your sense is {s2}.",
   "member_talk",
@@ -154,7 +154,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Sooner or later the heroic plan reaches the cooking pot. I am waiting to see whether you notice before the pot is empty. My trust in your sense is {s2}.",
   "member_talk",
@@ -164,7 +164,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "I have seen brave companies fail because nobody wanted to count spoons. The Last Coin in Camp will tell me plenty about you. My trust in your sense is {s2}.",
   "member_talk",
@@ -174,7 +174,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc11", slot_troop_companion_approval, 70),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You remember that people march on feet, not banners, and eat bread, not intentions. Sensible. Suspiciously so. My trust in your sense is {s2}.",
   "member_talk",
@@ -189,7 +189,7 @@ DIALOGS = [
 [anyone, "companion_depth_katrin",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "It needs food before glory, wages before speeches, and clean cloth before another brave fool bleeds on my blankets. My trust in your sense is {s2}.",
   "member_talk",

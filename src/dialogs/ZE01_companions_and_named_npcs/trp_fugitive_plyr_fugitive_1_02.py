@@ -1,3 +1,3 @@
 DIALOGS = [
-[trp_fugitive|plyr, "fugitive_1", [], "Nothing. Sorry to trouble you.", "close_window", []],
+[trp_fugitive|plyr, "fugitive_1", [], "Nothing after all. Keep moving.", "close_window", []],
 ]

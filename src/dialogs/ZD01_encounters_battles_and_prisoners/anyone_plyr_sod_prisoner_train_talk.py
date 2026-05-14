@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "sod_prisoner_train_talk", [
-  ], "Who are you carrying?", "sod_prisoner_train_about", []],
+  ], "Name the chains in your wagons.", "sod_prisoner_train_about", []],
 ]

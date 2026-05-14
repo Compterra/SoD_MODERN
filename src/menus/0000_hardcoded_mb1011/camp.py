@@ -3,7 +3,8 @@ MENUS = [
    "You set up camp. What do you want to do?",
    "none",
    [
-     (assign, "$g_player_icon_state", pis_normal),
+     (assign, "$g_player_icon_state", pis_camping),
+     (call_script, "script_sod_refresh_player_map_icon"),
      # Clear stale center or party ids before opening camp; old encounter globals
      # can point at removed parties and crash later camp/report menus.
      (try_begin),
@@ -32,12 +33,18 @@ MENUS = [
        [
            (assign, "$g_camp_mode", 1),
            (assign, "$g_player_icon_state", pis_camping),
+           (call_script, "script_sod_refresh_player_map_icon"),
            (rest_for_hours_interactive, 24 * 7, 5, 1), #rest while attackable
            (change_screen_return),
         ]
        ),
       ("camp_action", [], "Take other action...", [(jump_to_menu, "mnu_camp_action")]),
 
-      ("resume_travelling", [], "Resume travelling.", [(change_screen_return), ]), ]
+      ("resume_travelling", [], "Resume travelling.",
+       [
+         (assign, "$g_player_icon_state", pis_normal),
+         (call_script, "script_sod_refresh_player_map_icon"),
+         (change_screen_return),
+       ]), ]
   ),
 ]

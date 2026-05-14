@@ -22,6 +22,8 @@ SIMPLE_TRIGGERS = [
 				(call_script, "script_party_remove_all_prisoners", ":cur_party"),
 			(try_end),
         (else_try),
+           (get_party_ai_current_behavior, ":ai_bhvr", ":cur_party"),
+           (neq, ":ai_bhvr", ai_bhvr_hold),
            (party_set_ai_behavior, ":cur_party", ai_bhvr_hold),
         (try_end),
 	 (try_end),

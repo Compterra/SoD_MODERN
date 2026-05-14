@@ -135,6 +135,7 @@ def test_company_account_scripts_exist() -> None:
     scripts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
     for token in (
         "sod_company_accounts_initialize",
+        "sod_company_accounts_get_current_company_weekly_wage_to_reg",
         "sod_company_accounts_accrue_wages",
         "sod_company_accounts_get_due_to_regs",
         "sod_company_accounts_set_pay_promise",
@@ -330,16 +331,8 @@ def test_company_accounts_menu_is_reachable() -> None:
         "company_accounts_pay_bonus",
         "company_accounts_pay_veterans",
         "company_accounts_pay_wounded",
-        "company_accounts_casualty_compensation",
         "company_accounts_hazard_pay",
-        "company_accounts_share_victory_spoils",
-        "company_accounts_public_honors",
-        "company_accounts_victory_feast",
-        "company_accounts_refuse_public_spectacle",
         "company_accounts_delay",
-        "company_accounts_petition",
-        "company_accounts_desertion",
-        "company_accounts_mutiny",
         "company_rations_thin",
         "company_rations_standard",
         "company_rations_generous",
@@ -352,6 +345,7 @@ def test_company_accounts_menu_is_reachable() -> None:
         "company_recreation_offering",
         "company_recreation_wounded",
         "company_recreation_campfire",
+        "company_recreation_victory_feast",
         "company_recreation_village_festival",
         "company_recreation_strict",
         "company_recreation_rumors",
@@ -422,6 +416,14 @@ def test_company_accounts_menu_is_reachable() -> None:
     ):
         assert_contains(menu, token)
     for token in (
+        "Issue thin rations (70% food use, morale suffers).",
+        "Issue standard rations (normal food use).",
+        "Issue generous rations (130% food use, morale improves).",
+        "Order officer austerity (85% food use, officers share hardship).",
+        "Open the stores for a ration feast (spend 3 food, morale +5).",
+    ):
+        assert_contains(menu, token)
+    for token in (
         "company_accounts_promise",
         "company_accounts_battle_promise",
         "company_accounts_threaten",
@@ -429,9 +431,36 @@ def test_company_accounts_menu_is_reachable() -> None:
         "company_accounts_recreation",
     ):
         assert_not_contains(menu, token)
-    assert_contains(menu, "(ge, \"$g_sod_company_petition_stage\", sod_company_petition_stage_murmur)")
+    assert_not_contains(menu, "(ge, \"$g_sod_company_petition_stage\", sod_company_petition_stage_murmur)")
     assert_contains(menu, "(ge, \"$g_sod_company_desertion_stage\", sod_company_desertion_stage_request)")
     assert_contains(menu, "(ge, \"$g_sod_company_mutiny_stage\", sod_company_mutiny_stage_warning)")
+
+
+def test_company_wage_debt_uses_live_main_party_payroll() -> None:
+    scripts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
+    menu = read("src/menus/camp/company_accounts.py")
+    payday = read("src/menus/0000_hardcoded_mb1011/pay_day.py")
+    for token in (
+        '"sod_company_accounts_get_current_company_weekly_wage_to_reg"',
+        'party_get_num_companion_stacks, ":num_stacks", "p_main_party"',
+        'neg|troop_is_hero, ":stack_troop"',
+        'script_game_get_troop_wage',
+        'assign, reg1, ":paid_troops"',
+        'script_sod_company_accounts_get_current_company_weekly_wage_to_reg',
+        'assign, "$g_sod_company_accrued_wages", 0',
+        'store_mul, ":max_live_debt", reg31, 3',
+    ):
+        assert_contains(scripts, token)
+    assert_contains(menu, "script_sod_company_accounts_get_current_company_weekly_wage_to_reg")
+    assert_not_contains(menu, "script_calculate_player_faction_wage")
+    for token in (
+        'script_sod_company_accounts_get_current_company_weekly_wage_to_reg',
+        'assign, ":current_company_weekly_wage", reg0',
+        'le, ":current_company_weekly_wage", 0',
+        'assign, "$g_player_debt_to_party_members", 0',
+        'store_mul, ":max_live_debt", ":current_company_weekly_wage", 3',
+    ):
+        assert_contains(payday, token)
 
 
 def test_ration_policy_hooks_are_wired() -> None:
@@ -496,13 +525,15 @@ def test_company_account_report_fields_are_wired() -> None:
     reports = read("src/menus/0000_hardcoded_mb1011/reports.py")
     for token in (
         "Company Accounts",
-        "Current wages",
-        "Earlier unpaid debt",
-        "Total owed",
-        "Days since full pay",
+        "Morale",
+        "Weekly Cost of Party",
+        "Total Amount owed",
+        "Next Payday",
+        "Last Time Paid",
+        "Current Ration Policy",
+        "Current issue",
         "Pay confidence",
         "Camp strain",
-        "This ledger is for money actually owed",
         "script_sod_company_accounts_describe_class_wages_to_s56",
         "Wage weight by class",
         "enlisted {reg56}, mercenary {reg57}, noble {reg58}, faith {reg59}",
@@ -516,7 +547,7 @@ def test_company_account_report_fields_are_wired() -> None:
 
 def test_mercenary_pay_expectations_are_wired() -> None:
     scripts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
-    docs = read("docs/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
+    docs = read("docs/company/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
     for token in (
         "script_sod_company_accounts_get_class_wages_to_regs",
         "(gt, reg57, 0)",
@@ -533,7 +564,7 @@ def test_mercenary_pay_expectations_are_wired() -> None:
 
 def test_enlisted_pay_patience_rules_are_wired() -> None:
     scripts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
-    docs = read("docs/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
+    docs = read("docs/company/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
     for token in (
         "(gt, reg56, 0)",
         "(gt, reg56, reg57)",
@@ -552,7 +583,7 @@ def test_enlisted_pay_patience_rules_are_wired() -> None:
 
 def test_noble_faith_withdrawal_rules_are_wired() -> None:
     scripts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
-    docs = read("docs/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
+    docs = read("docs/company/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
     for token in (
         "sod_company_accounts_get_withdrawal_supply_severity_to_reg",
         "(eq, \":troop_class\", sod_company_troop_class_noble)",
@@ -572,7 +603,7 @@ def test_faith_conduct_reactivity_is_wired() -> None:
     scripts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
     slavers = read("src/scripts/ZY_helper_scripts/sod_slavers_black_market.py")
     diplomacy = read("src/scripts/ZY_helper_scripts/sod_diplomacy_system.py")
-    docs = read("docs/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
+    docs = read("docs/company/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
     for token in (
         "sod_company_accounts_apply_faith_conduct",
         "sod_companion_action_free_captives",
@@ -601,7 +632,7 @@ def test_faith_conduct_reactivity_is_wired() -> None:
 
 
 def test_company_accounts_checklist_tracks_v2_gaps() -> None:
-    docs = read("docs/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
+    docs = read("docs/company/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
     assert_not_contains(docs, "- [ ]")
     for token in (
         "v1 includes final warning, negotiation pressure, and an optional battle route.",
@@ -625,6 +656,28 @@ def test_local_recreation_flavor_is_wired() -> None:
         "slot_town_prosperity",
         "slot_village_state",
         "{s54}",
+    ):
+        assert_contains(scripts, token)
+
+
+def test_company_rations_report_shows_supply_time_and_policy_effects() -> None:
+    scripts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
+    for token in (
+        "sod_company_accounts_get_daily_food_consumption_to_regs",
+        "script_sod_company_accounts_adjust_food_consumption_to_reg",
+        "script_count_edible_food",
+        "(store_div, \":base_consumption\", \":num_men\", 5)",
+        "(store_mul, \":total_hours\", \":edible_food\", 24)",
+        "(store_div, \":weeks_left\", \":total_hours\", 168)",
+        "(store_mod, \":hours_remainder\", \":total_hours\", 168)",
+        "Food left: {reg33} week(s), {reg34} day(s), {reg35} hour(s).",
+        "Estimated Daily Consumption: {reg32} provisions/day under {s24} rations.",
+        "Stores: {reg31} provisions. Base need before policy: {reg36} provisions/day.",
+        "Thin: 70% food use; morale suffers.",
+        "Standard: normal food use; stable morale.",
+        "Generous: 130% food use; morale improves while stores last.",
+        "Officer austerity: 85% food use; officers and companions share hardship openly.",
+        "Ration feast: spends 3 provisions now; morale +5 and camp strain -10",
     ):
         assert_contains(scripts, token)
 
@@ -688,7 +741,7 @@ def test_company_petition_pressure_is_wired() -> None:
         "Likely voice",
         "Company voices",
         "can speak as",
-        "trusted companion",
+        "Company petition: no trusted companion is positioned",
         "contractual",
         "oath-bound",
         "honor, public victory, shame",
@@ -696,8 +749,9 @@ def test_company_petition_pressure_is_wired() -> None:
         "urgent petition",
     ):
         assert_contains(scripts, token)
+    assert_not_contains(menu, "company_accounts_petition")
+    assert_not_contains(menu, "Hear the current company petition.")
     for token in (
-        "company_accounts_petition",
         "company_petition",
         "script_sod_company_accounts_describe_petition_to_s36",
         "script_sod_company_accounts_apply_petition_response",
@@ -745,7 +799,6 @@ def test_peaceful_desertion_request_is_wired() -> None:
     ):
         assert_contains(scripts, token)
     for token in (
-        "company_accounts_desertion",
         "company_desertion_petition",
         "company_desertion_paid",
         "company_desertion_persuade",
@@ -794,7 +847,6 @@ def test_mutiny_warning_foundation_is_wired() -> None:
     ):
         assert_contains(scripts, token)
     for token in (
-        "company_accounts_mutiny",
         "company_mutiny_warning",
         "company_mutiny_negotiate",
         "company_mutiny_pay_half",
@@ -824,13 +876,13 @@ def test_targeted_pay_choices_are_wired() -> None:
         "sod_companion_action_wounded_pay",
         "party_stack_get_num_wounded",
         "$g_sod_company_casualty_compensation_pressure",
-        "Active pay claims",
+        "Claims",
         "sod_company_accounts_apply_casualty_compensation",
         "$g_sod_company_siege_hazard_pressure",
         "siege hazard",
         "sod_company_accounts_apply_hazard_pay",
         "$g_sod_company_last_victory_feast_day",
-        "Recent victory window",
+        "Victory claims",
         "sod_company_accounts_apply_victory_feast",
         "$g_sod_company_last_refused_spectacle_day",
         "sod_company_accounts_refuse_public_spectacle",
@@ -839,12 +891,8 @@ def test_targeted_pay_choices_are_wired() -> None:
         assert_contains(scripts, token)
     assert_contains(menu, "company_accounts_pay_veterans")
     assert_contains(menu, "company_accounts_pay_wounded")
-    assert_contains(menu, "company_accounts_casualty_compensation")
     assert_contains(menu, "company_accounts_hazard_pay")
-    assert_contains(menu, "company_accounts_share_victory_spoils")
-    assert_contains(menu, "company_accounts_public_honors")
-    assert_contains(menu, "company_accounts_victory_feast")
-    assert_contains(menu, "company_accounts_refuse_public_spectacle")
+    assert_contains(menu, "company_recreation_victory_feast")
     assert_contains(companion_depth, "sod_companion_action_fair_pay")
     assert_contains(companion_depth, "sod_companion_action_bonus_pay")
     assert_contains(companion_depth, "sod_companion_action_half_pay")
@@ -860,7 +908,7 @@ def test_company_growth_debt_hook_is_wired() -> None:
     scripts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
     recruit = read("src/scripts/ZD_centers/village_recruit_volunteers_recruit.py")
     upgrade = read("src/menus/other/sod_upgrade_continue.py")
-    docs = read("docs/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
+    docs = read("docs/company/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
     for token in (
         "sod_company_accounts_record_company_growth",
         "sod_company_growth_recruit",
@@ -881,7 +929,7 @@ def test_company_accounts_feed_battle_morale() -> None:
     company = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
     battle_context = read("src/scripts/ZY_helper_scripts/sod_lord_party_morale.py")
     coherence = read("src/scripts/ZZ_common_array_processing/coherence.py")
-    docs = read("docs/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
+    docs = read("docs/company/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
     for token in (
         "sod_company_accounts_get_battle_morale_context_to_regs",
         "$g_sod_company_pay_confidence",
@@ -915,7 +963,7 @@ def test_company_accounts_feed_battle_morale() -> None:
 
 def test_troop_category_morale_split() -> None:
     accounts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
-    docs = read("docs/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
+    docs = read("docs/company/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
     for token in (
         "sod_company_accounts_update_troop_category_morale",
         "sod_company_accounts_describe_category_morale_to_s58",
@@ -974,11 +1022,78 @@ def test_pay_promise_and_threat_routes_are_wired() -> None:
     assert_contains(companion_depth, "sod_companion_action_broken_pay_promise")
 
 
+def test_company_accounts_menu_uses_clear_ledger_summary() -> None:
+    scripts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
+    menu = read("src/menus/camp/company_accounts.py")
+    for token in (
+        "Morale: {reg35}.",
+        "Weekly Cost of Party: {s23}.",
+        "Total Amount owed: {reg22} denars.",
+        "Next Payday: {s63}.",
+        "Last Time Paid: {s26}.",
+        "Current Ration Policy: {s64}.",
+        "Current issue: {s67}",
+        "Pay confidence: {s21}. Camp strain: {s22}.",
+        "(party_get_morale, reg35, \"p_main_party\")",
+        "(store_add, reg34, reg31, reg54)",
+        "script_sod_companion_retinue_get_account_totals_to_regs",
+        "({reg31} party, {reg54} retinue)",
+        "{s65}",
+        "reg30",
+        "reg31",
+        "reg32",
+        "reg33",
+        "(store_sub, reg30, 7, reg24)",
+        "(store_sub, reg33, reg22, reg23)",
+        "due now",
+        "in {reg30} day(s)",
+        "{reg24} day(s) ago",
+        "today",
+        "sod_company_ration_policy_thin",
+        "sod_company_ration_policy_standard",
+        "sod_company_ration_policy_generous",
+        "sod_company_ration_policy_officer_austerity",
+        "Retinue:",
+        "Claims:",
+        "Victory claims:",
+    ):
+        assert_contains(scripts, token)
+    ledger_tokens = (
+        "Morale: {reg35}.",
+        "Weekly Cost of Party: {s23}.",
+        "Total Amount owed: {reg22} denars.",
+        "Next Payday: {s63}.",
+        "Last Time Paid: {s26}.",
+        "Current Ration Policy: {s64}.",
+        "Current issue: {s67}",
+    )
+    last_pos = -1
+    for token in ledger_tokens:
+        pos = scripts.index(token)
+        assert pos > last_pos, f"ledger token out of order: {token}"
+        last_pos = pos
+    assert_not_contains(scripts, "Pay confidence: {s21} ({reg25})")
+    assert_not_contains(scripts, "Camp strain: {s22} ({reg26})")
+    assert_not_contains(scripts, "The choices below show what you will pay now")
+    assert_contains(menu, '"Pay {reg25} denars; clear the account."')
+    assert_contains(menu, '"Pay {reg25} denars; leave {reg26} owed, but ease strain."')
+    assert_contains(menu, '"Pay {reg25} denars; clear debt and raise confidence."')
+    assert_contains(menu, "(ge, reg23, reg25)")
+    assert_contains(menu, '"The company books are clear."')
+    assert_not_contains(menu, "No company wages are currently due.")
+    assert_contains(scripts, "(this_or_next|ge, reg24, 7)")
+    assert_contains(menu, '"Pay {reg25} denars to wounded first; {reg26} remains."')
+    assert_contains(menu, '"Pay 0 now; delay raises strain and weakens trust."')
+    assert_not_contains(menu, "company_accounts_promise")
+    assert_not_contains(menu, "company_accounts_battle_promise")
+    assert_not_contains(menu, "company_accounts_threaten")
+
+
 def test_post_battle_morale_consequences_are_wired() -> None:
     scripts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
     victory = read("src/scripts/ZC_parties/total_victory_finalize.py")
     defeat = read("src/menus/other/total_defeat.py")
-    docs = read("docs/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
+    docs = read("docs/company/COMPANY_ACCOUNTS_AND_MORALE_DESIGN.md")
     for token in (
         "sod_company_accounts_record_battle_victory",
         "sod_company_accounts_record_battle_defeat",
@@ -1012,6 +1127,7 @@ if __name__ == "__main__":
     test_faith_conduct_reactivity_is_wired()
     test_company_accounts_checklist_tracks_v2_gaps()
     test_local_recreation_flavor_is_wired()
+    test_company_rations_report_shows_supply_time_and_policy_effects()
     test_recreation_disorder_incidents_are_wired()
     test_tavern_rumor_intelligence_is_wired()
     test_company_petition_pressure_is_wired()
@@ -1022,6 +1138,7 @@ if __name__ == "__main__":
     test_company_accounts_feed_battle_morale()
     test_troop_category_morale_split()
     test_pay_promise_and_threat_routes_are_wired()
+    test_company_accounts_menu_uses_clear_ledger_summary()
     test_post_battle_morale_consequences_are_wired()
     print("test_company_accounts_static: OK")
 

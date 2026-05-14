@@ -84,6 +84,8 @@ def main() -> int:
     assert_contains(presentation, "script_sod_get_building_development_required")
     assert_contains(presentation, "script_sod_get_center_construction_workforce")
     assert_contains(presentation, "labor per week")
+    assert_contains(presentation, '":show_project_summary"')
+    assert_contains(presentation, '@{s39}^^As the party member with the highest engineer skill')
     assert_not_contains(presentation, "hours_takes")
     assert_not_contains(presentation, "will take {reg10} days")
 

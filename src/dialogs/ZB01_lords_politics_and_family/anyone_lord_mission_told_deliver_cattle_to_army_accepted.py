@@ -1,5 +1,5 @@
 DIALOGS = [
-[anyone, "lord_mission_told_deliver_cattle_to_army_accepted", [], "Excellent! You know what to do, {playername}, now get to it. I need that cattle sooner rather than later.", "close_window",
+[anyone, "lord_mission_told_deliver_cattle_to_army_accepted", [], "Good. An army can march on courage for one day and beef for the rest. Bring those cattle before hunger starts giving orders.", "close_window",
    [
      (call_script, "script_end_quest", "qst_follow_army"),
      (quest_get_slot, ":quest_target_amount", "$g_random_army_quest", slot_quest_target_amount),

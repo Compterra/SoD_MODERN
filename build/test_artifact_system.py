@@ -79,11 +79,11 @@ def main() -> int:
     assert_contains(doctrine_report, "capped with the reliquary discount")
 
     assert_contains(smith, "script_sod_artifact_find_maintainable_weapon")
-    assert_contains(smith, "troop_remove_gold, \"trp_player\", 1500")
+    assert_contains(smith, "script_sod_player_charge_gold")
     assert_contains(smith, "item_set_slot, \":item_no\", slot_item_artifact_current_owner, \"trp_player\"")
     assert_contains(smith, "Battle record: {reg21}/{reg22}")
     assert_contains(smith, "No equipped royal artifact weapon needs smith maintenance right now")
-    if smith.find("script_sod_artifact_find_maintainable_weapon") > smith.find("troop_remove_gold, \"trp_player\", 1500"):
+    if smith.find("script_sod_artifact_find_maintainable_weapon") > smith.find("script_sod_player_charge_gold"):
         raise AssertionError("Smith must find a maintainable artifact before charging gold")
 
     assert_contains(report, "script_sod_artifact_find_maintainable_weapon")

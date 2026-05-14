@@ -1,6 +1,6 @@
 DIALOGS = [
 [anyone|plyr , "pretender_start", [
                      ],
-   "I must leave now.", "pretender_end", [
+   "We will speak of crowns another time.", "pretender_end", [
      ]],
 ]

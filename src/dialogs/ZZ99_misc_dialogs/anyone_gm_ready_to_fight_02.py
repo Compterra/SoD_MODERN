@@ -1,10 +1,10 @@
 DIALOGS = [
-[anyone, "gm_ready_to_fight", [], "{s7} Good luck.", "close_window",
+[anyone, "gm_ready_to_fight", [], "{s7} Keep your guard high. They learn quickly.", "close_window",
    [
 	(try_begin),
 		(eq, "$elephant_guard_training_groups_defeted", 0),
 		(assign, "$elephant_guard_opponent_troop", "trp_elephant_guard_tribesman"),
-		(str_store_string, s7, "@I divided them into three gropus based on their experience. The first group, our tribesmen, are ready to start training."),
+		(str_store_string, s7, "@I divided them into three groups based on their experience. The first group, our tribesmen, are ready to start training."),
      (else_try),
 		(eq, "$elephant_guard_training_groups_defeted", 1),
 		(assign, "$elephant_guard_opponent_troop", "trp_elephant_guard_fighter"),

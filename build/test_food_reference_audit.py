@@ -65,7 +65,7 @@ def main() -> int:
     assert_contains(town, ":consumption_pressure")
     assert_contains(town, ":import_demand")
     assert_contains(castle, ":food_security")
-    assert_contains(trade, ":food_trade_pressure")
+    assert_contains(trade, ":food_pressure")
     assert_contains(route, ":food_security")
 
     print("[food_reference_audit] OK")

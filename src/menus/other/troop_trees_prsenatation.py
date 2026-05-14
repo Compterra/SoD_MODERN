@@ -9,7 +9,7 @@ MENUS = [
 	(start_presentation, "prsnt_sod_troop_trees"),
 	]),
 	("back",[],"Resume travelling.",[
-	(change_screen_return),
+	(jump_to_menu, "mnu_troop_trees_prsenatation_end"),
 	]),
 	],),
 ]

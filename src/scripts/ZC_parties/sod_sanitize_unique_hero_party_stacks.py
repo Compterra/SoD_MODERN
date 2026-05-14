@@ -44,6 +44,7 @@ SCRIPTS = [
                             (party_slot_eq, ":party_no", slot_party_type, spt_mercenary_lord_party),
                             (party_get_num_companions, ":party_size_after", ":party_no"),
                             (le, ":party_size_after", 0),
+                            (neq, ":party_no", "p_main_party"),
                             (remove_party, ":party_no"),
                         (try_end),
                     (try_end),

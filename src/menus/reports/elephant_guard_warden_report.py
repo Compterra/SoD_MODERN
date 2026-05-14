@@ -20,7 +20,7 @@ MENUS = [
       (store_num_parties_of_template, ":relic_processions", "pt_elephant_guard_relic_procession"),
       (store_num_parties_of_template, ":slaver_transports", "pt_slavers_caravan"),
       (store_relation, ":standing", "fac_player_supporters_faction", "fac_sod_merc_guild3"),
-      (str_store_string, s3, "@no formal standing"),
+      (str_store_string, s3, "@unproven road friend"),
       (try_begin),
         (ge, ":standing", 20),
         (str_store_string, s3, "@trusted"),

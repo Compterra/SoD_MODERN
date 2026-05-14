@@ -56,8 +56,18 @@ SCRIPTS = [
 	  (try_begin),
 		(faction_get_slot, ":guild", ":fac", slot_faction_merc_pact),
 		(gt, ":guild", 0),
+        (call_script, "script_sod_merc_market_calculate_guild_supply", ":guild"),
+        (assign, ":available_companies", reg0),
+        (assign, ":refusal_reason", reg6),
+        (gt, ":available_companies", 0),
+        (eq, ":refusal_reason", sod_merc_refusal_none),
 		(faction_get_slot, ":guild_party_template", ":guild", slot_faction_reinforcements_a),
         (party_add_template, ":party_no", ":guild_party_template"),
 	  (try_end),
+
+      (try_begin),
+        (eq, ":party_type", spt_kingdom_hero_party),
+        (call_script, "script_sod_lord_try_reinforce_from_mercenary_guild_hall", ":party_no"),
+      (try_end),
   ]),
 ]

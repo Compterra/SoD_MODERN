@@ -83,6 +83,7 @@ MENUS = [
            (val_add, "$g_siege_battle_state", 1),
            (assign, "$g_next_menu", "mnu_castle_besiege_inner_battle"),
            (jump_to_menu, "mnu_battle_debrief"),
+           (call_script, "script_sod_battle_commander_apply_before_mission"),
            (change_screen_mission),
        ]),
     ]

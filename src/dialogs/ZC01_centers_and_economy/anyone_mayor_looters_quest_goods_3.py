@@ -1,7 +1,7 @@
 DIALOGS = [
 [anyone, "mayor_looters_quest_goods_3", [
   ],
-   "Anything else you need?",
+   "You have done the town a real service. What else shall we settle?",
    "mayor_looters_quest_response", [
       ]],
 ]

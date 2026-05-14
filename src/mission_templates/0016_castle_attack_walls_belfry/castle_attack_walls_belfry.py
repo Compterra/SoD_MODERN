@@ -22,6 +22,7 @@ MISSION_TEMPLATES = [
       common_battle_mission_start,
       common_battle_tab_press, 
 	  common_battle_horse_health, 
+      sod_battle_commander_spawn_player_ally_dismounted,
       common_siege_question_answered,
       common_siege_init,
       common_music_situation_update,

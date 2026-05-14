@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "lady_talk", [], "I want to improve my relation with a lord. Can you help me?", "lady_restore_relation", []],
+[anyone|plyr, "lady_talk", [], "A lord's door is closed to me. Can your word open it without making a spectacle?", "lady_restore_relation", []],
 ]

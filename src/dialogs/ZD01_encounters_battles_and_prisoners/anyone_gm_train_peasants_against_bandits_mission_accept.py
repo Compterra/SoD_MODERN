@@ -1,7 +1,6 @@
 DIALOGS = [
-[anyone, "gm_train_peasants_against_bandits_mission_accept", [], "You will? Oh, splendid!\
- We would be deeply indebted to you, {playername}.\
- I'll instruct my fighters to assemble here and receive your training.", "close_window",
+[anyone, "gm_train_peasants_against_bandits_mission_accept", [], "Then we will make the drill yard earn its dust.\
+ My fighters will assemble, and every lazy habit they brought with them can die there.", "close_window",
    [
   (finish_mission),
      (assign, "$g_leave_encounter", 1),

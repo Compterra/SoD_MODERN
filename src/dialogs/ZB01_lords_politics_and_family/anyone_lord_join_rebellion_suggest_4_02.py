@@ -1,7 +1,7 @@
 DIALOGS = [
 [anyone, "lord_join_rebellion_suggest_4", [
 
-      ], "Very well. {s51}{s52}{s53}{s54}{s55}", "lord_join_rebellion_suggest_5",
+      ], "Then let us weigh treason like grown nobles. {s51}{s52}{s53}{s54}{s55}", "lord_join_rebellion_suggest_5",
    [
 
         (try_for_range, ":clear", 51, 60),

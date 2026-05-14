@@ -14,7 +14,7 @@ MENUS = [
       (store_num_parties_of_template, ":raiding_bands", "pt_boar_clan_fighters"),
       (store_num_parties_of_template, ":desert_bands", "pt_boar_clan_fighters_desert"),
       (store_relation, ":standing", "fac_player_supporters_faction", "fac_sod_merc_guild7"),
-      (str_store_string, s3, "@no formal standing"),
+  (str_store_string, s3, "@indifferent"),
       (try_begin),
         (ge, ":standing", 20),
         (str_store_string, s3, "@trusted"),

@@ -27,6 +27,7 @@ DIALOGS = [
     (quest_set_slot, "qst_companion_firentis_debt_restitution", slot_quest_sod_runtime_metadata, 3),
     (display_message, "@The elder names a public test for Firentis' restitution. Stand with the village before settling the debt.", 0x99CCFF),
     (jump_to_menu, "mnu_firentis_restitution_hearing"),
+    (finish_mission),
   ]],
 
 [anyone|plyr, "village_elder_companion_firentis_restitution_choice", [],
@@ -42,6 +43,7 @@ DIALOGS = [
     (quest_set_slot, "qst_companion_firentis_debt_restitution", slot_quest_sod_runtime_metadata, 2),
     (display_message, "@The elder asks Firentis to answer in public before restitution becomes another private comfort.", 0xCCCC66),
     (jump_to_menu, "mnu_firentis_restitution_hearing"),
+    (finish_mission),
   ]],
 
 [anyone|plyr, "village_elder_companion_firentis_restitution_choice", [],

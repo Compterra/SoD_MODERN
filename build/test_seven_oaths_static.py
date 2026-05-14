@@ -417,8 +417,9 @@ def test_act_i_menus_are_registered_and_dialogue_first() -> None:
     assert_contains(board, "final pressure until the oaths and returns are settled")
     assert_contains(board, "Days before emergency return")
     assert_contains(board, "Travel targets")
-    assert_contains(board, "Road tallies")
-    assert_contains(board, "Marks: 1 lead open, 2 road begun, 3 won, 4 refused, 5 present but bitter, 6 lost, 7 abandoned")
+    assert_contains(board, "Reeve Martin keeps the marks plain")
+    assert_contains(board, "A fresh mark means a lead")
+    assert_contains(board, "A crossed mark means the answer is settled")
     assert_contains(board, "still need their Ashwick return")
     assert_contains(board, "slot_quest_seven_ash_days_remaining")
 
@@ -1381,7 +1382,7 @@ def test_aftermath_archives_memorials_and_compact_ending_flags() -> None:
         "drill",
         "breach",
         "water",
-        "compact ending flags",
+        "Ashwick's last record names the endings left behind",
     ):
         assert_contains(script, token)
     for token in (

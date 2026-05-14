@@ -25,6 +25,14 @@ def test_rebel_counterpart_factions_exist() -> None:
     assert "##  (\"kingdom_1_rebels\"" not in factions
 
 
+def test_rebel_factions_are_hostile_to_parents_and_friendly_to_peasants() -> None:
+    factions = read("compile/module_factions.py")
+    for kingdom_no in range(1, 6):
+        assert_contains(factions, f'("kingdom_{kingdom_no}_rebels"')
+        assert_contains(factions, f'("kingdom_{kingdom_no}", -1.0)')
+    assert factions.count('("peasant_rebels", 0.35)') >= 5
+
+
 def test_claimant_constants_exist() -> None:
     constants = read("src/constants/module_constants.py")
     for token in (

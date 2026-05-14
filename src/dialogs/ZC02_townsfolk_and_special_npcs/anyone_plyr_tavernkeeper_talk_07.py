@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "tavernkeeper_talk", [], "I guess I should leave now.", "close_window", []],
+[anyone|plyr, "tavernkeeper_talk", [], "Keep the room warm. I am going back to the road.", "close_window", []],
 ]

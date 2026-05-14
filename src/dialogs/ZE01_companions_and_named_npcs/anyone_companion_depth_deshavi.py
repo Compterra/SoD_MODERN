@@ -138,7 +138,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc7", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Poor folk vanish when leaders decide tracks are too small to follow. I am watching whether your camp learns that habit. My trust is {s2}.",
   "member_talk",
@@ -150,7 +150,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "They lived because you looked down before looking ahead. Tracks are small things until someone follows them in time. My trust is {s2}.",
   "member_talk",
@@ -160,7 +160,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Dead hunters cannot chase anyone. That is true. It is also not the same as saving the people they were hunting. My trust is {s2}.",
   "member_talk",
@@ -170,7 +170,7 @@ DIALOGS = [
   [
     (eq, "$g_sod_deshavi_trail_warning_pending", 1),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "There is a trail outside camp that will be smoke by morning if we leave it alone. I can read it. You decide whether it matters. My trust is {s2}.",
   "member_talk",
@@ -180,7 +180,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Tracks Through Ash is not about finding enemies. Anyone can find enemies once they are burning fields. It is about finding people before they disappear. My trust is {s2}.",
   "member_talk",
@@ -190,7 +190,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Ash, rope marks, hunger tracks, old boot cuts. They all tell the same story when nobody important listens. I will see what you do when I bring you that story. My trust is {s2}.",
   "member_talk",
@@ -200,7 +200,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc7", slot_troop_companion_approval, 70),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You have started looking where frightened people leave signs. That is rarer than courage. Courage is loud. Looking down takes practice. My trust is {s2}.",
   "member_talk",
@@ -215,7 +215,7 @@ DIALOGS = [
 [anyone, "companion_depth_deshavi",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Smoke carries farther than noble promises. Tracks tell me who ran, who chased, and who never had a horse. I am still watching your camp. My trust is {s2}.",
   "member_talk",

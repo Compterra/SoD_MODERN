@@ -16,6 +16,9 @@ Unique quest NPCs should feel like people caught in specific pressures, not gene
 - [x] Replace the battle no-room fallback with a proper `pt_kidnapped_girl` quest party instead of companion-party spawning.
 - [x] Harden Diego's secret quest opening so it cannot restart after active, succeeded, or failed chain states.
 - [x] Close Diego's refusal path cleanly by failing/ending the return-to-Diego stage.
+- [x] Add a separate `trp_diego_companion` troop copied from `trp_slave_hero` for the post-rescue party reward.
+- [x] Recruit `trp_diego_companion` into the player party only when Diego survives the prison break.
+- [x] Keep Diego's companion version outside the tavern companion rotation.
 
 ## NPC Archetype Standard
 For each unique quest NPC:
@@ -34,6 +37,7 @@ For each unique quest NPC:
 - [ ] Runaway serfs: connect to center health, overtaxing, famine, and lord reputation.
 - [ ] Runaway slaves: connect to Slaver heat, Jotnar/Elephant Guard sanctuary, and companion approval.
 - [x] Diego: harden secret-quest progression against duplicate reward/release loops.
+- [x] Diego: add a unique non-tavern companion reward after successful rescue.
 - [ ] Wine recipient: add smuggling suspicion, route risk, and Slaver market consequences.
 - [ ] Quest ransom broker/reward NPCs: verify unique spawn/reward idempotence.
 
@@ -45,6 +49,7 @@ For each unique quest NPC:
 - [x] Diego, wine recipient, and kidnapped girl retain their quest surfaces.
 - [x] Kidnapped girl no-room fallbacks preserve quest state, target party, and map icon identity.
 - [x] Diego secret quest start/accept/refusal branches have idempotent quest-state guards.
+- [x] Diego companion reward exists, is added only once, and is not referenced by tavern candidate rotation.
 - [ ] Static check for duplicate unique reward NPC creation.
 - [ ] Static check for unique quest NPCs using invalid center or party globals.
 - [ ] Static check for camp/menu fallback branches that should become direct dialogue.

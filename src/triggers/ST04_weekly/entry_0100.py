@@ -59,9 +59,22 @@ SIMPLE_TRIGGERS = [
           (eq, "$g_sod_hide_messages", 0),
           (is_between, "$g_sod_faith", sod_faiths_begin, sod_faiths_end),
           (str_store_party_name_link, s1, ":center_no"),
-          (store_add, reg0, "str_sod_faith_lacking_0", "$g_sod_faith"),
-          (str_store_string, s1, reg0),
-          (display_message, s1, black), #faith_color
+          (try_begin),
+            (eq, "$g_sod_faith", cb_the_one),
+            (display_message, "@{s1}'s faith is lacking for want of a church, monastery, or catheral.", black), #faith_color
+          (else_try),
+            (eq, "$g_sod_faith", cb_old_gods),
+            (display_message, "@{s1}'s faith is lacking for want of a shrine, temple, or grand temple.", black), #faith_color
+          (else_try),
+            (eq, "$g_sod_faith", cb_the_void),
+            (display_message, "@{s1}'s fear is lacking for want of a altar, unholy temple, or temple of pain.", black), #faith_color
+          (else_try),
+            (eq, "$g_sod_faith", cb_enlightenment),
+            (display_message, "@{s1}'s focus is wavering for want of a retreat, meditation grounds, or zen monastery.", black), #faith_color
+          (else_try),
+            (eq, "$g_sod_faith", cb_atheism),
+            (display_message, "@{s1}'s education is lacking for want of a lykeion, schoolhouse, or library.", black), #faith_color
+          (try_end),
         (try_end),
       (try_end),
 

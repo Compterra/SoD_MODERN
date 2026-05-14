@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone|plyr, "merchant_quest_brief_deliver_wine", [], "I am afraid I can't carry all that cargo now.", "merchant_quest_stall", []],
+[anyone|plyr, "merchant_quest_brief_deliver_wine", [], "No. My pack train is too full to carry wine safely, and spoiled cargo helps no one.", "merchant_quest_stall", []],
 ]

@@ -86,6 +86,7 @@ other/continue_17.py
 0000_hardcoded_mb1011/camp_cheat.py
 0000_hardcoded_mb1011/camp_no_prisoners.py
 centers/castle/castle_castle.py
+centers/castle/castle_mercenary_guild_hall.py
 centers/castle/castle_patrol_orders.py
 centers/castle/castle_taken_claim.py
 centers/castle/siege_defender_join_battle.py
@@ -178,6 +179,8 @@ events/choice_39_1.py
 events/choice_event_holy_1.py
 events/choice_investment_report.py
 duels/choose_opponent.py
+duels/black_khergit_khan_duel_prepare.py
+duels/duel_menu.py
 other/close.py
 other/continue_18.py
 other/continue_19.py
@@ -328,6 +331,7 @@ start_game/seven_ash_outer_fields.py
 start_game/peasant_start_practice.py
 start_game/start_collecting.py
 centers/town/sod_merc_guild.py
+centers/town/sod_bank.py
 centers/town/trade_with_arms_merchant.py
 
 # Modern reports, companion/camp systems, and training helpers live after old center entry menus.
@@ -336,6 +340,7 @@ camp/companion_company_report.py
 camp/companion_campfire.py
 camp/companion_depth_report.py
 camp/companion_retinue_report.py
+camp/camp_jobs.py
 camp/borcha_road_keeps_own.py
 camp/marnid_honest_price.py
 camp/ymira_mercy_under_arms.py
@@ -392,3 +397,4 @@ camp/camp_trainer.py
 reports/trade_network_report.py
 reports/runtime_sanity_report.py
 camp/sod_upgrade_camp.py
+other/sod_battle_commander_select.py

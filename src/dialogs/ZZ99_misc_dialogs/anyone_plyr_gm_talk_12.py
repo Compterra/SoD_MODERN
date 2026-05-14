@@ -4,5 +4,6 @@ DIALOGS = [
    (eq,"$g_talk_troop", jotnar_clan_guild_master),
    ], "I am ready join this competition.", "close_window", [
    (jump_to_menu, "mnu_jotnar_clan_competition"),
+   (finish_mission),
    ],],
 ]

@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "castle_guard_intro_1", [],
-   "I want to enter the hall and speak to the lord.", "castle_guard_intro_2", []],
+   "Open the hall. I have business for your lord's ears.", "castle_guard_intro_2", []],
 ]

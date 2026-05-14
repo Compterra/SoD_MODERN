@@ -103,9 +103,14 @@ MENUS = [
       (assign, "$new_encounter", 0),
     ],
     [
+      build_sod_battle_commander_change_option(
+        "change_commander_siege_defender",
+        "mnu_siege_started_defender",
+      ),
+
       ("siege_defender_join_battle",
        [
-         (neg|troop_is_wounded, "trp_player"),
+         (call_script, "script_cf_sod_battle_commander_can_start"),
          ],
           "Join the battle.", [
               (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
@@ -131,6 +136,7 @@ MENUS = [
               (jump_to_scene, ":battle_scene"),
               (assign, "$g_next_menu", "mnu_siege_started_defender"),
               (jump_to_menu, "mnu_battle_debrief"),
+              (call_script, "script_sod_battle_commander_apply_before_mission"),
               (change_screen_mission)]),
       ("siege_defender_troops_join_battle", [(call_script, "script_party_count_members_with_full_health", "p_main_party"),
                                             (this_or_next|troop_is_wounded, "trp_player"),
@@ -141,6 +147,7 @@ MENUS = [
               (assign, "$g_enemy_party", "$g_encountered_party_2"),
               (assign, "$g_ally_party", "$g_encountered_party"),
               (assign, "$g_siege_join", 1),
+              (call_script, "script_sod_battle_commander_reset"),
               (jump_to_menu, "mnu_siege_join_defense")]),
     ]
   ),

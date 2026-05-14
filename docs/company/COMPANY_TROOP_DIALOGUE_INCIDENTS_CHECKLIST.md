@@ -186,7 +186,7 @@ This is a dialogue-forward layer on top of `docs/COMPANY_ACCOUNTS_AND_MORALE_DES
 ## Menu And Dialogue Surfaces
 
 - [x] Add `mnu_company_spokesperson_incident`.
-- [x] Add option from `mnu_company_accounts`: “Hear the company’s spokesman.”
+- [x] Remove voluntary company-accounts petition access; serious complaints interrupt through map conversation instead.
 - [x] Add option from petition/desertion/mutiny menus to use current spokesperson handling when appropriate.
 - [x] Add response options based on incident type.
 - [x] Add mediator option when a suitable companion exists.

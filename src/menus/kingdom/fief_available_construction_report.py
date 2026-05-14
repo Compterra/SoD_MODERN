@@ -4,20 +4,28 @@ MENUS = [
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
+      (try_begin),
+        (le, "$g_sod_construction_report_return_menu", 0),
+        (assign, "$g_sod_construction_report_return_menu", "mnu_fief_reports"),
+      (try_end),
 
-      (call_script, "script_get_number_of_hero_centers", "trp_player"),
-      (assign, ":no_centers", reg0),
+      (str_clear, s1),
+      (str_clear, s2),
+      (str_clear, s3),
+      (str_clear, s4),
 
+      (assign, ":no_centers", 0),
       (assign, ":complete", 0),
       (assign, ":num_in_report", 0),
       (assign, ":best_progress", -1),
       (assign, ":best_center", -1),
       (assign, ":best_weeks", 0),
-      (try_for_range, ":i_center", 0, ":no_centers"),
-
-        # get the center ID
-        (call_script, "script_troop_get_leaded_center_with_index", "trp_player", ":i_center"),
-        (assign, ":cur_center", reg0),
+      (try_for_range, ":cur_center", centers_begin, centers_end),
+        (party_is_active, ":cur_center"),
+        (store_faction_of_party, ":cur_faction", ":cur_center"),
+        (this_or_next|party_slot_eq, ":cur_center", slot_town_lord, "trp_player"),
+        (faction_slot_eq, ":cur_faction", slot_faction_leader, "trp_player"),
+        (val_add, ":no_centers", 1),
         (call_script, "script_sod_ensure_center_construction_state", ":cur_center"),
 
         # determin if this center has more construction to do
@@ -68,13 +76,17 @@ MENUS = [
             # generate text for this location
             (str_store_party_name, s1, ":cur_center"),
             (assign, reg0, ":remaining"),
-            (store_sub, reg1, ":remaining", 1),
-            (str_store_string, s1, "@{s1} has {reg1?{reg0} more projects:one more project} available."),
+            (try_begin),
+              (gt, ":remaining", 1),
+              (str_store_string, s1, "@{s1} has {reg0} more projects available."),
+            (else_try),
+              (str_store_string, s1, "@{s1} has one more project available."),
+            (try_end),
 
             # concatenate together
             (try_begin),
               (eq, ":num_in_report", 1),
-              (str_store_string, s2, s1),
+              (str_store_string_reg, s2, s1),
             (else_try),
               (str_store_string, s2, "@{s2}^{s1}"),
             (try_end),
@@ -84,6 +96,9 @@ MENUS = [
 
       # generate the summary
       (try_begin),
+        (eq, ":no_centers", 0),
+        (str_store_string, s2, "@You do not currently control any manageable fiefs for construction."),
+      (else_try),
         (eq, ":complete", ":no_centers"),
         (str_store_string, s2, "@All of your fiefs are completely built up!  There is absolutely nothing left to build."),
       (else_try),
@@ -128,7 +143,7 @@ MENUS = [
       (try_end),
     ],
     [
-      ("continue", [], "Continue...", [(jump_to_menu, "mnu_fief_reports")]),
+      ("continue", [], "Continue...", [(jump_to_menu, "$g_sod_construction_report_return_menu")]),
     ]
   ),
 ]

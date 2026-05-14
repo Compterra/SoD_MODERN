@@ -340,6 +340,9 @@ slot_agent_target_entry_point     = 11
 slot_agent_duel_faith_rank        = 20
 slot_agent_duel_speed_limit       = 21
 slot_agent_duel_pressure          = 22
+slot_agent_courage_score          = 23
+slot_agent_is_hard_routed         = 24
+slot_agent_sod_post_defeat_focus_index = 25
 
 ########################################################
 ##  FACTION SLOTS          #############################
@@ -915,6 +918,7 @@ slot_center_has_militia_yard = 155        #village
 slot_center_has_beacon_hill = 156         #village
 slot_center_has_granary = 157             #village
 slot_center_has_militia_armory = 158      #village
+slot_center_has_mercenary_guild_hall = 159 #castle
 #SoD BUILDINGS END
 
 village_improvements_begin = slot_center_has_manor
@@ -967,6 +971,11 @@ slot_center_sod_prisoner_holding_policy = 416
 slot_center_sod_patrol_road_preference = 417
 slot_center_sod_patrol_recent_destroyed_day = 418
 slot_center_sod_patrol_campaign_screen_request = 419
+slot_center_sod_merc_hall_troop_type = 433
+slot_center_sod_merc_hall_troop_amount = 434
+slot_center_sod_merc_hall_guild = 435
+slot_center_sod_merc_hall_last_refresh_day = 436
+slot_center_sod_merc_hall_stock_quality = 437
 
 slot_faction_sod_dominant_faith = 389
 slot_faction_sod_player_faith_coverage = 390
@@ -1044,6 +1053,9 @@ slot_faction_sod_merc_village_patrol_budget = 458
 slot_faction_sod_merc_village_patrol_target = 459
 slot_faction_sod_merc_village_patrol_urgency = 460
 slot_faction_sod_merc_world_activity_pressure = 461
+slot_faction_sod_merc_population_shortage = 470
+slot_faction_sod_merc_lord_wealth_score = 471
+slot_faction_sod_merc_gold_manpower_pressure = 472
 #SoD Population
 slot_center_sod_local_population = 246
 slot_center_sod_local_health = 247
@@ -1251,6 +1263,12 @@ slot_party_sod_merc_contract_market_id = 462
 slot_party_sod_merc_contract_start_day = 463
 slot_party_sod_merc_contract_initial_size = 464
 slot_party_sod_merc_contract_loss_score = 465
+slot_party_black_khergit_response_until = 466
+slot_party_black_khergit_response_target = 467
+slot_party_sod_trade_captain_seed = 468
+slot_party_sod_trade_house_style = 469
+slot_party_sod_trade_player_trust = 470
+slot_party_sod_trade_route_reputation = 471
 
 slot_center_sod_looter_raid_cooldown_until = 420
 slot_center_sod_looter_raid_pressure = 421
@@ -1718,6 +1736,11 @@ slot_troop_companion_last_reaction_day = 137
 slot_troop_companion_warning_state = 138
 slot_troop_companion_loyalty_lock = 139
 slot_troop_companion_core_value_proof = 146
+slot_troop_sod_camp_job = 148
+slot_troop_sod_camp_job_pressure = 149
+slot_troop_sod_camp_job_pressure_max = 150
+slot_troop_sod_camp_job_last_tick_hour = 151
+slot_troop_sod_camp_job_last_result = 152
 
 # Companion retinues: center-style internal troop containers commanded by companions.
 slot_troop_sod_retinue_party = 318
@@ -2362,6 +2385,16 @@ slot_troop_sod_claimant_commitment = 378
 slot_troop_sod_claimant_last_offer_day = 379
 slot_troop_sod_claimant_old_ruler_status = 380
 slot_troop_sod_claimant_old_ruler_defeated_day = 381
+slot_troop_duel_won = 382
+slot_troop_duel_lost = 383
+slot_troop_duel_started = 384
+slot_troop_duel_daily = 385
+slot_troop_duel_daily_day = 386
+slot_troop_sod_times_took_command = 387
+slot_troop_sod_post_fall_victories = 388
+slot_troop_sod_post_fall_failures = 389
+slot_troop_sod_last_took_command_hours = 390
+duel_daily_limit = 4
 
 sod_house_rank_none = 0
 sod_house_rank_ruler = 1
@@ -2398,6 +2431,59 @@ sod_repair_service_all = 0
 sod_repair_service_weapons = 1
 sod_repair_service_armor = 2
 sod_repair_service_horses = 3
+sod_repair_service_ranged = 4
+sod_repair_service_melee = 5
+sod_repair_service_heavy_armor = 6
+sod_repair_service_light_clothes = 7
+
+sod_camp_job_none = 0
+sod_camp_job_scout_route = 1
+sod_camp_job_forage_hunt = 2
+sod_camp_job_repair_gear = 3
+sod_camp_job_ration_stores = 4
+sod_camp_job_tend_mounts = 5
+sod_camp_job_end = 6
+
+sod_camp_job_result_none = 0
+sod_camp_job_result_success = 1
+sod_camp_job_result_no_effect = 2
+sod_camp_job_result_cancelled = 3
+
+sod_camp_passive_job_none = 0
+sod_camp_passive_job_scout_route = 1
+sod_camp_passive_job_count_stores = 2
+sod_camp_passive_job_hold_rites = 3
+sod_camp_passive_job_enforce_order = 4
+sod_camp_passive_job_tend_mounts = 5
+sod_camp_passive_job_patrol_pickets = 6
+sod_camp_passive_job_hunt_game = 7
+sod_camp_passive_job_repair_heavy_armor = 8
+sod_camp_passive_job_restore_discipline = 9
+sod_camp_passive_job_repair_ranged = 10
+sod_camp_passive_job_mend_clothes = 11
+sod_camp_passive_job_treat_wounded = 12
+sod_camp_passive_job_probe_openings = 13
+sod_camp_passive_job_repair_melee = 14
+sod_camp_passive_job_prepare_siege = 15
+sod_camp_passive_job_study_gates = 16
+sod_camp_passive_job_end = 17
+
+sod_camp_pressure_scout_route = 40
+sod_camp_pressure_count_stores = 80
+sod_camp_pressure_hold_rites = 200
+sod_camp_pressure_enforce_order = 100
+sod_camp_pressure_tend_mounts = 140
+sod_camp_pressure_patrol_pickets = 60
+sod_camp_pressure_hunt_game = 50
+sod_camp_pressure_repair_heavy_armor = 180
+sod_camp_pressure_restore_discipline = 120
+sod_camp_pressure_repair_ranged = 110
+sod_camp_pressure_mend_clothes = 70
+sod_camp_pressure_treat_wounded = 90
+sod_camp_pressure_probe_openings = 100
+sod_camp_pressure_repair_melee = 120
+sod_camp_pressure_prepare_siege = 220
+sod_camp_pressure_study_gates = 160
 
 sod_lord_morale_broken_max = 19
 sod_lord_morale_shaken_max = 39
@@ -3493,7 +3579,10 @@ heroes_begin = kingdom_heroes_begin
 heroes_end = kingdom_ladies_end
 
 companions_begin = "trp_npc1"
-companions_end = "trp_kingdom_heroes_including_player_begin"
+companions_end = "trp_diego_companion"
+
+special_companions_begin = "trp_diego_companion"
+special_companions_end = "trp_kingdom_heroes_including_player_begin"
 
 active_npcs_begin = companions_begin
 
@@ -3788,13 +3877,15 @@ elephant_guard_tier_1_unit_1  = "trp_elephant_guard_tribesman"
 jotnar_clan_tier_1_unit_1     = "trp_jotnar_clan_volva" 
 serpent_host_tier_1_unit_1    = "trp_serpent_host_akinci"
 slavers_tier_1_unit_1         = "trp_henchman"
+boar_clan_tier_1_unit_1       = "trp_boar_clan_clansman"
 
 black_army_tier_1_unit_2      = "trp_black_army_line_supporter" 
 conquistadors_tier_1_unit_2   = "trp_conquistador_crossbowman"
-elephant_guard_tier_1_unit_2  = "trp_elephant_guard_tribesman"
+elephant_guard_tier_1_unit_2  = "trp_elephant_guard_spearman"
 jotnar_clan_tier_1_unit_2     = "trp_jotnar_clan_armsman" 
 serpent_host_tier_1_unit_2    = "trp_serpent_host_kapikulu"
 slavers_tier_1_unit_2         = "trp_slave"
+boar_clan_tier_1_unit_2       = "trp_boar_clan_rider"
 
 black_army_tier_1_unit_3      = "trp_black_army_line_crusher" 
 
@@ -3804,6 +3895,7 @@ elephant_guard_noble  = "trp_elephant_guard_battle_shaman"
 jotnar_clan_noble     = "trp_jotnar_clan_norn_mistress" 
 serpent_host_noble    = "trp_serpent_host_basilisk_knight"
 slavers_noble         = "trp_tormenter"
+boar_clan_noble       = "trp_boar_clan_tusk_rider"
 
 slavers_mercs_noble = "p_sod_merc_6_elite"
 slavers_sod_mercs   = "p_sod_merc_6"
@@ -3893,6 +3985,9 @@ sod_trade_result_delayed = 2
 sod_trade_result_protected = 3
 sod_trade_result_dangerous = 4
 sod_trade_result_shortage_supplied = 5
+sod_trade_result_taxed = 6
+sod_trade_result_raided = 7
+sod_trade_result_exploited = 8
 
 hero_death_after_defeat_chance = 2
 king_death_after_defeat_chance = 1
@@ -3927,7 +4022,7 @@ slot_center_has_canalization, slot_center_has_manufacture, slot_center_has_bank]
 
 castle_buildings = [slot_center_has_chapel, slot_center_has_barracks, slot_center_has_range,
 slot_center_has_stables, slot_center_has_chapter, slot_center_has_blacksmith, slot_center_has_messenger_post,
-slot_center_has_prisoner_tower]
+slot_center_has_prisoner_tower, slot_center_has_mercenary_guild_hall]
 
 buildings_initialization = []
 

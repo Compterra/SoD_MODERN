@@ -2,6 +2,11 @@ SCRIPTS = [
 ("update_troop_location_notes",
       [(store_script_param, ":troop_no", 1),
         (store_script_param, ":see_or_hear", 2),
+        (try_begin),
+          (eq, ":troop_no", "trp_slave_hero"),
+          (str_clear, s49),
+          (add_troop_note_from_sreg, ":troop_no", 2, s49, 0),
+        (else_try),
         (str_clear, s49),
         (add_troop_note_from_sreg, ":troop_no", 2, s49, 0),
         (call_script, "script_get_information_about_troops_position", ":troop_no", 1),
@@ -23,6 +28,7 @@ SCRIPTS = [
 
             (add_troop_note_from_sreg, ":troop_no", 2, s49, 1),
           (try_end),
+        (try_end),
         (try_end),
     ]),
 ]

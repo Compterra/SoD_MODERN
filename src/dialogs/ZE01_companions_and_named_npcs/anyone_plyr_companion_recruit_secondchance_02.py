@@ -1,5 +1,5 @@
 DIALOGS = [
 [anyone|plyr, "companion_recruit_secondchance", [
-      ],  "Never mind.", "close_window", [
+      ],  "Not today. The road is not ready for both of us yet.", "close_window", [
           ]],
 ]

@@ -1,5 +1,12 @@
 DIALOGS = [
-[anyone, "tavernkeeper_buy_peasants", [], "I know a few fellows who would follow you if you paid for their equipment.", "tavernkeeper_buy_peasants_2", [
+[anyone, "tavernkeeper_buy_peasants",
+ [
+    (gt, "$tavernkeeper_party", 0),
+    (store_party_size, ":available", "$tavernkeeper_party"),
+    (gt, ":available", 0),
+    (assign, reg21, ":available"),
+ ],
+ "A few locals are waiting by the yard. They are not guild men, but {reg21} of them will follow steady coin.", "tavernkeeper_buy_peasants_2", [
     (set_mercenary_source_party, "$tavernkeeper_party"),
     (store_troop_gold, ":before", "trp_player"),
     (change_screen_buy_mercenaries),

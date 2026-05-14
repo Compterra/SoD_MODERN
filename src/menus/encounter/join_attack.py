@@ -102,8 +102,13 @@ MENUS = [
       ],
       [
 
+        build_sod_battle_commander_change_option(
+          "change_commander_join_battle",
+          "mnu_join_battle",
+        ),
+
         ("join_attack", [
-          (neg|troop_is_wounded, "trp_player"),
+          (call_script, "script_cf_sod_battle_commander_can_start"),
         ],
         "Charge the enemy.", [
           (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
@@ -116,6 +121,7 @@ MENUS = [
           (call_script, "script_setup_random_scene"),
           (assign, "$g_next_menu", "mnu_join_battle"),
           (jump_to_menu, "mnu_battle_debrief"),
+          (call_script, "script_sod_battle_commander_apply_before_mission"),
           (change_screen_mission),
         ]),
 
@@ -125,6 +131,8 @@ MENUS = [
         ],
         "Order your troops to attack with your allies while you stay back.", [
           (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
+          (assign, "$g_sod_joined_ongoing_ai_battle", 0),
+          (call_script, "script_sod_battle_commander_reset"),
           (jump_to_menu, "mnu_join_order_attack"),
         ]),
 
@@ -141,6 +149,7 @@ MENUS = [
            (call_script, "script_add_log_entry", logent_player_retreated_from_lord, "trp_player", -1, ":enemy_leader", -1),
            (display_message, "@Player retreats from battle", debug_color),
         (try_end),
+        (assign, "$g_sod_joined_ongoing_ai_battle", 0),
         (leave_encounter),
         (change_screen_return)
       ]),

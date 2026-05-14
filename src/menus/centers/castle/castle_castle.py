@@ -75,6 +75,7 @@ MENUS = [
       (party_get_slot, ":center_lord", "$current_town", slot_town_lord),
       (store_faction_of_party, ":center_faction", "$current_town"),
       (str_store_faction_name, s9, ":center_faction"),
+      (str_clear, s7),
 #SOD begin
       (try_begin),
         #MORDACHAI - castles don't have a real civlian population - so we don't track health or faith there
@@ -90,7 +91,7 @@ MENUS = [
       (try_end),
 #SOD end
       (try_begin),
-        (ge, ":center_lord", 0),
+        (is_between, ":center_lord", 0, "trp_last_troop"),
         (call_script, "script_store_troop_name", s8, ":center_lord"),
         (str_store_string, s7, "@{s8} of {s9}"), #MORDACHAI - better without the .
       (try_end),
@@ -109,7 +110,7 @@ MENUS = [
           (eq, ":center_lord", "trp_player"),
           (str_store_string, s11, "@Your own banner flies over the castle gate. "),
         (else_try),
-          (ge, ":center_lord", 0),
+          (is_between, ":center_lord", 0, "trp_last_troop"),
           (str_store_string, s11, "@You see the banner of {s7} over the castle gate. "),
         (else_try),
           (str_store_string, s11, "@This castle seems to belong to no one. "),
@@ -120,7 +121,7 @@ MENUS = [
           (eq, ":center_lord", "trp_player"),
           (str_store_string, s11, "@Your own banner flies over the town gates. "),
         (else_try),
-          (ge, ":center_lord", 0),
+          (is_between, ":center_lord", 0, "trp_last_troop"),
           (str_store_string, s11, "@You see the banner of {s7} over the town gates. "),
         (else_try),
           (str_store_string, s11, "@The townsfolk here have declared their independence. "),
@@ -646,6 +647,18 @@ MENUS = [
           (jump_to_menu, "mnu_castle_patrol_orders"),
         ]
       ),
+
+      ("castle_mercenary_guild_hall",
+        [
+          (party_slot_eq, "$current_town", slot_party_type, spt_castle),
+          (eq, "$entry_to_town_forbidden", 0),
+          (party_slot_eq, "$current_town", slot_center_has_mercenary_guild_hall, 1),
+        ],
+        "Visit the mercenary guild hall.",
+        [
+          (jump_to_menu, "mnu_castle_mercenary_guild_hall"),
+        ]
+      ),
 	  
 	  ("upgrade", [
          (party_slot_eq, "$current_town", slot_party_type, spt_castle),
@@ -668,6 +681,18 @@ MENUS = [
           (else_try),
             (jump_to_menu, "mnu_town_trade"),
           (try_end),
+        ]
+      ),
+
+      ("go_to_bank",
+        [
+          (party_slot_eq, "$current_town", slot_party_type, spt_town),
+          (eq, "$entry_to_town_forbidden", 0),
+          (call_script, "script_cf_sod_center_has_bank_service", "$current_town"),
+        ],
+        "Visit the bank.",
+        [
+          (jump_to_menu, "mnu_sod_bank"),
         ]
       ),
 	  
@@ -709,7 +734,7 @@ MENUS = [
               (assign, reg0, 0),
             (try_end),
             (party_get_slot, reg1, "$current_town", slot_center_current_improvement),
-            (str_store_string, s1, "@{reg1?Oversee the current:Commision a new} building project at this {reg0?town:castle}."),
+            (str_store_string, s1, "@{reg1?Oversee the current:Commission a new} building project at this {reg0?town:castle}."),
 
             # can't start construction while under siege
             (try_begin),
@@ -722,7 +747,10 @@ MENUS = [
         "{s1}",
         [
           (assign, "$g_next_menu", "mnu_town"),
-          (jump_to_menu, "mnu_center_manage"),
+          (assign, "$g_sod_center_manage_return_menu", "mnu_town"),
+          (assign, "$g_sod_construction_report_return_menu", "mnu_center_manage"),
+          (call_script, "script_sod_prepare_current_center_construction_presentation", "$current_town"),
+          (start_presentation, "prsnt_sod_fief_management"),
         ]
       ),
 
@@ -946,25 +974,48 @@ MENUS = [
     [],
     [
       # M&B 1.011 maps a scene passage's variation number to this menu's option
-      # index. Castle interiors in this module can use the same variation number
-      # as mnu_town's dungeon option. Enter the streets directly; jumping through
-      # mnu_town can preserve passage context and bounce back into the hall.
-      ("castle_passage_return_0", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_1", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_2", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_3", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_4", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_5", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_6", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_7", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_8", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_9", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_10", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_11", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_12", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_13", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_14", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
-      ("castle_passage_return_15", [], "_", [(call_script, "script_enter_town_center_from_passage")]),
+      # index. Keep the passage menu local so returning from castle halls does
+      # not bounce back into the hall, but preserve SoD's visible door labels.
+      ("castle_passage_return_0", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
+      ("castle_passage_return_1", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
+      ("castle_passage_return_2", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
+      ("castle_passage_return_3", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
+      ("castle_passage_return_4", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
+      ("castle_passage_return_5", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
+      ("castle_passage_return_6", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
+      ("castle_passage_dungeon_7", [], "_", [
+          (try_begin),
+            (eq, "$all_doors_locked", 1),
+            (display_message, "str_door_locked", red),
+          (else_try),
+            (this_or_next|party_slot_eq, "$current_town", slot_town_lord, "trp_player"),
+            (eq, "$g_encountered_party_faction", "$players_kingdom"),
+            (assign, "$town_entered", 1),
+            (call_script, "script_enter_dungeon", "$current_town", "mt_visit_town_castle"),
+          (else_try),
+            (display_message, "str_door_locked", red),
+          (try_end),
+        ], "Door to the dungeon."),
+      ("castle_passage_dungeon_8", [], "_", [
+          (try_begin),
+            (eq, "$all_doors_locked", 1),
+            (display_message, "str_door_locked", red),
+          (else_try),
+            (this_or_next|party_slot_eq, "$current_town", slot_town_lord, "trp_player"),
+            (eq, "$g_encountered_party_faction", "$players_kingdom"),
+            (assign, "$town_entered", 1),
+            (call_script, "script_enter_dungeon", "$current_town", "mt_visit_town_castle"),
+          (else_try),
+            (display_message, "str_door_locked", red),
+          (try_end),
+        ], "Door to the dungeon."),
+      ("castle_passage_return_9", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
+      ("castle_passage_return_10", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
+      ("castle_passage_return_11", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
+      ("castle_passage_return_12", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
+      ("castle_passage_return_13", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
+      ("castle_passage_return_14", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
+      ("castle_passage_return_15", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
     ]
   ),
 ]

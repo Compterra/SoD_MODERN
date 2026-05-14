@@ -9,7 +9,7 @@ DIALOGS = [
     (else_try),
       (str_store_string, s1, "@one of your estates"),
     (try_end),
-], "My lord, we carry sealed tax from {s1}. We will press on to your party.", "tax_courier_player_talk", []],
+], "Your banner is a relief, not a problem. We carry sealed tax from {s1}, and every hoofbeat has sounded like a question until now.", "tax_courier_player_talk", []],
 
 [party_tpl|pt_messenger_party, "start", [
     (party_slot_eq, "$g_encountered_party", slot_party_sod_messenger_role, sod_messenger_role_tax_courier),
@@ -23,7 +23,24 @@ DIALOGS = [
     (else_try),
       (str_store_string, s1, "@our lord's estate"),
     (try_end),
-], "Keep your distance. We carry sealed tax from {s1}, and our road is not yours to question.", "tax_courier_hostile_talk", []],
+], "If you want the chest from {s1}, you will have to make your claim louder than our lord's seal. We do not slow for enemies.", "tax_courier_hostile_talk", []],
+
+[party_tpl|pt_messenger_party, "start", [
+    (party_slot_eq, "$g_encountered_party", slot_party_sod_messenger_role, sod_messenger_role_tax_courier),
+    (store_faction_of_party, ":courier_faction", "$g_encountered_party"),
+    (is_between, ":courier_faction", kingdoms_begin, kingdoms_end),
+    (neq, ":courier_faction", "fac_player_supporters_faction"),
+    (store_relation, ":relation", ":courier_faction", "fac_player_supporters_faction"),
+    (ge, ":relation", 0),
+    (ge, "$g_sod_tax_courier_nonhostile_coercions", 2),
+    (party_get_slot, ":origin_center", "$g_encountered_party", slot_party_sod_tax_courier_origin_center),
+    (try_begin),
+      (is_between, ":origin_center", centers_begin, centers_end),
+      (str_store_party_name, s1, ":origin_center"),
+    (else_try),
+      (str_store_string, s1, "@our lord's estate"),
+    (try_end),
+], "I know who you are. Couriers trade stories when lords forget we have mouths. The chest from {s1} is sealed, and my hands are already shaking. Say what you mean to do.", "tax_courier_nonhostile_talk", []],
 
 [party_tpl|pt_messenger_party, "start", [
     (party_slot_eq, "$g_encountered_party", slot_party_sod_messenger_role, sod_messenger_role_tax_courier),
@@ -39,7 +56,7 @@ DIALOGS = [
     (else_try),
       (str_store_string, s1, "@our lord's estate"),
     (try_end),
-], "Good day. We carry sealed tax from {s1} under lawful protection. Let us pass.", "tax_courier_nonhostile_talk", []],
+], "We have a sealed chest, two tired horses, and no appetite for clever men on roads. The tax from {s1} must pass.", "tax_courier_nonhostile_talk", []],
 
 [anyone|plyr, "tax_courier_hostile_talk", [], "Hand over the tax chest and ride away alive.", "tax_courier_surrender_demand", [
     (store_skill_level, ":persuasion", "skl_persuasion", "trp_player"),
@@ -75,6 +92,10 @@ DIALOGS = [
     (party_get_num_companions, ":courier_size", "$g_encountered_party"),
     (val_max, ":courier_size", 1),
     (assign, ":chance", 35),
+    (try_begin),
+      (ge, "$g_sod_tax_courier_nonhostile_coercions", 2),
+      (val_add, ":chance", 12),
+    (try_end),
     (store_mul, ":persuasion_bonus", ":persuasion", 8),
     (val_add, ":chance", ":persuasion_bonus"),
     (store_mul, ":leadership_bonus", ":leadership", 3),
@@ -96,11 +117,11 @@ DIALOGS = [
 
 [anyone, "tax_courier_surrender_demand", [
     (eq, "$g_sod_tax_courier_surrender_success", 1),
-], "Steel buys no loyalty from a dead messenger. Take the chest. We never saw your banners.", "close_window", [
+], "Take it, then. A seal can shame a man, but it cannot stop steel. Remember this: coin travels farther than couriers. So do stories.", "close_window", [
     (call_script, "script_sod_tax_courier_surrender_to_player", "$g_encountered_party"),
 ]],
 
-[anyone, "tax_courier_surrender_demand", [], "No. The chest reaches its lord or we die around it.", "close_window", [
+[anyone, "tax_courier_surrender_demand", [], "No. If I return empty by choice, I am dead anyway. Better to earn it honestly. The chest reaches its lord or we die around it.", "close_window", [
     (encounter_attack),
 ]],
 
@@ -113,10 +134,12 @@ DIALOGS = [
 ]],
 
 [anyone|plyr, "tax_courier_nonhostile_talk", [], "Ride on. Safe roads serve us all.", "close_window", [
+    (call_script, "script_sod_tax_courier_record_social_event", "$g_encountered_party", 3, 0),
     (assign, "$g_leave_encounter", 1),
 ]],
 
 [anyone|plyr, "tax_courier_player_talk", [], "Ride on. Keep the chest close.", "close_window", [
+    (call_script, "script_sod_tax_courier_record_social_event", "$g_encountered_party", 3, 0),
     (assign, "$g_leave_encounter", 1),
 ]],
 ]

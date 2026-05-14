@@ -382,8 +382,15 @@ MENUS = [
          (try_end),
          ]),
 
+      build_sod_battle_commander_change_option(
+        "change_commander_village_attack_bandits",
+        "mnu_village",
+        [(party_slot_ge, "$current_town", slot_village_infested_by_bandits, 1)],
+      ),
+
       ("village_attack_bandits", [
-	  (party_slot_ge, "$current_town", slot_village_infested_by_bandits, 1), ],
+	  (party_slot_ge, "$current_town", slot_village_infested_by_bandits, 1),
+        (call_script, "script_cf_sod_battle_commander_can_start"), ],
        "Attack the bandits.",
        [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
         (party_get_slot, ":scene_to_use", "$current_town", slot_castle_exterior),
@@ -399,14 +406,27 @@ MENUS = [
         (assign, "$g_next_menu", "mnu_village_infest_bandits_result"),
         (jump_to_menu, "mnu_battle_debrief"),
         (assign, "$g_mt_mode", vba_normal),
+        (call_script, "script_sod_battle_commander_apply_before_mission"),
         (change_screen_mission),
         ]),
 		
+		build_sod_battle_commander_change_option(
+        "change_commander_black_army_village",
+        "mnu_village",
+        [
+          (check_quest_active, "qst_black_army_aid_warband"),
+          (neg|check_quest_failed, "qst_black_army_aid_warband"),
+          (neg|check_quest_succeeded, "qst_black_army_aid_warband"),
+          (quest_slot_eq, "qst_black_army_aid_warband", slot_quest_target_center, "$current_town"),
+        ],
+      ),
+
 		("black_army_attack", [
 		(check_quest_active, "qst_black_army_aid_warband"),
 		(neg|check_quest_failed, "qst_black_army_aid_warband"),
 		(neg|check_quest_succeeded, "qst_black_army_aid_warband"),
 		(quest_slot_eq, "qst_black_army_aid_warband", slot_quest_target_center, "$current_town"),
+        (call_script, "script_cf_sod_battle_commander_can_start"),
 		],
        "Attack the enemy forces.",
        [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
@@ -435,14 +455,27 @@ MENUS = [
         (assign, "$g_next_menu", "mnu_village_black_army_result"),
         (jump_to_menu, "mnu_battle_debrief"),
         (assign, "$g_mt_mode", vba_normal),
+        (call_script, "script_sod_battle_commander_apply_before_mission"),
         (change_screen_mission),
         ]),
 		
+		build_sod_battle_commander_change_option(
+        "change_commander_jotnar_clan_village",
+        "mnu_village",
+        [
+          (check_quest_active, "qst_jotnar_clan_revenge"),
+          (neg|check_quest_failed, "qst_jotnar_clan_revenge"),
+          (neg|check_quest_succeeded, "qst_jotnar_clan_revenge"),
+          (quest_slot_eq, "qst_jotnar_clan_revenge", slot_quest_target_center, "$current_town"),
+        ],
+      ),
+
 		("jotnar_clan_attack", [
 		(check_quest_active, "qst_jotnar_clan_revenge"),
 		(neg|check_quest_failed, "qst_jotnar_clan_revenge"),
 		(neg|check_quest_succeeded, "qst_jotnar_clan_revenge"),
 		(quest_slot_eq, "qst_jotnar_clan_revenge", slot_quest_target_center, "$current_town"),
+        (call_script, "script_cf_sod_battle_commander_can_start"),
 		],
        "Attack them.",
        [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
@@ -466,15 +499,29 @@ MENUS = [
         (assign, "$g_next_menu", "mnu_village_revenge_result"),
         (jump_to_menu, "mnu_battle_debrief"),
         (assign, "$g_mt_mode", vba_normal),
+        (call_script, "script_sod_battle_commander_apply_before_mission"),
         (change_screen_mission),
         ]),
 		
+		build_sod_battle_commander_change_option(
+        "change_commander_village_farmers",
+        "mnu_village",
+        [
+          (check_quest_active, "qst_slavers_deal_with_good_guys"),
+          (neg|party_slot_eq, "$current_town", slot_village_state, svs_looted),
+          (neg|party_slot_eq, "$current_town", slot_village_state, svs_being_raided),
+          (neg|party_slot_ge, "$current_town", slot_village_infested_by_bandits, 1),
+          (quest_slot_eq, "qst_slavers_deal_with_good_guys", slot_quest_target_center, "$current_town"),
+        ],
+      ),
+
 		("village_attack_farmers", [
 		(check_quest_active, "qst_slavers_deal_with_good_guys"),
 		(neg|party_slot_eq, "$current_town", slot_village_state, svs_looted),
 		(neg|party_slot_eq, "$current_town", slot_village_state, svs_being_raided),
 		(neg|party_slot_ge, "$current_town", slot_village_infested_by_bandits, 1),
 		(quest_slot_eq, "qst_slavers_deal_with_good_guys", slot_quest_target_center, "$current_town"),
+        (call_script, "script_cf_sod_battle_commander_can_start"),
 		],
        "Attack the band of self-proclaimed heroes.",
        [
@@ -495,6 +542,7 @@ MENUS = [
         (assign, "$g_next_menu", "mnu_good_guys_result"),
         (jump_to_menu, "mnu_battle_debrief"),
         (assign, "$g_mt_mode", vba_normal),
+        (call_script, "script_sod_battle_commander_apply_before_mission"),
         (change_screen_mission),
         ]),
 
@@ -561,19 +609,23 @@ MENUS = [
 
           (try_begin),
             # check if we've finsihed all buidlings here
+            (call_script, "script_sod_ensure_center_construction_state", "$current_town"),
             (call_script, "script_center_has_more_construction_opportunities", "$current_town"),
             (eq, reg0, 0),
             (str_store_string, s1, "@Review the list of completed buildings."),
           (else_try),
             # more left to do
             (party_get_slot, reg1, "$current_town", slot_center_current_improvement),
-            (str_store_string, s1, "@{reg1?Oversee the current:Commision a new} building project at this village."),
+            (str_store_string, s1, "@{reg1?Oversee the current:Commission a new} building project at this village."),
           (try_end),
         ]
         , "{s1}",
         [
            (assign, "$g_next_menu", "mnu_village"),
-           (jump_to_menu, "mnu_center_manage"),
+           (assign, "$g_sod_center_manage_return_menu", "mnu_village"),
+           (assign, "$g_sod_construction_report_return_menu", "mnu_center_manage"),
+           (call_script, "script_sod_prepare_current_center_construction_presentation", "$current_town"),
+           (start_presentation, "prsnt_sod_fief_management"),
         ]),
 
       ("village_leave", [], "Leave...", [

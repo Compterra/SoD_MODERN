@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "kidnapped_girl_quest_brief", [],
-   "Sorry. I don't have time for this right now.", "merchant_quest_stall", []],
+   "I cannot take this road today. Find another hand quickly.", "merchant_quest_stall", []],
 ]

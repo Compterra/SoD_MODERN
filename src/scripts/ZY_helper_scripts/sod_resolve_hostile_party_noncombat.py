@@ -5,6 +5,8 @@ SCRIPTS = [
    (store_script_param, ":party_no", 1),
    (try_begin),
      (gt, ":party_no", 0),
+     (neq, ":party_no", "p_main_party"),
+     (neg|is_between, ":party_no", centers_begin, centers_end),
      (party_is_active, ":party_no"),
      (party_get_slot, ":active_quest", ":party_no", slot_party_sod_threat_active_quest),
      (try_begin),

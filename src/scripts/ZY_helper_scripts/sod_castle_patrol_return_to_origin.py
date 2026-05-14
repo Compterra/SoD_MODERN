@@ -22,6 +22,7 @@ SCRIPTS = [
        (call_script, "script_sod_castle_patrol_apply_success", ":patrol_party"),
      (try_end),
      (party_set_slot, ":patrol_party", slot_party_sod_patrol_status, sod_castle_patrol_status_disbanded),
+     (neq, ":patrol_party", "p_main_party"),
      (remove_party, ":patrol_party"),
    (try_end),
  ]),

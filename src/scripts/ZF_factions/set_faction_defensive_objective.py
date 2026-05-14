@@ -75,9 +75,10 @@ SCRIPTS = [
             (party_slot_eq, ":enemy_center_no", slot_party_type, spt_town),  # twan new
             (val_mul, ":dist", 3),
           (try_end),
-          (val_add, ":dist", ":total_dist"),
+          (val_add, ":total_dist", ":dist"),
         (try_end),
         (try_begin),
+          (gt, ":total_dist", 0),
           (lt, ":total_dist", ":compare"),
           (assign, ":compare", ":total_dist"),
           (assign, ":defensive_objective", ":center_no"),
@@ -87,6 +88,15 @@ SCRIPTS = [
 	
     (try_end), # end try at war
 	(try_end), # end deactivate ai
+    (try_begin),
+      (is_between, ":defensive_objective", centers_begin, centers_end),
+      (store_faction_of_party, ":defensive_owner", ":defensive_objective"),
+      (neq, ":defensive_owner", ":faction_no"),
+      (assign, ":defensive_objective", -1),
+    (else_try),
+      (neg|is_between, ":defensive_objective", centers_begin, centers_end),
+      (assign, ":defensive_objective", -1),
+    (try_end),
     (faction_set_slot, ":faction_no", slot_faction_defensive_objective, ":defensive_objective"), 
 	
 	(try_begin),

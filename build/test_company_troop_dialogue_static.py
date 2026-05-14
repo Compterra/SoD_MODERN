@@ -11,6 +11,10 @@ def assert_contains(raw: str, token: str) -> None:
     assert token in raw, f"missing token: {token}"
 
 
+def assert_not_contains(raw: str, token: str) -> None:
+    assert token not in raw, f"stale token remains: {token}"
+
+
 def test_spokesperson_constants_exist() -> None:
     constants = read("src/constants/module_constants.py")
     for token in (
@@ -87,6 +91,7 @@ def test_spokesperson_state_and_scripts_exist() -> None:
         "sod_companion_role_captain",
         "script_sod_companion_get_approval_band",
         "script_sod_companion_role_to_s0",
+        "Company spokesman: no trusted companion is ready",
         "Marnid frames the grievance as terms",
         "Bunduk speaks for the line first",
         "Ymira keeps the wound in view",
@@ -137,14 +142,23 @@ def test_spokesperson_state_and_scripts_exist() -> None:
 
 def test_spokesperson_menu_is_registered() -> None:
     order = read("src/menus/_order_game_menus.txt")
+    dialog_order = read("src/dialogs/_order_dialogs.txt")
     accounts_menu = read("src/menus/camp/company_accounts.py")
     menu = read("src/menus/camp/company_spokesperson.py")
+    trigger = read("src/triggers/ST02_every_hour/entry_0086.py")
+    dialogue_start = read("src/dialogs/ZA01_startup_and_dispatch/anyone_sod_company_spokesperson_start.py")
     assert_contains(order, "camp/company_spokesperson.py")
+    assert_contains(dialog_order, "ZA01_startup_and_dispatch/anyone_sod_company_spokesperson_start.py")
     assert_contains(accounts_menu, "mnu_company_spokesperson_incident")
-    assert_contains(accounts_menu, "Hear the company's spokesman")
+    assert_not_contains(accounts_menu, "Hear the company's spokesman.")
+    assert_not_contains(accounts_menu, "Hear the current company petition.")
     assert_contains(accounts_menu, "company_petition_spokesperson")
     assert_contains(accounts_menu, "company_desertion_spokesperson")
     assert_contains(accounts_menu, "company_mutiny_spokesperson")
+    assert_contains(trigger, "script_sod_company_dialogue_find_spokesperson_troop_to_reg")
+    assert_contains(trigger, "start_map_conversation, reg63")
+    assert_contains(dialogue_start, "sod_company_spokesperson_response")
+    assert_contains(dialogue_start, "script_sod_company_dialogue_apply_response")
     for token in (
         "company_spokesperson_pay_now",
         "company_spokesperson_promise",
@@ -152,9 +166,6 @@ def test_spokesperson_menu_is_registered() -> None:
         "company_spokesperson_rations",
         "company_spokesperson_wounded",
         "company_spokesperson_hazard_pay",
-        "company_spokesperson_honors",
-        "company_spokesperson_victory_feast",
-        "company_spokesperson_refuse_spectacle",
         "company_spokesperson_offering",
         "company_spokesperson_mediator",
         "company_spokesperson_threaten",
@@ -168,7 +179,7 @@ def test_spokesperson_menu_is_registered() -> None:
 
 
 def test_checklist_tracks_milestone_one() -> None:
-    checklist = read("docs/COMPANY_TROOP_DIALOGUE_INCIDENTS_CHECKLIST.md")
+    checklist = read("docs/company/COMPANY_TROOP_DIALOGUE_INCIDENTS_CHECKLIST.md")
     for token in (
         "- [x] Add incident state/constants.",
         "- [x] Add incident selection helper.",
@@ -181,7 +192,7 @@ def test_checklist_tracks_milestone_one() -> None:
 
 
 def test_class_specific_voice_and_report_polish() -> None:
-    checklist = read("docs/COMPANY_TROOP_DIALOGUE_INCIDENTS_CHECKLIST.md")
+    checklist = read("docs/company/COMPANY_TROOP_DIALOGUE_INCIDENTS_CHECKLIST.md")
     accounts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
     dialogue = read("src/scripts/ZY_helper_scripts/sod_company_troop_dialogue.py")
     menu = read("src/menus/camp/company_accounts.py")
@@ -221,7 +232,7 @@ def test_class_specific_voice_and_report_polish() -> None:
 
 
 def test_battle_start_morale_feedback_is_hooked() -> None:
-    checklist = read("docs/COMPANY_TROOP_DIALOGUE_INCIDENTS_CHECKLIST.md")
+    checklist = read("docs/company/COMPANY_TROOP_DIALOGUE_INCIDENTS_CHECKLIST.md")
     preamble = read("src/mission_templates/_preamble/00_imports.py")
     lead_charge = read("src/mission_templates/0010_lead_charge/lead_charge.py")
     for token in (
@@ -243,7 +254,7 @@ def test_battle_start_morale_feedback_is_hooked() -> None:
 
 
 def test_post_battle_prompt_pressure_is_hooked() -> None:
-    checklist = read("docs/COMPANY_TROOP_DIALOGUE_INCIDENTS_CHECKLIST.md")
+    checklist = read("docs/company/COMPANY_TROOP_DIALOGUE_INCIDENTS_CHECKLIST.md")
     accounts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
     dialogue = read("src/scripts/ZY_helper_scripts/sod_company_troop_dialogue.py")
     for token in (
@@ -266,7 +277,7 @@ def test_post_battle_prompt_pressure_is_hooked() -> None:
 
 
 def test_hourly_scheduling_and_source_of_truth() -> None:
-    checklist = read("docs/COMPANY_TROOP_DIALOGUE_INCIDENTS_CHECKLIST.md")
+    checklist = read("docs/company/COMPANY_TROOP_DIALOGUE_INCIDENTS_CHECKLIST.md")
     hourly = read("src/triggers/ST02_every_hour/entry_0133.py")
     menu = read("src/menus/camp/company_spokesperson.py")
     dialogue = read("src/scripts/ZY_helper_scripts/sod_company_troop_dialogue.py")

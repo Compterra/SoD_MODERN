@@ -30,6 +30,8 @@ SCRIPTS = [
        (assign, reg0, 1),
      (else_try),
        (party_set_ai_behavior, ":party_no", ai_bhvr_patrol_location),
+       (party_get_position, pos1, ":party_no"),
+       (party_set_ai_target_position, ":party_no", pos1),
        (party_set_ai_patrol_radius, ":party_no", 12),
        (party_set_flags, ":party_no", pf_default_behavior, 0),
        (assign, reg0, 0),

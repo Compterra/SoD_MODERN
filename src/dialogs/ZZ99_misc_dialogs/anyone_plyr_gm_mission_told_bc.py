@@ -1,6 +1,6 @@
 DIALOGS = [
 [anyone|plyr, "gm_mission_told_bc", [],
- "Allright, I'll do it.", "close_window",
+ "I will bring the prisoners in alive. Make the cells ready, because this will not be clean work.", "close_window",
    [
        (quest_get_slot, ":quest_target_troop", "qst_bc_capture_prisoners", slot_quest_target_troop),
        (quest_get_slot, ":quest_target_amount", "qst_bc_capture_prisoners", slot_quest_target_amount),

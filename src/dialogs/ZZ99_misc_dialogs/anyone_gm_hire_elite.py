@@ -1,5 +1,20 @@
 DIALOGS = [
 [anyone,"gm_hire_elite", [(eq, "$g_rep", "$g_talk_troop"),
    (call_script, "script_merc_get_elite_relation_requirement", "$g_talk_troop_faction"),
-   (ge, "$g_talk_troop_faction_relation", reg0),], "I have some guards at this location I can hire out to you immediately", "gm_pretalk",[(set_mercenary_source_party,"$gm_party_elite"),[change_screen_buy_mercenaries]]],
+   (ge, "$g_talk_troop_faction_relation", reg0),
+   (gt, "$gm_party_elite", 0),
+   (store_party_size, ":available", "$gm_party_elite"),
+   (gt, ":available", 0),
+   (assign, reg21, ":available"),
+ ], "I have {reg21} proven veterans close at hand. They are costly, but they do not waste a battlefield.", "gm_pretalk",
+ [
+   (set_mercenary_source_party,"$gm_party_elite"),
+   (store_troop_gold, ":before", "trp_player"),
+   (change_screen_buy_mercenaries),
+   (store_troop_gold, ":after", "trp_player"),
+   (store_sub, reg0, ":before", ":after"),
+   (val_max, reg0, 0),
+   (val_add, "$g_sod_weekly_troops_hired", reg0),
+   (val_clamp, "$g_sod_weekly_troops_hired", 0, 2000001),
+ ]],
 ]

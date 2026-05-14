@@ -3,6 +3,7 @@ SIMPLE_TRIGGERS = [
    [(neg|map_free),
     (is_currently_night),
     (ge, "$g_last_rest_center", 0),
+    (party_is_active, "$g_last_rest_center"),
     (neg|party_slot_eq, "$g_last_rest_center", slot_town_lord, "trp_player"),
 
     #MORDACHAI - don't charge the player to stay in his own lord's castles & towns.

@@ -8,7 +8,7 @@ DIALOGS = [
       (assign, reg0, ":size"),
       (ge, ":gold", reg0),
       (party_can_join),
-   ], "Okay", "close_window",
+   ], "Then fall in and earn your place.", "close_window",
    [
       (store_encountered_party, ":party"),
       (store_party_size, ":size", ":party"),

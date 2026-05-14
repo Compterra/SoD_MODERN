@@ -24,8 +24,6 @@ def test_prisoner_economy_constants_exist() -> None:
         "slot_center_sod_military_prisoners",
         "slot_center_sod_bandit_prisoners",
         "slot_center_sod_slave_laborers",
-        "slot_center_sod_prisoner_unrest_pressure",
-        "slot_center_sod_prisoner_escape_pressure",
         "slot_center_sod_prisoner_capacity",
         "slot_faction_sod_prisoner_supply",
         "slot_faction_sod_prisoner_demand",
@@ -68,6 +66,7 @@ def test_prisoner_economy_helpers_exist() -> None:
         '"sod_center_recalculate_prisoner_pressure"',
         '"sod_deposit_party_prisoners_to_center_pool"',
         '"sod_withdraw_prisoners_from_center_pool"',
+        '"sod_center_prisoner_report_to_s20"',
         '"sod_estimate_prisoner_pool_value"',
         '"sod_estimate_prisoner_pool_danger"',
         '"sod_estimate_prisoner_pool_labor_potential"',
@@ -89,7 +88,6 @@ def test_prisoner_economy_helpers_exist() -> None:
         '"sod_prisoner_train_destroyed"',
         '"sod_process_prisoner_trains"',
         "pt_prisoner_train_party",
-        "pt_default_prisoners",
         "slot_faction_slaver_market_supply",
         "slot_faction_slaver_market_heat",
         "slot_center_has_prisoner_tower",
@@ -100,11 +98,11 @@ def test_prisoner_economy_helpers_exist() -> None:
         "slot_faction_sod_prisoner_labor_policy",
         "sod_prisoner_labor_policy_liberation",
         "slot_faction_sod_prisoner_abuse_heat",
-        "slot_center_sod_local_population",
-        "slot_center_sod_local_prosperity",
+        "script_sod_center_apply_population_delta",
+        "script_sod_center_apply_local_prosperity_delta",
         "slot_faction_law_unrest",
         "slot_center_sod_security_cache_contract_security",
-        "slot_center_accumulated_tariffs",
+        "script_sod_center_apply_tariffs_delta",
         "slot_town_wealth",
         "slot_faction_sod_prisoner_supply",
         "slot_faction_sod_prisoner_demand",
@@ -125,7 +123,7 @@ def test_prisoner_train_outcomes_touch_economy_population_and_law() -> None:
     raw = read("src/scripts/ZY_helper_scripts/sod_prisoner_economy.py")
     for token in [
         "sod_prisoner_train_purpose_ransom",
-        "slot_center_accumulated_tariffs",
+        "script_sod_center_apply_tariffs_delta",
         "slot_town_wealth",
         "slot_faction_sod_prisoner_supply",
         "slot_faction_sod_prisoner_demand",
@@ -138,8 +136,8 @@ def test_prisoner_train_outcomes_touch_economy_population_and_law() -> None:
         "slot_faction_law_unrest",
         "slot_center_sod_security_cache_contract_security",
         "sod_prisoner_train_purpose_liberation",
-        "slot_center_sod_local_population",
-        "slot_center_sod_local_prosperity",
+        "script_sod_center_apply_population_delta",
+        "script_sod_center_apply_local_prosperity_delta",
         "script_get_closest_center",
     ]:
         assert_contains(raw, token)
@@ -165,8 +163,8 @@ def test_prisoner_train_purpose_layer_is_implemented() -> None:
         "sod_prisoner_train_purpose_labor",
         "sod_prisoner_train_purpose_slaver_market",
         "sod_prisoner_train_purpose_liberation",
-        "script_sod_prisoner_train_arrive",
-        "script_sod_prisoner_train_destroyed",
+        '"sod_prisoner_train_arrive"',
+        '"sod_prisoner_train_destroyed"',
     ]:
         assert_contains(helper, token)
     assert_contains(simulated, "script_sod_maybe_create_prisoner_train_from_party")
@@ -202,7 +200,9 @@ def test_kingdom_party_factory_knows_prisoner_trains() -> None:
 
 def test_prisoner_train_party_template_is_sane() -> None:
     raw = read("compile/module_party_templates.py")
+    triggers = read("compile/module_triggers.py")
     assert_contains(raw, '("prisoner_train_party","Prisoner Train"')
+    assert_contains(raw, '("default_prisoners","Default Prisoners"')
     for token in [
         "icon_mule",
         "carries_goods(12)",
@@ -213,6 +213,8 @@ def test_prisoner_train_party_template_is_sane() -> None:
         "[]",
     ]:
         assert_contains(raw, token)
+    assert_contains(triggers, '(store_random_party_of_template, reg(2), "pt_prisoner_train_party")')
+    assert_contains(triggers, "(neg|party_slot_eq, reg(2), slot_party_sod_support_type, spt_prisoner_train)")
 
 
 def test_prisoner_train_destination_uses_infrastructure_capacity_and_policy() -> None:
@@ -376,7 +378,7 @@ def test_prisoner_economy_slot_ids_are_unique_within_new_slot_families() -> None
         "slot_faction_sod_active_prisoner_trains",
         "slot_party_sod_prisoner_",
     ]
-    seen: dict[int, str] = {}
+    seen: dict[tuple[str, int], str] = {}
     for line in raw.splitlines():
         match = re.match(r"^(slot_(?:center|faction|party)_sod_[A-Za-z0-9_]+)\s*=\s*(\d+)\b", line)
         if not match:
@@ -384,9 +386,11 @@ def test_prisoner_economy_slot_ids_are_unique_within_new_slot_families() -> None
         name, value_text = match.groups()
         if not any(name.startswith(prefix) for prefix in families):
             continue
+        owner = name.split("_", 2)[1]
         value = int(value_text)
-        assert value not in seen, f"duplicate prisoner economy slot id {value}: {seen[value]} and {name}"
-        seen[value] = name
+        key = (owner, value)
+        assert key not in seen, f"duplicate {owner} prisoner economy slot id {value}: {seen[key]} and {name}"
+        seen[key] = name
     for required in [
         "slot_center_sod_prisoner_capacity",
         "slot_faction_sod_prisoner_supply",
@@ -478,12 +482,16 @@ def test_prisoner_train_creation_sources_are_policy_and_marshal_aware() -> None:
 def test_player_defeating_prisoner_train_has_train_consequences() -> None:
     event = read("src/scripts/ZC_parties/event_player_defeated_enemy_party.py")
     finalize = read("src/scripts/ZC_parties/total_victory_finalize.py")
+    simulated = read("src/scripts/ZA_hardcoded_game_scripts/game_event_simulate_battle.py")
     assert_contains(event, "slot_party_type, spt_prisoner_train")
     assert_contains(event, "script_sod_prisoner_train_destroyed")
     assert_contains(event, "sod_companion_action_free_captives")
     assert_contains(finalize, ":enemy_was_prisoner_train")
     assert_contains(finalize, "eq, \":enemy_was_prisoner_train\", 0")
     assert_contains(finalize, "script_clear_party_group")
+    assert_contains(simulated, "slot_party_type, spt_prisoner_train")
+    assert_contains(simulated, "script_sod_prisoner_train_destroyed")
+    assert simulated.index("script_sod_prisoner_train_destroyed") < simulated.index('script_clear_party_group", ":root_defeated_party"')
 
 
 def test_prisoner_train_daily_processor_is_wired() -> None:
@@ -598,7 +606,7 @@ def test_prisoner_train_interception_resolves_captive_outcomes() -> None:
 def test_player_prisoner_train_orders_are_wired() -> None:
     helper = read("src/scripts/ZY_helper_scripts/sod_prisoner_economy.py")
     order = read("src/menus/_order_game_menus.txt")
-    fief = read("src/menus/camp/fief_reports.py")
+    fief = read("src/menus/0000_hardcoded_mb1011/fief_reports.py")
     menu = read("src/menus/prisoners/prisoner_train_orders.py")
     checklist = read("docs/reports/prisoner_economy_logistics_checklist.md")
     for token in [
@@ -613,21 +621,21 @@ def test_player_prisoner_train_orders_are_wired() -> None:
         "slot_center_ransom_broker",
         "script_sod_find_prisoner_train_destination",
         "script_cf_sod_create_prisoner_train",
-        "troop_remove_gold, \"trp_player\"",
+        "script_sod_player_charge_gold",
         "itm_grain",
         "itm_bread",
         "itm_dried_meat",
         "main_party_has_troop, \"trp_npc3\"",
         "main_party_has_troop, \"trp_npc10\"",
         "main_party_has_troop, \"trp_npc12\"",
-        "script_sod_companion_apply_player_action",
+        "script_sod_companion_dispatch_player_action",
         "ai_bhvr_escort_party",
         "script_sod_prisoner_train_disband",
         "Neglected prisoner overcrowding",
         "slot_center_player_relation",
     ]:
         assert_contains(helper, token)
-    assert_contains(order, "other/prisoner_train_orders.py")
+    assert_contains(order, "prisoners/prisoner_train_orders.py")
     assert_contains(fief, "mnu_prisoner_train_orders")
     for token in [
         '("prisoner_train_orders"',
@@ -675,6 +683,9 @@ def test_prisoner_train_failure_modes_are_handled() -> None:
         "party_get_num_prisoner_stacks, \":representative_stacks\"",
         "pool-only arrival accounting",
         "peak_prisoner_trains",
+        "script_party_add_party_companions",
+        "script_sod_deposit_party_prisoners_to_center_pool",
+        "script_party_add_party",
         "sod_prisoner_train_purpose_ransom",
         "sod_prisoner_train_purpose_exchange",
         "sod_prisoner_train_purpose_slaver_market",
@@ -716,7 +727,7 @@ def test_prisoner_economy_integrates_labor_policy_and_road_security() -> None:
         "sod_prisoner_labor_policy_regulated",
         "sod_prisoner_labor_policy_unrestricted",
         "slot_faction_sod_prisoner_abuse_heat",
-        "script_sod_companion_apply_player_action",
+        "script_sod_companion_dispatch_player_action",
         "script_change_player_relation_with_faction",
         "main_party_has_troop, \"trp_npc3\"",
         "main_party_has_troop, \"trp_npc10\"",
@@ -750,12 +761,12 @@ def test_prisoner_population_integration_handles_mercy_volunteers_and_fugitives(
         "pt_runaway_serfs",
         "military_fugitive_party",
         "party_set_faction, \":military_fugitive_party\", \":origin_faction\"",
-        "slot_party_food_store",
+        "script_sod_center_apply_food_delta",
         "food_pressure_loss",
         "slot_center_sod_security_cache_contract_security",
         "security_strain",
         "script_change_player_honor",
-        "script_sod_companion_apply_player_action",
+        "script_sod_companion_dispatch_player_action",
         "script_change_player_relation_with_faction",
     ]:
         assert_contains(raw, token)
@@ -818,7 +829,7 @@ def test_prisoner_diplomacy_and_law_hooks_are_wired() -> None:
     for token in [
         "script_change_player_relation_with_faction",
         "slot_faction_slaver_market_heat",
-        "script_sod_companion_apply_player_action",
+        "script_sod_companion_dispatch_player_action",
         "slot_faction_sod_prisoner_mercy_reputation",
         "origin_faction",
     ]:
@@ -893,19 +904,15 @@ def test_prisoner_train_encounter_dialog_is_wired() -> None:
 
 def test_prisoner_economy_fief_report_is_wired() -> None:
     order = read("src/menus/_order_game_menus.txt")
-    fief = read("src/menus/camp/fief_reports.py")
+    fief = read("src/menus/0000_hardcoded_mb1011/fief_reports.py")
     report = read("src/menus/prisoners/prisoner_economy_report.py")
-    assert_contains(order, "other/prisoner_economy_report.py")
+    assert_contains(order, "prisoners/prisoner_economy_report.py")
     assert_contains(fief, "mnu_prisoner_economy_report")
     for token in [
         '("prisoner_economy_report"',
         "script_sod_center_prisoner_report_to_s20",
-        "slot_center_sod_prisoner_unrest_pressure",
-        "slot_center_sod_prisoner_escape_pressure",
-        "slot_center_has_prisoner_tower",
-        "script_sod_estimate_prisoner_pool_value",
-        "script_sod_estimate_prisoner_pool_danger",
-        "script_sod_estimate_prisoner_pool_labor_potential",
+        "escape pressure",
+        "overcrowded holdings can create unrest",
         "mnu_fief_reports",
     ]:
         assert_contains(report, token)

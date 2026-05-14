@@ -88,7 +88,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc15", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "I can calculate load, span, and failure. I cannot calculate how often pride will ask me to become a bucket for falling stones. My confidence in your respect for expertise is {s2}.",
   "member_talk",
@@ -100,7 +100,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The works held because they were built to hold. A rare victory for timber, geometry, and being listened to. My confidence in your respect for expertise is {s2}.",
   "member_talk",
@@ -110,7 +110,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The failed work found a culprit and the army moved on. A neat report. Shame it cannot carry a ladder. My confidence in your respect for expertise is {s2}.",
   "member_talk",
@@ -120,7 +120,7 @@ DIALOGS = [
   [
     (eq, "$g_sod_artimenner_siege_pending", 1),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "There is a weak point in the works. Inspect it, guard the repair watch, and then decide whether the army respects expertise before or after it becomes an epitaph. My confidence in your respect for expertise is {s2}.",
   "member_talk",
@@ -130,7 +130,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The Siege That Should Have Worked is not a tragedy. Tragedy implies surprise. Ignored tolerances are a schedule. My confidence in your respect for expertise is {s2}.",
   "member_talk",
@@ -140,7 +140,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "This is how men die, not from courage, but from one brace nobody inspected. I intend to learn whether this company inspects braces. My confidence is {s2}.",
   "member_talk",
@@ -150,7 +150,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc15", slot_troop_companion_approval, 70),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "You let facts be inconvenient before they become fatal. I assure you, this is rarer than command tents suggest. My confidence in your respect for expertise is {s2}.",
   "member_talk",
@@ -165,7 +165,7 @@ DIALOGS = [
 [anyone, "companion_depth_artimenner",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "Plans hold when commanders let them. Timber, stone, grain, and time all answer to laws older than pride. My confidence in your respect for expertise is {s2}.",
   "member_talk",

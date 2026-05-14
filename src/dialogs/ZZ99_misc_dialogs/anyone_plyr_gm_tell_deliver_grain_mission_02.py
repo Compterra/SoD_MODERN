@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone|plyr, "gm_tell_deliver_grain_mission", [],
-   "I can't be bothered with this. Ask help from someone else.", "gm_pretalk", []],
+   "I cannot turn aside for cargo today. Find another hauler before the road price rises.", "gm_pretalk", []],
 ]

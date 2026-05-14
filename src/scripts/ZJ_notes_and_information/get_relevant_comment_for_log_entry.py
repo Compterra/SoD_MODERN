@@ -12,6 +12,15 @@ SCRIPTS = [
           (troop_get_slot, ":troop_object_faction",  "trp_log_array_troop_object_faction",  ":log_entry_no"),
           (troop_get_slot, ":faction_object",        "trp_log_array_faction_object",        ":log_entry_no"),
 
+          # Some old battle/result paths can record an invalid troop object
+          # for a lord-defeat entry. Those comments all interpolate {s54};
+          # suppress them instead of letting lords say "unknown commander."
+          (try_begin),
+            (eq, ":entry_type", logent_lord_defeated_by_player),
+            (neg|is_between, ":troop_object", heroes_begin, heroes_end),
+            (assign, ":entry_type", -1),
+          (try_end),
+
           (assign, ":relevance", 0),
           (assign, ":comment", -1),
           (assign, ":suggested_relation_change", 0),

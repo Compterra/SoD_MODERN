@@ -51,7 +51,12 @@ MENUS = [
        (try_end),
     ],
     [
-      ("village_raid_attack", [], "Charge them.", [
+      build_sod_battle_commander_change_option(
+        "change_commander_village_raid",
+        "mnu_village_start_attack",
+      ),
+
+      ("village_raid_attack", [(call_script, "script_cf_sod_battle_commander_can_start")], "Charge them.", [
           (store_random_in_range, ":enmity", -10, -5),
           (call_script, "script_change_player_relation_with_center", "$current_town", ":enmity"),
           (try_begin),
@@ -75,6 +80,7 @@ MENUS = [
 #NPC companion changes end
 
           (jump_to_menu, "mnu_battle_debrief"),
+          (call_script, "script_sod_battle_commander_apply_before_mission"),
           (change_screen_mission),
           ]),
       ("village_raid_leave", [], "Leave this village alone.", [(change_screen_return)]),

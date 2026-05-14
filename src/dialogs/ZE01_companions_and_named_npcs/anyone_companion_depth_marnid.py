@@ -36,6 +36,8 @@ DIALOGS = [
     (main_party_has_troop, "trp_npc2"),
     (ge, "$g_sod_marnid_market_evidence", 1),
     (eq, "$g_sod_marnid_market_confronted", 1),
+    (store_troop_gold, ":gold", "trp_player"),
+    (ge, ":gold", 300),
   ],
   "Expose the contract and compensate the cheated workers.", "member_talk",
   [
@@ -60,7 +62,8 @@ DIALOGS = [
   [
     (assign, "$g_sod_marnid_market_pending", 0),
     (assign, "$g_sod_marnid_market_result_grade", 2),
-    (troop_remove_gold, "trp_player", 300),
+    (call_script, "script_sod_player_charge_gold", 300),
+    (eq, reg1, 1),
     (quest_set_slot, "qst_companion_marnid_honest_price", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_marnid_honest_price", slot_quest_sod_runtime_metadata, "$g_sod_marnid_market_result_grade"),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_orderly_profit, 2),
@@ -94,7 +97,7 @@ DIALOGS = [
   [
     (troop_slot_ge, "trp_npc2", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc2"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "A ledger can record blackmail as income. It cannot make it trade. My confidence is {s2}.",
   "member_talk",
@@ -106,7 +109,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc2"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The contract still made profit. Better, it made memory: names paid, witnesses heard, and no page we need to hide. My confidence is {s2}.",
   "member_talk",
@@ -116,7 +119,7 @@ DIALOGS = [
   [
     (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
     (call_script, "script_sod_companion_get_approval_band", "trp_npc2"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
   ],
   "The hard bargain worked. I have written that down. I have also written what it cost, because silence is how bad accounts become policy. My confidence is {s2}.",
   "member_talk",
@@ -125,7 +128,7 @@ DIALOGS = [
 [anyone, "companion_depth_marnid",
   [
     (call_script, "script_sod_companion_get_approval_band", "trp_npc2"),
-    (str_store_string, s2, s0),
+    (str_store_string_reg, s2, s0),
     (troop_get_slot, reg2, "trp_npc2", slot_troop_companion_personal_quest_stage),
   ],
   "They say we are not bankrupt, which is not the same as healthy. Coin tells the truth if you stop asking it to flatter you. At present, my confidence is {s2}. The Honest Price stands at {reg2}.",
