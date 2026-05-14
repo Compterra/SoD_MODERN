@@ -10,7 +10,7 @@ DIALOGS = [
 
             (val_sub, "$rebellion_chance", 30),
 
-            (assign, reg7, "$rebellion_chance", debug_color), #diagnostic only
+            (assign, reg7, "$rebellion_chance"), #diagnostic only
             (display_message, "@Rebellion chance -30 from rival = {reg7}", debug_color), #diagnostic only
 
     ]],
