@@ -1,5 +1,5 @@
 MENUS = [
-("sod_royal_diseaster", 0,
+("sod_royal_disaster", 0,
 	"My liege. Grim news from the old world. The expedition was exposed in hostile territory, condemned as spies, and executed before ransom could be arranged. No survivors returned.",
 	"none", [
 	],

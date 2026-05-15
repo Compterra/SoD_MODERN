@@ -463,7 +463,7 @@ SCRIPTS = [
         (eq, "$g_sod_debug", 1),
         (str_store_party_name_link, s1, ":center_no"),
         (assign, reg0, ":accumulated_tariffs"),
-        (display_message, "@{s1} accumulated {reg0} tarrifs", debug_color),
+        (display_message, "@{s1} accumulated {reg0} tariffs", debug_color),
       (try_end),
 
       #      (try_begin),

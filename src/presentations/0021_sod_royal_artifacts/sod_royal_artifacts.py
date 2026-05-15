@@ -773,7 +773,7 @@ PRESENTATIONS = [
 				(lt, ":rand", 50),
 				(assign, "$sod_royal_mission_success", 0), #failure
 			(else_try),
-				(assign, "$sod_royal_mission_success", -1), #diseaster heroes sent on mission die
+				(assign, "$sod_royal_mission_success", -1), #disaster heroes sent on mission die
 			(try_end),
 		(else_try),
 			(try_begin),
@@ -783,7 +783,7 @@ PRESENTATIONS = [
 				(lt, ":rand", 50),
 				(assign, "$sod_royal_mission_success", 0), #failure
 			(else_try),	
-				(assign, "$sod_royal_mission_success", -1), #diseaster heroes sent on mission die
+				(assign, "$sod_royal_mission_success", -1), #disaster heroes sent on mission die
 			(try_end),
 		(try_end),
 		(assign, "$sod_royal_mission", 0),

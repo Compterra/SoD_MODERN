@@ -8,7 +8,7 @@ SIMPLE_TRIGGERS = [
     (try_begin),
       (eq, "$sod_royal_mission_success", -1),
       (call_script, "script_sod_royal_set_mission_state", "$sod_royal_cur_mission", 0),
-      (jump_to_menu, "mnu_sod_royal_diseaster"),
+      (jump_to_menu, "mnu_sod_royal_disaster"),
     (else_try),
       (eq, "$sod_royal_mission_success", 0),
       (call_script, "script_sod_royal_set_mission_state", "$sod_royal_cur_mission", 0),

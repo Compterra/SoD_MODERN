@@ -277,7 +277,7 @@ kingdom/sa_council.py
 other/sod_continue.py
 other/sod_continue_return.py
 other/sod_marshall_selection.py
-kingdom/sod_royal_diseaster.py
+kingdom/sod_royal_disaster.py
 kingdom/sod_royal_empty.py
 kingdom/sod_royal_failure.py
 kingdom/sod_royal_location.py

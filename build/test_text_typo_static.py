@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 
@@ -6,6 +7,8 @@ SOURCE_ROOTS = ("src", "docs")
 MISSPELLINGS = (
     "definately",
     "adress",
+    "adition",
+    "diseaster",
     "immidiately",
     "oders",
     "occured",
@@ -17,6 +20,7 @@ MISSPELLINGS = (
     "suceeded",
     "sucessfully",
     "strenghten",
+    "tarrifs",
     "towads",
     "untill",
 )
@@ -24,13 +28,17 @@ MISSPELLINGS = (
 
 def main():
     offenders = []
+    patterns = {
+        word: re.compile(rf"\b{re.escape(word)}\b", re.IGNORECASE)
+        for word in MISSPELLINGS
+    }
     for root_name in SOURCE_ROOTS:
         for path in sorted((ROOT / root_name).rglob("*")):
             if path.suffix not in {".py", ".md"}:
                 continue
-            text = path.read_text(encoding="utf-8", errors="replace").lower()
-            for word in MISSPELLINGS:
-                if word in text:
+            text = path.read_text(encoding="utf-8", errors="replace")
+            for word, pattern in patterns.items():
+                if pattern.search(text):
                     offenders.append(f"{path.relative_to(ROOT)} contains {word}")
     assert not offenders, "Known typo spellings remain:\n" + "\n".join(offenders)
 
