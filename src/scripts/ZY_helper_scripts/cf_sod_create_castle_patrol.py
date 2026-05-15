@@ -84,6 +84,7 @@ SCRIPTS = [
    (spawn_around_party, ":origin_castle", "pt_patrol_party"),
    (assign, ":patrol_party", reg0),
    (gt, ":patrol_party", 0),
+   (party_is_active, ":patrol_party"),
    (party_set_faction, ":patrol_party", ":faction_no"),
    (party_set_slot, ":patrol_party", slot_party_type, spt_patrol),
    (party_set_slot, ":patrol_party", slot_party_sod_support_type, sod_support_type_castle_patrol),

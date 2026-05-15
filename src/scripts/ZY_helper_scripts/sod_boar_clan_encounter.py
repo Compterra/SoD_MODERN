@@ -67,6 +67,7 @@ SCRIPTS = [
 
 ("sod_boar_clan_convert_to_player_mercenaries",
  [
+   (assign, ":converted", 0),
    (try_begin),
    (gt, "$g_encountered_party", 0),
    (neq, "$g_encountered_party", "p_main_party"),
@@ -78,6 +79,7 @@ SCRIPTS = [
    (spawn_around_party, "$g_encountered_party", "pt_player_mercenaries"),
    (assign, ":mercs", reg0),
    (gt, ":mercs", 0),
+   (party_is_active, ":mercs"),
    (call_script, "script_party_add_party", ":mercs", "$g_encountered_party"),
    (remove_party, "$g_encountered_party"),
    (try_begin),
@@ -99,7 +101,13 @@ SCRIPTS = [
    (party_set_slot, ":mercs", slot_party_boss, "trp_player"),
    (party_set_ai_object, ":mercs", "p_main_party"),
    (party_set_ai_behavior, ":mercs", ai_bhvr_escort_party),
+   (assign, ":converted", 1),
    (try_end),
+   (try_begin),
+     (eq, ":converted", 0),
+     (display_message, "@The Boar Clan band could not form under your banner. No silver changed hands.", 0xFFCC66),
+   (try_end),
+   (assign, reg0, ":converted"),
    (call_script, "script_sod_safe_leave_encounter"),
  ]),
 ]

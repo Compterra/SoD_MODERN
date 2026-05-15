@@ -29,6 +29,7 @@ MENUS = [
            (call_script, "script_sod_sanitize_encounter_globals"),
            (call_script, "script_set_parties_around_player_ignore_player", 2, 6),
            (assign, "$g_player_icon_state", pis_normal),
+           (call_script, "script_sod_refresh_player_map_icon"),
            (set_camera_follow_party, "p_main_party"),
            (rest_for_hours, 0, 0, 0), #stop resting
            (change_screen_return),

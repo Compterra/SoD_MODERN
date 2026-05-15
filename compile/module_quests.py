@@ -1165,7 +1165,7 @@ quests = [
      "offer_preview": quest_offer(
       "sample_campaign_briefing_offer",
       quest_id="sample_campaign_briefing",
-      giver_id="trp_gate_captain",
+      giver_id="trp_swadian_castle_guard",
       title="Brief the Gate Captain",
       summary="A sample offer that opens the contract and demonstrates the offer helper.",
       conditions=(
@@ -1206,7 +1206,7 @@ quests = [
       rewards=(),
       failures=(),
       npc_state=quest_npc_state(
-       "trp_gate_captain",
+       "trp_swadian_castle_guard",
        state="available",
        dialogue_state="briefing",
        available_quests=("sample_campaign_briefing",),
@@ -1419,7 +1419,7 @@ quests = [
         ),
        ),
        npc_state=quest_npc_state(
-        "trp_gate_captain",
+        "trp_swadian_castle_guard",
         state="available",
         dialogue_state="briefing",
         available_quests=("sample_campaign_briefing",),
@@ -1617,7 +1617,7 @@ quests = [
         ),
        ),
        npc_state=quest_npc_state(
-        "trp_gate_captain",
+        "trp_swadian_castle_guard",
         state="available",
         dialogue_state="briefing",
         available_quests=("sample_campaign_briefing",),
@@ -1730,7 +1730,7 @@ quests = [
         "kind": "delivery_stage",
        },
        npc_state=quest_npc_state(
-        "trp_gate_captain",
+        "trp_swadian_castle_guard",
         state="available",
         dialogue_state="briefing",
         available_quests=("sample_campaign_briefing",),
@@ -1838,7 +1838,7 @@ quests = [
         "kind": "hunt_stage",
        },
        npc_state=quest_npc_state(
-        "trp_gate_captain",
+        "trp_swadian_castle_guard",
         state="available",
         dialogue_state="briefing",
         available_quests=("sample_campaign_briefing",),
@@ -1946,7 +1946,7 @@ quests = [
         "kind": "escort_stage",
        },
        npc_state=quest_npc_state(
-        "trp_gate_captain",
+        "trp_swadian_castle_guard",
         state="available",
         dialogue_state="briefing",
         available_quests=("sample_campaign_briefing",),
@@ -2054,7 +2054,7 @@ quests = [
         "kind": "rescue_stage",
        },
        npc_state=quest_npc_state(
-        "trp_gate_captain",
+        "trp_swadian_castle_guard",
         state="available",
         dialogue_state="briefing",
         available_quests=("sample_campaign_briefing",),
@@ -2237,7 +2237,7 @@ quests = [
         ),
        ),
        npc_state=quest_npc_state(
-        "trp_gate_captain",
+        "trp_swadian_castle_guard",
         state="available",
         dialogue_state="briefing",
         available_quests=("sample_campaign_briefing",),
@@ -2293,7 +2293,7 @@ quests = [
       },
      ).to_snapshot(),
      "npc_state_preview": quest_npc_state(
-      "trp_gate_captain",
+      "trp_swadian_castle_guard",
       state="available",
       dialogue_state="briefing",
       available_quests=("sample_campaign_briefing",),

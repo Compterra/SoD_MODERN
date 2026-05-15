@@ -16,7 +16,7 @@ SCRIPTS = [
 
    (call_script, "script_merc_sync_player_guild_pact", ":guild_no"),
 
-   (try_for_range, ":cur_kingdom", kingdoms_begin, kingdoms_end),
+   (try_for_range, ":cur_kingdom", native_kingdoms_begin, native_kingdoms_end),
      (store_relation, ":cur_relation", ":cur_kingdom", "fac_player_faction"),
      (set_relation, ":cur_kingdom", ":guild_no", ":cur_relation"),
    (try_end),
@@ -26,7 +26,7 @@ SCRIPTS = [
    (set_relation, "fac_player_faction", ":guild_no", ":rel"),
    (set_relation, "fac_player_supporters_faction", ":guild_no", ":rel"),
 
-   (try_for_range, ":cur_faction", kingdoms_begin, kingdoms_end),
+   (try_for_range, ":cur_faction", native_kingdoms_begin, native_kingdoms_end),
      (faction_get_slot, ":mercenaries", ":cur_faction", slot_faction_merc_pact),
      (eq, ":mercenaries", ":guild_no"),
      (faction_set_slot, ":cur_faction", slot_faction_merc_pact, 0),

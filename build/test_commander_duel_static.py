@@ -67,6 +67,8 @@ def test_duel_ui_tracks_layers_and_blessing_pressure() -> None:
     assert_contains(raw, "$g_ponavosa_duel_enemy_layer")
     assert_contains(raw, "$g_ponavosa_duel_blessing")
     assert_contains(raw, "Blessing pressure")
+    assert_contains(raw, '(overlay_set_text, "$g_ponavosa_duel_status", s71)')
+    assert "overlay_set_text, \"$g_ponavosa_duel_status\", s0" not in raw
 
 
 def test_duel_restore_clears_temporary_pressure() -> None:

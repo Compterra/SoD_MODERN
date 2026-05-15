@@ -1,5 +1,9 @@
 DIALOGS = [
-[anyone|plyr, "slavers_escort_merchant_caravan_quest_brief", [],
+[anyone|plyr, "slavers_escort_merchant_caravan_quest_brief", [
+    (quest_get_slot, ":quest_target_center", "qst_slavers_escort_merchant_caravan", slot_quest_target_center),
+    (party_is_active, ":quest_target_center"),
+    (party_is_active, "$g_encountered_party"),
+    ],
    "I will escort the caravan. Keep your side of the bargain clean.", "gm_merchant_quest_taken_bandits",
    [(quest_get_slot, ":quest_target_center", "qst_slavers_escort_merchant_caravan", slot_quest_target_center),
     (set_spawn_radius, 1),

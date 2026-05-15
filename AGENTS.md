@@ -12,6 +12,7 @@ This is a Mount & Blade 1.011 / Sword of Damocles Modern module-system project.
 - Never overwrite live module export files without showing a diff first.
 - When debugging strings, check both strings.txt and quick_strings.txt.
 - Remember: str_store_string takes a string id or quick string; use str_store_string_reg to copy s-registers.
+- Prefer `s68` through `s99` for new SoD feature text, menu/dialog display scratch, and debug probes; Vanilla M&B 1.011 does not use these heavily. Treat `s0` through `s19` as volatile Native scratch and `s20` through `s67` as legacy/report scratch unless existing local code requires otherwise.
 
 ## Build
 - Use the repo's existing build script first.

@@ -1,6 +1,6 @@
 DIALOGS = [
 [anyone, "prison_guard_ask_prisoners", [],
-   "Currently, {s51} {reg1?are:is} imprisoned here.", "prison_guard_talk", [(party_clear, "p_temp_party"),
+   "Currently, {s51} {s68} imprisoned here.", "prison_guard_talk", [(party_clear, "p_temp_party"),
                                                                               (assign, ":num_heroes", 0),
                                                                               (party_get_num_prisoner_stacks, ":num_stacks", "$g_encountered_party"),
                                                                               (try_for_range, ":i_stack", 0, ":num_stacks"),
@@ -12,8 +12,8 @@ DIALOGS = [
                                                                               (call_script, "script_print_party_members", "p_temp_party"),
                                                                               (try_begin),
                                                                                 (gt, ":num_heroes", 1),
-                                                                                (assign, reg1, 1),
+                                                                                (str_store_string, s68, "@are"),
                                                                               (else_try),
-                                                                                (assign, reg1, 0),
+                                                                                (str_store_string, s68, "@is"),
                                                                               (try_end)]],
 ]

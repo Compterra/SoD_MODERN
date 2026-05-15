@@ -12,9 +12,48 @@ def assert_contains(raw: str, token: str) -> None:
     assert token in raw, f"missing token: {token}"
 
 
+def assert_order(raw: str, first: str, second: str) -> None:
+    assert_contains(raw, first)
+    assert_contains(raw, second)
+    assert raw.index(first) < raw.index(second), f"{first} must precede {second}"
+
+
 def test_ai_battle_join_menu_sets_late_join_flag() -> None:
     raw = read("src/menus/encounter/pre_join_help_attackers.py")
     assert raw.count('(assign, "$g_sod_joined_ongoing_ai_battle", 1)') >= 2
+
+
+def test_ai_battle_join_menu_guards_stale_parties_before_faction_reads() -> None:
+    raw = read("src/menus/encounter/pre_join_help_attackers.py")
+
+    for token in (
+        '(str_store_string, s70, "@an attacking force")',
+        '(str_store_string, s73, "@the defenders")',
+        '(party_is_active, "$g_encountered_party_2")',
+        '(party_is_active, "$g_encountered_party")',
+    ):
+        assert_contains(raw, token)
+
+    assert_order(
+        raw,
+        '(party_is_active, "$g_encountered_party_2")',
+        '(store_faction_of_party, ":attackers_faction", "$g_encountered_party_2")',
+    )
+    assert_order(
+        raw,
+        '(party_is_active, "$g_encountered_party")',
+        '(store_faction_of_party, ":defender_faction", "$g_encountered_party")',
+    )
+    assert_order(
+        raw,
+        '(party_is_active, "$g_encountered_party_2")',
+        '(store_faction_of_party, ":attacker_faction", "$g_encountered_party_2")',
+    )
+    assert_order(
+        raw,
+        '(party_is_active, "$g_encountered_party")',
+        '(store_faction_of_party, ":defender_faction", "$g_encountered_party")',
+    )
 
 
 def test_lead_charge_applies_and_clears_late_join_pressure() -> None:

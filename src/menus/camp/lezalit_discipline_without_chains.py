@@ -134,7 +134,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_train_troops, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc14"),
           (display_message, "@The line moves faster when the useless punishments are cut away. Lezalit dislikes the proof mostly because it is proof.", 0xCCCC66),
-          (jump_to_menu, "mnu_lezalit_discipline_without_chains"),
+          (start_map_conversation, "trp_npc14"),
         ]
       ),
       ("lezalit_trial_mark", [
@@ -151,7 +151,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_lezalit_ief_harsh, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc14"),
           (display_message, "@The line moves cleanly and looks at the marked man instead of the enemy. Lezalit records the result. Bunduk records the cost.", 0xCC9966),
-          (jump_to_menu, "mnu_lezalit_discipline_without_chains"),
+          (start_map_conversation, "trp_npc14"),
         ]
       ),
       ("lezalit_trial_leave", [], "Return to camp.",
@@ -179,7 +179,7 @@ MENUS = [
     [
       ("lezalit_trial_after", [], "Settle doctrine with Lezalit.",
         [
-          (jump_to_menu, "mnu_lezalit_discipline_without_chains"),
+          (start_map_conversation, "trp_npc14"),
         ]
       ),
     ]
@@ -199,7 +199,7 @@ MENUS = [
     [
       ("lezalit_trial_failed_after", [], "Face Lezalit's report.",
         [
-          (jump_to_menu, "mnu_lezalit_discipline_without_chains"),
+          (start_map_conversation, "trp_npc14"),
         ]
       ),
     ]

@@ -1,9 +1,11 @@
 MENUS = [
 (
     "train_peasants_against_bandits_success", mnf_disable_all_keys,
-    "The bandits are broken! Those few who remain run off with their tails between their legs, terrified of the peasants and their new champion. The villagers have little left in the way of wealth after their ordeal, but they offer you all they can find to show their gratitude.",
+    "The bandits break. Those still standing flee the lanes, suddenly less eager to test the village militia. The villagers have little left after their ordeal, but they offer what they can in gratitude.",
     "none",
-    [(party_clear, "p_temp_party"),
+    [(try_begin),
+     (check_quest_active, "qst_train_peasants_against_bandits"),
+     (party_clear, "p_temp_party"),
      (call_script, "script_end_quest", "qst_train_peasants_against_bandits"),
      (call_script, "script_change_player_relation_with_center", "$current_town", 4),
 
@@ -14,6 +16,7 @@ MENUS = [
         (troop_set_inventory_slot, ":merchant_troop", ":slot_no", -1),
      (try_end),
      (call_script, "script_add_log_entry", logent_helped_peasants, "trp_player", "$current_town", -1, -1),
+     (try_end),
     ],
     [
       ("village_bandits_defeated_accept", [], "Take it as your just due.", [(jump_to_menu, "mnu_auto_return_to_map"),

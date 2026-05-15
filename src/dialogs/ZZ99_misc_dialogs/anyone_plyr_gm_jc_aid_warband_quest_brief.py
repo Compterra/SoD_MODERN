@@ -12,6 +12,7 @@ DIALOGS = [
       (party_set_ai_behavior, ":quest_target_party", ai_bhvr_hold),
       (quest_set_slot, "qst_jotnar_clan_aid_warband", slot_quest_target_party, ":quest_target_party"),
       (call_script, "script_store_troop_name_link", s9, "$g_talk_troop"),
+      (str_store_party_name_link, s8, ":quest_target_center"),
       (setup_quest_text, "$random_quest_no"),
       (str_store_string, s2, "@{s9} asked you to help Jotnar Clan warriors garrisoned near {s8}."),
       (call_script, "script_start_quest", "$random_quest_no", "$g_talk_troop"),

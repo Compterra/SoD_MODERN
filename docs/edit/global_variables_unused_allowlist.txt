@@ -44,6 +44,7 @@ g_sod_diplomatic_difficulty # Diplomacy tuning global retained for menu/script e
 g_sod_seven_ash_training_bonus # Seven Ash outcome telemetry retained for save-compatible act resolution/history.
 g_sod_retinue_battle_bridge_fallback_skipped # Companion retinue battle bridge telemetry retained for diagnostics.
 g_sod_retinue_battle_bridge_count # Companion retinue battle bridge telemetry retained for diagnostics.
+sod_post_defeat_takeover_used # Reserved post-defeat takeover state retained as a save-compatible global id placeholder.
 g_sod_initial_party_members_pending # Retired start-party setup flag retained as a save-compatible global id placeholder.
 g_sod_pending_player_banner_map_icon # Retired deferred-banner setup flag retained as a save-compatible global id placeholder.
 g_seven_ash_noble_notice # Seven Ash posture telemetry retained for save-compatible act resolution/history.

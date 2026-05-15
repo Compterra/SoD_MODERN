@@ -1,6 +1,6 @@
 MENUS = [
 ("end_game", 0,
-   "The decision is made, and you resolve to give up your adventurer's life and settle down. You sell off your weapons and armour, gather up all your money, and ride off into the sunset....",
+   "The decision is made. You give up the adventurer's life, sell your arms, gather your coin, and ride off into the sunset.",
    "none",
    [],
     [

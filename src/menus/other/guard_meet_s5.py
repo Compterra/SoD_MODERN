@@ -17,11 +17,11 @@ MENUS = [
     [
       ("guard_meet_s5", [(gt, "$num_castle_meeting_troops", 0), (troop_get_slot, ":troop_no", "trp_temp_array_a", 0), (call_script, "script_store_troop_name", s5, ":troop_no")],
        "{s5}.", [(troop_get_slot, "$castle_meeting_selected_troop", "trp_temp_array_a", 0), (jump_to_menu, "mnu_castle_meeting_selected")]),
-      ("guard_meet_s5", [(gt, "$num_castle_meeting_troops", 1), (troop_get_slot, ":troop_no", "trp_temp_array_a", 1), (call_script, "script_store_troop_name", s5, ":troop_no")],
+      ("guard_meet_s5_2", [(gt, "$num_castle_meeting_troops", 1), (troop_get_slot, ":troop_no", "trp_temp_array_a", 1), (call_script, "script_store_troop_name", s5, ":troop_no")],
        "{s5}.", [(troop_get_slot, "$castle_meeting_selected_troop", "trp_temp_array_a", 1), (jump_to_menu, "mnu_castle_meeting_selected")]),
-      ("guard_meet_s5", [(gt, "$num_castle_meeting_troops", 2), (troop_get_slot, ":troop_no", "trp_temp_array_a", 2), (call_script, "script_store_troop_name", s5, ":troop_no")],
+      ("guard_meet_s5_3", [(gt, "$num_castle_meeting_troops", 2), (troop_get_slot, ":troop_no", "trp_temp_array_a", 2), (call_script, "script_store_troop_name", s5, ":troop_no")],
        "{s5}.", [(troop_get_slot, "$castle_meeting_selected_troop", "trp_temp_array_a", 2), (jump_to_menu, "mnu_castle_meeting_selected")]),
-      ("guard_meet_s5", [(gt, "$num_castle_meeting_troops", 3), (troop_get_slot, ":troop_no", "trp_temp_array_a", 3), (call_script, "script_store_troop_name", s5, ":troop_no")],
+      ("guard_meet_s5_4", [(gt, "$num_castle_meeting_troops", 3), (troop_get_slot, ":troop_no", "trp_temp_array_a", 3), (call_script, "script_store_troop_name", s5, ":troop_no")],
        "{s5}.", [(troop_get_slot, "$castle_meeting_selected_troop", "trp_temp_array_a", 3), (jump_to_menu, "mnu_castle_meeting_selected")]),
 
       ("forget_it", [],

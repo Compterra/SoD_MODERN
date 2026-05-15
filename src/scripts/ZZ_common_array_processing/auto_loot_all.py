@@ -1,8 +1,6 @@
 SCRIPTS = [
 ("auto_loot_all",
                       [
-                        (assign, ":debug", 0),
-
                         # get count of stacks in player's party
                         (party_get_num_companion_stacks, ":num_stacks", "p_main_party"),
 
@@ -10,14 +8,6 @@ SCRIPTS = [
                         (try_for_range, ":i_stack", 0, ":num_stacks"),
                           (party_stack_get_troop_id, ":troop", "p_main_party", ":i_stack"),
                           (troop_slot_eq, ":troop", slot_troop_occupation, slto_player_companion),
-
-                          #DEBUG
-                          (try_begin),
-                            (eq, ":debug", 2),
-                            (call_script, "script_store_troop_name_link", s60, ":troop"),
-                            (display_message, "@{s60}'s equipment"),
-                            (assign, ":debug_count", 0),
-                          (try_end),
 
                           (try_for_range, ":i_equipment", ek_item_0, ek_food),
 
@@ -30,17 +20,6 @@ SCRIPTS = [
                             (troop_get_inventory_slot_modifier, ":imod", ":troop", ":i_equipment"),
                             (store_add, ":i_troop_slot", ":i_equipment", slot_troop_item_0_imod - ek_item_0),
                             (troop_set_slot, ":troop", ":i_troop_slot", ":imod"),
-
-                            #DEBUG
-                            (try_begin),
-                              (eq, ":debug", 2),
-                              (try_begin),
-                                (ge, ":item", 0),
-                                (call_script, "script_describe_item_with_imod", s2, ":item", ":imod"),
-                                (display_message, "@Auto-loot debug: {s2}"),
-                                (val_add, ":debug_count", 1),
-                              (try_end),
-                            (try_end),
 
                             # make a determination of whether this npc should restrict themselves to mounted compatible equipment
                             (eq, ":i_equipment", ek_horse),
@@ -57,13 +36,6 @@ SCRIPTS = [
                             (try_end),
 
                           (try_end), #(try_for_range, ":i_equipment", ek_item_0, ek_food),
-
-                          #DEBUG
-                          (try_begin),
-                            (eq, ":debug", 2),
-                            (gt, ":debug_count", 0),
-                            (display_message, "@End of {s60}'s equipment"),
-                          (try_end),
 
                         (try_end), #(try_for_range, ":i_stack", 0, ":num_stacks"),
 
@@ -131,29 +103,14 @@ SCRIPTS = [
                               (str_store_string, s1, "@{s2}"),
                             (try_end),
                             (val_add, ":changed", 1),
-
-                            #DEBUG
-                            (try_begin),
-                              (eq, ":debug", 1),
-
-                              (call_script, "script_describe_item_with_imod", s10, ":new_item", ":new_imod"),
-                              (call_script, "script_get_item_score_with_imod", ":new_item", ":new_imod"),
-                              (str_store_string, s10, "@{s10}({reg0})"),
-
-                              (call_script, "script_describe_item_with_imod", s11, ":old_item", ":old_imod"),
-                              (call_script, "script_get_item_score_with_imod", ":old_item", ":old_imod"),
-                              (str_store_string, s11, "@{s11}({reg0})"),
-
-                              (call_script, "script_store_troop_name_link", s12, ":troop"),
-                              (display_message, "@{s12} replaced {s11} with {s10}", debug_color),
-                            (try_end),
                           (try_end),
 
                           # append a message for this companion, if they equipped at least one new thing
                           (try_begin),
                             (gt, ":changed", 0),
                             (call_script, "script_store_troop_name_link", s2, ":troop"),
-                            (str_store_string, s30, "@{s30}^{s2} equipped {s1}"),
+                            (str_store_string_reg, s97, s30),
+                            (str_store_string, s30, "@{s97}^{s2} equipped {s1}"),
                             (val_add, ":total", ":changed"),
                           (try_end),
                         (try_end),

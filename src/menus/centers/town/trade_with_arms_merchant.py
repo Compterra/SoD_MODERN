@@ -6,6 +6,7 @@ MENUS = [
     [
       #(set_background_mesh, "$g_sod_town_background"),
       (set_background_mesh, "mesh_pic_marketplace"),
+      (call_script, "script_sod_show_center_market_contact_portrait", "$current_town"),
     ],
     [
       ("trade_with_arms_merchant", [(party_slot_ge, "$current_town", slot_town_weaponsmith, 1)],

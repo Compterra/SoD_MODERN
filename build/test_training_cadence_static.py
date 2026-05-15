@@ -18,14 +18,44 @@ def assert_not_contains(raw: str, token: str) -> None:
 
 def main() -> None:
     center_training = read("src/triggers/ST03_daily/entry_0134.py")
+    center_training_helper = read("src/scripts/ZD_centers/sod_center_training_maintenance.py")
+    party_training = read("src/triggers/ST03_daily/entry_0021.py")
+    party_training_helper = read("src/scripts/ZC_parties/sod_party_training_maintenance.py")
     retinues = read("src/scripts/ZC_parties/sod_companion_retinues.py")
-    doc = read("docs/TRAINING_CADENCE_DESIGN.md")
+    doc = read("docs/company/TRAINING_CADENCE_DESIGN.md")
     skills = read("compile/module_skills.py")
 
     assert_contains(center_training, "(6,")
-    assert_contains(center_training, '(party_get_slot, ":trainers", ":cur_center", slot_center_trainers)')
-    assert_contains(center_training, '(store_mul, ":exp", ":trainers", ":stack_size")')
+    assert_contains(center_training, 'script_sod_center_process_trainer_xp_pulse')
+    assert_not_contains(center_training, "try_for_range")
+    assert_contains(center_training_helper, '"sod_center_process_trainer_xp_pulse"')
+    assert_contains(center_training_helper, '(party_slot_eq, ":cur_center", slot_town_lord, "trp_player")')
+    assert_contains(center_training_helper, '(party_get_slot, ":trainers", ":cur_center", slot_center_trainers)')
+    assert_contains(center_training_helper, '(store_mul, ":exp", ":trainers", ":stack_size")')
+    assert_contains(center_training_helper, "slot_center_has_barracks")
+    assert_contains(center_training_helper, "slot_center_has_range")
+    assert_contains(center_training_helper, "slot_center_has_stables")
+    assert_contains(center_training_helper, '(party_upgrade_with_xp, ":cur_center", 1, 1)')
     assert_not_contains(center_training, '(val_mul, ":trainers", 4)')
+    assert_not_contains(center_training_helper, '(val_mul, ":trainers", 4)')
+    assert_contains(party_training, "(48,")
+    assert_contains(party_training, "script_sod_party_process_hero_and_garrison_training_xp")
+    assert_not_contains(party_training, "try_for_range")
+    for token in [
+        '"sod_party_process_hero_and_garrison_training_xp"',
+        "chance_hero_party_gain_extra_xp",
+        "chance_garrison_gain_extra_xp",
+        "store_character_level, \":player_level\", \"trp_player\"",
+        "store_skill_level, \":trainer_level\", skl_trainer",
+        "(val_add, \":trainer_level\", 2)",
+        "(val_div, \":player_level\", 4)",
+        "(store_mul, \":xp_gain\", \":trainer_level\", 500)",
+        "script_cf_party_upgrade_with_xp",
+        "walled_centers_begin, walled_centers_end",
+        "(neq, \":center_lord\", \"trp_player\")",
+        '":center_no", 3000',
+    ]:
+        assert_contains(party_training_helper, token)
 
     training = retinues[
         retinues.index('"sod_companion_retinue_apply_training"') :
@@ -45,6 +75,8 @@ def main() -> None:
     assert_contains(skills, "{0,4,10,16,23,30,38,46,55,65,80}")
     assert_not_contains(retinues, "sod_apply_player_party_training_interval")
     assert_not_contains(center_training, "sod_apply_player_party_training_interval")
+    assert_not_contains(center_training_helper, "sod_apply_player_party_training_interval")
+    assert_not_contains(party_training_helper, "sod_apply_player_party_training_interval")
 
     print("test_training_cadence_static: OK")
 

@@ -14,7 +14,7 @@ DIALOGS = [
     (eq, "$g_talk_troop", "trp_npc14"),
     (main_party_has_troop, "trp_npc14"),
   ],
-  "Lezalit, speak plainly. What do you see in my command?", "companion_depth_lezalit",
+  "Lezalit, what do you see in my command?", "companion_depth_lezalit",
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc14"),
   ]],

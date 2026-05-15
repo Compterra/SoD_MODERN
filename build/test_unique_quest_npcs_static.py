@@ -144,6 +144,14 @@ def test_diego_has_post_rescue_dialogue_and_slaver_reactions() -> None:
     assert_contains(slavers, "$g_sod_diego_anti_slaver_proof")
     assert_contains(slavers, "trp_refugee")
     assert_contains(slavers, "chainbreaker_chance")
+    assert_contains(slavers, '(ge, ":diego_approval", 45)')
+    assert_contains(slavers, "keeps the freed moving away from your banner")
+    assert_contains(slavers, "Trust will take more than one broken lock")
+    assert_contains(slavers, 'troop_slot_eq, "trp_diego_companion", slot_troop_companion_role, sod_companion_role_spymaster')
+    assert_contains(slavers, '(val_min, ":chainbreaker_chance", 40)')
+    assert_contains(slavers, "slot_troop_companion_trust_tier")
+    if slavers.count('(call_script, "script_sod_companion_get_approval_band_to_reg", "trp_diego_companion")') < 7:
+        raise AssertionError("Diego Slaver reactions must refresh cached trust tier after approval changes")
     assert_contains(slavers, 'main_party_has_troop, "trp_diego_companion"')
     assert_contains(read("src/dialogs/ZZ99_misc_dialogs/trp_diego_companion_warning.py"), "A chain bought cleanly")
     assert_contains(read("src/dialogs/ZZ99_misc_dialogs/trp_diego_companion_reconcile.py"), "Cages opened")
@@ -178,8 +186,9 @@ def test_diego_has_post_rescue_dialogue_and_slaver_reactions() -> None:
     assert_contains(depth, 'troop_set_slot, "trp_diego_companion", slot_troop_playerparty_history, pp_history_dismissed')
     assert_contains(depth, 'troop_set_slot, "trp_diego_companion", slot_troop_playerparty_history, pp_history_indeterminate')
     assert_contains(depth, "{s16}{s34}")
-    assert_contains(campfire, "companion_campfire_diego_chainbreaker")
-    assert_contains(campfire, "Ask Diego to watch for captives")
+    assert_not_contains(campfire, "companion_campfire_diego_chainbreaker")
+    assert_not_contains(campfire, "Ask Diego to watch for captives")
+    assert_contains(read("src/dialogs/ZZ99_misc_dialogs/trp_diego_companion_plyr_chainbreaker.py"), "How do we hurt the Slaver web?")
 
 
 def test_special_companion_static_safety_rules_for_diego() -> None:

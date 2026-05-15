@@ -13,6 +13,7 @@ MENUS = [
         ], "Yes.",
        [(assign, "$g_player_icon_state", pis_ship),
         (party_set_flags, "p_main_party", pf_is_ship, 1),
+        (call_script, "script_sod_refresh_player_map_icon"),
         (party_get_position, pos1, "p_main_party"),
         (map_get_water_position_around_position, pos2, pos1, 6),
         (party_set_position, "p_main_party", pos2),

@@ -1,7 +1,7 @@
 MENUS = [
 (
     "train_peasants_against_bandits", 0,
-    "As the party member with the highest training skill ({reg2}), {reg3?you expect:{s1} expects} that getting some peasants ready for practice will take {reg4} hours.",
+    "{s68}",
     "none",
     [(call_script, "script_get_max_skill_of_player_party", "skl_trainer"),
      (assign, ":max_skill", reg0),
@@ -18,6 +18,12 @@ MENUS = [
      (val_mul, ":needed_hours", 3),
      (val_div, ":needed_hours", 5),
      (store_sub, reg4, ":needed_hours", "$qst_train_peasants_against_bandits_num_hours_trained"),
+     (try_begin),
+       (eq, ":max_skill_owner", "trp_player"),
+       (str_store_string, s68, "@As the party member with the highest training skill ({reg2}), you expect that getting some peasants ready for practice will take {reg4} hours."),
+     (else_try),
+       (str_store_string, s68, "@As the party member with the highest training skill ({reg2}), {s1} expects that getting some peasants ready for practice will take {reg4} hours."),
+     (try_end),
      ],
     [
       ("make_preparation", [], "Train them.",

@@ -1,10 +1,15 @@
 DIALOGS = [
 [party_tpl|pt_merchant_caravan, "start", [(quest_get_slot, ":quest_target_party", "qst_escort_merchant_caravan", slot_quest_target_party),
+                                           (gt, ":quest_target_party", 0),
                                            (eq, "$g_encountered_party", ":quest_target_party"),
+                                           (party_is_active, ":quest_target_party"),
                                            (quest_get_slot, ":quest_target_center", "qst_escort_merchant_caravan", slot_quest_target_center),
+                                           (party_is_active, ":quest_target_center"),
                                            (store_distance_to_party_from_party, ":dist", ":quest_target_center", ":quest_target_party"),
                                            (lt, ":dist", 4),
                                            (quest_slot_eq, "qst_escort_merchant_caravan", slot_quest_current_state, 1),
+                                           (quest_get_slot, reg14, "qst_escort_merchant_caravan", slot_quest_gold_reward),
+                                           (str_store_party_name, s21, ":quest_target_center"),
                                            ],
    "We are close enough to {s21} to smell the cookfires. The wagons can make the last stretch without you.\
  Here is your pay: {reg14} denars.\
@@ -15,7 +20,6 @@ DIALOGS = [
                                                        (party_set_ai_behavior, ":quest_target_party", ai_bhvr_travel_to_party),
                                                        (party_set_ai_object, ":quest_target_party", ":quest_target_center"),
                                                        (party_set_flags, ":quest_target_party", pf_default_behavior, 0),
-                                                       (str_store_party_name, s21, ":quest_target_center"),
                                                        (call_script, "script_change_player_relation_with_center", ":quest_giver_center", 1),
                                                        (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_caravan_protection, 3),
                                                        (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_trade_profit, 2),

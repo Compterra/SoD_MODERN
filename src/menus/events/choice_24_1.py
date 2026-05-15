@@ -1,7 +1,7 @@
 MENUS = [
 (
     "event_24", mnf_disable_all_keys,
-    "Some {s2} visit you. They complain about your lack of humility. They think a ruler giving the example of modesty would help your faith to spread.",
+    "Some {s2} visit you. They complain about your lack of humility, arguing that a modest ruler would help the faith spread.",
     "none",
     [  (try_begin),
 	    (eq, "$g_sod_faith", cb_the_one),
@@ -36,7 +36,7 @@ MENUS = [
           (change_screen_return),
         ]
        ),
-             ("choice_24_3", [], "Refuse. A majesty don't have to be humble.", [
+             ("choice_24_3", [], "Refuse. Majesty does not bow to humility.", [
 		  (val_sub, "$g_sod_clergy_happines", 10),
 		  (val_sub, "$g_sod_global_faith", 25),
 		  (val_clamp, "$g_sod_global_faith", -2000, 2001),

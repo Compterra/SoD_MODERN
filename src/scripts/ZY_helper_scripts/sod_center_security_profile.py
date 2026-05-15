@@ -49,7 +49,11 @@ SCRIPTS = [
 
     (try_begin),
       (neg|is_between, ":center_no", centers_begin, centers_end),
-      (display_log_message, "@Bug : center security profile was called for something else than a center."),
+      (try_begin),
+        (eq, "$g_sod_debug", 1),
+        (assign, reg0, ":center_no"),
+        (display_log_message, "@center security profile called with non-center party {reg0}.", debug_color),
+      (try_end),
     (else_try),
       (party_get_slot, ":population", ":center_no", slot_center_sod_local_population),
       (party_get_slot, ":health", ":center_no", slot_center_sod_local_health),

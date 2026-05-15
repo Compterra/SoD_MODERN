@@ -1,4 +1,10 @@
 DIALOGS = [
-[party_tpl|pt_kidnapped_girl, "start", [],
-   "Oh {sir/madam}. Thank you so much for rescuing me. Will you take me to my family now?", "kidnapped_girl_encounter_1", []],
+[party_tpl|pt_kidnapped_girl, "start", [
+    (check_quest_active, "qst_kidnapped_girl"),
+    (neg|check_quest_concluded, "qst_kidnapped_girl"),
+    (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 2),
+    (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+    (party_is_active, "$g_encountered_party"),
+    ],
+   "Thank you for getting me away from them. Can we go home now?", "kidnapped_girl_encounter_1", []],
 ]

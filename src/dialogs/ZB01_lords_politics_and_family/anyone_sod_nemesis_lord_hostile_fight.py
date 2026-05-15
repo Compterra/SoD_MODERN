@@ -7,5 +7,9 @@ DIALOGS = [
     (troop_get_slot, reg21, "$g_talk_troop", slot_troop_sod_nemesis_defeats),
     (troop_get_slot, reg22, "$g_talk_troop", slot_troop_sod_nemesis_duel_pressure),
   ],
-  "No more court words. I have worn the shape of your victories into my bones, {playername}. Today every man here will see whether your name still fits in my mouth.", "close_window", []],
+  "No more court words. I have worn the shape of your victories into my bones, {playername}. Today every man here will see whether your name still fits in my mouth.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+    (encounter_attack),
+  ]],
 ]

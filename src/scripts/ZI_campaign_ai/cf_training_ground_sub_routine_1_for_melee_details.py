@@ -5,6 +5,6 @@ SCRIPTS = [
       (ge, "$temp_3", ":value"),
       (val_add, ":value", 1),
       (troop_get_slot, ":troop_id", "trp_stack_selection_ids", ":value"),
-      (call_script, "script_store_troop_name_link", s0, ":troop_id"),
+      (call_script, "script_store_troop_name_link", s68, ":troop_id"),
   ]),
 ]

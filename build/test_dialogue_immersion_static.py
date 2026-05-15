@@ -21,6 +21,29 @@ def assert_before(raw: str, first: str, second: str) -> None:
     assert raw.index(first) < raw.index(second), f"{first} should appear before {second}"
 
 
+def assert_not_contains(raw: str, token: str) -> None:
+    assert token not in raw, f"unexpected stale token: {token}"
+
+
+def test_stale_short_dialogue_lines_are_tightened() -> None:
+    village_moneyless = read("src/dialogs/ZC01_centers_and_economy/anyone_village_elder_moneyless.py")
+    prisoner_offer = read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_offer.py")
+    prisoner_offer_again = read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_offer_again.py")
+    claimant_oath = read("src/dialogs/ZB01_lords_politics_and_family/anyone_loa_swear_oath_3.py")
+    lord_oath = read("src/dialogs/ZB01_lords_politics_and_family/anyone_lord_give_oath_4.py")
+    automanage = read("src/dialogs/ZZ99_misc_dialogs/anyone_plyr_member_automanage_select_melee.py")
+
+    assert_contains(village_moneyless, "Your purse is too light for this")
+    assert_contains(prisoner_offer, "Swear to my company and you will be paid, fed, and armed.")
+    assert_contains(prisoner_offer_again, "Perhaps. State the offer again.")
+    assert_contains(claimant_oath, "I will serve as your loyal knight while I have breath.")
+    assert_contains(lord_oath, "I will remain your loyal {man/follower} while I have breath.")
+    assert_contains(automanage, "Set melee weapon upgrades.")
+    for raw in (village_moneyless, prisoner_offer, prisoner_offer_again, claimant_oath, lord_oath, automanage):
+        assert_not_contains(raw, "embarrasing")
+        assert_not_contains(raw, "....")
+
+
 def test_lord_personality_greeting_is_wired_before_fallback() -> None:
     scripts = read("src/scripts/ZY_helper_scripts/sod_dialogue_immersion.py")
     dialog = read("src/dialogs/ZA01_startup_and_dispatch/anyone_lord_start_personality_greeting.py")
@@ -741,6 +764,23 @@ def test_high_frequency_town_player_lines_have_scene_voice() -> None:
     }
     for path, token in checks.items():
         assert_contains(read(path), token)
+
+
+def test_legacy_copy_typos_do_not_regress() -> None:
+    guild_history = read("src/dialogs/ZC01_centers_and_economy/anyone_gm_guild_history2_02.py")
+    assert_contains(guild_history, "Prince Aahil")
+    assert_contains(guild_history, "illegal duel")
+    assert "Price Aahil" not in guild_history
+    assert "illegal dual" not in guild_history
+
+    common_execution = read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_die4.py")
+    assert_contains(common_execution, "You slit the prisoner's throat")
+    assert "their throat" not in common_execution
+    assert "his corpse" not in common_execution
+
+    lord_execution = read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_treason_execute.py")
+    assert_contains(lord_execution, "watch the body sag to the floor")
+    assert "satisfied, as his corpse" not in lord_execution
 
 
 def test_companion_recruitment_flow_preserves_slot_driven_intro_chain() -> None:

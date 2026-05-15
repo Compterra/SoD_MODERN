@@ -166,6 +166,7 @@ def test_price_of_bread_world_memory_contract_is_wired() -> None:
     )
     for raw in rtc_world_target_sources:
         assert_not_contains(raw, '"pt_scout_party"')
+        assert_not_contains(raw, '"pt_bandits_awaiting_ransom"')
     for token in (
         "slot_quest_target_center",
         "slot_quest_target_troop",
@@ -402,10 +403,10 @@ def test_war_of_witnesses_world_target_is_wired() -> None:
     for template in (
         '"pt_sod_diplomatic_envoy"',
         '"pt_merchant_caravan"',
-        '"pt_bandits_awaiting_ransom"',
         '"pt_bandits"',
     ):
         assert_contains(prepare, template)
+    assert_not_contains(prepare, '"pt_bandits_awaiting_ransom"')
     assert_contains(prepare, "slot_quest_target_party")
     assert_contains(cleanup, "remove_party")
 

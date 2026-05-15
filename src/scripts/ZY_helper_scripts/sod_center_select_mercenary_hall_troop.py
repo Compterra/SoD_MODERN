@@ -40,7 +40,7 @@ SCRIPTS = [
      (assign, ":tier_1_a", reg0),
      (assign, ":tier_1_b", reg1),
      (assign, ":noble", reg2),
-     (call_script, "script_sod_merc_market_calculate_guild_supply", ":guild"),
+     (call_script, "script_sod_merc_market_calculate_guild_supply", ":guild", 0),
      (assign, ":market_quality", reg2),
      (store_random_in_range, ":roll", 0, 100),
      (try_begin),

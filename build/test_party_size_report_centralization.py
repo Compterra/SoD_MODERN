@@ -12,26 +12,25 @@ def assert_contains(text, needle, path):
         raise AssertionError(f"{path} missing {needle!r}")
 
 
-def main():
-    path = "src/menus/camp/party_size_report.py"
+def test_party_size_report_exposes_centralization_context():
+    path = "src/menus/0000_hardcoded_mb1011/party_size_report.py"
     text = read(path)
 
     for needle in [
+        '"{s98}"',
         "script_sod_get_realm_military_centralization_profile",
+        "str_store_string_reg, s98, s99",
         "Realm military law",
-        "Centralization: {reg10}",
-        "Militarization: {reg11}",
-        "Ruler host modifier: {reg12}",
-        "Vassal host modifier: {reg13}",
-        "Noble happiness: {reg14}",
-        "Unrest pressure: {reg15}",
+        "Authority: {s10}",
+        "Levy system: {s11}",
+        "Host balance: {s12}",
+        "Political mood: {s13}",
         "centralization concentrates military support around your own host",
         "centralization pulls military support toward the crown",
     ]:
         assert_contains(text, needle, path)
 
-    print("[party_size_report_centralization] OK")
-
 
 if __name__ == "__main__":
-    main()
+    test_party_size_report_exposes_centralization_context()
+    print("[party_size_report_centralization] OK")

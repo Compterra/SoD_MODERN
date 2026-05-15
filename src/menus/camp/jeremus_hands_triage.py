@@ -134,7 +134,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_honorable_peace, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc12"),
           (display_message, "@The infirmary steadies because guards and order arrive before panic does. Jeremus can finally look up from the blood.", 0xCCCC66),
-          (jump_to_menu, "mnu_jeremus_hands_triage"),
+          (start_map_conversation, "trp_npc12"),
         ]
       ),
       ("jeremus_infirmary_company_first", [
@@ -151,7 +151,7 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc12", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc12"),
           (display_message, "@The company wounded get cloth first. The infirmary quiets, but Jeremus hears the silence around the prisoners.", 0xCC9966),
-          (jump_to_menu, "mnu_jeremus_hands_triage"),
+          (start_map_conversation, "trp_npc12"),
         ]
       ),
       ("jeremus_infirmary_leave", [], "Return to camp.",
@@ -179,7 +179,7 @@ MENUS = [
     [
       ("jeremus_infirmary_after", [], "Speak with Jeremus about triage.",
         [
-          (jump_to_menu, "mnu_jeremus_hands_triage"),
+          (start_map_conversation, "trp_npc12"),
         ]
       ),
     ]
@@ -199,7 +199,7 @@ MENUS = [
     [
       ("jeremus_infirmary_failed_after", [], "Face Jeremus' triage order.",
         [
-          (jump_to_menu, "mnu_jeremus_hands_triage"),
+          (start_map_conversation, "trp_npc12"),
         ]
       ),
     ]

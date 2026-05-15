@@ -4,6 +4,8 @@ MENUS = [
    "none",
    [
      (assign, "$g_player_icon_state", pis_normal),
+     (assign, "$g_sod_player_map_icon_dirty", 1),
+     (call_script, "script_sod_refresh_player_map_icon"),
      (set_background_mesh, "mesh_pic_camp"),
     ],
     [

@@ -76,7 +76,8 @@ def test_landless_lords_have_patronage_decision_ladder():
     ]
     for token in required:
         assert token in script
-    assert "script_sod_lord_process_patronage_path" in daily
+    assert "script_sod_lord_update_all_party_morale" in daily
+    assert "script_sod_lord_process_patronage_path" in script
     assert "start_map_conversation" in daily
     assert "script_sod_lord_choose_patron_faction_to_reg" in respawn
 

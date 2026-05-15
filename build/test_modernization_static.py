@@ -33,7 +33,6 @@ KNOWN_EXTERNAL_OR_LEGACY_STATES = {
     "member_wilderness_talk",
     "member_inn_talk",
     "merchant_quest_persuade_peace_10",
-    "party_encounter_attack",
     "party_encounter_hostile_defender",
     "cpsq_0",
     "sell_prisoner_outlaws_finished",
@@ -226,6 +225,7 @@ def test_dialogue_outputs_have_matching_inputs_or_safe_terminals() -> None:
 def test_dialogue_outputs_do_not_use_stale_removed_state_names() -> None:
     stale_exact = {
         "cpdla_nihilistic_11",
+        "party_encounter_attack",
     }
     offenders = []
     input_states = {str(entry["state_in"]) for entry in parse_dialogue_entries()}
@@ -607,8 +607,6 @@ def test_high_frequency_distance_calls_are_audited() -> None:
     )
     current = {f"{path}:{line}" for path, line, _ in hits}
     audited = {
-        "src/triggers/ST01_every_frame/entry_0052.py:41",
-        "src/triggers/ST01_every_frame/entry_0053.py:30",
         "src/triggers/ST01_every_frame/entry_0078.py:10",
         "src/triggers/ST02_every_hour/entry_0073.py:5",
         "src/triggers/ST02_every_hour/entry_0077.py:17",
@@ -617,10 +615,7 @@ def test_high_frequency_distance_calls_are_audited() -> None:
         "src/triggers/ST02_every_hour/entry_0082.py:24",
         "src/triggers/ST02_every_hour/entry_0086.py:69",
         "src/triggers/ST02_every_hour/entry_0087.py:39",
-        "src/triggers/ST02_every_hour/entry_0124.py:22",
-        "src/triggers/ST02_every_hour/entry_0124.py:41",
-        "src/triggers/ST02_every_hour/entry_0142.py:245",
-        "src/triggers/ST02_every_hour/entry_0142.py:329",
+        "src/triggers/ST02_every_hour/entry_0178_incriminate_loyal_commander.py:20",
     }
     assert current == audited, "high-frequency distance-call inventory changed: " + repr(sorted(current ^ audited))
 
@@ -646,12 +641,13 @@ def test_runtime_log_invalid_party_zero_sources_are_guarded() -> None:
     health = read("src/scripts/ZD_centers/change_center_health.py")
     threat = read("src/scripts/ZY_helper_scripts/sod_threat_board_apply_economy_effect.py")
     music = read("src/scripts/ZC_parties/get_culture_with_party_faction_for_music.py")
-    retreat = read("src/triggers/ST01_every_frame/entry_0052.py")
+    retreat = read("src/scripts/ZY_helper_scripts/sod_world_map_trigger_services.py")
     assert prosperity.index('(is_between, ":center_no", centers_begin, centers_end)') < prosperity.index("(party_get_slot")
     assert health.index('(is_between, ":center_no", centers_begin, centers_end)') < health.index("(party_get_slot")
     assert threat.index('(is_between, ":sponsor_center", centers_begin, centers_end)') < threat.index("script_change_center_prosperity")
     assert music.index('(party_is_active, ":party_no")') < music.index("(store_faction_of_party")
-    assert retreat.index('(neg|party_is_active, ":commander_party")') < retreat.index("(faction_get_slot")
+    lord_avoid_ai = retreat[retreat.index('"sod_world_map_process_lord_avoid_party_ai"') :]
+    assert lord_avoid_ai.index('(neg|party_is_active, ":commander_party")') < lord_avoid_ai.index("(faction_get_slot")
 
 
 def test_global_party_operations_are_audited_in_scripts_and_triggers() -> None:
@@ -675,8 +671,6 @@ def test_global_party_operations_are_audited_in_scripts_and_triggers() -> None:
         "src/scripts/ZB_economy_and_trade/shield_item_set_banner.py:party_get_slot:$g_encountered_party",
         "src/scripts/ZC_parties/event_player_defeated_enemy_party.py:party_get_slot:$g_enemy_party",
         "src/scripts/ZC_parties/event_player_defeated_enemy_party.py:party_slot_eq:$g_enemy_party",
-        "src/scripts/ZC_parties/party_calculate_loot.py:party_get_slot:$g_enemy_party",
-        "src/scripts/ZC_parties/party_calculate_loot.py:party_slot_eq:$g_enemy_party",
         "src/scripts/ZC_parties/total_victory_finalize.py:party_get_slot:$g_enemy_party",
         "src/scripts/ZC_parties/total_victory_finalize.py:party_slot_eq:$g_enemy_party",
         "src/scripts/ZD_centers/agent_get_town_walker_details.py:party_get_slot:$current_town",
@@ -889,6 +883,14 @@ def test_touched_closest_center_outputs_are_center_range_checked() -> None:
     troop_info = read("src/scripts/ZE_encounters/get_information_about_troops_position.py")
     assert_contains(troop_info, "(is_between, reg0, centers_begin, centers_end)")
     assert_contains(troop_info, "@unknown roads")
+    assert_contains(troop_info, '(str_store_string, s68, "@is currently")')
+    assert_contains(troop_info, '(str_store_string, s70, "@should be")')
+    assert_contains(troop_info, '(str_store_string, s71, "@ at the moment")')
+    assert_not_contains(troop_info, "{reg3?was:is")
+    assert_not_contains(troop_info, "{reg3?was:should be")
+    assert_not_contains(troop_info, "{reg3?was:has been")
+    assert_not_contains(troop_info, "{reg4?she:he}")
+    assert_not_contains(troop_info, "{reg4?her:his}")
 
     accounts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
     assert_contains(accounts, '(is_between, ":center", centers_begin, centers_end)')
@@ -1782,11 +1784,15 @@ def test_runtime_encounter_cleanup_sanitizes_all_high_risk_globals() -> None:
         '$g_encountered_party_2',
         '$g_enemy_party',
         '$g_talk_troop_party',
+        '$current_town',
         '(assign, "$g_leave_encounter", 1)',
         '(neg|party_is_active, "$g_enemy_party")',
         '(neg|party_is_active, "$g_talk_troop_party")',
+        '(neg|is_between, "$current_town", centers_begin, centers_end)',
+        '(assign, "$current_town", -1)',
     ):
         assert_contains(raw, token)
+    assert raw.index('(neg|is_between, "$current_town", centers_begin, centers_end)') < raw.index('(assign, "$current_town", -1)')
 
 
 def test_runtime_battle_aftermath_validates_globals_before_party_ops() -> None:
@@ -1838,13 +1844,19 @@ def test_runtime_sanity_report_is_registered_and_scrubs_stale_state() -> None:
         '"runtime_sanity_report"',
         "script_sod_describe_runtime_sanity_to_s20",
         "script_sod_sanitize_encounter_globals",
-        '("runtime_sanity_scrub", [(eq, "$cheat_mode", 1)], "Debug: clean stale encounter state."',
+        '("runtime_sanity_scrub", [',
+        '(this_or_next|eq, "$cheat_mode", 1)',
+        '(eq, "$g_sod_cheat_mode", 1)',
+        '(neq, "$cheat_mode", 1)',
+        '(neq, "$g_sod_cheat_mode", 1)',
         'jump_to_menu, "mnu_runtime_sanity_report"',
         'jump_to_menu, "mnu_reports"',
     ):
         assert_contains(menu, token)
     assert_contains(reports, 'jump_to_menu, "mnu_runtime_sanity_report"')
-    assert_contains(reports, '("view_runtime_sanity_report", [(eq, "$cheat_mode", 1)], "Debug: Runtime Sanity Report."')
+    assert_contains(reports, '("view_runtime_sanity_report", [')
+    assert_contains(reports, '(this_or_next|eq, "$cheat_mode", 1)')
+    assert_contains(reports, '(eq, "$g_sod_cheat_mode", 1)')
     assert_contains(order, "reports/runtime_sanity_report.py")
     assert_contains(audit, "mnu_runtime_sanity_report")
 
@@ -2045,6 +2057,34 @@ def test_weekly_population_news_is_gated_against_census_spam() -> None:
         assert raw.index('(eq, ":should_report_population_change", 1)') < raw.index("Word reaches you from")
 
 
+def test_world_map_trigger_service_scripts_do_not_fail_as_plain_helpers() -> None:
+    raw = read("src/scripts/ZY_helper_scripts/sod_world_map_trigger_services.py")
+
+    for script_name in (
+        "sod_world_map_process_player_spotted_center_warnings",
+        "sod_refresh_player_map_icon_if_dirty",
+        "sod_battle_commander_reset_if_dirty",
+    ):
+        start = raw.index(f'("{script_name}",')
+        end = raw.index(" ]),", start)
+        body = raw[start:end]
+        assert body.index("(try_begin)") < body.index("(map_free)"), script_name
+
+    spotted = raw[raw.index('"sod_world_map_process_player_spotted_center_warnings"') :]
+    center_loop = spotted.index('(try_for_range, ":cur_center", centers_begin, centers_end)')
+    center_filter = spotted.index('(store_faction_of_party, ":cur_faction", ":cur_center")')
+    assert center_loop < spotted.rfind("(try_begin)", 0, center_filter) < center_filter
+    refresh = raw[raw.index('"sod_refresh_player_map_icon_if_dirty"') :]
+    refresh_map_free = refresh.index("(map_free)")
+    refresh_check = refresh.index('(eq, ":needs_refresh", 1)')
+    assert refresh.rfind("(try_begin)", 0, refresh_map_free) < refresh_map_free < refresh_check
+    assert refresh.rfind("(try_begin)", 0, refresh_check) < refresh_check
+    commander = raw[raw.index('"sod_battle_commander_reset_if_dirty"') :]
+    commander_map_free = commander.index("(map_free)")
+    commander_reset = commander.index('(call_script, "script_sod_battle_commander_reset")')
+    assert commander.rfind("(try_begin)", 0, commander_map_free) < commander_map_free < commander_reset
+
+
 if __name__ == "__main__":
     test_modernization_checklist_structure()
     test_modernization_checklist_tracks_known_bug_families()
@@ -2142,6 +2182,7 @@ if __name__ == "__main__":
     test_hero_death_clears_prisoner_ownership_first()
     test_note_from_sreg_calls_do_not_use_literal_strings()
     test_weekly_population_news_is_gated_against_census_spam()
+    test_world_map_trigger_service_scripts_do_not_fail_as_plain_helpers()
     print("test_modernization_static: OK")
 
 

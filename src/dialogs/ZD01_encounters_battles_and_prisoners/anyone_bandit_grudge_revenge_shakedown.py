@@ -6,6 +6,8 @@ DIALOGS = [
     (store_random_in_range, ":revenge_roll", 0, 100),
     (lt, ":revenge_roll", 35),
 ], "You are the one making outlaws pay tolls. No bargain today. The roads need to see you bleed.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
 ]],
 ]

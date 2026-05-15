@@ -144,7 +144,8 @@ def test_claimant_resolution_wiring_exists() -> None:
     ):
         assert_contains(helper, token)
     assert_contains(constants, "sod_old_ruler_status_remnant_claimant")
-    assert_contains(random_faction, "neg|is_between, \":faction_no\", rebel_factions_begin, rebel_factions_end")
+    assert_contains(random_faction, "native_kingdoms_begin, native_kingdoms_end")
+    assert "rebel_factions_begin" not in random_faction
 
 
 def test_claimant_compatibility_guards_exist() -> None:
@@ -156,6 +157,8 @@ def test_claimant_compatibility_guards_exist() -> None:
     process_ai = read("src/scripts/ZF_factions/process_kingdom_parties_ai.py")
     select_marshall = read("src/scripts/ZF_factions/select_faction_marshall.py")
     strength = read("src/scripts/ZF_factions/faction_recalculate_strength.py")
+    strength_trigger = read("src/triggers/ST03_daily/entry_0032.py")
+    strength_daily = read("src/scripts/ZF_factions/sod_faction_daily_maintenance.py")
     continue_71 = read("src/menus/other/continue_71.py")
     continue_72 = read("src/menus/other/continue_72.py")
 
@@ -170,6 +173,11 @@ def test_claimant_compatibility_guards_exist() -> None:
     assert_contains(process_ai, "script_process_hero_ai")
     assert_contains(select_marshall, "slot_faction_marshall")
     assert_contains(strength, "script_faction_get_number_of_armies")
+    assert_contains(strength_trigger, "script_sod_faction_daily_recalculate_strengths")
+    assert "try_for_range" not in strength_trigger
+    assert_contains(strength_daily, '"sod_faction_daily_recalculate_strengths"')
+    assert_contains(strength_daily, "kingdoms_begin, kingdoms_end")
+    assert_contains(strength_daily, "script_faction_recalculate_strength")
     assert_contains(continue_71, "$supported_pretender")
     assert_contains(continue_71, "fac_player_supporters_faction")
     assert_contains(continue_72, "notification_rebels_switched_to_faction")
@@ -180,7 +188,7 @@ def test_kingdom_6_is_excluded_and_old_rebellion_path_remains() -> None:
     old_player_path = read("src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_give_conclude.py")
     old_quit_path = read("src/dialogs/ZB01_lords_politics_and_family/anyone_pretender_quit_rebel.py")
     assert "fac_kingdom_6_rebels" not in helper
-    assert_contains(helper, '"fac_kingdom_1", "fac_kingdom_6"')
+    assert_contains(helper, "native_kingdoms_begin, native_kingdoms_end")
     assert_contains(old_player_path, "$supported_pretender")
     assert_contains(old_player_path, "fac_player_supporters_faction")
     assert_contains(old_quit_path, "pretender_quit_rebel")

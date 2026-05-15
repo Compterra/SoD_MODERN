@@ -140,7 +140,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_tournament_glory, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc4"),
           (display_message, "@Rolf's name buys repairs in public. He calls it patronage. The town calls it useful.", 0xCCCC66),
-          (jump_to_menu, "mnu_rolf_name_worth_wearing"),
+          (start_map_conversation, "trp_npc4"),
         ]
       ),
       ("rolf_proof_theater", [
@@ -157,7 +157,7 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc4", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc4"),
           (display_message, "@The crowd enjoys the answer. Rolf enjoys it too much. The name survives, and remains hungry.", 0xCC9966),
-          (jump_to_menu, "mnu_rolf_name_worth_wearing"),
+          (start_map_conversation, "trp_npc4"),
         ]
       ),
       ("rolf_proof_leave", [], "Return to camp.",
@@ -185,7 +185,7 @@ MENUS = [
     [
       ("rolf_public_proof_after", [], "Settle the name with Rolf.",
         [
-          (jump_to_menu, "mnu_rolf_name_worth_wearing"),
+          (start_map_conversation, "trp_npc4"),
         ]
       ),
     ]
@@ -205,7 +205,7 @@ MENUS = [
     [
       ("rolf_public_proof_failed_after", [], "Face Rolf's public answer.",
         [
-          (jump_to_menu, "mnu_rolf_name_worth_wearing"),
+          (start_map_conversation, "trp_npc4"),
         ]
       ),
     ]

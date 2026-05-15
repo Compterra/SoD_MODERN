@@ -1,13 +1,14 @@
 MENUS = [
 (
     "collect_taxes_revolt", 0,
-    "You are interrupted while collecting the taxes at {s3}. A large band of angry {reg9?peasants:townsmen} is marching nearer, shouting about the exorbitant taxes and waving torches and weapons. It looks like they aim to fight you!",
+    "You are interrupted while collecting the taxes at {s3}. A large band of angry {s68} is marching nearer, shouting about the exorbitant taxes and waving torches and weapons. It looks like they aim to fight you!",
     "none",
     [(str_store_party_name, s3, "$current_town"),
-     (assign, reg9, 0),
      (try_begin),
        (party_slot_eq, "$current_town", slot_party_type, spt_village),
-       (assign, reg9, 1),
+       (str_store_string, s68, "@peasants"),
+     (else_try),
+       (str_store_string, s68, "@townsmen"),
      (try_end),
      ],
     [

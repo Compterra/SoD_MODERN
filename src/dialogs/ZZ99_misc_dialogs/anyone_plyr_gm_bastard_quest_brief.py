@@ -1,6 +1,6 @@
 DIALOGS = [
 [anyone|plyr, "gm_bastard_quest_brief", [],
-   "I'll fing this bastard and bring him to you.", "gm_merchant_quest_taken_bastard",
+   "I'll find this bastard and bring him to you.", "gm_merchant_quest_taken_bastard",
    [(set_spawn_radius, 1),
 	(assign, reg0, "p_village_44"),
     (assign, reg1, "p_village_41"),

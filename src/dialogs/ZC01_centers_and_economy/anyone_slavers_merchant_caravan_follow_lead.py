@@ -1,4 +1,13 @@
 DIALOGS = [
 [anyone, "slavers_merchant_caravan_follow_lead", [], "We will follow. Choose the road like our profit depends on it.", "close_window", [(assign, "$slavers_escort_merchant_caravan_mode", 0),
+                                                                                                     (quest_get_slot, ":quest_target_party", "qst_slavers_escort_merchant_caravan", slot_quest_target_party),
+                                                                                                     (try_begin),
+                                                                                                       (gt, ":quest_target_party", 0),
+                                                                                                       (party_is_active, ":quest_target_party"),
+                                                                                                       (party_set_ai_behavior, ":quest_target_party", ai_bhvr_track_party),
+                                                                                                       (party_set_ai_object, ":quest_target_party", "p_main_party"),
+                                                                                                       (party_set_flags, ":quest_target_party", pf_default_behavior, 0),
+                                                                                                       (quest_set_slot, "qst_slavers_escort_merchant_caravan", slot_quest_current_state, 1),
+                                                                                                     (try_end),
                                                                                                      (assign, "$g_leave_encounter", 1)]],
 ]

@@ -16,10 +16,38 @@ def assert_contains(raw: str, token: str) -> None:
     assert token in raw, f"missing token: {token}"
 
 
+def assert_not_contains(raw: str, token: str) -> None:
+    assert token not in raw, f"unexpected token: {token}"
+
+
 def assert_before(raw: str, first: str, second: str) -> None:
     assert first in raw, f"missing token: {first}"
     assert second in raw, f"missing token: {second}"
     assert raw.index(first) < raw.index(second), f"{first} should appear before {second}"
+
+
+def test_campaign_war_messages_do_not_reuse_stale_string_registers() -> None:
+    badboy = read("src/scripts/ZI_campaign_ai/start_badboy_war.py")
+    anti_legion = read("src/triggers/ST99_other/entry_0143.py")
+
+    for token in (
+        "(str_clear, s6)",
+        "(str_clear, s7)",
+        "(str_clear, s8)",
+        "(str_clear, s31)",
+        "(str_store_string_reg, s97, s31)",
+        "(str_store_string_reg, s97, s7)",
+        '(eq, ":new_wars", 5)',
+        '(ge, ":new_peaces", 1)',
+    ):
+        assert_contains(badboy, token)
+    assert_not_contains(badboy, '(str_store_string, s31, "@{s31}')
+    assert_not_contains(badboy, '(str_store_string, s7, "@{s7}')
+    assert_not_contains(badboy, '(str_store_string, s31, "@{s31}.^^{s7}")')
+
+    assert_contains(anti_legion, "(str_clear, s8)")
+    assert_contains(anti_legion, "(str_store_string_reg, s97, s8)")
+    assert_not_contains(anti_legion, '(str_store_string, s8, "@{s8}')
 
 
 def iter_source_files(root: str) -> list[Path]:
@@ -56,8 +84,9 @@ def test_quest_journal_archive_entries_are_not_duplicated() -> None:
     raw = read("src/scripts/ZG_quests/sod_quest_journal_describe_to_s2.py")
     assert_contains(raw, "if include_archive_day:")
     assert_contains(raw, "else:")
-    assert raw.count('(str_store_string, s0, "@        Stage {reg0} | Chain {reg1} | State {reg2}"),') == 1
-    assert raw.count('(str_store_string, s0, "@        Stage {reg0} | Chain {reg1} | State {reg2} | Archived day {reg3}"),') == 1
+    assert raw.count('(str_store_string, s68, "@        Stage {reg0} | Chain {reg1} | State {reg2}"),') == 1
+    assert raw.count('(str_store_string, s68, "@        Stage {reg0} | Chain {reg1} | State {reg2} | Archived day {reg3}"),') == 1
+    assert "{s0}" not in raw
 
 
 def test_quest_journal_surfaces_companion_personal_arcs() -> None:
@@ -114,6 +143,39 @@ def test_legacy_jester_and_formation_bugfixes() -> None:
     ):
         raw = read(path)
         assert_contains(raw, '"That trick is enough for now.", "close_window"')
+
+    for path in (
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_cheat.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_cheatt.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_cheatc.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_relations.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_cheat_fief.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_repeat_for_1000_jester_cheat1.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_repeat_for_troops_jester_cheatt1.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_repeat_for_factions_jester_faction_choice.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_repeat_for_parties_jester_cheat_fief_choice.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_02.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_03.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_04.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_05.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_06.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_07.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_08.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_09.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_faction_choice.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_faction_choice_02.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_faction_choice_03.py",
+        "src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_faction_choice_04.py",
+    ):
+        raw = read(path)
+        assert_contains(raw, '(this_or_next|eq, "$cheat_mode", 1)')
+        assert_contains(raw, '(eq, "$g_sod_cheat_mode", 1)')
+
+    assert_contains(
+        read("src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1.py"),
+        '(val_add, "$g_sod_cheat_mode_used", 1)',
+    )
 
     order = read("src/dialogs/_order_dialogs.txt")
     assert order.index("trp_sod_jester_plyr_jester_cheatc1_10.py") < order.index(
@@ -176,6 +238,33 @@ def test_legacy_honor_duel_and_jotnar_quest_bugfixes() -> None:
     assert_contains(duel, '(jump_to_scene, ":arena_scene")')
     assert_contains(duel, '(jump_to_menu, "mnu_arena_duel_fight")')
     assert '(neq, "$talk_context", tc_court_talk)' not in duel
+
+    jotnar_home = read("src/menus/duels/choose_opponent.py")
+    assert "test-cheat" not in jotnar_home
+    assert '(set_jump_mission, "mt_sod_arena_duel_fight")' not in jotnar_home
+
+    jotnar_opponents = read("src/menus/jotnar/jc_jarl.py")
+    assert_contains(jotnar_opponents, "The challenged fighter chooses the weapons")
+    disir_branch = jotnar_opponents[jotnar_opponents.index('"jc_disir"'):]
+    disir_branch = disir_branch[:disir_branch.index('"back"')]
+    assert_contains(disir_branch, 'Disir (Win +2, Lose -2)')
+    assert_contains(disir_branch, '(assign, "$sod_jc_competition_lose_value", -2)')
+
+    jotnar_challenged = read("src/menus/other/wep_set_1.py")
+    assert_contains(jotnar_challenged, "As the challenged fighter, you choose the equipment")
+
+    jotnar_challenged_fight = read("src/menus/jotnar/player_choosen_select_bet.py")
+    assert_contains(jotnar_challenged_fight, '(set_visitor, 21, "trp_player")')
+    assert "(set_jump_entry, 21)" not in jotnar_challenged_fight
+
+    for wager_menu in (
+        "src/menus/jotnar/jc_choose_bet.py",
+        "src/menus/jotnar/player_choosen_select_bet.py",
+    ):
+        raw_wager_menu = read(wager_menu)
+        assert_contains(raw_wager_menu, "no longer have enough coin to cover that wager")
+        assert_contains(raw_wager_menu, '(call_script, "script_sod_player_charge_gold", "$g_jotnar_clan_competition_bet")')
+        assert_before(raw_wager_menu, '(call_script, "script_sod_player_charge_gold", "$g_jotnar_clan_competition_bet")', '(set_jump_mission, "mt_jotnar_clan_arena")')
 
     village = read("src/menus/centers/village/recruit_volunteers.py")
     black_army_branch = village[village.index('(check_quest_active, "qst_black_army_aid_warband")'):]
@@ -436,7 +525,7 @@ def test_legacy_neutral_town_siege_entry_bugfix() -> None:
     outside = read("src/menus/centers/common/approach_gates.py")
     town = read("src/menus/centers/castle/castle_castle.py")
 
-    assert_contains(outside, "#MORDACHAI - allow sieges against what what a neutral or friendly faction")
+    assert_contains(outside, '"castle_start_siege"')
     assert_contains(town, '"town_start_siege_from_inside"')
     assert_contains(town, "Neutral or friendly towns auto-enter this menu, unlike castles.")
     assert_contains(town, '(this_or_next|party_slot_eq, "$current_town", slot_center_is_besieged_by, -1)')
@@ -711,8 +800,8 @@ def test_invasion_arrival_and_report_surfaces_exist() -> None:
     assert_contains(game_start, "$g_sod_imperial_delay_total")
     assert_contains(game_start, "$g_sod_imperial_last_delay_day")
     assert_contains(read("src/scripts/ZI_campaign_ai/ai_hire_mercenaries.py"), "script_sod_merc_market_weekly_pulse")
-    assert_contains(read("src/scripts/ZY_helper_scripts/sod_merc_market_weekly_pulse.py"), '(neq, ":kingdom_faction", "fac_kingdom_6")')
-    assert_contains(read("src/scripts/ZY_helper_scripts/sod_merc_market_try_accept_bid.py"), '(neq, ":kingdom_faction", "fac_kingdom_6")')
+    assert_contains(read("src/scripts/ZY_helper_scripts/sod_merc_market_weekly_pulse.py"), "native_kingdoms_begin, native_kingdoms_end")
+    assert_contains(read("src/scripts/ZY_helper_scripts/sod_merc_market_try_accept_bid.py"), "native_kingdoms_begin, native_kingdoms_end")
     assert_contains(read("src/dialogs/ZA02_sod_court_and_strategy/trp_sod_chancellor_plyr_chancellor_peace_2_06.py"), "(eq, 0, 1)")
     assert_contains(reports_menu, "mnu_invasion_status_report")
     assert_contains(order, "reports/invasion_status_report.py")
@@ -838,6 +927,7 @@ def test_player_slave_ownership_has_consequences_and_release_path() -> None:
 def test_elephant_guard_sacred_warden_world_presence_exists() -> None:
     constants = read("src/constants/module_constants.py")
     scripts = read("src/scripts/ZY_helper_scripts/sod_elephant_guard_world_presence.py")
+    world_presence_helpers = read("src/scripts/ZY_helper_scripts/sod_world_presence_director.py")
     weekly = read("src/triggers/ST04_weekly/entry_0126.py")
     daily = read("src/triggers/ST03_daily/entry_0158.py")
     order = read("src/triggers/_order_simple_triggers.txt")
@@ -884,20 +974,31 @@ def test_elephant_guard_sacred_warden_world_presence_exists() -> None:
     assert_contains(dialogs_order, "anyone_plyr_elephant_guard_world_talk_07.py")
     assert_contains(dialogs_order, "anyone_elephant_guard_world_volunteers.py")
     assert_contains(dialogs_order, "anyone_elephant_guard_world_free_slaves.py")
+    elephant_attack = read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_elephant_guard_world_rites_talk_03.py")
+    assert_contains(elephant_attack, '"close_window"')
+    assert_contains(elephant_attack, '(assign, "$g_enemy_party", "$g_encountered_party")')
+    assert_contains(elephant_attack, 'script_let_nearby_parties_join_current_battle')
+    assert_contains(elephant_attack, "(encounter_attack)")
+    assert_not_contains(elephant_attack, "party_encounter_attack")
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_elephant_guard_world_talk_02.py"), "script_sod_elephant_guard_apply_player_support")
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_elephant_guard_world_talk_03.py"), "script_sod_elephant_guard_grant_player_blessing")
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_elephant_guard_world_talk_06.py"), "script_sod_elephant_guard_grant_road_volunteers")
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_elephant_guard_world_talk_07.py"), "script_sod_elephant_guard_free_player_slaves")
-    assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_elephant_guard_world_talk_05.py"), "script_change_player_relation_with_faction")
+    defeat_event = read("src/scripts/ZC_parties/event_player_defeated_enemy_party.py")
+    assert_contains(defeat_event, '"pt_elephant_guard_sanctuary_patrol"')
+    assert_contains(defeat_event, '"pt_elephant_guard_relic_procession"')
+    assert_contains(defeat_event, 'script_change_player_relation_with_faction", "fac_sod_merc_guild3", -3')
     assert_contains(scripts, "trp_elephant_guard_tribesman")
     assert_contains(scripts, "trp_elephant_guard_fighter")
     assert_contains(scripts, "script_sod_slavers_apply_player_action")
     assert_contains(scripts, "sod_slaver_action_free_runaways")
     assert_contains(scripts, "slot_faction_slaver_market_heat")
-    assert_contains(scripts, "slot_party_sod_slaver_web_activity")
+    assert_contains(scripts, "script_sod_world_presence_store_slaver_pressure_to_reg")
+    assert_contains(scripts, "script_sod_world_presence_try_interdict_slaver_to_reg")
+    assert_contains(world_presence_helpers, "slot_party_sod_slaver_web_activity")
     assert_contains(scripts, "slot_faction_elephant_guard_slaver_alarm")
-    assert_contains(scripts, "ai_bhvr_attack_party")
-    assert_contains(scripts, "sod_slaver_action_hostile")
+    assert_contains(world_presence_helpers, "ai_bhvr_attack_party")
+    assert_contains(world_presence_helpers, "sod_slaver_action_hostile")
     assert_contains(scripts, "Slaver alarm")
     assert_contains(reports_menu, "mnu_elephant_guard_warden_report")
     assert_contains(warden_report, "Elephant Guard Sacred Wardens")
@@ -919,6 +1020,7 @@ def test_elephant_guard_sacred_warden_world_presence_exists() -> None:
 def test_jotnar_hearthbound_kin_world_presence_exists() -> None:
     constants = read("src/constants/module_constants.py")
     scripts = read("src/scripts/ZY_helper_scripts/sod_jotnar_world_presence.py")
+    world_presence_helpers = read("src/scripts/ZY_helper_scripts/sod_world_presence_director.py")
     weekly = read("src/triggers/ST04_weekly/entry_0126.py")
     daily = read("src/triggers/ST03_daily/entry_0158.py")
     notes = read("src/scripts/ZF_factions/update_faction_notes.py")
@@ -950,8 +1052,10 @@ def test_jotnar_hearthbound_kin_world_presence_exists() -> None:
     assert_contains(scripts, "script_get_center_threat_level")
     assert_contains(scripts, "script_change_center_prosperity")
     assert_contains(scripts, "script_sod_slavers_apply_player_action")
-    assert_contains(scripts, "slot_party_sod_slaver_web_activity")
-    assert_contains(scripts, "ai_bhvr_attack_party")
+    assert_contains(scripts, "script_sod_world_presence_store_slaver_pressure_to_reg")
+    assert_contains(scripts, "script_sod_world_presence_try_interdict_slaver_to_reg")
+    assert_contains(world_presence_helpers, "slot_party_sod_slaver_web_activity")
+    assert_contains(world_presence_helpers, "ai_bhvr_attack_party")
     assert_contains(scripts, "Jotnar hearth guards are shadowing Slaver traffic")
     assert_contains(scripts, "trp_jotnar_clan_armsman")
     assert_contains(scripts, "trp_jotnar_clan_volva")
@@ -964,6 +1068,12 @@ def test_jotnar_hearthbound_kin_world_presence_exists() -> None:
     assert_contains(dialogs_order, "anyone_jotnar_world_hearth_volunteers.py")
     assert_contains(dialogs_order, "anyone_plyr_jotnar_world_hearth_talk_06.py")
     assert_contains(dialogs_order, "anyone_jotnar_world_hearth_free_captives.py")
+    jotnar_attack = read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_jotnar_world_hearth_talk_03.py")
+    assert_contains(jotnar_attack, '"close_window"')
+    assert_contains(jotnar_attack, '(assign, "$g_enemy_party", "$g_encountered_party")')
+    assert_contains(jotnar_attack, 'script_let_nearby_parties_join_current_battle')
+    assert_contains(jotnar_attack, "(encounter_attack)")
+    assert_not_contains(jotnar_attack, "party_encounter_attack")
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_jotnar_world_hearth_talk_04.py"), "script_sod_jotnar_apply_player_support")
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_jotnar_world_hearth_talk_05.py"), "script_sod_jotnar_grant_hearth_volunteers")
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_jotnar_world_hearth_talk_06.py"), "script_sod_jotnar_free_player_captives")
@@ -1211,12 +1321,19 @@ def test_mini_faction_dashboard_links_reports() -> None:
     ):
         assert_contains(dialogs_order, token)
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_slaver_world_caravan_about.py"), "script_sod_slavers_describe_status_to_s20")
-    assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_slaver_world_caravan_talk_02.py"), "sod_companion_action_free_captives")
+    slaver_attack_dialog = read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_slaver_world_caravan_talk_02.py")
+    player_victory_event = read("src/scripts/ZC_parties/event_player_defeated_enemy_party.py")
+    assert_contains(slaver_attack_dialog, "encounter_attack")
+    assert_not_contains(slaver_attack_dialog, "sod_companion_action_free_captives")
+    assert_contains(player_victory_event, "pt_slavers_caravan")
+    assert_contains(player_victory_event, "sod_companion_action_free_captives")
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_black_khergit_raider_about.py"), "script_sod_black_khergits_describe_status_to_s27")
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_jotnar_world_hearth_talk_07.py"), "sod_slaver_action_free_runaways")
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_elephant_guard_world_talk_08.py"), "sod_slaver_action_hostile")
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_serpent_host_world_route_talk_06.py"), "sod_serpent_action_track_horde")
     assert_contains(read("src/dialogs/ZZ99_misc_dialogs/anyone_plyr_boar_clan_meet_05.py"), "sod_boar_action_hire_band")
+    assert_contains(player_victory_event, "sod_boar_action_defeat_band")
+    assert_contains(read("src/scripts/ZY_helper_scripts/sod_boar_clan_world_presence.py"), "slot_faction_boar_pressure_relief")
     assert_contains(dashboard, "Last world response")
     for path in (
         "src/menus/reports/jotnar_hearth_report.py",
@@ -1303,14 +1420,30 @@ def test_post_defeat_spectator_follow_camera_is_shared() -> None:
         "The company stands victorious after you fall",
         "The company breaks after you fall",
         "no surviving officer held the line",
+        "(str_store_troop_name, s68, \"$sod_post_defeat_second_in_command\")",
+        "(str_store_troop_name, s69, \"$g_sod_battle_commander_troop\")",
+        "(str_store_agent_name, s68, \"$sod_post_defeat_focus_agent\")",
+        "Camera follows {s68}.",
         "script_count_mission_casualties_from_agents",
         "(store_mission_timer_a, \":mission_time\")",
         "No surviving ally remains to follow. Free camera.",
         "script_sod_battle_apply_courage_pressure",
     ):
         assert_contains(spectator, token)
+    for stale in (
+        "(str_store_troop_name, s1, \"$sod_post_defeat_second_in_command\")",
+        "(str_store_troop_name, s2, \"$g_sod_battle_commander_troop\")",
+        "(str_store_agent_name, s1, \"$sod_post_defeat_focus_agent\")",
+        "Camera follows {s1}.",
+    ):
+        assert_not_contains(spectator, stale)
     assert_contains(company_report, "script_sod_post_defeat_describe_command_memory_to_s35")
     assert_contains(company_report, "{s35}")
+    assert_contains(company_report, "(str_store_string_reg, s97, s1)")
+    assert_contains(company_report, '(str_store_string, s1, "@{s97}^^{s30}")')
+    assert_contains(company_report, '(str_store_string, s1, "@{s97}^^{s35}")')
+    assert_not_contains(company_report, '(str_store_string, s1, "@{s1}^^{s30}")')
+    assert_not_contains(company_report, '(str_store_string, s1, "@{s1}^^{s35}")')
     assert_contains(depth_report, "script_sod_post_defeat_describe_command_memory_to_s35")
     assert_contains(depth_report, "{s35}")
 
@@ -1508,14 +1641,21 @@ def test_battle_commander_selection_uses_custom_commander_style_flow() -> None:
         '"sod_battle_commander_reset"',
         "(set_player_troop, \":commander\")",
         "(set_player_troop, \"trp_player\")",
-        "(str_store_troop_name, s7, \":commander\")",
+        "(is_between, \":troop_no\", active_npcs_begin, active_npcs_end)",
+        "(troop_slot_eq, \":troop_no\", slot_troop_occupation, slto_player_companion)",
+        "(str_store_troop_name, s68, \":commander\")",
+        "@{s68} takes the company standard for this fight.",
         "(spawn_agent, \"trp_player\")",
+        "(ge, \":spawned_agent\", 0)",
         "(troop_set_inventory_slot, \"trp_player\", ek_horse, -1)",
         "slot_troop_sod_times_took_command",
         "slot_troop_sod_last_took_command_hours",
     ):
         assert_contains(script, token)
+    assert_not_contains(script, "@{s1} takes the company standard for this fight.")
     assert_contains(menu_preamble, "build_sod_battle_commander_change_option")
+    assert_contains(menu_preamble, "script_sod_battle_commander_store_current_name_to_s68")
+    assert_contains(menu_preamble, "Choose acting commander ({s68}).")
     assert_contains(menu_preamble, "generate_sod_battle_commander_select_options")
     assert_contains(selector, '"sod_battle_commander_select"')
     assert_contains(selector, "If you cannot fight, select a fit companion.")
@@ -1525,6 +1665,7 @@ def test_battle_commander_selection_uses_custom_commander_style_flow() -> None:
     assert_contains(reset_trigger, '(call_script, "script_sod_battle_commander_reset")')
     assert_contains(mission_preamble, "sod_battle_commander_spawn_player_ally =")
     assert_contains(mission_preamble, "sod_battle_commander_spawn_player_ally_dismounted =")
+    assert_contains(mission_preamble, "0.1, 0, ti_once")
 
     for path, trigger_name in (
         ("src/mission_templates/0010_lead_charge/lead_charge.py", "sod_battle_commander_spawn_player_ally"),
@@ -1552,8 +1693,10 @@ def test_battle_commander_selection_uses_custom_commander_style_flow() -> None:
         assert_contains(raw, "build_sod_battle_commander_change_option")
         assert_contains(raw, "script_cf_sod_battle_commander_can_start")
         assert_contains(raw, "script_sod_battle_commander_apply_before_mission")
-        assert_contains(raw, "({s7} leads")
+        assert_contains(raw, "({s68} leads")
+        assert "({s7} leads" not in raw, f"{path} must not reuse s7 for commander labels"
     assert_contains(doc, "Custom Commander-style pre-battle acting commander")
+    assert_contains(doc, "Choose acting commander ({s68}).")
     assert_contains(doc, "- [x] Add a pre-battle acting commander selector")
     assert_contains(doc, "- [x] Show the acting commander's name on battle-entry options, including wounded-player companion-led fights.")
     assert_contains(doc, "- [x] Add a static test that original player troop restore logic exists.")

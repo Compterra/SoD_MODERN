@@ -30,14 +30,14 @@ MENUS = [
           (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
           (store_add, ":slave_count", ":male_slaves", ":female_slaves"),
           (ge, ":slave_count", 3),
-        ], "Let Ymira choose a refuge before anyone is released.",
+        ], "Choose a refuge before release.",
         [
           (party_count_members_of_type, ":male_slaves", "p_main_party", "trp_slave"),
           (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
           (store_add, ":slave_count", ":male_slaves", ":female_slaves"),
           (call_script, "script_sod_companion_try_ymira_refugee_incident", ":slave_count"),
           (display_message, "@Ymira writes names instead of numbers and asks you to reach the refuge before mercy becomes only talk.", 0x99CCFF),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc3"),
         ]
       ),
       ("ymira_mercy_under_arms_ransom", [
@@ -47,7 +47,7 @@ MENUS = [
           (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
           (store_add, ":slave_count", ":male_slaves", ":female_slaves"),
           (ge, ":slave_count", 3),
-        ], "Ask Ymira where the weakest could be sheltered first.",
+        ], "Shelter the weakest first.",
         [
           (party_count_members_of_type, ":male_slaves", "p_main_party", "trp_slave"),
           (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
@@ -56,7 +56,7 @@ MENUS = [
           (assign, "$g_sod_ymira_refugee_result_grade", 2),
           (quest_set_slot, "qst_companion_ymira_mercy_under_arms", slot_quest_sod_runtime_metadata, 2),
           (display_message, "@Ymira accepts the practical question, but asks that the weakest be seen by a village witness before coin decides the rest.", 0xCC9966),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc3"),
         ]
       ),
       ("ymira_mercy_under_arms_expedience", [
@@ -66,14 +66,14 @@ MENUS = [
           (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
           (store_add, ":slave_count", ":male_slaves", ":female_slaves"),
           (ge, ":slave_count", 3),
-        ], "Keep them chained. The army needs every advantage.",
+        ], "Keep the captives under guard.",
         [
           (party_count_members_of_type, ":male_slaves", "p_main_party", "trp_slave"),
           (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
           (store_add, ":slave_count", ":male_slaves", ":female_slaves"),
           (call_script, "script_sod_companion_try_ymira_refugee_expedience", ":slave_count"),
           (display_message, "@Ymira stops learning names. Mercy Under Arms remembers expedience.", 0xCC6666),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc3"),
         ]
       ),
       ("ymira_mercy_under_arms_leave", [], "Return to camp.",
@@ -139,7 +139,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_ymira_refugee_mercy, 2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc3"),
           (display_message, "@The riders take your coin and leave the village unburned. Ymira waits to ask what the coin bought besides a night.", 0xCC9966),
-          (jump_to_menu, "mnu_village"),
+          (start_map_conversation, "trp_npc3"),
         ]
       ),
       ("ymira_refugee_standoff_betray", [
@@ -148,7 +148,7 @@ MENUS = [
           (eq, "$current_town", "$g_sod_ymira_refugee_focus_center"),
           (eq, "$g_sod_ymira_refugee_witnessed", 1),
           (eq, "$g_sod_ymira_refugee_confronted", 0),
-        ], "Give the riders names and keep the village out of it.",
+        ], "Give names; spare the village.",
         [
           (assign, "$g_sod_ymira_refugee_confronted", 1),
           (assign, "$g_sod_ymira_refugee_result_grade", 1),
@@ -157,10 +157,10 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_ymira_refugee_expedience, 3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc3"),
           (display_message, "@The village is spared by giving the riders names. Ymira says nothing until the hoofbeats fade.", 0xCC6666),
-          (jump_to_menu, "mnu_village"),
+          (start_map_conversation, "trp_npc3"),
         ]
       ),
-      ("ymira_refugee_standoff_leave", [], "Step back for now.",
+      ("ymira_refugee_standoff_leave", [], "Step back from the standoff.",
         [
           (jump_to_menu, "mnu_village"),
         ]
@@ -182,7 +182,7 @@ MENUS = [
       (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc3"),
     ],
     [
-      ("continue", [], "Continue...", [(jump_to_menu, "mnu_village")]),
+      ("continue", [], "Speak with Ymira.", [(start_map_conversation, "trp_npc3")]),
     ]
   ),
 ("ymira_refugee_defense_failed", mnf_disable_all_keys,
@@ -197,7 +197,7 @@ MENUS = [
       (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc3"),
     ],
     [
-      ("continue", [], "Continue...", [(jump_to_menu, "mnu_village")]),
+      ("continue", [], "Speak with Ymira.", [(start_map_conversation, "trp_npc3")]),
     ]
   ),
 ]

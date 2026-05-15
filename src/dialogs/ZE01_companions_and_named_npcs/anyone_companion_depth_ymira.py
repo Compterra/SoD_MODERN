@@ -11,7 +11,7 @@ DIALOGS = [
     (store_add, reg1, ":male_slaves", ":female_slaves"),
     (val_max, reg1, "$g_sod_ymira_refugee_captive_count"),
   ],
-  "The elder at {s3} heard them as people, not cargo, and the riders have tested the door. There are {reg1} lives still waiting on your order. Now mercy has witnesses.",
+  "The elder at {s3} heard them as people, not cargo. The riders tested the door. Now {reg1} lives wait on your order.",
   "companion_depth_ymira_captive_choice",
   []],
 
@@ -23,7 +23,7 @@ DIALOGS = [
     (party_is_active, "$g_sod_ymira_refugee_focus_center"),
     (str_store_party_name_link, s3, "$g_sod_ymira_refugee_focus_center"),
   ],
-  "The elder at {s3} has heard them. That matters. But the village is afraid of the riders who follow freed names. Please, stay long enough for mercy to have guards.",
+  "The elder at {s3} has heard them. That matters. But the village is afraid of the riders who hunt freed people. Please, stay long enough for mercy to have guards.",
   "member_talk",
   []],
 
@@ -38,7 +38,7 @@ DIALOGS = [
     (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
     (store_add, reg1, ":male_slaves", ":female_slaves"),
   ],
-  "There are {reg1} people in our camp who cannot choose where they stand. I can get them names, water, and a road, but shelter means reaching {s3}. Please, not a camp order from here.",
+  "There are {reg1} people in our camp who cannot choose where they stand. I can get them names, water, and a road, but shelter means reaching {s3}. Please, not an order from camp.",
   "member_talk",
   []],
 
@@ -57,12 +57,17 @@ DIALOGS = [
     (store_add, reg1, ":male_slaves", ":female_slaves"),
     (val_max, reg1, "$g_sod_ymira_refugee_captive_count"),
   ],
-  "We are close enough to {s3} to do more than talk. There are {reg1} people here who cannot choose where they stand. Let the village hear at least one name before a ledger decides anything.",
+  "We are close enough to {s3} to do more than talk. There are {reg1} people here who cannot choose where they stand. Let the village hear at least one name before anyone writes them into a ledger.",
   "member_talk",
   []],
 
-[anyone|plyr, "companion_depth_ymira_captive_choice", [],
-  "Guard, feed, and release them under your care.", "member_talk",
+[anyone|plyr, "companion_depth_ymira_captive_choice",
+  [
+    (main_party_has_troop, "trp_npc3"),
+    (eq, "$g_sod_ymira_refugee_witnessed", 1),
+    (eq, "$g_sod_ymira_refugee_confronted", 1),
+  ],
+  "Guard, feed, and release them with your care.", "member_talk",
   [
     (party_count_members_of_type, ":male_slaves", "p_main_party", "trp_slave"),
     (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
@@ -81,6 +86,7 @@ DIALOGS = [
     (assign, "$g_sod_ymira_refugee_result_grade", 3),
     (assign, "$g_sod_ymira_refugee_captive_count", 0),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_ymira_refugee_mercy, 5),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc3", 4),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc3", 1),
     (call_script, "script_sod_companion_ymira_apply_mercy_payoff", ":slave_count"),
     (quest_set_slot, "qst_companion_ymira_mercy_under_arms", slot_quest_sod_runtime_progress, 100),
@@ -89,8 +95,13 @@ DIALOGS = [
     (display_message, "@Ymira turns mercy into orders after the village witness: guards posted, water issued, routes chosen. Mercy Under Arms remembers protection.", 0x99CCFF),
   ]],
 
-[anyone|plyr, "companion_depth_ymira_captive_choice", [],
-  "Ransom the able-bodied and release the weakest.", "member_talk",
+[anyone|plyr, "companion_depth_ymira_captive_choice",
+  [
+    (main_party_has_troop, "trp_npc3"),
+    (eq, "$g_sod_ymira_refugee_witnessed", 1),
+    (eq, "$g_sod_ymira_refugee_confronted", 1),
+  ],
+  "Ransom the able-bodied. Release the weakest.", "member_talk",
   [
     (party_count_members_of_type, ":male_slaves", "p_main_party", "trp_slave"),
     (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
@@ -124,7 +135,12 @@ DIALOGS = [
     (display_message, "@Ymira helps secure {reg1} of the weakest refugees after the standoff, but the ransom purse weighs on the silence. You gain {reg2} denars.", 0xCC9966),
   ]],
 
-[anyone|plyr, "companion_depth_ymira_captive_choice", [],
+[anyone|plyr, "companion_depth_ymira_captive_choice",
+  [
+    (main_party_has_troop, "trp_npc3"),
+    (eq, "$g_sod_ymira_refugee_witnessed", 1),
+    (eq, "$g_sod_ymira_refugee_confronted", 1),
+  ],
   "Keep them chained. The army needs every advantage.", "member_talk",
   [
     (party_count_members_of_type, ":male_slaves", "p_main_party", "trp_slave"),
@@ -132,6 +148,7 @@ DIALOGS = [
     (store_add, ":slave_count", ":male_slaves", ":female_slaves"),
     (val_max, ":slave_count", "$g_sod_ymira_refugee_captive_count"),
     (assign, "$g_sod_ymira_refugee_result_grade", 1),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc3", -4),
     (call_script, "script_sod_companion_try_ymira_refugee_expedience", ":slave_count"),
     (assign, "$g_sod_ymira_refugee_captive_count", 0),
     (quest_set_slot, "qst_companion_ymira_mercy_under_arms", slot_quest_sod_runtime_progress, 100),
@@ -143,10 +160,11 @@ DIALOGS = [
 [anyone, "companion_depth_ymira",
   [
     (troop_slot_ge, "trp_npc3", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc3", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc3"),
+    (str_store_string_reg, s2, s68),
   ],
-  "I can follow hard choices. I cannot follow a commander who starts calling helpless people convenient. If mercy has no place here, then I need to know it plainly. Right now, my trust is {s2}.",
+  "I can follow hard choices. I cannot follow a commander who starts calling helpless people convenient. If mercy has no place here, I need to know it plainly. My trust is {s2}.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc3", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -155,50 +173,50 @@ DIALOGS = [
 [anyone, "companion_depth_ymira",
   [
     (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc3"),
+    (str_store_string_reg, s2, s68),
   ],
-  "You proved something I was afraid to ask for. Not that war can be clean. It cannot. But that a commander can put guards around mercy and mean it. Right now, my trust is {s2}.",
+  "You proved something I was afraid to ask for. War cannot be clean, but a commander can put guards around mercy and mean it. My trust is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_ymira",
   [
     (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc3"),
+    (str_store_string_reg, s2, s68),
   ],
-  "I stayed because I know armies starve and plans break. But I remember every face we decided was too heavy to carry. Necessary should leave a mark. Right now, my trust is {s2}.",
+  "I stayed because armies starve and plans break. But I remember every face we decided was too heavy to carry. Necessary should leave a mark. My trust is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_ymira",
   [
     (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc3"),
+    (str_store_string_reg, s2, s68),
   ],
-  "This is the part that matters after victory, after counting coin and stores, when nobody important is looking at the captives. That is where command shows its real face. Right now, my trust is {s2}.",
+  "After victory, after coin and stores are counted, captives are where command shows its real face. My trust is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_ymira",
   [
     (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc3"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The first thing I was ever praised for in a war camp was keeping a bowl steady while a man died. I learned then that small mercies are not small to the person receiving them. Right now, my trust is {s2}.",
+  "The first thing I was praised for in a war camp was keeping a bowl steady while a man died. Small mercies are not small to the person receiving them. My trust is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_ymira",
   [
     (troop_slot_ge, "trp_npc3", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc3"),
+    (str_store_string_reg, s2, s68),
   ],
-  "You keep making room for the wounded, the frightened, and the people who cannot bargain for themselves. I am starting to believe that is not an accident. Right now, my trust is {s2}.",
+  "You keep making room for the wounded, the frightened, and the people who cannot bargain for themselves. I am starting to believe that is not an accident. My trust is {s2}.",
   "member_talk",
   [
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc3", 1),
@@ -206,10 +224,10 @@ DIALOGS = [
 
 [anyone, "companion_depth_ymira",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc3"),
+    (str_store_string_reg, s2, s68),
   ],
-  "I am still here, and that means something. I watch the wounded before I watch the banners, and I watch what happens to the helpless after our victories. Right now, my trust is {s2}.",
+  "I am still here, and that means something. I watch the wounded before the banners, and I watch what happens to the helpless after victories. My trust is {s2}.",
   "member_talk",
   []],
 ]

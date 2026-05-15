@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Dict, List, Optional
+import ast
 import re
 
 import json
@@ -17,6 +18,7 @@ import hashlib
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src" / "menus"
 OUT = ROOT / "compile" / "module_game_menus.py"
+OUT_IDS = ROOT / "compile" / "ids" / "ID_menus.py"
 
 # Incremental build cache (v42): skip regeneration if inputs unchanged
 CACHE_SCHEMA_VERSION = 1
@@ -54,6 +56,14 @@ def _load_cache() -> 'Optional[dict]':
 def _write_cache(payload: dict) -> None:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     CACHE_FILE.write_text(json.dumps(payload, indent=2, sort_keys=False) + "\n", encoding="utf-8")
+
+
+def _write_menu_ids(menu_ids: List[str]) -> None:
+    OUT_IDS.parent.mkdir(parents=True, exist_ok=True)
+    lines = [f"menu_{menu_id} = {index}" for index, menu_id in enumerate(menu_ids)]
+    tmp_out = OUT_IDS.with_name(f"{OUT_IDS.name}.tmp")
+    tmp_out.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    tmp_out.replace(OUT_IDS)
 
 
 # Optional: user-defined preamble lines live here.
@@ -144,9 +154,22 @@ def extract_list_block(raw: str, var_name: str) -> tuple[str, int, int]:
 
     raise ValueError(f"Unclosed list bracket for {var_name}.")
 
-def extract_first_id(inner: str) -> str:
-    m = re.search(r'\(\s*"([^"]+)"\s*,', inner)
-    return m.group(1) if m else ""
+def extract_menu_ids(inner: str) -> List[str]:
+    tree = ast.parse(f"_menus = [{inner}]", mode="exec")
+    assign = tree.body[0]
+    if not isinstance(assign, ast.Assign) or not isinstance(assign.value, ast.List):
+        return []
+    menu_ids: List[str] = []
+    for node in assign.value.elts:
+        if (
+            isinstance(node, ast.Tuple)
+            and node.elts
+            and isinstance(node.elts[0], ast.Constant)
+            and isinstance(node.elts[0].value, str)
+        ):
+            menu_ids.append(node.elts[0].value)
+    return menu_ids
+
 
 def load_preamble_lines() -> List[str]:
     """Load preamble lines from src/menus/_preamble/*.py, if any."""
@@ -220,7 +243,7 @@ def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
         'preamble': [_sig_for(p) for p in preamble_files],
         'order_file': order_sig,
     }
-    if use_cache and OUT.exists():
+    if use_cache and OUT.exists() and OUT_IDS.exists():
         prev = _load_cache()
         if prev == cache_payload:
             print('[build_game_menus] Up-to-date; skipped (cache)')
@@ -228,6 +251,7 @@ def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
 
     seen: Dict[str, Path] = {}
     entries: List[str] = []
+    menu_ids: List[str] = []
 
     for fp in files:
         raw = fp.read_text(encoding="utf-8", errors="replace")
@@ -235,11 +259,13 @@ def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
         if "MENUS" not in raw:
             continue
         inner, start_ln, end_ln = extract_list_block(raw, "MENUS")
-        mid = extract_first_id(inner)
-        if mid:
-            if mid in seen:
-                raise SystemExit(f"Duplicate menu '{mid}':\n  {seen[mid]}\n  {fp}")
-            seen[mid] = fp
+        mids = extract_menu_ids(inner)
+        mid = mids[0] if mids else ""
+        for menu_id in mids:
+            if menu_id in seen:
+                raise SystemExit(f"Duplicate menu '{menu_id}':\n  {seen[menu_id]}\n  {fp}")
+            seen[menu_id] = fp
+            menu_ids.append(menu_id)
         block = inner.rstrip()
         if block and not block.rstrip().endswith(","):
             block += ","
@@ -272,11 +298,15 @@ def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
         '',
     ]
     out_lines = header_lines + entries + [']', '']
-    OUT.write_text("\n".join(out_lines), encoding="cp1252", errors="replace")
+    tmp_out = OUT.with_name(f"{OUT.name}.tmp")
+    tmp_out.write_text("\n".join(out_lines), encoding="cp1252", errors="replace")
+    tmp_out.replace(OUT)
+    _write_menu_ids(menu_ids)
 
     if use_cache:
         _write_cache(cache_payload)
     print(f"[build_game_menus] Wrote {OUT}")
+    print(f"[build_game_menus] Wrote {OUT_IDS}")
 
 if __name__ == "__main__":
     from build_profile import parse_profile, emit_source_map

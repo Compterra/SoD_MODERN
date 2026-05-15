@@ -23,7 +23,13 @@ SCRIPTS = [
           (troop_set_slot, ":troop", slot_troop_d_leader, ":leader"),
           (call_script, "script_update_troop_notes", ":troop"),
           (troop_get_type, reg1, ":troop"),
-          (str_store_string, s49, "@{reg1?She:He} is dead."),
+          (try_begin),
+            (eq, reg1, 1),
+            (str_store_string, s68, "@She"),
+          (else_try),
+            (str_store_string, s68, "@He"),
+          (try_end),
+          (str_store_string, s49, "@{s68} is dead."),
 
           (add_troop_note_from_sreg, ":troop", 2, s49, 1),
 

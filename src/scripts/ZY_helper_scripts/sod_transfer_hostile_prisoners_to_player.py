@@ -6,6 +6,7 @@ SCRIPTS = [
    (assign, reg0, 0),
    (try_begin),
      (gt, ":source_party", 0),
+     (party_is_active, ":source_party"),
      (party_get_num_prisoner_stacks, ":num_stacks", ":source_party"),
      (try_for_range, ":unused", 0, ":num_stacks"),
        (party_get_free_prisoners_capacity, ":free_capacity", "p_main_party"),

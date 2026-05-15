@@ -81,6 +81,7 @@ centers/common/build_ladders_cont.py
 centers/castle/build_siege_tower_cont.py
 other/continue_15.py
 other/continue_16.py
+centers/castle/castle_taken_by_friends.py
 other/continue_17.py
 0000_hardcoded_mb1011/faction_orders.py
 0000_hardcoded_mb1011/camp_cheat.py
@@ -237,6 +238,7 @@ other/faction_accept.py
 other/faction_accept_02.py
 kingdom/fief_available_construction_report.py
 kingdom/fief_prosperity_report.py
+kingdom/center_public_health_report.py
 economy/regional_economy_flow_report.py
 centers/common/center_goods_market_report.py
 economy/town_market_report.py

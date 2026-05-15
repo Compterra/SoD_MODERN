@@ -433,7 +433,7 @@ def quest_motif_rescue_pursuit_return(
         metadata={"motif": "rescue_pursuit_return", **dict(metadata or {})},
     )
     first = chain.normalized_quests()[0]
-    objective = quest_battle_objective(f"{first.quest_id}_objective", "rescue_target", target_troop_id="trp_prisoner")
+    objective = quest_battle_objective(f"{first.quest_id}_objective", "rescue_target", target_troop_id="trp_slave_prisoner_1")
     first.stages = (
         quest_stage(
             f"{first.quest_id}_stage",

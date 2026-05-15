@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone, "mate_check_leadership", [], "I am sorry, your leadership needs more experience in order to lead additional parties.", "member_chat", []],
+[anyone, "mate_check_leadership", [], "Not yet, captain. Your command is stretched too thin to field another patrol.", "member_chat", []],
 ]

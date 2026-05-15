@@ -19,15 +19,18 @@ def assert_contains(raw: str, needle: str) -> None:
 def main() -> int:
     profile = read("src/scripts/ZY_helper_scripts/sod_town_market_profile.py")
     trade = read("src/scripts/ZB_economy_and_trade/do_merchant_town_trade.py")
-    weekly_taxes = read("src/triggers/ST04_weekly/entry_0038.py")
+    weekly_taxes = (
+        read("src/triggers/ST04_weekly/entry_0038.py")
+        + read("src/scripts/ZY_helper_scripts/sod_center_simulation_pipeline.py")
+    )
     weekly_wealth = read("src/triggers/ST04_weekly/entry_0016.py")
     relative_value = read("src/scripts/ZD_centers/get_center_relative_value.py")
     food_consumption = read("src/scripts/ZD_centers/center_get_food_consumption.py")
     recon = read("src/scripts/ZD_centers/update_center_recon_notes.py")
-    fief_reports = read("src/menus/camp/fief_reports.py")
+    fief_reports = read("src/menus/0000_hardcoded_mb1011/fief_reports.py")
     town_report = read("src/menus/economy/town_market_report.py")
     order = read("src/menus/_order_game_menus.txt")
-    notes = read("docs/reports/town_market_profile_audit.md")
+    notes = read("docs/reports/economy_settlements/town_market_profile_audit.md")
 
     for token in (
         '"sod_get_town_market_profile"',
@@ -98,10 +101,10 @@ def main() -> int:
     assert_contains(recon, "Craftsmen and services")
 
     assert_contains(fief_reports, "mnu_town_market_report")
-    assert_contains(order, "other/town_market_report.py")
+    assert_contains(order, "economy/town_market_report.py")
     assert_contains(town_report, "Town Market Report")
     assert_contains(town_report, "market engines")
-    assert_contains(town_report, "Tax extraction revenue")
+    assert_contains(town_report, "high extraction raises immediate revenue")
     assert_contains(notes, "Town Market Profile Audit")
     assert_contains(notes, "Rural surplus")
     assert_contains(notes, "Caravan trade")

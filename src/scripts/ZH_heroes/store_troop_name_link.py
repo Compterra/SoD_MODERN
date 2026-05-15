@@ -6,7 +6,7 @@ SCRIPTS = [
 
 	(try_begin),
 		(neg|is_between, ":troop", 0, "trp_last_troop"),
-		(str_store_string, ":string", "@an unknown commander"),
+		(str_store_string, ":string", "@that commander"),
 	(else_try),
 		(str_store_troop_name_link, ":string", ":troop"),
 	(try_end),

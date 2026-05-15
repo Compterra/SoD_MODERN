@@ -21,6 +21,7 @@ SCRIPTS = [
 
       (party_clear, "p_collective_enemy"),
       (try_begin),
+        (gt, "$g_enemy_party", 0),
         (party_is_active, "$g_enemy_party"),
         (party_collect_attachments_to_party, "$g_enemy_party", "p_collective_enemy"),
       (try_end),

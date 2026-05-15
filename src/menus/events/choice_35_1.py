@@ -10,15 +10,15 @@ MENUS = [
           (change_screen_return),
         ]
        ),
-             ("choice_35_1", [], "RESERVED", [
+             ("choice_35_2", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_35_1", [], "RESERVED", [
+             ("choice_35_3", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_35_1", [], "RESERVED", [
+             ("choice_35_4", [], "RESERVED", [
           (change_screen_return),
         ]
        ),

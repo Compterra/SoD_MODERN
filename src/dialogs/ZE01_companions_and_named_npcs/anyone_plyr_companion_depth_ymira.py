@@ -12,7 +12,7 @@ DIALOGS = [
     (val_max, ":slave_count", "$g_sod_ymira_refugee_captive_count"),
     (ge, ":slave_count", 3),
   ],
-  "Ymira, speak for the captives before I decide their fate.", "companion_depth_ymira_captive_pending",
+  "Ymira, speak for the captives.", "companion_depth_ymira_captive_pending",
   [
     (try_begin),
       (le, "$g_sod_ymira_refugee_focus_center", 0),
@@ -27,7 +27,7 @@ DIALOGS = [
     (main_party_has_troop, "trp_npc3"),
     (call_script, "script_cf_sod_companion_campaign_available", "trp_npc3", sod_companion_campaign_mode_dialog),
   ],
-  "Ymira, I want to know how this road is wearing on you.", "companion_depth_ymira",
+  "Ymira, how is this road wearing on you?", "companion_depth_ymira",
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc3"),
   ]],

@@ -1,8 +1,9 @@
 DIALOGS = [
 [anyone, "start", [
-  (gt, "$fight_guild_troops_quest", 1),
+  (ge, "$fight_guild_troops_quest", 2),
   (eq, "$fgtq_state", fgtq_sh_2_next),
-  ], "{s1}", "close_window", [
+  (str_store_string_reg, s68, s1),
+  ], "{s68}", "close_window", [
 	(assign, ":fgtq_mt", "mt_fgtq_cav"),
 	(assign, ":fgtq_scene", "scn_fgtq_sh_s4"),
 	(modify_visitors_at_site, ":fgtq_scene"),

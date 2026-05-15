@@ -89,8 +89,13 @@ def test_spokesperson_state_and_scripts_exist() -> None:
         "sod_companion_role_quartermaster",
         "sod_companion_role_surgeon",
         "sod_companion_role_captain",
-        "script_sod_companion_get_approval_band",
-        "script_sod_companion_role_to_s0",
+        "(ge, \":approval\", 45)",
+        "(neg|troop_slot_ge, \":mediator\", slot_troop_companion_approval, 45)",
+        "(try_for_range, \":companion\", companions_begin, companions_end)",
+        "(assign, \":best_approval\", 44)",
+        "script_sod_companion_get_approval_band_to_s68",
+        "script_sod_companion_role_to_s68",
+        "serving as {s66}",
         "Company spokesman: no trusted companion is ready",
         "Marnid frames the grievance as terms",
         "Bunduk speaks for the line first",
@@ -136,6 +141,13 @@ def test_spokesperson_state_and_scripts_exist() -> None:
         "Aftermath: defeat or hard fighting",
         "Spokesperson risk:",
         "Best mediator:",
+        "Spokesperson risk: victory claim",
+        "Spokesperson risk: defeat shock",
+        "Spokesperson risk: discipline threat",
+        "A faith-bound spokesman waits",
+        "A victory spokesman stands",
+        "A shaken spokesman comes forward",
+        "A hard-eyed spokesman keeps his voice level",
     ):
         assert_contains(dialogue, token)
 
@@ -159,6 +171,15 @@ def test_spokesperson_menu_is_registered() -> None:
     assert_contains(trigger, "start_map_conversation, reg63")
     assert_contains(dialogue_start, "sod_company_spokesperson_response")
     assert_contains(dialogue_start, "script_sod_company_dialogue_apply_response")
+    assert_contains(dialogue_start, "(eq, \"$g_sod_company_spokesperson_type\", sod_company_spokesperson_victory_spoils)")
+    assert_contains(dialogue_start, "(eq, \"$g_sod_company_victory_feast_available\", 1)")
+    assert_contains(dialogue_start, "(gt, \":days_since_feast\", 3)")
+    assert_contains(dialogue_start, "Name the fighters who carried the day.")
+    assert_contains(dialogue_start, "Open the stores for a victory feast.")
+    assert_contains(dialogue_start, "No ceremony. We keep marching.")
+    assert_not_contains(dialogue_start, "The company has earned public honors.")
+    assert_not_contains(dialogue_start, "Make a victory feast before pride turns sour.")
+    assert_not_contains(dialogue_start, "No spectacle. We keep marching.")
     for token in (
         "company_spokesperson_pay_now",
         "company_spokesperson_promise",
@@ -176,6 +197,11 @@ def test_spokesperson_menu_is_registered() -> None:
         assert_contains(menu, token)
     dialogue = read("src/scripts/ZY_helper_scripts/sod_company_troop_dialogue.py")
     assert_contains(dialogue, "No one is ready to speak formally")
+    assert_contains(dialogue, "(party_stack_get_size, \":stack_size\", \"p_main_party\", \":stack_no\")")
+    assert_contains(dialogue, "(gt, \":stack_size\", 0)")
+    assert_contains(dialogue, "(main_party_has_troop, \"$g_sod_company_spokesperson_mediator\")")
+    assert_contains(dialogue, "(troop_slot_ge, \"$g_sod_company_spokesperson_mediator\", slot_troop_companion_approval, 45)")
+    assert_contains(dialogue, "(assign, \":speaker\", \"$g_sod_company_spokesperson_mediator\")")
 
 
 def test_checklist_tracks_milestone_one() -> None:
@@ -257,14 +283,24 @@ def test_post_battle_prompt_pressure_is_hooked() -> None:
     checklist = read("docs/company/COMPANY_TROOP_DIALOGUE_INCIDENTS_CHECKLIST.md")
     accounts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
     dialogue = read("src/scripts/ZY_helper_scripts/sod_company_troop_dialogue.py")
+    describe_start = dialogue.index('("sod_company_dialogue_describe_spokesperson_to_s60"')
+    describe_body = dialogue[describe_start:dialogue.index('("sod_company_dialogue_describe_battle_start_morale_to_s60"', describe_start)]
     for token in (
         "script_sod_company_dialogue_process_post_battle_prompt",
         "script_sod_company_dialogue_describe_post_battle_to_s66",
         "sod_company_accounts_record_battle_victory",
         "sod_company_accounts_record_battle_defeat",
         "{s66}",
+        "Settle casualty care first; any ceremony should come through a camp spokesman",
+        "the accounts screen keeps to pay, rations, and recovery",
+        "(eq, \"$g_sod_company_spokesperson_type\", sod_company_spokesperson_victory_spoils)",
+        "(eq, \"$g_sod_company_victory_feast_available\", 1)",
     ):
         assert_contains(accounts + dialogue, token)
+    assert_contains(describe_body, '(eq, "$g_sod_company_spokesperson_dialogue_active", 0)')
+    assert_contains(describe_body, "script_sod_company_dialogue_try_spokesperson_incident")
+    assert_not_contains(dialogue, "Company accounts can pay casualty care, share spoils, hold honors")
+    assert_not_contains(dialogue, "The accounts menu can turn triumph into pay, honors")
     for token in (
         "- [x] Add post-victory prompt state.",
         "- [x] Add post-defeat prompt state.",

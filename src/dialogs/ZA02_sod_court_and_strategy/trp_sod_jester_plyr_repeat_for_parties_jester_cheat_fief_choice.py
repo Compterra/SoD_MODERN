@@ -1,6 +1,8 @@
 DIALOGS = [
 [trp_sod_jester|plyr|repeat_for_parties, "jester_cheat_fief_choice", 
-	[ (store_repeat_object, ":party_no"),
+	[ (this_or_next|eq, "$cheat_mode", 1),
+	(eq, "$g_sod_cheat_mode", 1),
+	(store_repeat_object, ":party_no"),
 	(is_between, ":party_no", walled_centers_begin, walled_centers_end),
 	(neg|party_slot_eq, ":party_no", slot_town_lord, "trp_player"),
 	(str_store_party_name, s1, ":party_no")

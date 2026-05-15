@@ -14,11 +14,11 @@ PRESENTATION = ROOT / "src" / "presentations" / "0019_sod_law" / "sod_law.py"
 WEEKLY_LAW_TRIGGER = ROOT / "src" / "triggers" / "ST04_weekly" / "entry_0098.py"
 VOLUNTEER_RECRUITMENT = ROOT / "src" / "scripts" / "ZD_centers" / "update_volunteer_troops_in_village.py"
 NPC_VOLUNTEER_RECRUITMENT = ROOT / "src" / "scripts" / "ZD_centers" / "update_npc_volunteer_troops_in_village.py"
-VILLAGE_MENU = ROOT / "src" / "menus" / "other" / "recruit_volunteers.py"
-TOWN_MENU = ROOT / "src" / "menus" / "castle" / "castle_castle.py"
-REALM_LAW_REPORT = ROOT / "src" / "menus" / "camp" / "realm_law_report.py"
-REPORTS_MENU = ROOT / "src" / "menus" / "camp" / "reports.py"
-WEEKLY_BONUSES_REPORT = ROOT / "src" / "menus" / "other" / "weekly_bonuses_report.py"
+VILLAGE_MENU = ROOT / "src" / "menus" / "centers" / "village" / "recruit_volunteers.py"
+TOWN_MENU = ROOT / "src" / "menus" / "centers" / "castle" / "castle_castle.py"
+REALM_LAW_REPORT = ROOT / "src" / "menus" / "reports" / "realm_law_report.py"
+REPORTS_MENU = ROOT / "src" / "menus" / "reports" / "report_submenus.py"
+WEEKLY_BONUSES_REPORT = ROOT / "src" / "menus" / "0000_hardcoded_mb1011" / "weekly_bonuses_report.py"
 
 
 def read(path: Path) -> str:
@@ -110,7 +110,10 @@ def test_presentation_uses_faction_api() -> None:
 
 def test_weekly_and_ai_wiring() -> None:
     trigger = read(WEEKLY_LAW_TRIGGER)
-    tax_trigger = read(ROOT / "src" / "triggers" / "ST04_weekly" / "entry_0038.py")
+    tax_trigger = (
+        read(ROOT / "src" / "triggers" / "ST04_weekly" / "entry_0038.py")
+        + read(ROOT / "src" / "scripts" / "ZY_helper_scripts" / "sod_center_simulation_pipeline.py")
+    )
     recruitment = read(VOLUNTEER_RECRUITMENT)
     npc_recruitment = read(NPC_VOLUNTEER_RECRUITMENT)
     ai = read(LAW_AI)
@@ -143,10 +146,16 @@ def test_realm_law_report_surface() -> None:
     weekly_report = read(WEEKLY_BONUSES_REPORT)
     report_script = read(ROOT / "src" / "scripts" / "ZZ_common_array_processing" / "sod_law_reports.py")
     assert_contains(report_menu, "script_sod_law_describe_realm_law_report")
+    assert_contains(report_menu, "{s98}")
     assert_contains(reports_menu, "mnu_realm_law_report")
     assert_contains(reports_menu, "view_weekly_law_bonuses_report")
     assert_contains(weekly_report, "slot_faction_law_village_relation_modifier")
+    assert_contains(weekly_report, "{s68}")
     assert "$g_sod_village_rep_modifier" not in weekly_report
+    assert "@{s1}" not in report_script
+    assert "(str_store_string, s1," not in report_script
+    assert_contains(report_script, "str_store_string_reg, s11, s70")
+    assert_contains(report_script, "str_store_string_reg, s98, s99")
     assert_contains(report_script, '"sod_law_append_player_compliance_report"')
     assert_contains(report_script, "Local compliance")
     assert_contains(report_script, "Resisting collectors")

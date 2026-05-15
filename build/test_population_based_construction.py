@@ -21,7 +21,7 @@ def assert_not_contains(raw: str, needle: str) -> None:
         raise AssertionError("Unexpected token remains: %s" % needle)
 
 
-def main() -> int:
+def test_population_based_construction_uses_runtime_workforce() -> None:
     constants = read("src/constants/module_constants.py")
     construction = read("src/scripts/ZY_helper_scripts/sod_population_based_construction.py")
     hourly = read("src/triggers/ST02_every_hour/entry_0064.py")
@@ -58,8 +58,11 @@ def main() -> int:
         "(gt, \":population\", 0)",
         "(gt, \":weekly_workforce\", 0)",
         "slot_center_improvement_end_hour, 0",
+        "str_store_string_reg, s68, s0",
+        "Work on the {s68}",
     ):
         assert_contains(construction, token)
+    assert_not_contains(construction, "Work on the {s0}")
 
     assert_contains(hourly, "SIMPLE_TRIGGERS = []")
     assert_not_contains(hourly, "store_current_hours")
@@ -67,17 +70,22 @@ def main() -> int:
 
     assert_contains(weekly, "script_sod_advance_center_construction")
     assert_contains(weekly, "script_sod_start_center_construction")
+    assert_contains(weekly, "str_store_string_reg, s68, s0")
     assert_not_contains(weekly, "hours_takes")
     assert_not_contains(weekly, "store_current_hours")
+    assert_not_contains(weekly, "raising {s0}")
 
     for token in (
         "slot_center_construction_progress",
         "slot_center_construction_required",
         "script_sod_get_center_construction_workforce",
+        "str_store_string_reg, s68, s0",
         "labor per week",
         "Construction is stalled",
     ):
         assert_contains(report_script, token)
+    assert_not_contains(report_script, "week{reg12?s:}")
+    assert_not_contains(report_script, "developing a {s0}")
 
     assert_contains(available_report, "most advanced active project")
     assert_contains(available_report, "lack of usable labor")
@@ -91,6 +99,9 @@ def main() -> int:
 
     assert_contains(improve_payload, "runtime development now advances from population/workforce")
 
+
+def main() -> int:
+    test_population_based_construction_uses_runtime_workforce()
     print("[population_based_construction] OK")
     return 0
 

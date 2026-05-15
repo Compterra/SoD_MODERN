@@ -1,25 +1,6 @@
 SIMPLE_TRIGGERS = [
 (24, 
 	[
-		(try_for_parties, ":cur_party"),
-			(neg|is_between, ":cur_party", 0, "p_spawn_points_end"),
-			(party_is_active, ":cur_party"),
-			(party_get_attached_to, ":attached", ":cur_party"),
-			(lt, ":attached", 0),
-			(party_get_battle_opponent, ":opponent", ":cur_party"),
-			(lt, ":opponent", 0),
-			(party_get_position, pos0, ":cur_party"),
-			(position_get_x, ":x", pos0),
-			(party_slot_eq, ":cur_party", slot_party_old_x, ":x"),
-			(position_get_y, ":y", pos0),
-			(party_slot_eq, ":cur_party", slot_party_old_y, ":y"),
-			
-			(map_get_land_position_around_position, pos1, pos0, 1),
-			(party_set_position, ":cur_party", pos1),
-			(position_get_x, ":x", pos1),
-			(position_get_y, ":y", pos1),
-			(party_set_slot, ":cur_party", slot_party_old_x, ":x"),
-			(party_set_slot, ":cur_party", slot_party_old_y, ":y"),
-		(try_end),
+		(call_script, "script_sod_world_map_nudge_stuck_parties"),
 	]),
 ]

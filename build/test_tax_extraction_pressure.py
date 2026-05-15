@@ -18,7 +18,10 @@ def assert_contains(raw: str, needle: str) -> None:
 
 def main() -> int:
     profile = read("src/scripts/ZY_helper_scripts/sod_tax_extraction_profile.py")
-    weekly_taxes = read("src/triggers/ST04_weekly/entry_0038.py")
+    weekly_taxes = (
+        read("src/triggers/ST04_weekly/entry_0038.py")
+        + read("src/scripts/ZY_helper_scripts/sod_center_simulation_pipeline.py")
+    )
     weekly_wealth = read("src/triggers/ST04_weekly/entry_0016.py")
     town = read("src/scripts/ZY_helper_scripts/sod_town_market_profile.py")
     village = read("src/scripts/ZY_helper_scripts/sod_village_output_profile.py")
@@ -28,7 +31,7 @@ def main() -> int:
     laws = read("src/scripts/ZZ_common_array_processing/sod_law_reports.py")
     town_report = read("src/menus/economy/town_market_report.py")
     regional_report = read("src/menus/economy/regional_economy_flow_report.py")
-    notes = read("docs/reports/tax_extraction_pressure_audit.md")
+    notes = read("docs/reports/economy_settlements/tax_extraction_pressure_audit.md")
 
     for token in (
         '"sod_get_center_tax_extraction_profile"',
@@ -84,8 +87,8 @@ def main() -> int:
 
     assert_contains(laws, "Tax social pressure")
     assert_contains(laws, "High extraction raises immediate rents")
-    assert_contains(town_report, "Tax extraction revenue")
-    assert_contains(regional_report, "Tax pressure")
+    assert_contains(town_report, "high extraction raises immediate revenue")
+    assert_contains(regional_report, "tax extraction can fund rulers now")
     assert_contains(notes, "Tax Extraction Pressure Audit")
     assert_contains(notes, "Immediate revenue")
     assert_contains(notes, "Long-term pressure")

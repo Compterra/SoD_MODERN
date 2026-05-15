@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone,      "prisoner_chat_treason_plead", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 1), ],
-    "You are gravely mistaken!  I am an honorable Lord, and I have done nothing that you would not do were our roles exchanged.", "prisoner_chat_treason_choose", []],
+    "You mistake victory for jurisdiction.  I am a sworn lord, not a bandit dragged from a ditch, and I have done nothing in war that your own captains would not defend in council.", "prisoner_chat_treason_choose", []],
 ]

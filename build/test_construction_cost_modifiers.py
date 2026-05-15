@@ -16,10 +16,11 @@ def assert_contains(raw: str, needle: str) -> None:
         raise AssertionError("Missing expected token: %s" % needle)
 
 
-def main() -> int:
+def test_construction_cost_modifiers_are_used() -> None:
     construction = read("src/scripts/ZY_helper_scripts/sod_population_based_construction.py")
     presentation = read("src/presentations/0020_sod_fief_management/sod_fief_management.py")
     weekly = read("src/triggers/ST04_weekly/entry_0123.py")
+    improvement_details = read("src/scripts/ZI_campaign_ai/get_improvement_details.py")
 
     for token in (
         '"sod_get_center_construction_cost"',
@@ -47,6 +48,14 @@ def main() -> int:
     ):
         assert_contains(weekly, token)
 
+    assert_contains(improvement_details, '(assign, reg9, ":building_no")')
+    assert_contains(improvement_details, '@Unknown improvement #{reg9}')
+    if "@Error: Invalid improvement" in improvement_details:
+        raise AssertionError("building lookup fallback should not expose stale Error text")
+
+
+def main() -> int:
+    test_construction_cost_modifiers_are_used()
     print("[construction_cost_modifiers] OK")
     return 0
 

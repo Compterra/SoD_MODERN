@@ -1,6 +1,6 @@
 DIALOGS = [
 [anyone|plyr, "prisoner_chat_treason_execute", [],
-    "(The prisoner struggles against his shackles, desperate to free himself and escape you, but to no avail. You slit his throat and watch, satisfied, as his corpse sags to the floor.)",
+    "(The prisoner strains against the shackles, desperate to escape. You slit his throat and watch the body sag to the floor.)",
     "close_window",
     [
       # make sure we don't try to recruit this prisoner stack later!

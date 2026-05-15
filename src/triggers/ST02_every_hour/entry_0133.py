@@ -1,6 +1,7 @@
 SIMPLE_TRIGGERS = [
 (12,
    [
+     (call_script, "script_sod_company_accounts_refresh_halfday_snapshot"),
      (call_script, "script_sod_company_accounts_accrue_wages"),
      (call_script, "script_sod_company_accounts_process_pay_promise"),
      (call_script, "script_sod_company_accounts_process_petition_check"),

@@ -36,7 +36,17 @@ def assert_dialog_menu_jumps_finish_mission():
     assert not offenders, "dialog jumps to menu without finish_mission: " + ", ".join(offenders)
 
 
-def main():
+def assert_no_ambiguous_return_menu_locals():
+    offenders = []
+    for root in ("src/menus", "src/scripts", "src/dialogs", "src/presentations"):
+        for path in (ROOT / root).rglob("*.py"):
+            raw = path.read_text(encoding="utf-8", errors="replace")
+            if '":return_menu"' in raw:
+                offenders.append(str(path.relative_to(ROOT)))
+    assert not offenders, "local :return_menu collides with global $return_menu: " + ", ".join(offenders)
+
+
+def test_menu_presentation_flow_is_well_formed():
     troop_tree_dialog = read(
         "src/dialogs/ZA02_sod_court_and_strategy/"
         "trp_sod_strategy_advisor_plyr_sa_select_3_answer_03.py"
@@ -59,6 +69,7 @@ def main():
     description = read("src/presentations/0022_sod_description/sod_description.py")
     retinue_dialog = read("src/dialogs/ZZ99_misc_dialogs/anyone_plyr_regular_member_retinue_command.py")
     retinue_menu = read("src/menus/camp/companion_retinue_report.py")
+    menu_preamble = read("src/menus/_preamble/00_imports.py")
 
     assert_before(
         troop_tree_dialog,
@@ -104,11 +115,21 @@ def main():
     assert '(assign, "$g_sod_description_return_to_reports", 0)' in description
     assert '(assign, "$g_sod_retinue_return_menu", 0)' in retinue_dialog
     assert '(assign, "$g_sod_retinue_return_menu", "mnu_companion_retinue_report")' in retinue_menu
-    assert '(jump_to_menu, "$g_sod_retinue_return_menu")' in retinue_menu
+    assert '(assign, ":sod_retinue_back_menu", "$g_sod_retinue_return_menu")' in retinue_menu
+    assert '(assign, "$g_sod_retinue_return_menu", 0)' in retinue_menu
+    assert '(jump_to_menu, ":sod_retinue_back_menu")' in retinue_menu
+    assert '":return_menu"' not in retinue_menu
+    assert "def build_sod_battle_commander_change_option(option_id, commander_return_menu" in menu_preamble
+    assert "option_id, return_menu" not in menu_preamble
+    assert '":return_menu"' not in menu_preamble
     assert "(change_screen_return)" in retinue_menu
     assert_dialog_menu_jumps_precede_finish_mission()
     assert_dialog_menu_jumps_finish_mission()
+    assert_no_ambiguous_return_menu_locals()
 
+
+def main():
+    test_menu_presentation_flow_is_well_formed()
     print("Menu/presentation flow static checks passed")
 
 

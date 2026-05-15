@@ -343,6 +343,11 @@ MB1011_NATIVE_RANGE_CONTRACTS = [
     ("food", "food_begin", "food_end", ROOT / "compile" / "ids" / "ID_items.py"),
     ("readable books", "readable_books_begin", "readable_books_end", ROOT / "compile" / "ids" / "ID_items.py"),
     ("reference books", "reference_books_begin", "reference_books_end", ROOT / "compile" / "ids" / "ID_items.py"),
+    ("horses", "horses_begin", "horses_end", ROOT / "compile" / "ids" / "ID_items.py"),
+    ("armors", "armors_begin", "armors_end", ROOT / "compile" / "ids" / "ID_items.py"),
+    ("ranged weapons", "ranged_weapons_begin", "ranged_weapons_end", ROOT / "compile" / "ids" / "ID_items.py"),
+    ("weapons", "weapons_begin", "weapons_end", ROOT / "compile" / "ids" / "ID_items.py"),
+    ("shields", "shields_begin", "shields_end", ROOT / "compile" / "ids" / "ID_items.py"),
     ("armor merchants", "armor_merchants_begin", "armor_merchants_end", ROOT / "compile" / "ids" / "ID_troops.py"),
     ("weapon merchants", "weapon_merchants_begin", "weapon_merchants_end", ROOT / "compile" / "ids" / "ID_troops.py"),
     ("tavernkeepers", "tavernkeepers_begin", "tavernkeepers_end", ROOT / "compile" / "ids" / "ID_troops.py"),
@@ -350,6 +355,52 @@ MB1011_NATIVE_RANGE_CONTRACTS = [
     ("horse merchants", "horse_merchants_begin", "horse_merchants_end", ROOT / "compile" / "ids" / "ID_troops.py"),
     ("mayors", "mayors_begin", "mayors_end", ROOT / "compile" / "ids" / "ID_troops.py"),
     ("village elders", "village_elders_begin", "village_elders_end", ROOT / "compile" / "ids" / "ID_troops.py"),
+]
+
+MB1011_NATIVE_RANGE_SEMANTIC_CONTRACTS = [
+    ("towns", "towns_begin", "towns_end", ROOT / "compile" / "ids" / "ID_parties.py", r"^p_town_\d+$", 18),
+    ("castles", "castles_begin", "castles_end", ROOT / "compile" / "ids" / "ID_parties.py", r"^p_castle_\d+$", 40),
+    ("villages", "villages_begin", "villages_end", ROOT / "compile" / "ids" / "ID_parties.py", r"^p_village_\d+$", 90),
+    ("walled centers", "walled_centers_begin", "walled_centers_end", ROOT / "compile" / "ids" / "ID_parties.py", r"^p_(town|castle)_\d+$", 58),
+    ("centers", "centers_begin", "centers_end", ROOT / "compile" / "ids" / "ID_parties.py", r"^p_(town|castle|village)_\d+$", 148),
+    ("kings", "kings_begin", "kings_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_kingdom_\d+_lord$", 6),
+    ("pretenders", "pretenders_begin", "pretenders_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_kingdom_\d+_pretender$", 5),
+    ("kingdom ladies", "kingdom_ladies_begin", "kingdom_ladies_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_knight_\d+_\d+_(wife|daughter)$", 20),
+    ("companions", "companions_begin", "companions_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_npc\d+$", 16),
+    ("special companions", "special_companions_begin", "special_companions_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_diego_companion$", 1),
+    ("guild masters", "guild_masters_begin", "guild_masters_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_.*guild_master$", 7),
+    ("village elders", "village_elders_begin", "village_elders_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_village_\d+_elder$", 90),
+    ("arena masters", "arena_masters_begin", "arena_masters_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_town_\d+_arena_master$", 18),
+    ("armor merchants", "armor_merchants_begin", "armor_merchants_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_town_\d+_armorer$", 18),
+    ("weapon merchants", "weapon_merchants_begin", "weapon_merchants_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_town_\d+_weaponsmith$", 18),
+    ("tavernkeepers", "tavernkeepers_begin", "tavernkeepers_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_town_\d+_tavernkeeper$", 18),
+    ("goods merchants", "goods_merchants_begin", "goods_merchants_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_(town_\d+|salt_mine)_merchant$", 19),
+    ("horse merchants", "horse_merchants_begin", "horse_merchants_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_town_\d+_horse_merchant$", 18),
+    ("mayors", "mayors_begin", "mayors_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_town_\d+_mayor$", 18),
+    ("town walkers", "town_walkers_begin", "town_walkers_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_town_walker_\d+$", 2),
+    ("village walkers", "village_walkers_begin", "village_walkers_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_village_walker_\d+$", 2),
+    ("spy walkers", "spy_walkers_begin", "spy_walkers_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_spy_walker_\d+$", 2),
+    ("ransom brokers", "ransom_brokers_begin", "ransom_brokers_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_ransom_broker_\d+$", 10),
+    ("tavern travelers", "tavern_travelers_begin", "tavern_travelers_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_tavern_traveler_\d+$", 10),
+    ("tavern booksellers", "tavern_booksellers_begin", "tavern_booksellers_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_tavern_bookseller_\d+$", 2),
+    ("tavern minstrels", "tavern_minstrels_begin", "tavern_minstrels_end", ROOT / "compile" / "ids" / "ID_troops.py", r"^trp_tavern_minstrel_\d+$", 1),
+    ("guilds", "guilds_begin", "guilds_end", ROOT / "compile" / "ids" / "ID_factions.py", r"^fac_sod_merc_guild\d+$", 7),
+    ("rebel factions", "rebel_factions_begin", "rebel_factions_end", ROOT / "compile" / "ids" / "ID_factions.py", r"^fac_kingdom_\d+_rebels$", 5),
+]
+
+MB1011_BROAD_KINGDOM_RANGE_MEMBERS = [
+    "fac_player_supporters_faction",
+    "fac_kingdom_1",
+    "fac_kingdom_2",
+    "fac_kingdom_3",
+    "fac_kingdom_4",
+    "fac_kingdom_5",
+    "fac_kingdom_6",
+    "fac_kingdom_1_rebels",
+    "fac_kingdom_2_rebels",
+    "fac_kingdom_3_rebels",
+    "fac_kingdom_4_rebels",
+    "fac_kingdom_5_rebels",
 ]
 
 MB1011_HARDCODED_CONTRACTS = [
@@ -597,6 +648,43 @@ def _check_native_range_contracts(warnings: List[str], *, check_ids: bool = True
             warnings.append(
                 "[MB1011-RANGE] "
                 f"{label} range is empty or inverted: {begin_symbol}={begin_index}, {end_symbol}={end_index}"
+            )
+    for label, begin_name, end_name, id_path, name_pattern, expected_count in MB1011_NATIVE_RANGE_SEMANTIC_CONTRACTS:
+        begin_symbol = _resolve_constant_symbol(constants, begin_name)
+        end_symbol = _resolve_constant_symbol(constants, end_name)
+        id_assignments = _parse_id_assignments(id_path)
+        ids_by_index = {value: name for name, value in id_assignments.items()}
+        begin_index = id_assignments.get(begin_symbol)
+        end_index = id_assignments.get(end_symbol)
+        if begin_index is None or end_index is None or begin_index >= end_index:
+            continue
+        actual_count = end_index - begin_index
+        if actual_count != expected_count:
+            warnings.append(
+                "[MB1011-RANGE] "
+                f"{label} range count changed: expected {expected_count}, got {actual_count}"
+            )
+        unexpected_members = [
+            ids_by_index.get(index, f"<missing id {index}>")
+            for index in range(begin_index, end_index)
+            if not re.match(name_pattern, ids_by_index.get(index, ""))
+        ]
+        if unexpected_members:
+            warnings.append(
+                "[MB1011-RANGE] "
+                f"{label} range contains unexpected IDs: {unexpected_members[:8]}"
+            )
+    faction_ids = _parse_id_assignments(ROOT / "compile" / "ids" / "ID_factions.py")
+    faction_ids_by_index = {value: name for name, value in faction_ids.items()}
+    kingdom_begin = faction_ids.get(_resolve_constant_symbol(constants, "kingdoms_begin"))
+    kingdom_end = faction_ids.get(_resolve_constant_symbol(constants, "kingdoms_end"))
+    if kingdom_begin is not None and kingdom_end is not None and kingdom_begin < kingdom_end:
+        kingdom_members = [faction_ids_by_index.get(index, f"<missing id {index}>") for index in range(kingdom_begin, kingdom_end)]
+        if kingdom_members != MB1011_BROAD_KINGDOM_RANGE_MEMBERS:
+            warnings.append(
+                "[MB1011-RANGE] "
+                "kingdoms_begin/end broad political range changed: "
+                f"expected {MB1011_BROAD_KINGDOM_RANGE_MEMBERS}, got {kingdom_members}"
             )
 
 def _write_mb1011_hardcoded_contract_report(errors: List[str], warnings: List[str], *, check_ids: bool = True) -> None:

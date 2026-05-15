@@ -1,14 +1,15 @@
 MENUS = [
 ("prisoner_train_orders", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
-      (str_store_string, s9, "@Prisoner Train Orders:^^Choose how your most strained prisoner holding should move its non-hero captives. The order will use the eligible fief with the highest prisoner pressure, then pick a valid destination by policy, infrastructure, and route risk."),
+      (str_store_string, s98, "@Prisoner Train Orders:^^Choose how your most strained prisoner holding should move its non-hero captives. The order will use the eligible fief with the highest prisoner pressure, then pick a valid destination by policy, infrastructure, and route risk."),
       (try_begin),
         (gt, "$g_sod_prisoner_train_quest_party", 0),
         (call_script, "script_sod_prisoner_train_quest_status_to_s20"),
-        (str_store_string, s9, "@{s9}^^{s20}"),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^^{s20}"),
       (try_end),
     ],
     [
@@ -97,20 +98,21 @@ MENUS = [
   ),
 
 ("prisoner_train_order_confirm", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
       (call_script, "script_sod_player_prepare_prisoner_train_order", "$g_sod_player_prisoner_train_purpose"),
       (try_begin),
         (eq, reg0, 1),
-        (str_store_string, s9, "@Order prisoner train:^^Origin: {s20}^{s23} destination: {s21}^Captives available: {reg20}^Cost: {reg21} denars and {reg22} food items.^^Companion objections: {reg23}."),
+        (str_store_string, s98, "@Order prisoner train:^^Origin: {s20}^{s23} destination: {s21}^Captives available: {reg20}^Cost: {reg21} denars and {reg22} food items.^^Companion objections: {reg23}."),
         (try_begin),
           (gt, reg23, 0),
-          (str_store_string, s9, "@{s9}^^Warning: anti-slavery companions object strongly to slave labor and slaver sales."),
+          (str_store_string_reg, s97, s98),
+          (str_store_string, s98, "@{s97}^^Warning: anti-slavery companions object strongly to slave labor and slaver sales."),
         (try_end),
       (else_try),
-        (str_store_string, s9, "@No eligible prisoner train order can be formed under current policy, infrastructure, or prisoner pressure."),
+        (str_store_string, s98, "@No eligible prisoner train order can be formed under current policy, infrastructure, or prisoner pressure."),
       (try_end),
     ],
     [
@@ -161,11 +163,11 @@ MENUS = [
   ),
 
 ("prisoner_policy_orders", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
-      (str_store_string, s9, "@Realm Prisoner Policy:^^This policy shapes labor trains, slaver-market access, companion reactions, and diplomatic reputation. It does not instantly move captives; use prisoner train orders for that."),
+      (str_store_string, s98, "@Realm Prisoner Policy:^^This policy shapes labor trains, slaver-market access, companion reactions, and diplomatic reputation. It does not instantly move captives; use prisoner train orders for that."),
     ],
     [
       ("policy_none", [], "No forced labor: hold, ransom, exchange, or release captives.",
@@ -183,12 +185,12 @@ MENUS = [
   ),
 
 ("prisoner_local_holding_orders", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
       (call_script, "script_sod_player_prepare_prisoner_local_policy_target"),
-      (str_store_string, s9, "@Local Prisoner Holding:^^Current priority fief: {s20}.^^Use this for the holding that is under the most prisoner pressure. Prison Towers improve capacity, order, and escape control; local holding policy tunes how this fief handles captives before trains are formed."),
+      (str_store_string, s98, "@Local Prisoner Holding:^^Current priority fief: {s20}.^^Use this for the holding that is under the most prisoner pressure. Prison Towers improve capacity, order, and escape control; local holding policy tunes how this fief handles captives before trains are formed."),
     ],
     [
       ("build_tower",

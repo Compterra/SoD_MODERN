@@ -12,7 +12,7 @@ SCRIPTS = [
      (store_troop_faction, ":old_faction", ":old_boss_troop"),
      (neq, ":old_faction", "fac_kingdom_6"),
      (faction_slot_eq, ":old_faction", slot_faction_state, sfs_active),
-     (call_script, "script_sod_merc_market_calculate_kingdom_demand", ":old_faction"),
+     (call_script, "script_sod_merc_market_calculate_kingdom_demand", ":old_faction", 0, 0, 0, 0),
      (faction_get_slot, ":demand_score", ":old_faction", slot_faction_sod_merc_demand_score),
      (ge, ":demand_score", 30),
      (party_get_slot, ":guild_faction", ":cur_party", slot_party_sod_merc_contract_guild),

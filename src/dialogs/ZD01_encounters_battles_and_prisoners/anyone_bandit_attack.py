@@ -6,5 +6,9 @@ DIALOGS = [
         (str_store_string, s13, "@That was a mistake. Now I'm going to have to make your death long and painful."),
         (str_store_string, s14, "@Brave words. Let's see you back them up with deeds, cur!"),
         (str_store_string_reg, s5, ":rand"),
-      ], "{s5}", "close_window", []],
+      ], "{s5}", "close_window", [
+        (assign, "$g_enemy_party", "$g_encountered_party"),
+        (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+        (encounter_attack),
+      ]],
 ]

@@ -126,7 +126,7 @@ dialogs = [
 
                      (eq, 1, 0)],
    "Warning: This line is never displayed. It is just for storing conversation variables.", "close_window", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_sod_company_spokesperson_start.py:L1-L93 ] anyone::start->sod_company_spokesperson_response [eq|gt|call_script] {{var}}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_sod_company_spokesperson_start.py:L1-L106 ] anyone::start->sod_company_spokesperson_response [eq|gt|call_script] {{var}}
 [anyone, "start", [(eq, "$g_sod_company_spokesperson_dialogue_active", 1),
                    (gt, "$g_sod_company_spokesperson_type", sod_company_spokesperson_none),
                    (call_script, "script_sod_company_dialogue_describe_spokesperson_to_s60")],
@@ -165,26 +165,39 @@ dialogs = [
    [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_hazard_pay),
     (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
 
-[anyone|plyr, "sod_company_spokesperson_response", [(store_current_day, ":cur_day"),
+[anyone|plyr, "sod_company_spokesperson_response", [(eq, "$g_sod_company_spokesperson_type", sod_company_spokesperson_victory_spoils),
+                                                    (store_current_day, ":cur_day"),
                                                     (store_sub, ":days_since_victory", ":cur_day", "$g_sod_company_last_victory_day"),
-                                                    (le, ":days_since_victory", 3)],
-   "The company has earned public honors.", "close_window",
+                                                    (le, ":days_since_victory", 3),
+                                                    (store_sub, ":days_since_honor", ":cur_day", "$g_sod_company_last_public_honor_day"),
+                                                    (gt, ":days_since_honor", 7),
+                                                    (call_script, "script_sod_company_accounts_get_victory_reward_cost_to_regs"),
+                                                    (store_troop_gold, ":gold", "trp_player"),
+                                                    (ge, ":gold", reg21)],
+   "Name the fighters who carried the day.", "close_window",
    [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_public_honors),
     (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
 
-[anyone|plyr, "sod_company_spokesperson_response", [(store_current_day, ":cur_day"),
+[anyone|plyr, "sod_company_spokesperson_response", [(eq, "$g_sod_company_spokesperson_type", sod_company_spokesperson_victory_spoils),
+                                                    (eq, "$g_sod_company_victory_feast_available", 1),
+                                                    (store_current_day, ":cur_day"),
                                                     (store_sub, ":days_since_victory", ":cur_day", "$g_sod_company_last_victory_day"),
                                                     (le, ":days_since_victory", 3),
+                                                    (store_sub, ":days_since_feast", ":cur_day", "$g_sod_company_last_victory_feast_day"),
+                                                    (gt, ":days_since_feast", 3),
                                                     (call_script, "script_count_edible_food"),
                                                     (ge, reg0, 6)],
-   "Make a victory feast before pride turns sour.", "close_window",
+   "Open the stores for a victory feast.", "close_window",
    [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_victory_feast),
     (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
 
-[anyone|plyr, "sod_company_spokesperson_response", [(store_current_day, ":cur_day"),
+[anyone|plyr, "sod_company_spokesperson_response", [(eq, "$g_sod_company_spokesperson_type", sod_company_spokesperson_victory_spoils),
+                                                    (store_current_day, ":cur_day"),
                                                     (store_sub, ":days_since_victory", ":cur_day", "$g_sod_company_last_victory_day"),
-                                                    (le, ":days_since_victory", 3)],
-   "No spectacle. We keep marching.", "close_window",
+                                                    (le, ":days_since_victory", 3),
+                                                    (store_sub, ":days_since_refusal", ":cur_day", "$g_sod_company_last_refused_spectacle_day"),
+                                                    (gt, ":days_since_refusal", 3)],
+   "No ceremony. We keep marching.", "close_window",
    [(call_script, "script_sod_company_dialogue_apply_response", sod_company_spokesperson_response_refuse_spectacle),
     (assign, "$g_sod_company_spokesperson_dialogue_active", 0)]],
 
@@ -265,49 +278,66 @@ dialogs = [
 
                      (eq, 1, 0)],
    "Warning: This line is never displayed. It is just for storing conversation variables.", "close_window", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_quest_flavor_start.py:L1-L11 ] anyone::start->start [store_conversation_troop|troop_slot_ge|call_script] {{var}}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_quest_flavor_start.py:L1-L15 ] anyone::start->start [store_conversation_troop|troop_slot_ge|call_script] {{var}}
 [anyone, "start", [
         (store_conversation_troop, "$g_talk_troop"),
         (troop_slot_ge, "$g_talk_troop", slot_troop_sod_quest_memory_quest, 1),
         (call_script, "script_sod_quest_dialogue_read_memory", "$g_talk_troop"),
-    ],
-    "{s1}", "start", [
+        (str_store_string_reg, s68, s4),
         (call_script, "script_sod_quest_dialogue_describe_reaction", "$g_talk_troop"),
+        (str_store_string_reg, s97, s68),
+        (str_store_string, s68, "@{s97}^{s4}"),
         (call_script, "script_sod_quest_dialogue_describe_stage", "$g_talk_troop"),
-    ]],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_lord_start_quest_memory.py:L1-L11 ] anyone::lord_start->lord_start [store_conversation_troop|is_between|troop_slot_ge] {{var}}
+        (str_store_string_reg, s97, s68),
+        (str_store_string, s68, "@{s97}^{s4}"),
+    ],
+    "{s68}", "start", []],
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_lord_start_quest_memory.py:L1-L16 ] anyone::lord_start->lord_start [store_conversation_troop|is_between|troop_slot_ge] {{var}}
 [anyone, "lord_start", [
         (store_conversation_troop, "$g_talk_troop"),
         (is_between, "$g_talk_troop", kingdom_heroes_begin, kingdom_heroes_end),
         (troop_slot_ge, "$g_talk_troop", slot_troop_sod_quest_memory_quest, 1),
         (call_script, "script_sod_quest_dialogue_read_memory", "$g_talk_troop"),
+        (str_store_string_reg, s68, s4),
         (call_script, "script_sod_quest_dialogue_describe_reaction", "$g_talk_troop"),
+        (str_store_string_reg, s97, s68),
+        (str_store_string, s68, "@{s97}^{s4}"),
         (call_script, "script_sod_quest_dialogue_describe_stage", "$g_talk_troop"),
+        (str_store_string_reg, s97, s68),
+        (str_store_string, s68, "@{s97}^{s4}"),
     ],
-    "{s1}", "lord_start", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_quest_flavor_member_chat.py:L1-L12 ] anyone::member_talk->member_talk [store_conversation_troop|is_between|troop_slot_ge] {{var}}
+    "{s68}", "lord_start", []],
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_quest_flavor_member_chat.py:L1-L16 ] anyone::member_talk->member_talk [store_conversation_troop|is_between|troop_slot_ge] {{var}}
 [anyone, "member_talk", [
         (store_conversation_troop, "$g_talk_troop"),
         (is_between, "$g_talk_troop", companions_begin, companions_end),
         (troop_slot_ge, "$g_talk_troop", slot_troop_sod_quest_memory_quest, 1),
         (call_script, "script_sod_quest_dialogue_read_memory", "$g_talk_troop"),
-    ],
-    "{s1}", "member_talk", [
+        (str_store_string_reg, s68, s4),
         (call_script, "script_sod_quest_dialogue_describe_reaction", "$g_talk_troop"),
+        (str_store_string_reg, s97, s68),
+        (str_store_string, s68, "@{s97}^{s4}"),
         (call_script, "script_sod_quest_dialogue_describe_stage", "$g_talk_troop"),
-    ]],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_member_chat_quest_memory.py:L1-L13 ] anyone::member_talk->member_talk [store_conversation_troop|is_between|eq] {{var}}
+        (str_store_string_reg, s97, s68),
+        (str_store_string, s68, "@{s97}^{s4}"),
+    ],
+    "{s68}", "member_talk", []],
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_member_chat_quest_memory.py:L1-L17 ] anyone::member_talk->member_talk [store_conversation_troop|is_between|eq] {{var}}
 [anyone, "member_talk", [
         (store_conversation_troop, "$g_talk_troop"),
         (is_between, "$g_talk_troop", companions_begin, companions_end),
         (eq, "$g_camp_talk", 1),
         (troop_slot_ge, "$g_talk_troop", slot_troop_sod_quest_memory_quest, 1),
         (call_script, "script_sod_quest_dialogue_read_memory", "$g_talk_troop"),
-    ],
-    "{s1}", "member_talk", [
+        (str_store_string_reg, s68, s4),
         (call_script, "script_sod_quest_dialogue_describe_reaction", "$g_talk_troop"),
+        (str_store_string_reg, s97, s68),
+        (str_store_string, s68, "@{s97}^{s4}"),
         (call_script, "script_sod_quest_dialogue_describe_stage", "$g_talk_troop"),
-    ]],
+        (str_store_string_reg, s97, s68),
+        (str_store_string, s68, "@{s97}^{s4}"),
+    ],
+    "{s68}", "member_talk", []],
 # [ src/dialogs/ZE01_companions_and_named_npcs/anyone_member_chat_tax_courier_jeremus.py:L1-L24 ] trp_npc12::member_chat->member_talk [main_party_has_troop|eq|eq] {captain. about the courier from {var}. there is still a differen}
 [trp_npc12, "member_chat", [
     (main_party_has_troop, "trp_npc12"),
@@ -438,7 +468,7 @@ dialogs = [
 [anyone|auto_proceed, "party_encounter_lord_hostile_attacker_2_fight", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
 	], "none", "pelha2f_sane_1", [] ],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_sod_nemesis_lord_hostile_fight.py:L1-L11 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [eq|ge|eq] {no more court words. i have worn the shape of your victories int}
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_sod_nemesis_lord_hostile_fight.py:L1-L15 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [eq|ge|eq] {no more court words. i have worn the shape of your victories int}
 [anyone, "party_encounter_lord_hostile_attacker_2_fight", [
     (eq, "$g_sod_nemesis_actor_type", sod_nemesis_actor_lord),
     (ge, "$g_sod_nemesis_state", sod_nemesis_state_hunting),
@@ -447,42 +477,82 @@ dialogs = [
     (troop_get_slot, reg21, "$g_talk_troop", slot_troop_sod_nemesis_defeats),
     (troop_get_slot, reg22, "$g_talk_troop", slot_troop_sod_nemesis_duel_pressure),
   ],
-  "No more court words. I have worn the shape of your victories into my bones, {playername}. Today every man here will see whether your name still fits in my mouth.", "close_window", []],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight.py:L1-L5 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [troop_slot_eq] {so be it. all for the sake of the empire. rally, soldiers ! rais}
+  "No more court words. I have worn the shape of your victories into my bones, {playername}. Today every man here will see whether your name still fits in my mouth.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+    (encounter_attack),
+  ]],
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight.py:L1-L9 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [troop_slot_eq] {so be it. all for the sake of the empire. rally, soldiers ! rais}
 [anyone, "party_encounter_lord_hostile_attacker_2_fight", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_respectful),
-	], "So be it. All for the sake of the empire. Rally, soldiers ! Raise your weapons high ! Let Marsus crush our foes through the strength of our arms !", "close_window", [] ],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight_02.py:L1-L5 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [troop_slot_eq] {don't make me laugh, {var} ! the greatest power in the world is }
+	], "So be it. All for the sake of the empire. Rally, soldiers ! Raise your weapons high ! Let Marsus crush our foes through the strength of our arms !", "close_window", [
+      (assign, "$g_enemy_party", "$g_encountered_party"),
+      (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+      (encounter_attack),
+    ] ],
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight_02.py:L1-L9 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [troop_slot_eq] {don't make me laugh, {var} ! the greatest power in the world is }
 [anyone, "party_encounter_lord_hostile_attacker_2_fight", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
-	], "Don't make me laugh, {playername} ! The greatest power in the world is the Imperial Legion, with over half a dozen nations under its command ! None of them need their old royal dynasties to be strong - under the wings of our empire, they ARE strong ! Listen to the masses of soldiers, among them the sons of your homeland, uttering the same battle cry across the whole of Calradia: FOR THE EMPIRE !", "close_window", [] ],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight_03.py:L1-L5 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [troop_slot_eq] {answer violence by violence, right ? fine by me. imperial steel,}
+	], "Don't make me laugh, {playername} ! The greatest power in the world is the Imperial Legion, with over half a dozen nations under its command ! None of them need their old royal dynasties to be strong - under the wings of our empire, they ARE strong ! Listen to the masses of soldiers, among them the sons of your homeland, uttering the same battle cry across the whole of Calradia: FOR THE EMPIRE !", "close_window", [
+      (assign, "$g_enemy_party", "$g_encountered_party"),
+      (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+      (encounter_attack),
+    ] ],
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight_03.py:L1-L9 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [troop_slot_eq] {answer violence by violence, right ? fine by me. imperial steel,}
 [anyone, "party_encounter_lord_hostile_attacker_2_fight", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_capitalist),
-	], "Answer violence by violence, right ? Fine by me. Imperial steel, that's my response ! Imperial steel, in the hands of my mercenaries ! Cry for your lives, peasants, they are over ! I'll make good money out of your weaponry, you won't be needing them anymore once we're finished !", "close_window", [] ],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight_04.py:L1-L5 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [troop_slot_eq] {in that case, there are no more options left but to slay you all}
+	], "Answer violence by violence, right ? Fine by me. Imperial steel, that's my response ! Imperial steel, in the hands of my mercenaries ! Cry for your lives, peasants, they are over ! I'll make good money out of your weaponry, you won't be needing them anymore once we're finished !", "close_window", [
+      (assign, "$g_enemy_party", "$g_encountered_party"),
+      (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+      (encounter_attack),
+    ] ],
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight_04.py:L1-L9 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [troop_slot_eq] {in that case, there are no more options left but to slay you all}
 [anyone, "party_encounter_lord_hostile_attacker_2_fight", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_racist),
-	], "In that case, there are no more options left but to slay you all. Very well. Throw yourselves against the might of the Imperial Legion, scum ! I will kill you first, and then scourge any other {s32} I can find ! Good riddance.", "close_window", [] ],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight_05.py:L1-L5 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [troop_slot_eq] {hah ! yes, nurture your frail hopes to the very end ! then come }
+	], "In that case, there are no more options left but to slay you all. Very well. Throw yourselves against the might of the Imperial Legion, scum ! I will kill you first, and then scourge any other {s32} I can find ! Good riddance.", "close_window", [
+      (assign, "$g_enemy_party", "$g_encountered_party"),
+      (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+      (encounter_attack),
+    ] ],
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight_05.py:L1-L9 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [troop_slot_eq] {hah ! yes, nurture your frail hopes to the very end ! then come }
 [anyone, "party_encounter_lord_hostile_attacker_2_fight", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_crusader),
-	], "Hah ! Yes, nurture your frail hopes to the very end ! Then come and meet the judgement of our warrior god at the hands of his faithful crusaders ! It will be terrible to behold ! All who dies today, dies for Lord Marsus !", "close_window", [] ],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight_06.py:L1-L5 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [troop_slot_eq] {with such attitude, i can't help but wonder why would anyone ven}
+	], "Hah ! Yes, nurture your frail hopes to the very end ! Then come and meet the judgement of our warrior god at the hands of his faithful crusaders ! It will be terrible to behold ! All who dies today, dies for Lord Marsus !", "close_window", [
+      (assign, "$g_enemy_party", "$g_encountered_party"),
+      (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+      (encounter_attack),
+    ] ],
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight_06.py:L1-L9 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [troop_slot_eq] {with such attitude, i can't help but wonder why would anyone ven}
 [anyone, "party_encounter_lord_hostile_attacker_2_fight", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_liberator),
-	], "With such attitude, I can't help but wonder why would anyone venerate a person like you ? I guess it's just like the saying goes - 'History knows more heroes than madmen'. No matter. Soldiers, forward march ! We shall splatter the bones of our enemies beneath the heels of our combat boots ! In our wake, a new, free era shall follow !", "close_window", [] ],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight_07.py:L1-L5 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [troop_slot_eq] {so much hate, so much noise... let's bring it to a whole new lev}
+	], "With such attitude, I can't help but wonder why would anyone venerate a person like you ? I guess it's just like the saying goes - 'History knows more heroes than madmen'. No matter. Soldiers, forward march ! We shall splatter the bones of our enemies beneath the heels of our combat boots ! In our wake, a new, free era shall follow !", "close_window", [
+      (assign, "$g_enemy_party", "$g_encountered_party"),
+      (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+      (encounter_attack),
+    ] ],
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight_07.py:L1-L9 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [troop_slot_eq] {so much hate, so much noise... let's bring it to a whole new lev}
 [anyone, "party_encounter_lord_hostile_attacker_2_fight", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_nihilistic),
-	], "So much hate, so much noise... Let's bring it to a whole new level. Love the pain, relish the agony ! A feast of flesh, yeeess ! And once we're through with the bloodbath, I will craft puppets from your bones and gift them to children ! Such a happy ending ! HAHAHAHA !", "close_window", [] ],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight_08.py:L1-L5 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [eq] {then the time for talk is over. come, {var} ! our battle will be}
+	], "So much hate, so much noise... Let's bring it to a whole new level. Love the pain, relish the agony ! A feast of flesh, yeeess ! And once we're through with the bloodbath, I will craft puppets from your bones and gift them to children ! Such a happy ending ! HAHAHAHA !", "close_window", [
+      (assign, "$g_enemy_party", "$g_encountered_party"),
+      (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+      (encounter_attack),
+    ] ],
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_fight_08.py:L1-L9 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [eq] {then the time for talk is over. come, {var} ! our battle will be}
 [anyone, "party_encounter_lord_hostile_attacker_2_fight", [
 		(eq, "$g_talk_troop", "trp_kingdom_6_lord"),
-	], "Then the time for talk is over. Come, {playername} ! Our battle will be one recorded in history !", "close_window", [] ],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_auto_proceed_party_encounter_lord_hostile_attacker_2_fight_02.py:L1-L4 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [no_conditions] {then there is nothing more to say. draw your steel, {var}; we se}
+	], "Then the time for talk is over. Come, {playername} ! Our battle will be one recorded in history !", "close_window", [
+      (assign, "$g_enemy_party", "$g_encountered_party"),
+      (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+      (encounter_attack),
+    ] ],
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_auto_proceed_party_encounter_lord_hostile_attacker_2_fight_02.py:L1-L8 ] anyone::party_encounter_lord_hostile_attacker_2_fight->close_window [no_conditions] {then there is nothing more to say. draw your steel, {var}; we se}
 [anyone, "party_encounter_lord_hostile_attacker_2_fight", [
-	], "Then there is nothing more to say. Draw your steel, {playername}; we settle this on the field.", "close_window", [] ],
+	], "Then there is nothing more to say. Draw your steel, {playername}; we settle this on the field.", "close_window", [
+      (assign, "$g_enemy_party", "$g_encountered_party"),
+      (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+      (encounter_attack),
+    ] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_pelha2f_sane_1.py:L1-L4 ] anyone::pelha2f_sane_1->pelha2f_sane_2 [no_conditions] {if i disobey orders, then it will be the legate who executes me }
 [anyone, "pelha2f_sane_1", [
 	], "If I disobey orders, then it will be the Legate who executes me ! Sorry {playername}, but if you challenge me, I can't back down. ", "pelha2f_sane_2", [] ],
@@ -518,7 +588,7 @@ dialogs = [
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_surrender_03.py:L1-L5 ] anyone::party_encounter_lord_hostile_attacker_2_surrender->pelha2s_imperialist_1 [troop_slot_eq] {finally you accepted your fate. i will respect your decision and}
 [anyone, "party_encounter_lord_hostile_attacker_2_surrender", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
-	], "Finally you accepted your fate. I will respect your decision and I'll care for your people. Until we meet up with my superior, you'll be kept seperately from the other prisoners.", "pelha2s_imperialist_1", [] ],
+	], "Finally you accepted your fate. I will respect your decision and I'll care for your people. Until we meet up with my superior, you'll be kept separately from the other prisoners.", "pelha2s_imperialist_1", [] ],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_surrender_04.py:L1-L5 ] anyone::party_encounter_lord_hostile_attacker_2_surrender->pelha2s_capitalist_1 [troop_slot_eq] {ahh, no ! no ! anything but that ! do you have the slightest ide}
 [anyone, "party_encounter_lord_hostile_attacker_2_surrender", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_capitalist),
@@ -530,7 +600,7 @@ dialogs = [
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_surrender_06.py:L1-L5 ] anyone::party_encounter_lord_hostile_attacker_2_surrender->pelha2s_crusader_1 [troop_slot_eq] {({var} glares at you with immeasurable hatred radiating from his}
 [anyone, "party_encounter_lord_hostile_attacker_2_surrender", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_crusader),
-	], "({s29} glares at you with immeasurable hatred radiating from his eyes; if he'd have a staring contest with a basilisk right now, he'd definately win.)", "pelha2s_crusader_1", [] ],
+	], "({s29} glares at you with immeasurable hatred radiating from his eyes; if he'd have a staring contest with a basilisk right now, he'd definitely win.)", "pelha2s_crusader_1", [] ],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_surrender_07.py:L1-L5 ] anyone::party_encounter_lord_hostile_attacker_2_surrender->pelha2s_liberator_1 [troop_slot_eq] {heh, the emperor will be most pleased with your capture ! perhap}
 [anyone, "party_encounter_lord_hostile_attacker_2_surrender", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_liberator),
@@ -546,9 +616,9 @@ dialogs = [
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_party_encounter_lord_hostile_attacker_2_surrender_10.py:L1-L4 ] anyone::party_encounter_lord_hostile_attacker_2_surrender->close_window [no_conditions] {wise enough. lay down your arms, and i will see that you are tak}
 [anyone, "party_encounter_lord_hostile_attacker_2_surrender", [
 	], "Wise enough. Lay down your arms, and I will see that you are taken prisoner with what dignity the field allows.", "close_window", [] ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_pelha2s_legate_1.py:L1-L4 ] anyone::pelha2s_legate_1->close_window [no_conditions] {(you are escorted to a tent seperate from that of other prisoner}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_pelha2s_legate_1.py:L1-L4 ] anyone::pelha2s_legate_1->close_window [no_conditions] {(you are escorted to a tent separate from that of other prisoner}
 [anyone, "pelha2s_legate_1", [
-	], "(You are escorted to a tent seperate from that of other prisoners', guarded by several legionaries. One of your guards hands over a piece of pergamen, with some text on it: \"You'll be released when the time is right.\" Whether this is just a cruel joke or a glimmer of hope remains yet to be seen. In either case, you have a feeling that Gaius has some sort of a plan with you...)", "close_window", [] ],
+	], "(You are escorted to a tent separate from that of other prisoners', guarded by several legionaries. One of your guards hands over a piece of parchment, with some text on it: \"You'll be released when the time is right.\" Whether this is just a cruel joke or a glimmer of hope remains yet to be seen. In either case, you have a feeling that Gaius has some sort of a plan with you...)", "close_window", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_pelha2s_nihilistic_1.py:L1-L4 ] anyone::pelha2s_nihilistic_1->close_window [no_conditions] {(you are chained and put among the rest of the prisoners. howeve}
 [anyone, "pelha2s_nihilistic_1", [
 	], "(You are chained and put among the rest of the prisoners. However you notice that the guards are all drunken idiots and barely pay attention to the prisoners; if you get the chance, you can perhaps steal the keys and get free ! Just wait for the right time...)", "close_window", [] ],
@@ -802,7 +872,7 @@ dialogs = [
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_legate_sq_1_03.py:L1-L3 ] anyone::legate_sq_1_03->legate_sq_1_04 [no_conditions] {the old kingdom of aden was always quite chaotic. all things con}
 [anyone, "legate_sq_1_03", [], "The old Kingdom of Aden was always quite chaotic. All things considered, it still is, though imperial rule has improved the conditions to some degree. You see, the Adenian Lords had more influence and military might than the king himself prior to the imperial invasion. After the royal family was overthrown, some Lords sided with us, while the loyalists were either killed, stripped of their titles or banished. ", "legate_sq_1_04", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_legate_sq_1_04.py:L1-L3 ] anyone::legate_sq_1_04->legate_sq_1_05 [no_conditions] {and then there were those who proclaimed neutrality and went on }
-[anyone, "legate_sq_1_04", [], "And then there were those who proclaimed neutrality and went on nurturing their own little private domains and personal armies. Since these baronies are well-fortified and the war was still raging on back then, we soon forged peace treaties with these seperatists. Nowadays they continue to fight among themselves and make no combined effort to restore the former kingdom, thus they are of little concern to us. In due time, their loneliness will be the cause of their downfall. ", "legate_sq_1_05", [] ],
+[anyone, "legate_sq_1_04", [], "And then there were those who proclaimed neutrality and went on nurturing their own little private domains and personal armies. Since these baronies are well-fortified and the war was still raging on back then, we soon forged peace treaties with these separatists. Nowadays they continue to fight among themselves and make no combined effort to restore the former kingdom, thus they are of little concern to us. In due time, their loneliness will be the cause of their downfall. ", "legate_sq_1_05", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_legate_sq_1_05.py:L1-L3 ] anyone::legate_sq_1_05->legate_sq_1_06 [no_conditions] {as for the rest of the territories, they are either under the co}
 [anyone, "legate_sq_1_05", [], "As for the rest of the territories, they are either under the control of once-Adenian Lords or were gifted to certain Centurions who participated in the campaign. At first there were a couple of peasant rebellions, but by now things have settled down. Unless a royal heir returns and unites the former Lords anytime soon, the very memory of Aden will soon fade away.", "legate_sq_1_06", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_legate_sq_1_06.py:L1-L3 ] anyone|plyr::legate_sq_1_06->legate_sq_1_07 [no_conditions] {move on. what about the empire of antaria ?}
@@ -842,7 +912,7 @@ dialogs = [
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_legate_sq_1_23.py:L1-L3 ] anyone::legate_sq_1_23->legate_sq_1_24 [no_conditions] {it's easier than you'd dare to imagine, {var}. nations as a whol}
 [anyone, "legate_sq_1_23", [], "It's easier than you'd dare to imagine, {playername}. Nations as a whole can have dreadfully short memories at times. They remember how they were invaded by us, yes. But are we cruel to them in Antaria, Villian or Aden ? No. In certain ways, we are a lot more humanitarian than their so-called \"righful overlords\". And Marina or Zerrikania ? We pulled the troops out and gave power in the hands of would-be tyrants.", "legate_sq_1_24", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_legate_sq_1_24.py:L1-L3 ] anyone::legate_sq_1_24->legate_sq_1_25 [no_conditions] {it is not us who tax them so heavily; it is not us who make them}
-[anyone, "legate_sq_1_24", [], "It is not us who tax them so heavily; it is not us who make them work to death; it is not us who restrict their religions. Just wait and observe, {playername}. A decade, perhaps two, and nobody will give a damn anymore about an invasion by the Imperial Legion that occured such a \"long\" time ago when they have a lot of other trouble to put up with, imposed on them by their own rulers. ", "legate_sq_1_25", [] ],
+[anyone, "legate_sq_1_24", [], "It is not us who tax them so heavily; it is not us who make them work to death; it is not us who restrict their religions. Just wait and observe, {playername}. A decade, perhaps two, and nobody will give a damn anymore about an invasion by the Imperial Legion that occurred such a \"long\" time ago when they have a lot of other trouble to put up with, imposed on them by their own rulers. ", "legate_sq_1_25", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_legate_sq_1_25.py:L1-L3 ] anyone::legate_sq_1_25->legate_sq_1_26 [no_conditions] {and nobody will remember nor care either about \"who\" helped th}
 [anyone, "legate_sq_1_25", [], "And nobody will remember nor care either about \"who\" helped these despots to their position of power. Imagine then, the Imperial Legion marching in and making order, establishing peace and laying down the foundations of a better life for the locals. You think it's unlikely ? Ask yourself then, would you not cheer for someone who freed you from decades of tyranny and poverty ?", "legate_sq_1_26", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_legate_sq_1_26.py:L1-L3 ] anyone|plyr::legate_sq_1_26->legate_sq_1_27 [no_conditions] {disgusting but effectice. and you had that all planned out from }
@@ -1071,30 +1141,54 @@ dialogs = [
 [anyone, "cpehus_sane_4", [], "So much for doing this the nice way... I was hoping we could come to some nonviolent agreement, but... if not, then I suppose it can't be helped. Why, {playername} ? Perhaps your royal power got into your head ?", "cpehus_sane_5", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_sane_5.py:L1-L3 ] anyone::cpehus_sane_5->cpehus_sane_6 [no_conditions] {seriously, protecting your crown is one thing, but this unwillin}
 [anyone, "cpehus_sane_5", [], "Seriously, protecting your crown is one thing, but this unwillingness to compromise, when so many lives are at stake, it's simply... (Sigh). Yes, I know... I'm far too naive. It's time I accepted reality.", "cpehus_sane_6", [] ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_sane_6.py:L1-L3 ] anyone::cpehus_sane_6->close_window [no_conditions] {no matter how hard i try, the outcome is always the same... it e}
-[anyone, "cpehus_sane_6", [], "No matter how hard I try, the outcome is always the same... it ends in blood. Form up, soldiers ! Today we FIGHT !", "close_window", [(encounter_attack)] ],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_sane_6.py:L1-L6 ] anyone::cpehus_sane_6->close_window [no_conditions] {no matter how hard i try, the outcome is always the same... it e}
+[anyone, "cpehus_sane_6", [], "No matter how hard I try, the outcome is always the same... it ends in blood. Form up, soldiers ! Today we FIGHT !", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_respectful_1.py:L1-L3 ] anyone::cpehus_respectful_1->cpehus_respectful_2 [no_conditions] {i have been expecting this fight to come. after all, what else c}
 [anyone, "cpehus_respectful_1", [], "I have been expecting this fight to come. After all, what else could happen if two similarly ambitious opponents block each other's path to glory ? Let us journey into the madness of war then, with valor as our guide.", "cpehus_respectful_2", [] ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_respectful_2.py:L1-L3 ] anyone::cpehus_respectful_2->close_window [no_conditions] {when the battle is over and the sternly raging dust of the land }
-[anyone, "cpehus_respectful_2", [], "When the battle is over and the sternly raging dust of the land settles, revealing the corpses of your loyal companions, you will feel the true burden of your royal authority.", "close_window", [(encounter_attack)] ],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_respectful_2.py:L1-L6 ] anyone::cpehus_respectful_2->close_window [no_conditions] {when the battle is over and the sternly raging dust of the land }
+[anyone, "cpehus_respectful_2", [], "When the battle is over and the sternly raging dust of the land settles, revealing the corpses of your loyal companions, you will feel the true burden of your royal authority.", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_imperialist_1.py:L1-L3 ] anyone::cpehus_imperialist_1->cpehus_imperialist_2 [no_conditions] {such bravery ! i wonder if you will hold such a strong opinion w}
 [anyone, "cpehus_imperialist_1", [], "Such bravery ! I wonder if you will hold such a strong opinion when your mouldering carcass will be impaled on a pike and carried to battle as a trophy by legionaries who were once loyal serfs of your forefathers.", "cpehus_imperialist_2", [] ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_imperialist_2.py:L1-L3 ] anyone::cpehus_imperialist_2->close_window [no_conditions] {now face the combined might of all nations of the empire !}
-[anyone, "cpehus_imperialist_2", [], "Now face the combined might of all nations of the empire !", "close_window", [(encounter_attack)] ],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_imperialist_2.py:L1-L6 ] anyone::cpehus_imperialist_2->close_window [no_conditions] {now face the combined might of all nations of the empire !}
+[anyone, "cpehus_imperialist_2", [], "Now face the combined might of all nations of the empire !", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_crusader_1.py:L1-L3 ] anyone::cpehus_crusader_1->cpehus_crusader_2 [no_conditions] {impressive ! at least have more nerve than the rest of your spin}
 [anyone, "cpehus_crusader_1", [], "Impressive ! At least have more nerve than the rest of your spineless breed ! I will remember you fondly when I reduce your cities to rubble and debris ! ", "cpehus_crusader_2", [] ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_crusader_2.py:L1-L3 ] anyone::cpehus_crusader_2->close_window [no_conditions] {rejoice, children of marsus ! this day we exterminate the hatefu}
-[anyone, "cpehus_crusader_2", [], "Rejoice, children of Marsus ! This day we exterminate the hateful descendants of the {s31} ! Observe how Marsus will reward our offerings with exulting victory !", "close_window", [(encounter_attack)] ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_racist_1.py:L1-L3 ] anyone::cpehus_racist_1->close_window [no_conditions] {you truly think your gathering of village idiots can overcome th}
-[anyone, "cpehus_racist_1", [], "You truly think your gathering of village idiots can overcome the Imperial Legion ? The destruction I brought to your homeland will seem gentle in comparison to what I'm going to do to your precious kingdom after I'm through with you, simpleton.", "close_window", [(encounter_attack)] ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_capitalist_1.py:L1-L3 ] anyone::cpehus_capitalist_1->close_window [no_conditions] {impudent upstart ! how dare you meddle with the affairs of your }
-[anyone, "cpehus_capitalist_1", [], "Impudent upstart ! How dare you meddle with the affairs of your superiors !? Such boldness does not go without dire consequences. My imperial troops will cleanse these territories from the stain of your existance. I will take great joy in dispatching you myself !", "close_window", [(encounter_attack)] ],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_crusader_2.py:L1-L6 ] anyone::cpehus_crusader_2->close_window [no_conditions] {rejoice, children of marsus ! this day we exterminate the hatefu}
+[anyone, "cpehus_crusader_2", [], "Rejoice, children of Marsus ! This day we exterminate the hateful descendants of the {s31} ! Observe how Marsus will reward our offerings with exulting victory !", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)] ],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_racist_1.py:L1-L6 ] anyone::cpehus_racist_1->close_window [no_conditions] {you truly think your gathering of village idiots can overcome th}
+[anyone, "cpehus_racist_1", [], "You truly think your gathering of village idiots can overcome the Imperial Legion ? The destruction I brought to your homeland will seem gentle in comparison to what I'm going to do to your precious kingdom after I'm through with you, simpleton.", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)] ],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_capitalist_1.py:L1-L6 ] anyone::cpehus_capitalist_1->close_window [no_conditions] {impudent upstart. how dare you meddle with the affairs of your s}
+[anyone, "cpehus_capitalist_1", [], "Impudent upstart. How dare you meddle with the affairs of your superiors? Such boldness does not pass without consequence. My troops will cleanse these territories of your stain, and I will enjoy dispatching you myself.", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_liberator_1.py:L1-L3 ] anyone::cpehus_liberator_1->cpehus_liberator_2 [no_conditions] {so be it. rise up, soldiers ! we shall free calradia from yet an}
 [anyone, "cpehus_liberator_1", [], "So be it. Rise up, soldiers ! We shall free Calradia from yet another depraved despot and liberate the people by sharing the glory of our empire with them ! Remember, brothers, we are the Imperial Legion ! We have all sworn to lay down our lives in the service of the empire and the emperor ! ", "cpehus_liberator_2", [] ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_liberator_2.py:L1-L3 ] anyone::cpehus_liberator_2->close_window [no_conditions] {today, we together shall triumph against the tides of tyranny ! }
-[anyone, "cpehus_liberator_2", [], "Today, we together shall triumph against the tides of tyranny ! Today, swords shall rend, arrows will pierce and horseshoes will crush all who stands against us ! We are the Imperial Legion, and this day is a day of glory !", "close_window", [(encounter_attack)] ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_nihilistic_1.py:L1-L3 ] anyone::cpehus_nihilistic_1->close_window [no_conditions] {heh. i have been waiting for this moment for a while by now, {va}
-[anyone, "cpehus_nihilistic_1", [], "Heh. I have been waiting for this moment for a while by now, {playername}. Climatic battles bring me to a state of pure ecstasy ! And the joy of looting spoils of war from dead bodies ! A great reminder of the vanity of human life ! I dare you, come at me ! Charge my formations ! Assail my flanks ! I shall response with great vigor ! Come ! Let loose a river of blood so great that it will DROWN this wretched world !", "close_window", [(encounter_attack)] ],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_liberator_2.py:L1-L6 ] anyone::cpehus_liberator_2->close_window [no_conditions] {today, we together shall triumph against the tides of tyranny ! }
+[anyone, "cpehus_liberator_2", [], "Today, we together shall triumph against the tides of tyranny ! Today, swords shall rend, arrows will pierce and horseshoes will crush all who stands against us ! We are the Imperial Legion, and this day is a day of glory !", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)] ],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpehus_nihilistic_1.py:L1-L6 ] anyone::cpehus_nihilistic_1->close_window [no_conditions] {heh. i have waited for this moment, {var}. climactic battles bri}
+[anyone, "cpehus_nihilistic_1", [], "Heh. I have waited for this moment, {playername}. Climactic battles bring a rare clarity: steel, dust, bodies, and the vanity of every oath men swear before they die. Come at me. Charge my formations. Test my flanks. I will answer with vigor enough to drown this field in blood.", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)] ],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_party_encounter_hostile_leave.py:L1-L5 ] anyone::party_encounter_hostile_leave->close_window [troop_slot_eq] {so our battle is postponed yet again. good to hear that.}
 [anyone, "party_encounter_hostile_leave", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
@@ -1115,10 +1209,10 @@ dialogs = [
 [anyone, "party_encounter_hostile_leave", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_racist),
 	], "Finally, you disgrace me with your presence no longer.", "close_window", [] ],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_party_encounter_hostile_leave_06.py:L1-L5 ] anyone::party_encounter_hostile_leave->close_window [troop_slot_eq] {the courage with which you show us your hind quarter definately }
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_party_encounter_hostile_leave_06.py:L1-L5 ] anyone::party_encounter_hostile_leave->close_window [troop_slot_eq] {the courage with which you show us your hind quarter definitely }
 [anyone, "party_encounter_hostile_leave", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_crusader),
-	], "The courage with which you show us your hind quarter definately makes your late parents VERY proud ! HAHAHA ! Yes ! Scurry away like the frightened mice you are ! Soon I will come to claim you all !", "close_window", [] ],
+	], "The courage with which you show us your hind quarter definitely makes your late parents VERY proud ! HAHAHA ! Yes ! Scurry away like the frightened mice you are ! Soon I will come to claim you all !", "close_window", [] ],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_party_encounter_hostile_leave_07.py:L1-L5 ] anyone::party_encounter_hostile_leave->close_window [troop_slot_eq] {flee then if you please. but know that your days of tyranny will}
 [anyone, "party_encounter_hostile_leave", [
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_liberator),
@@ -1195,8 +1289,8 @@ dialogs = [
 [anyone, "cpdla_crusader_5", [], "'When its kingdoms all lay crushed...'", "cpdla_crusader_6", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_cpdla_crusader_6.py:L1-L3 ] anyone|plyr::cpdla_crusader_6->cpdla_crusader_7 [no_conditions] {and it was me who shook them in the first place.}
 [anyone|plyr, "cpdla_crusader_6", [], "And it was me who shook them in the first place.", "cpdla_crusader_7", [] ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpdla_crusader_7.py:L1-L3 ] anyone::cpdla_crusader_7->cpdla_crusader_8 [no_conditions] {'when the very thought of seperation is gone...'}
-[anyone, "cpdla_crusader_7", [], "'When the very thought of seperation is gone...'", "cpdla_crusader_8", [] ],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_cpdla_crusader_7.py:L1-L3 ] anyone::cpdla_crusader_7->cpdla_crusader_8 [no_conditions] {'when the very thought of separation is gone...'}
+[anyone, "cpdla_crusader_7", [], "'When the very thought of separation is gone...'", "cpdla_crusader_8", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_cpdla_crusader_8.py:L1-L3 ] anyone|plyr::cpdla_crusader_8->cpdla_crusader_9 [no_conditions] {and those i conquered are now my loyal subjects who eagerly figh}
 [anyone|plyr, "cpdla_crusader_8", [], "And those I conquered are now my loyal subjects who eagerly fight by my side...", "cpdla_crusader_9", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_cpdla_crusader_9.py:L1-L3 ] anyone::cpdla_crusader_9->cpdla_crusader_10 [no_conditions] {'when every patch of that land is sanctified...'}
@@ -1500,7 +1594,7 @@ dialogs = [
 # [ src/dialogs/ZA02_sod_court_and_strategy/anyone_cpsq_racist_6.py:L1-L3 ] anyone::cpsq_racist_6->cpsq_racist_7 [no_conditions] {beside a positive proof of your lack of proper education, it is }
 [anyone, "cpsq_racist_6", [], "Beside a positive proof of your lack of proper education, it is a... system of a sort, devised and described by Laopeld Nuib, an Adenian philosopher and follower of the Spiritual Enlightment religion, back in the year 759. Later theologians and philosphers have eventually expanded and amended it, but that's beside the point. ", "cpsq_racist_7", [] ],
 # [ src/dialogs/ZA02_sod_court_and_strategy/anyone_cpsq_racist_7.py:L1-L3 ] anyone::cpsq_racist_7->cpsq_racist_8 [no_conditions] {the main point is, it describes a special social chain, with har}
-[anyone, "cpsq_racist_7", [], "The main point is, it describes a special social chain, with harmful demons and insects at the bottom and divine beings on the top level. What's more relevant to our topic, Laopeld seperated 'superior' and 'inferior' nations based on certain factors.", "cpsq_racist_8", [] ],
+[anyone, "cpsq_racist_7", [], "The main point is, it describes a special social chain, with harmful demons and insects at the bottom and divine beings on the top level. What's more relevant to our topic, Laopeld separated 'superior' and 'inferior' nations based on certain factors.", "cpsq_racist_8", [] ],
 # [ src/dialogs/ZA02_sod_court_and_strategy/anyone_plyr_cpsq_racist_8.py:L1-L3 ] anyone|plyr::cpsq_racist_8->cpsq_racist_9 [no_conditions] {what are these factors ?}
 [anyone|plyr, "cpsq_racist_8", [], "What are these factors ?", "cpsq_racist_9", [] ],
 # [ src/dialogs/ZA02_sod_court_and_strategy/anyone_cpsq_racist_9.py:L1-L3 ] anyone::cpsq_racist_9->cpsq_racist_10 [no_conditions] {one of them is age. if a nation is older than any of its neighbo}
@@ -1522,7 +1616,7 @@ dialogs = [
 # [ src/dialogs/ZA02_sod_court_and_strategy/anyone_cpsq_racist_17.py:L1-L3 ] anyone::cpsq_racist_17->cpsq_racist_18 [no_conditions] {fool. antaria thrived because the once-nomadic riders of redes a}
 [anyone, "cpsq_racist_17", [], "Fool. Antaria thrived because the once-nomadic riders of Redes and the mountain-dwelling javelinmen of Jarnas had been largely assimilated by the older and more powerful kingdom of Antares throughout the centuries. As such, there were no significant cultural differences to speak of. But I'm glad you mentioned the old Empire of Antaria, because I have to make an amendment to my previous statement.", "cpsq_racist_18", [] ],
 # [ src/dialogs/ZA02_sod_court_and_strategy/anyone_cpsq_racist_18.py:L1-L3 ] anyone::cpsq_racist_18->cpsq_racist_19 [no_conditions] {single-culture societies can also crumble if they are unwilling }
-[anyone, "cpsq_racist_18", [], "Single-culture societies can also crumble if they are unwilling to adopt certain elements of culture from other nations, especially agricultural and military ones. Seperation from the rest of the world, or alternatively, extreme nationalism both lead to stagnation. In long terms, no nation can survive on its own. Even so, multicultural states with more than, say, 2-3 ethnicities can be successful only in mid-terms, meaning 2-4 centuries at best. Except if...", "cpsq_racist_19", [] ],
+[anyone, "cpsq_racist_18", [], "Single-culture societies can also crumble if they are unwilling to adopt certain elements of culture from other nations, especially agricultural and military ones. Separation from the rest of the world, or alternatively, extreme nationalism both lead to stagnation. In long terms, no nation can survive on its own. Even so, multicultural states with more than, say, 2-3 ethnicities can be successful only in mid-terms, meaning 2-4 centuries at best. Except if...", "cpsq_racist_19", [] ],
 # [ src/dialogs/ZA02_sod_court_and_strategy/anyone_plyr_cpsq_racist_19.py:L1-L3 ] anyone|plyr::cpsq_racist_19->cpsq_racist_20 [no_conditions] {if ?}
 [anyone|plyr, "cpsq_racist_19", [], "If ?", "cpsq_racist_20", [] ],
 # [ src/dialogs/ZA02_sod_court_and_strategy/anyone_cpsq_racist_20.py:L1-L3 ] anyone::cpsq_racist_20->cpsq_racist_21 [no_conditions] {...if all the ethnic and political groups manage to find a commo}
@@ -1570,7 +1664,7 @@ dialogs = [
 # [ src/dialogs/ZA02_sod_court_and_strategy/anyone_cpsq_crusader_14.py:L1-L3 ] anyone::cpsq_crusader_14->cpsq_crusader_15 [no_conditions] {now then: humans, or so we believe, are tools towards an end whi}
 [anyone, "cpsq_crusader_14", [], "Now then: humans, or so we believe, are tools towards an end which only the gods know. Our priests have long foretold that the children of Marsus can - and MUST - triumph over every other races of men. Also, this land... Calradia... has a special importance to us", "cpsq_crusader_15", [] ],
 # [ src/dialogs/ZA02_sod_court_and_strategy/anyone_cpsq_crusader_15.py:L1-L3 ] anyone::cpsq_crusader_15->cpsq_crusader_16 [no_conditions] {it is said it is here in calradia where marsus shall take up a m}
-[anyone, "cpsq_crusader_15", [], "It is said it is here in Calradia where Marsus shall take up a mortal form: 'When Calradia is unified under a single banner, when its kingdoms all lay crushed, when the very thought of seperation is gone, when every patch of that land is sanctified... an avatar of Marsus will descend to the battlefield, and lead the people to a glorious new era.'", "cpsq_crusader_16", [] ],
+[anyone, "cpsq_crusader_15", [], "It is said it is here in Calradia where Marsus shall take up a mortal form: 'When Calradia is unified under a single banner, when its kingdoms all lay crushed, when the very thought of separation is gone, when every patch of that land is sanctified... an avatar of Marsus will descend to the battlefield, and lead the people to a glorious new era.'", "cpsq_crusader_16", [] ],
 # [ src/dialogs/ZA02_sod_court_and_strategy/anyone_cpsq_crusader_16.py:L1-L3 ] anyone::cpsq_crusader_16->cpsq_crusader_17 [no_conditions] {so sayeth the prophet sumadartson, on november 11. in the year 1}
 [anyone, "cpsq_crusader_16", [], "So sayeth the prophet Sumadartson, on November 11. in the year 1111. Until then, there can be no rest in our struggle, no defeat, no retreat, no surrender, no 'partial' victory, lest the weak may gather together and rise up against us again and again.", "cpsq_crusader_17", [] ],
 # [ src/dialogs/ZA02_sod_court_and_strategy/anyone_plyr_cpsq_crusader_17.py:L1-L3 ] anyone|plyr::cpsq_crusader_17->cpsq_crusader_18 [no_conditions] {what is considered a 'full' victory ?}
@@ -1840,14 +1934,14 @@ dialogs = [
 	(store_random_in_range, ":rand", 0, 2),
 	(try_begin),
 		(eq, ":rand", 0),
-		(str_store_string, s0, "@Order of the Hospitalier"),
+		(str_store_string, s68, "@Order of the Hospitalier"),
 	(else_try),
 		(eq, ":rand", 1),
-		(str_store_string, s0, "@Praetorian Guard"),
+		(str_store_string, s68, "@Praetorian Guard"),
 	(else_try),
-		(str_store_string, s0, "@Akolouthos, also known as 'Acolytes of the Emperor'"),
+		(str_store_string, s68, "@Akolouthos, also known as 'Acolytes of the Emperor'"),
 	(try_end),
-	], "So... it is you, the supreme overlord of the {s32} people. So to say, I imagined you differently. I expected someone... taller and more intimidating. Someone who actually does look and behave like a sworn enemy of the empire. However, I suppose looks are secondary in this situation. I am {s29}, a leader of the Imperial Legion and honorary member of the {s0}.", "cp_liberator_6", [] ],
+	], "So... it is you, the supreme overlord of the {s32} people. So to say, I imagined you differently. I expected someone... taller and more intimidating. Someone who actually does look and behave like a sworn enemy of the empire. However, I suppose looks are secondary in this situation. I am {s29}, a leader of the Imperial Legion and honorary member of the {s68}.", "cp_liberator_6", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_cp_liberator_6.py:L1-L3 ] anyone|plyr::cp_liberator_6->cp_liberator_7 [no_conditions] {well... firstly, greetings. secondly, i'm sorry to disappoint yo}
 [anyone|plyr, "cp_liberator_6", [], "Well... firstly, greetings. Secondly, I'm sorry to disappoint you.", "cp_liberator_7", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_cp_liberator_7.py:L1-L3 ] anyone::cp_liberator_7->cp_liberator_8 [no_conditions] {don't be. as it is said, evil often appears in misleading forms.}
@@ -1860,8 +1954,8 @@ dialogs = [
 [anyone|plyr, "cp_liberator_10", [], "I suppose it would be. In any case, you're hasty to judge me from gossips and such.", "cp_liberator_11", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_cp_liberator_11.py:L1-L3 ] anyone::cp_liberator_11->cp_liberator_12 [no_conditions] {am i now ? i believe what i see, and i see ravaged villages, rui}
 [anyone, "cp_liberator_11", [], "Am I now ? I believe what I see, and I see ravaged villages, ruined castles and desecrated shrines. Wherever I go, it is your name that is whispered by anger throughout entire Calradia for bringing war to the land and persecuting religions outside your own. The people don't forget the pain inflicted upon them, and if someone offers them a justified revenge, they don't lie to their liberators. The Imperial Legion will set things right. We will free Calradia from its corrupt monarchs, including you, city by city, village by village, household by household, until the very memory of your malice finally vanishes. All that will be remembered is that in the emperor's sacred name, I had destroyed you !", "cp_liberator_12", [] ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_cp_liberator_12.py:L1-L3 ] anyone|plyr::cp_liberator_12->cpsq_0 [no_conditions] {such an honorable end. i'm definately looking forward to it. all}
-[anyone|plyr, "cp_liberator_12", [], "Such an honorable end. I'm definately looking forward to it. All in due time, of course.", "cpsq_0", [] ],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_cp_liberator_12.py:L1-L3 ] anyone|plyr::cp_liberator_12->cpsq_0 [no_conditions] {such an honorable end. i'm definitely looking forward to it. all}
+[anyone|plyr, "cp_liberator_12", [], "Such an honorable end. I'm definitely looking forward to it. All in due time, of course.", "cpsq_0", [] ],
 # [ src/dialogs/ZA01_startup_and_dispatch/trp_sod_strategy_advisor_event_triggered.py:L1-L6 ] trp_sod_strategy_advisor::event_triggered->sod_sa_after_1 [eq|main_party_has_troop] {a little blood in the throat, my liege. the old wound is making }
 [trp_sod_strategy_advisor, "event_triggered", [
   (eq, "$sa_talk_after_siege", 1),
@@ -1906,22 +2000,23 @@ dialogs = [
 [trp_sod_strategy_advisor, "event_triggered", [
   (this_or_next|main_party_has_troop, "trp_sod_strategy_advisor"),
   (eq, "$g_sod_sa_in_court", 1),
-  (call_script, "script_get_random_string_for_troop", s1, "$g_talk_troop"),
-  ], "{s1}", "startegy_advisor_continue", []],
+  (call_script, "script_get_random_string_for_troop", s68, "$g_talk_troop"),
+  ], "{s68}", "startegy_advisor_continue", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/trp_sod_strategy_advisor_start.py:L1-L7 ] trp_sod_strategy_advisor::start->startegy_advisor_continue [this_or_next|main_party_has_troop|eq|call_script] {{var}}
 [trp_sod_strategy_advisor, "start", [
   (this_or_next|main_party_has_troop, "trp_sod_strategy_advisor"),
   (eq, "$g_sod_sa_in_court", 1),
-  (call_script, "script_get_random_string_for_troop", s1, "$g_talk_troop"),
-  ], "{s1}", "startegy_advisor_continue", []],
+  (call_script, "script_get_random_string_for_troop", s68, "$g_talk_troop"),
+  ], "{s68}", "startegy_advisor_continue", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_sod_sa_pretalk.py:L1-L3 ] trp_sod_strategy_advisor::sod_sa_pretalk->startegy_advisor_continue [no_conditions] {the map is still open, my liege. ask plainly; i have hidden behi}
 [trp_sod_strategy_advisor, "sod_sa_pretalk", [], "The map is still open, my liege. Ask plainly; I have hidden behind titles long enough.", "startegy_advisor_continue", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/trp_sod_strategy_advisor_plyr_hostile_reputation_report.py:L1-L3 ] trp_sod_strategy_advisor|plyr::startegy_advisor_continue->sod_hostile_reputation_report [no_conditions] {what do the roads say about us?}
 [trp_sod_strategy_advisor|plyr, "startegy_advisor_continue", [], "What do the roads say about us?", "sod_hostile_reputation_report", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/trp_sod_strategy_advisor_hostile_reputation_report.py:L1-L5 ] trp_sod_strategy_advisor::sod_hostile_reputation_report->sod_sa_pretalk [call_script] {{var}^{var}^^{var}}
+# [ src/dialogs/ZA01_startup_and_dispatch/trp_sod_strategy_advisor_hostile_reputation_report.py:L1-L6 ] trp_sod_strategy_advisor::sod_hostile_reputation_report->sod_sa_pretalk [call_script|call_script] {{var}^{var}^^{var}^^{var}^{var}^intensity {var}; last day {var}.}
 [trp_sod_strategy_advisor, "sod_hostile_reputation_report", [
     (call_script, "script_sod_store_hostile_reputation_report"),
-], "{s6}^{s7}^^{s10}", "sod_sa_pretalk", []],
+    (call_script, "script_sod_store_nemesis_memory_report"),
+], "{s6}^{s7}^^{s10}^^{s17}^{s18}^Intensity {reg17}; last day {reg18}.", "sod_sa_pretalk", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/trp_sod_strategy_advisor_plyr_startegy_advisor_continue.py:L1-L3 ] trp_sod_strategy_advisor|plyr::startegy_advisor_continue->sa_culture_intro [no_conditions] {what can you tell me about the cultures of this land?}
 [trp_sod_strategy_advisor|plyr, "startegy_advisor_continue", [], "What can you tell me about the cultures of this land?", "sa_culture_intro", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_plyr_startegy_advisor_continue_mentor_father.py:L1-L3 ] trp_sod_strategy_advisor|plyr::startegy_advisor_continue->sod_sa_mentor_father [no_conditions] {you knew my father. tell me what he expected of me.}
@@ -1947,6 +2042,12 @@ dialogs = [
       (str_store_string, s1, "@No table, then. The saddle will do. Speak, and I will draw the war in dust if I must."),
     (try_end),
 ], "{s1}", "sod_sa_war_room_answer", []],
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_plyr_sod_sa_war_room_answer_priority.py:L1-L3 ] trp_sod_strategy_advisor|plyr::sod_sa_war_room_answer->sod_sa_war_room_priority [no_conditions] {where should i act first?}
+[trp_sod_strategy_advisor|plyr, "sod_sa_war_room_answer", [], "Where should I act first?", "sod_sa_war_room_priority", []],
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_sod_sa_war_room_priority.py:L1-L5 ] trp_sod_strategy_advisor::sod_sa_war_room_priority->sod_sa_war_room [call_script] {{var}}
+[trp_sod_strategy_advisor, "sod_sa_war_room_priority", [
+    (call_script, "script_sod_strategy_advisor_describe_next_priority_to_s1"),
+], "{s1}", "sod_sa_war_room", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_plyr_sod_sa_war_room_answer_clock.py:L1-L3 ] trp_sod_strategy_advisor|plyr::sod_sa_war_room_answer->sod_sa_war_room_clock [no_conditions] {how much time do we have before the legion arrives?}
 [trp_sod_strategy_advisor|plyr, "sod_sa_war_room_answer", [], "How much time do we have before the Legion arrives?", "sod_sa_war_room_clock", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_sod_sa_war_room_clock.py:L1-L23 ] trp_sod_strategy_advisor::sod_sa_war_room_clock->sod_sa_war_room [store_mul|val_div|store_current_day] {{var}}
@@ -2952,8 +3053,8 @@ dialogs = [
 [anyone|plyr, "prisoner_chat_menu", [], "The sight of you makes me sick! You.. Die.. Now!", "prisoner_chat_die1", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_menu_05.py:L1-L3 ] anyone|plyr::prisoner_chat_menu->close_window [no_conditions] {get back in line, maggot!}
 [anyone|plyr, "prisoner_chat_menu", [], "Get back in line, maggot!", "close_window", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_offer_again.py:L1-L3 ] anyone::prisoner_chat_offer_again->prisoner_chat_offer [lt] {hmmm.... perhaps, perhaps. what was your offer, again?}
-[anyone, "prisoner_chat_offer_again", [(lt, reg60, reg61)], "Hmmm.... perhaps, perhaps.  What was your offer, again?", "prisoner_chat_offer", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_offer_again.py:L1-L3 ] anyone::prisoner_chat_offer_again->prisoner_chat_offer [lt] {perhaps. state the offer again.}
+[anyone, "prisoner_chat_offer_again", [(lt, reg60, reg61)], "Perhaps. State the offer again.", "prisoner_chat_offer", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_offer_again_02.py:L1-L3 ] anyone::prisoner_chat_offer_again->prisoner_chat_offer_again_end [ge] {listen {var}, i already told you! i will not join you! leave me }
 [anyone, "prisoner_chat_offer_again", [(ge, reg60, reg61)], "Listen {sir/madam}, I already told you!  I will not join you!  Leave me to my misery!", "prisoner_chat_offer_again_end", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_offer_again_end.py:L1-L3 ] anyone|plyr::prisoner_chat_offer_again_end->close_window [no_conditions] {more time in your chains will cool your attitude!}
@@ -2969,14 +3070,11 @@ dialogs = [
 	(lt, ":rand", ":troop_level"),              #twan453 end
 	(call_script, "script_change_player_honor", 1),
 	(try_end),]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_offer.py:L1-L10 ]
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_offer.py:L1-L7 ] anyone|plyr::prisoner_chat_offer->prisoner_chat_reaction [neg|troop_is_hero|neq] {swear to my company and you will be paid, fed, and armed. refuse}
 [anyone|plyr, "prisoner_chat_offer", [
                                       (neg|troop_is_hero, "$g_talk_troop"),
                                       (neq, "$g_talk_troop", "trp_khergit_chieftain"),
-                                      ], "You have one last chance to redeem yourself before I sell you to the slave-traders.  "\
-                                      "Drop all your previous allegiances and swear fealty to me, obey my every order to the letter, and you'll be paid, fed and equipped.  "\
-                                      "If you don't....well, let's just say that life as a slave will be seemingly unending years of agony, malnutrition and beatings.  "\
-                                      "I'd advise you to think very, very carefully before choosing.", "prisoner_chat_reaction",
+                                      ], "Swear to my company and you will be paid, fed, and armed. Refuse, and I sell your chain to the traders. Choose carefully.", "prisoner_chat_reaction",
                                       [(call_script, "script_determine_prisoner_agreed", "$g_talk_troop", "$g_talk_troop_relation")]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_reaction.py:L1-L3 ] anyone::prisoner_chat_reaction->prisoner_chat_accept1 [troop_slot_eq] {thank you for your mercy, {var}. i swear on my mothers grave i w}
 [anyone,     "prisoner_chat_reaction", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 1)], "Thank you for your mercy, {sir/madam}. I swear on my mothers grave I will serve you, my {lord/lady}!", "prisoner_chat_accept1", []],
@@ -2992,8 +3090,8 @@ dialogs = [
 [anyone|plyr, "prisoner_chat_die3", [], "(Kill the prisoner)", "prisoner_chat_die4", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_die3_02.py:L1-L3 ] anyone|plyr::prisoner_chat_die3->close_window [no_conditions] {no, i will not sink that low.}
 [anyone|plyr, "prisoner_chat_die3", [], "No, I will not sink that low.", "close_window", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_die4.py:L1-L5 ] anyone|plyr::prisoner_chat_die4->close_window [no_conditions] {(the prisoner struggles against his shackles, desperate to free }
-[anyone|plyr, "prisoner_chat_die4", [], "(The prisoner struggles against his shackles, desperate to free himself and escape you, but to no avail. You slit their throat with a knife and watch, satisfied, as his corpse sags to the floor.)", "close_window",
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_die4.py:L1-L5 ] anyone::prisoner_chat_die4->close_window [no_conditions] {(the prisoner strains against the shackles, desperate to escape.}
+[anyone, "prisoner_chat_die4", [], "(The prisoner strains against the shackles, desperate to escape. You slit the prisoner's throat and watch the body sag to the floor.)", "close_window",
    [(remove_troops_from_prisoners, "$g_talk_troop", 1),
     (call_script, "script_change_player_honor", -1)]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_accept1.py:L1-L3 ] anyone|plyr::prisoner_chat_accept1->prisoner_chat_accept2 [no_conditions] {if you so much as fail to tremble on my command, i will have you}
@@ -3004,8 +3102,8 @@ dialogs = [
 [anyone,      "prisoner_chat_accept2", [], "I will obey your wishes, my {lord/lady}.  I swear!", "prisoner_chat_accept3", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_accept3.py:L1-L3 ] anyone|plyr::prisoner_chat_accept3->close_window [neg|troops_can_join] {oh! apparently there isn't enough room for you in my party. i wi}
 [anyone|plyr, "prisoner_chat_accept3", [(neg|troops_can_join, 1)], "Oh! Apparently there isn't enough room for you in my party. I will be back when I have made space.", "close_window", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_accept3_02.py:L1-L13 ] anyone|plyr::prisoner_chat_accept3->close_window [troops_can_join|neg|troop_is_hero] {excellent. report to the quartermaster for provisions and equime}
-[anyone|plyr, "prisoner_chat_accept3", [(troops_can_join, 1), (neg|troop_is_hero, "$g_talk_troop")], "Excellent. Report to the quartermaster for provisions and equiment.  There is hard fighting ahead.", "close_window",
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_accept3_02.py:L1-L13 ] anyone|plyr::prisoner_chat_accept3->close_window [troops_can_join|neg|troop_is_hero] {excellent. report to the quartermaster for provisions and equipm}
+[anyone|plyr, "prisoner_chat_accept3", [(troops_can_join, 1), (neg|troop_is_hero, "$g_talk_troop")], "Excellent. Report to the quartermaster for provisions and equipment. There is hard fighting ahead.", "close_window",
    [(troop_set_slot, "$g_talk_troop", slot_prisoner_agreed, 0),
     (remove_troops_from_prisoners, "$g_talk_troop", 1),
     (party_add_members, "p_main_party", "$g_talk_troop", 1),
@@ -3016,33 +3114,29 @@ dialogs = [
       (call_script, "script_change_troop_renown", "trp_player", 1),
     (try_end),
    ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_treason.py:L1-L12 ] anyone|plyr::prisoner_chat_treason->prisoner_chat_treason_plead [call_script|str_store_faction_name] {{var}, you have committed cimes against the {var}, for which you}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_treason.py:L1-L8 ] anyone|plyr::prisoner_chat_treason->prisoner_chat_treason_plead [call_script|str_store_faction_name] {{var}, you have committed crimes against the {var}, for which yo}
 [anyone|plyr, "prisoner_chat_treason", [(call_script, "script_store_troop_name", s1, "$g_talk_troop"), (str_store_faction_name, s2, "$players_kingdom")],
-    "{s1}, you have committed cimes against the {s2}, for which you will now stand trial.^How plead you?", "prisoner_chat_treason_plead",
+    "{s1}, you have committed crimes against the {s2}, for which you will now stand trial.^How plead you?", "prisoner_chat_treason_plead",
     [
-      # determine the noble's reaction to this accusation
-      (store_random_in_range, reg0, 0, 100),
-      (val_mod, reg0, 4),
-      #TODO: weight the reaction according to the renown?  Or at least according to king or not...
-      (troop_set_slot, "$g_talk_troop", slot_prisoner_agreed, reg0),
+      (call_script, "script_sod_treason_select_plea_reaction", "$g_talk_troop"),
     ]
   ],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_plead.py:L1-L4 ] anyone::prisoner_chat_treason_plead->prisoner_chat_treason_choose [troop_slot_eq] {please have mercy upon my soul. all i have done, i have done in }
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_plead.py:L1-L4 ] anyone::prisoner_chat_treason_plead->prisoner_chat_treason_choose [troop_slot_eq] {if there is still law in this room, let it remember that i serve}
 [anyone,      "prisoner_chat_treason_plead", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 0), ],
-    "Please have mercy upon my soul.  All I have done, I have done in the name of my King and Country!  I am but a patriot, as you, and I deserve your respect, if nothing else.", "prisoner_chat_treason_choose", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_plead_02.py:L1-L4 ] anyone::prisoner_chat_treason_plead->prisoner_chat_treason_choose [troop_slot_eq] {you are gravely mistaken! i am an honorable lord, and i have don}
+    "If there is still law in this room, let it remember that I served crown and country as you claim to serve yours.  Condemn me if you must, but do not call every defeated oath treason.", "prisoner_chat_treason_choose", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_plead_02.py:L1-L4 ] anyone::prisoner_chat_treason_plead->prisoner_chat_treason_choose [troop_slot_eq] {you mistake victory for jurisdiction. i am a sworn lord, not a b}
 [anyone,      "prisoner_chat_treason_plead", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 1), ],
-    "You are gravely mistaken!  I am an honorable Lord, and I have done nothing that you would not do were our roles exchanged.", "prisoner_chat_treason_choose", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_plead_03.py:L1-L4 ] anyone::prisoner_chat_treason_plead->prisoner_chat_treason_choose [troop_slot_eq] {i spit on you and yours! you are but a cur come to put on airs, }
+    "You mistake victory for jurisdiction.  I am a sworn lord, not a bandit dragged from a ditch, and I have done nothing in war that your own captains would not defend in council.", "prisoner_chat_treason_choose", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_plead_03.py:L1-L4 ] anyone::prisoner_chat_treason_plead->prisoner_chat_treason_choose [troop_slot_eq] {i spit on this theater. chains do not make you a judge, and a ca}
 [anyone,      "prisoner_chat_treason_plead", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 2), ],
-    "I spit on you and yours!  You are but a cur come to put on airs, as though you were Noble and had any right whatsoever to judge me!  Me!  You are a nothing but a common brigand and a coward!  I do not bow to you.  You should drop to your knees and beg *my* forgiveness!", "prisoner_chat_treason_choose", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_plead_04.py:L1-L4 ] anyone::prisoner_chat_treason_plead->prisoner_chat_treason_choose [troop_slot_eq] {you dare accuse me?! you sniveling whelpling! i should see you f}
+    "I spit on this theater.  Chains do not make you a judge, and a captured lord does not become a criminal because his enemies found a chair and called it a court.", "prisoner_chat_treason_choose", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_plead_04.py:L1-L4 ] anyone::prisoner_chat_treason_plead->prisoner_chat_treason_choose [troop_slot_eq] {you dare make a sovereign answer to a prison-room verdict? remem}
 [anyone,      "prisoner_chat_treason_plead", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 3), ],
-    "You dare accuse me?!  You sniveling whelpling!  I should see you flogged and put in chains in one of my prisons for your insolence!", "prisoner_chat_treason_choose", []],
+    "You dare make a sovereign answer to a prison-room verdict?  Remember this moment.  If fortune turns, I will not need to invent a charge before I pass sentence.", "prisoner_chat_treason_choose", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_treason_choose.py:L1-L10 ] anyone|plyr::prisoner_chat_treason_choose->prisoner_chat_treason_not_guilty [no_conditions] {i am a {var} of honor. i shall spare your life this day!}
 [anyone|plyr, "prisoner_chat_treason_choose", [], "I am a {man/woman} of honor.  I shall spare your life this day!", "prisoner_chat_treason_not_guilty",
     [
-      #TODO: have the relation with the prison have a mixed (random) result - relief, anger, etc, which dictates their final monologue to the player before exiting the dialog
+      (call_script, "script_sod_treason_apply_spared_outcome", "$g_talk_troop"),
 
       # make sure we don't try to recruit this prisoner later!
       (troop_set_slot, "$g_talk_troop", slot_prisoner_agreed, 0),
@@ -3050,29 +3144,27 @@ dialogs = [
   ],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_not_guilty.py:L1-L3 ] anyone::prisoner_chat_treason_not_guilty->close_window [call_script] {there is yet hope for you, {var}.}
 [anyone,      "prisoner_chat_treason_not_guilty", [(call_script, "script_store_troop_name", s1, "trp_player")], "There is yet hope for you, {s1}.", "close_window", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_treason_choose_02.py:L1-L3 ] anyone|plyr::prisoner_chat_treason_choose->prisoner_chat_treason_guilty [no_conditions] {you do not deserve leiniency. you must pay for your crimes with }
-[anyone|plyr, "prisoner_chat_treason_choose", [], "You do not deserve leiniency.  You must pay for your crimes with your life.", "prisoner_chat_treason_guilty", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_treason_guilty.py:L1-L9 ] anyone|plyr::prisoner_chat_treason_guilty->prisoner_chat_treason_final_words [no_conditions] {for your many crimes against {var}, i hereby sentence you to dea}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_treason_choose_02.py:L1-L3 ] anyone|plyr::prisoner_chat_treason_choose->prisoner_chat_treason_guilty [no_conditions] {you do not deserve leniency. you must pay for your crimes with y}
+[anyone|plyr, "prisoner_chat_treason_choose", [], "You do not deserve leniency.  You must pay for your crimes with your life.", "prisoner_chat_treason_guilty", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_treason_guilty.py:L1-L7 ] anyone|plyr::prisoner_chat_treason_guilty->prisoner_chat_treason_final_words [no_conditions] {for your many crimes against {var}, i hereby sentence you to dea}
 [anyone|plyr, "prisoner_chat_treason_guilty", [], "For your many crimes against {s1}, I hereby sentence you to death, to be carried out immediately.  Have you any final words to say?", "prisoner_chat_treason_final_words",
     [
-      (store_random_in_range, reg0, 0, 100),
-      (val_mod, reg0, 5),
-      (troop_set_slot, "$g_talk_troop", slot_prisoner_agreed, reg0),
+      (call_script, "script_sod_treason_select_final_words", "$g_talk_troop"),
     ]
   ],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_final_words.py:L1-L3 ] anyone::prisoner_chat_treason_final_words->prisoner_chat_treason_execute [troop_slot_eq] {who are you?^a day passes^we are but children}
-[anyone,      "prisoner_chat_treason_final_words", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 0)], "Who are you?^A day passes^We are but children", "prisoner_chat_treason_execute", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_final_words_02.py:L1-L3 ] anyone::prisoner_chat_treason_final_words->prisoner_chat_treason_execute [troop_slot_eq] {i believe you will one day come to regret your actions. there is}
-[anyone,      "prisoner_chat_treason_final_words", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 1)], "I believe you will one day come to regret your actions.  There is only one who is worthy to decide another's fate... and that one is not you.", "prisoner_chat_treason_execute", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_final_words_03.py:L1-L3 ] anyone::prisoner_chat_treason_final_words->prisoner_chat_treason_execute [troop_slot_eq] {you are a coward and a dog! may your soul rot eternal, damn you!}
-[anyone,      "prisoner_chat_treason_final_words", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 2)], "You are a coward and a dog!  May your soul rot eternal, damn you!", "prisoner_chat_treason_execute", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_final_words_04.py:L1-L3 ] anyone::prisoner_chat_treason_final_words->prisoner_chat_treason_execute [troop_slot_eq] {winter's mortality, ^locked in frozen indifference, ^melts with }
-[anyone,      "prisoner_chat_treason_final_words", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 3)], "Winter's mortality, ^locked in frozen indifference, ^melts with Spring's rebirth.", "prisoner_chat_treason_execute", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_final_words_05.py:L1-L3 ] anyone::prisoner_chat_treason_final_words->prisoner_chat_treason_execute [troop_slot_eq] {you will find no peace on this earth! i shall haunt thee eternal}
-[anyone,      "prisoner_chat_treason_final_words", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 4)], "You will find no peace on this earth!  I shall haunt thee eternal!  Unto death you will find nothing but unhappiness and fear.  And beyond... only torture and pain!", "prisoner_chat_treason_execute", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_treason_execute.py:L1-L85 ] anyone|plyr::prisoner_chat_treason_execute->close_window [no_conditions] {(the prisoner struggles against his shackles, desperate to free }
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_final_words.py:L1-L3 ] anyone::prisoner_chat_treason_final_words->prisoner_chat_treason_execute [troop_slot_eq] {then let the record show that i met death as a prisoner, not as }
+[anyone,      "prisoner_chat_treason_final_words", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 0)], "Then let the record show that I met death as a prisoner, not as a traitor.  May those who repeat this judgment remember the difference.", "prisoner_chat_treason_execute", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_final_words_02.py:L1-L3 ] anyone::prisoner_chat_treason_final_words->prisoner_chat_treason_execute [troop_slot_eq] {one day you may learn that power to kill is not the same as righ}
+[anyone,      "prisoner_chat_treason_final_words", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 1)], "One day you may learn that power to kill is not the same as right to judge.  I leave that lesson to whatever conscience still visits you.", "prisoner_chat_treason_execute", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_final_words_03.py:L1-L3 ] anyone::prisoner_chat_treason_final_words->prisoner_chat_treason_execute [troop_slot_eq] {dress it in seals if you like. you are killing a captive because}
+[anyone,      "prisoner_chat_treason_final_words", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 2)], "Dress it in seals if you like.  You are killing a captive because you can, and every lord who hears of it will understand that truth plainly.", "prisoner_chat_treason_execute", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_final_words_04.py:L1-L3 ] anyone::prisoner_chat_treason_final_words->prisoner_chat_treason_execute [troop_slot_eq] {send word carefully. a dead lord can still become a banner, and }
+[anyone,      "prisoner_chat_treason_final_words", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 3)], "Send word carefully.  A dead lord can still become a banner, and banners have a way of returning with men beneath them.", "prisoner_chat_treason_execute", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prisoner_chat_treason_final_words_05.py:L1-L3 ] anyone::prisoner_chat_treason_final_words->prisoner_chat_treason_execute [troop_slot_eq] {you will find no peace in this. not from my kin, not from my all}
+[anyone,      "prisoner_chat_treason_final_words", [(troop_slot_eq, "$g_talk_troop", slot_prisoner_agreed, 4)], "You will find no peace in this.  Not from my kin, not from my allies, and not from the part of yourself that knows what prison walls make convenient.", "prisoner_chat_treason_execute", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_prisoner_chat_treason_execute.py:L1-L85 ] anyone|plyr::prisoner_chat_treason_execute->close_window [no_conditions] {(the prisoner strains against the shackles, desperate to escape.}
 [anyone|plyr, "prisoner_chat_treason_execute", [],
-    "(The prisoner struggles against his shackles, desperate to free himself and escape you, but to no avail. You slit his throat and watch, satisfied, as his corpse sags to the floor.)",
+    "(The prisoner strains against the shackles, desperate to escape. You slit his throat and watch the body sag to the floor.)",
     "close_window",
     [
       # make sure we don't try to recruit this prisoner stack later!
@@ -3205,8 +3297,8 @@ dialogs = [
 [anyone|plyr, "loa_swear_oath", [], "Kneel before me, {s1}, and swear the following oath of fealty to me:^^'I swear homage to you as lawful ruler of the {s41}.'", "loa_swear_oath_2", []],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_loa_swear_oath_2.py:L1-L3 ] anyone::loa_swear_oath_2->loa_swear_oath_3 [no_conditions] {i pledge homage to you as lawful ruler of the {var}.}
 [anyone     , "loa_swear_oath_2", [],  "I pledge homage to you as lawful ruler of the {s41}.", "loa_swear_oath_3", []],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_loa_swear_oath_3.py:L1-L3 ] anyone::loa_swear_oath_3->loa_swear_oath_4 [no_conditions] {i will remain as your loyal and devoted knight as long as my bre}
-[anyone     , "loa_swear_oath_3", [],  "I will remain as your loyal and devoted knight as long as my breath remains.....", "loa_swear_oath_4", []],
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_loa_swear_oath_3.py:L1-L3 ] anyone::loa_swear_oath_3->loa_swear_oath_4 [no_conditions] {i will serve as your loyal knight while i have breath.}
+[anyone     , "loa_swear_oath_3", [],  "I will serve as your loyal knight while I have breath.", "loa_swear_oath_4", []],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_loa_swear_oath_4.py:L1-L3 ] anyone::loa_swear_oath_4->loa_swear_oath_5 [no_conditions] {...and i will be at your side to fight your enemies should you n}
 [anyone     , "loa_swear_oath_4", [],  "...and I will be at your side to fight your enemies should you need my sword.", "loa_swear_oath_5", []],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_loa_swear_oath_5.py:L1-L3 ] anyone::loa_swear_oath_5->loa_swear_oath_6 [no_conditions] {finally, i will uphold your lawful claims and those of your legi}
@@ -3289,16 +3381,18 @@ dialogs = [
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_fgtq_eg_pecial_8.py:L1-L4 ] anyone::fgtq_eg_pecial_8->close_window [no_conditions] {i understand, wanderer. farewell, then; may the spirits watch ov}
 [anyone, "fgtq_eg_pecial_8", [
   ], "I understand, wanderer.  Farewell, then; may the Spirits watch over you until our next meeting.", "close_window", [(finish_mission)] ],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_05.py:L1-L6 ] anyone::start->fgtq_gm_next [gt|eq] {{var}}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_05.py:L1-L7 ] anyone::start->fgtq_gm_next [gt|eq|str_store_string_reg] {{var}}
 [anyone, "start", [
   (gt, "$fight_guild_troops_quest", 1),
   (eq, "$fgtq_state", fgtq_next),
-  ], "{s1}", "fgtq_gm_next", [] ],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_06.py:L1-L17 ] anyone::start->close_window [gt|eq] {{var}}
+  (str_store_string_reg, s68, s1),
+  ], "{s68}", "fgtq_gm_next", [] ],
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_06.py:L1-L18 ] anyone::start->close_window [ge|eq|str_store_string_reg] {{var}}
 [anyone, "start", [
-  (gt, "$fight_guild_troops_quest", 1),
+  (ge, "$fight_guild_troops_quest", 2),
   (eq, "$fgtq_state", fgtq_sh_2_next),
-  ], "{s1}", "close_window", [
+  (str_store_string_reg, s68, s1),
+  ], "{s68}", "close_window", [
 	(assign, ":fgtq_mt", "mt_fgtq_cav"),
 	(assign, ":fgtq_scene", "scn_fgtq_sh_s4"),
 	(modify_visitors_at_site, ":fgtq_scene"),
@@ -3310,15 +3404,17 @@ dialogs = [
     (jump_to_scene, ":fgtq_scene"),
 	(change_screen_mission),
   ] ],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_07.py:L1-L7 ] anyone::start->close_window [gt|eq] {{var}}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_07.py:L1-L8 ] anyone::start->close_window [gt|eq|str_store_string_reg] {{var}}
 [anyone, "start", [
   (gt, "$fight_guild_troops_quest", 1),
   (eq, "$fgtq_state", fgtq_end),
-  ], "{s0}", "close_window", [(assign, "$fgtq_state", -1),
+  (str_store_string_reg, s68, s0),
+  ], "{s68}", "close_window", [(assign, "$fgtq_state", -1),
   (assign, "$fight_guild_troops_quest", -1),(finish_mission)] ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_fgtq_gm_next.py:L1-L4 ] anyone::fgtq_gm_next->fgtq_plyr_response [no_conditions] {{var}}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_fgtq_gm_next.py:L1-L5 ] anyone::fgtq_gm_next->fgtq_plyr_response [str_store_string_reg] {{var}}
 [anyone, "fgtq_gm_next", [
-  ], "{s0}", "fgtq_plyr_response", [] ],
+  (str_store_string_reg, s68, s0),
+  ], "{s68}", "fgtq_plyr_response", [] ],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_fgtq_plyr_response.py:L1-L310 ] anyone|plyr::fgtq_plyr_response->close_window [try_begin|eq|try_begin] {{var}}
 [anyone|plyr, "fgtq_plyr_response", [
 	(try_begin),
@@ -3575,12 +3671,12 @@ dialogs = [
 			(try_for_range, ":entry_p", 1, 5),
 				(set_visitor, ":entry_p", "trp_slave_hunter"),
 			(try_end),
-			(store_random_in_range, ":random_guild", "fac_sod_merc_guild1", "fac_sod_merc_guild6"),
+			(store_random_in_range, ":random_guild", guilds_begin, guilds_end),
 			(faction_get_slot, ":t1", ":random_guild", slot_guild_tier_1_unit_1),
 			(try_for_range, ":entry_p", 10, 15),
 				(set_visitor, ":entry_p", ":t1"),
 			(try_end),
-			(store_random_in_range, ":random_guild", "fac_sod_merc_guild1", "fac_sod_merc_guild6"),
+			(store_random_in_range, ":random_guild", guilds_begin, guilds_end),
 			(faction_get_slot, ":t1", ":random_guild", slot_guild_tier_1_unit_2),
 			(try_for_range, ":entry_p", 15, 20),
 				(set_visitor, ":entry_p", ":t1"),
@@ -3966,13 +4062,13 @@ dialogs = [
                               (call_script, "script_succeed_quest", ":lords_quest"),
                               (call_script, "script_end_quest", ":lords_quest"),
                               ]],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_20.py:L1-L19 ] anyone::start->gm_pretalk [store_partner_quest|eq|check_quest_succeeded] {i have heard about your deeds. you have given those peasants the}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_20.py:L1-L19 ] anyone::start->gm_pretalk [store_partner_quest|eq|check_quest_succeeded] {the road is ours again. you made that plain.}
 [anyone, "start", [(store_partner_quest, ":lords_quest"),
 						(eq, ":lords_quest", "qst_slavers_deal_with_good_guys"),
                           (check_quest_succeeded, ":lords_quest"),
                           (quest_slot_eq, ":lords_quest", slot_quest_giver_troop, "$g_talk_troop"),
                           ],
-   "I have heard about your deeds. You have given those peasants the punishment they deserved.", "gm_pretalk", [
+   "The road is ours again. You made that plain.", "gm_pretalk", [
 							(store_partner_quest, ":lords_quest"),
 							  (quest_get_slot, ":quest_gold_reward", ":lords_quest", slot_quest_gold_reward),
                               (assign, ":xp_reward", ":quest_gold_reward"),
@@ -4186,10 +4282,11 @@ dialogs = [
      ],
    "I found the thief hiding at {s3} and gave him his punishment.", "gm_hunt_down_fugitive_success",
    []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_talk_02.py:L1-L16 ] anyone|plyr::gm_talk->gm_qst_bc_capture_prisoners [store_partner_quest|eq|quest_slot_eq] {i brought you {var} {var} as prisoners.}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_talk_02.py:L1-L15 ] anyone|plyr::gm_talk->gm_qst_bc_capture_prisoners [store_partner_quest|eq|check_quest_active] {i brought you {var} {var} as prisoners.}
 [anyone|plyr, "gm_talk", [
 							(store_partner_quest, "$g_lords_quest"),
 							(eq, "$g_lords_quest", "qst_bc_capture_prisoners"),
+                            (check_quest_active, "qst_bc_capture_prisoners"),
                             (quest_slot_eq, "qst_bc_capture_prisoners", slot_quest_giver_troop, "$g_talk_troop"),
                             (quest_get_slot, ":quest_target_amount", "qst_bc_capture_prisoners", slot_quest_target_amount),
                             (quest_get_slot, ":quest_target_troop", "qst_bc_capture_prisoners", slot_quest_target_troop),
@@ -4198,20 +4295,29 @@ dialogs = [
                             (assign, reg1, ":quest_target_amount"),
                             (str_store_troop_name_plural, s1, ":quest_target_troop")],
    "I brought you {reg1} {s1} as prisoners.", "gm_qst_bc_capture_prisoners",
-   [(quest_get_slot, ":quest_target_amount", "qst_bc_capture_prisoners", slot_quest_target_amount),
-    (quest_get_slot, ":quest_target_troop", "qst_bc_capture_prisoners", slot_quest_target_troop),
-    (party_remove_prisoners, "p_main_party", ":quest_target_troop", ":quest_target_amount"),]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_gm_qst_bc_capture_prisoners.py:L1-L13 ] anyone::gm_qst_bc_capture_prisoners->gm_pretalk [no_conditions] {thank you, {var}.}
+   []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_gm_qst_bc_capture_prisoners.py:L1-L24 ] anyone::gm_qst_bc_capture_prisoners->gm_pretalk [no_conditions] {good. chains are poor company, but these prisoners give us lever}
 [anyone, "gm_qst_bc_capture_prisoners", [],
-   "Thank you, {playername}.", "gm_pretalk",
+   "Good. Chains are poor company, but these prisoners give us leverage. Your pay is ready.", "gm_pretalk",
    [
-	 (quest_get_slot, ":gold", "qst_bc_capture_prisoners", slot_quest_gold_reward),
-	 (quest_get_slot, ":xp", "qst_bc_capture_prisoners", slot_quest_xp_reward),
-     (add_xp_as_reward, ":xp"),
-	 (call_script, "script_troop_add_gold", "trp_player", ":gold"),
-	 (call_script, "script_change_player_relation_with_faction", "$g_talk_troop_faction", 5),
-	 (call_script, "script_succeed_quest", "$g_lords_quest"),
-	 (call_script, "script_end_quest", "$g_lords_quest"),
+     (try_begin),
+       (eq, "$g_lords_quest", "qst_bc_capture_prisoners"),
+       (check_quest_active, "qst_bc_capture_prisoners"),
+       (quest_get_slot, ":quest_target_amount", "qst_bc_capture_prisoners", slot_quest_target_amount),
+       (quest_get_slot, ":quest_target_troop", "qst_bc_capture_prisoners", slot_quest_target_troop),
+       (party_count_prisoners_of_type, ":count_prisoners", "p_main_party", ":quest_target_troop"),
+       (ge, ":count_prisoners", ":quest_target_amount"),
+       (party_remove_prisoners, "p_main_party", ":quest_target_troop", ":quest_target_amount"),
+       (quest_get_slot, ":gold", "qst_bc_capture_prisoners", slot_quest_gold_reward),
+       (quest_get_slot, ":xp", "qst_bc_capture_prisoners", slot_quest_xp_reward),
+       (add_xp_as_reward, ":xp"),
+       (call_script, "script_troop_add_gold", "trp_player", ":gold"),
+       (call_script, "script_change_player_relation_with_faction", "$g_talk_troop_faction", 5),
+       (call_script, "script_succeed_quest", "qst_bc_capture_prisoners"),
+       (call_script, "script_end_quest", "qst_bc_capture_prisoners"),
+     (else_try),
+       (display_message, "@The prisoner delivery could not be completed because the required captives were no longer in your party.", 0xFF6666),
+     (try_end),
     ]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_talk_03.py:L1-L10 ] anyone|plyr::gm_talk->gm_hunt_down_fugitive_fail [store_partner_quest|this_or_next|eq|this_or_next|eq] {i'm afraid the thief got away.}
 [anyone|plyr, "gm_talk", [(store_partner_quest, ":lords_quest"),
@@ -4222,10 +4328,11 @@ dialogs = [
                                          ],
    "I'm afraid the thief got away.", "gm_hunt_down_fugitive_fail",
    []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_talk_04.py:L1-L15 ] anyone|plyr::gm_talk->gm_deliver_grain_thank [store_partner_quest|this_or_next|eq|eq] {i brought you {var} packs of {var}.}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_talk_04.py:L1-L16 ] anyone|plyr::gm_talk->gm_deliver_grain_thank [store_partner_quest|this_or_next|eq|eq] {i brought you {var} packs of {var}.}
 [anyone|plyr, "gm_talk", [(store_partner_quest, "$g_gm_quest"),
                                                  (this_or_next|eq, "$g_gm_quest", "qst_elephant_guard_deliver_grain"),
 												 (eq, "$g_gm_quest", "qst_conquistadors_deliver_grain"),
+                                                 (check_quest_active, "$g_gm_quest"),
                                                  (quest_get_slot, ":quest_target_amount", "$g_gm_quest", slot_quest_target_amount),
 												 (quest_get_slot, ":quest_target_item", "$g_gm_quest", slot_quest_target_item),
                                                  (call_script, "script_get_troop_item_amount", "trp_player", ":quest_target_item"),
@@ -4268,78 +4375,90 @@ dialogs = [
                                                  ],
    "{s14}", "gm_deliver_horses_thank",
    []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_deliver_horses_thank.py:L1-L60 ] anyone::gm_deliver_horses_thank->gm_pretalk [no_conditions] {thank you {var}, we will never forget what you have done for us.}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_deliver_horses_thank.py:L1-L66 ] anyone::gm_deliver_horses_thank->gm_pretalk [no_conditions] {good. those mounts go straight to the line. you have bought us s}
 [anyone, "gm_deliver_horses_thank", [],
-   "Thank you {playername},\
- We will never forget what you have done for us.", "gm_pretalk",
+   "Good. Those mounts go straight to the line. You have bought us speed, and perhaps a few lives.", "gm_pretalk",
    [
+	(quest_get_slot, ":quest_target_amount", "$g_gm_quest", slot_quest_target_amount),
 	(quest_get_slot, ":quest_target_item", "$g_gm_quest", slot_quest_target_item),
+	(assign, ":remaining", ":quest_target_amount"),
 	(call_script, "script_get_troop_item_amount", "trp_player", ":quest_target_item"),
 	(try_begin),
-		(ge, reg0, reg5),
-		(troop_remove_items, "trp_player", ":quest_target_item", reg5),
-		(assign, reg5, 0),
+		(ge, reg0, ":remaining"),
+		(troop_remove_items, "trp_player", ":quest_target_item", ":remaining"),
+		(assign, ":remaining", 0),
 	(else_try),
-		(val_sub, reg5, reg0),
+		(val_sub, ":remaining", reg0),
 		(troop_remove_items, "trp_player", ":quest_target_item", reg0),
 	(try_end),
 	
 	(try_begin),
 		(eq, ":quest_target_item", "itm_steppe_horse"),
-		(gt, reg5, 0),
+		(gt, ":remaining", 0),
 		(call_script, "script_get_troop_item_amount", "trp_player", "itm_steppe_horse_b"),
 		(try_begin),
-			(ge, reg0, reg5),
-			(troop_remove_items, "trp_player", "itm_steppe_horse_b", reg5),
-			(assign, reg5, 0),
+			(ge, reg0, ":remaining"),
+			(troop_remove_items, "trp_player", "itm_steppe_horse_b", ":remaining"),
+			(assign, ":remaining", 0),
 		(else_try),
-			(val_sub, reg5, reg0),
+			(val_sub, ":remaining", reg0),
 			(troop_remove_items, "trp_player", "itm_steppe_horse_b", reg0),
 		(try_end),
-		(gt, reg5, 0),
+		(gt, ":remaining", 0),
 		(call_script, "script_get_troop_item_amount", "trp_player", "itm_steppe_horse_lv"),
 		(try_begin),
-			(ge, reg0, reg5),
-			(troop_remove_items, "trp_player", "itm_steppe_horse_lv", reg5),
-			(assign, reg5, 0),
+			(ge, reg0, ":remaining"),
+			(troop_remove_items, "trp_player", "itm_steppe_horse_lv", ":remaining"),
+			(assign, ":remaining", 0),
 		(else_try),
-			(val_sub, reg5, reg0),
+			(val_sub, ":remaining", reg0),
 			(troop_remove_items, "trp_player", "itm_steppe_horse_lv", reg0),
 		(try_end),
 	(else_try),
 		(eq, ":quest_target_item", "itm_saddle_horse"),
-		(gt, reg5, 0),
+		(gt, ":remaining", 0),
 		(call_script, "script_get_troop_item_amount", "trp_player", "itm_rok_saddle_horse2"),
 		(try_begin),
-			(ge, reg0, reg5),
-			(troop_remove_items, "trp_player", "itm_steppe_horse_b", reg5),
-			(assign, reg5, 0),
+			(ge, reg0, ":remaining"),
+			(troop_remove_items, "trp_player", "itm_rok_saddle_horse2", ":remaining"),
+			(assign, ":remaining", 0),
 		(else_try),
-			(val_sub, reg5, reg0),
-			(troop_remove_items, "trp_player", "itm_steppe_horse_b", reg0),
+			(val_sub, ":remaining", reg0),
+			(troop_remove_items, "trp_player", "itm_rok_saddle_horse2", reg0),
 		(try_end),
 	(try_end),
 
-	(add_xp_as_reward, 500),
-	(quest_get_slot, ":quest_gold_reward", "$g_gm_quest", slot_quest_gold_reward),
-	(troop_add_gold, "trp_player", ":quest_gold_reward"),
-    (call_script, "script_change_player_relation_with_faction", "$g_talk_troop_faction", 5),
-    (call_script, "script_succeed_quest", "$g_gm_quest"),
-    (call_script, "script_end_quest", "$g_gm_quest"),
+	(try_begin),
+		(eq, ":remaining", 0),
+		(add_xp_as_reward, 500),
+		(quest_get_slot, ":quest_gold_reward", "$g_gm_quest", slot_quest_gold_reward),
+		(troop_add_gold, "trp_player", ":quest_gold_reward"),
+		(call_script, "script_change_player_relation_with_faction", "$g_talk_troop_faction", 5),
+		(call_script, "script_succeed_quest", "$g_gm_quest"),
+		(call_script, "script_end_quest", "$g_gm_quest"),
+	(else_try),
+		(display_message, "@The horse delivery could not be completed because the required mounts were no longer in your party inventory.", 0xFF6666),
+	(try_end),
    ]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_deliver_grain_thank.py:L1-L15 ] anyone::gm_deliver_grain_thank->gm_pretalk [no_conditions] {thank you {var}, we will never forget what you have done for us.}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_deliver_grain_thank.py:L1-L21 ] anyone::gm_deliver_grain_thank->gm_pretalk [no_conditions] {good. the stores will breathe easier tonight. your pay is ready.}
 [anyone, "gm_deliver_grain_thank", [],
-   "Thank you {playername},\
- We will never forget what you have done for us.", "gm_pretalk",
+   "Good. The stores will breathe easier tonight. Your pay is ready.", "gm_pretalk",
    [(quest_get_slot, ":quest_target_amount", "$g_gm_quest", slot_quest_target_amount),
 	(quest_get_slot, ":quest_target_item", "$g_gm_quest", slot_quest_target_item),
-    (troop_remove_items, "trp_player", ":quest_target_item", ":quest_target_amount"),
-	(add_xp_as_reward, 500),
-	(quest_get_slot, ":quest_revard", "$g_gm_quest", slot_quest_gold_reward),
-	(troop_add_gold, "trp_player", ":quest_revard"),
-    (call_script, "script_change_player_relation_with_faction", "$g_talk_troop_faction", 6),
-    (call_script, "script_succeed_quest", "$g_gm_quest"),
-    (call_script, "script_end_quest", "$g_gm_quest"),
+    (call_script, "script_get_troop_item_amount", "trp_player", ":quest_target_item"),
+    (try_begin),
+      (check_quest_active, "$g_gm_quest"),
+      (ge, reg0, ":quest_target_amount"),
+      (troop_remove_items, "trp_player", ":quest_target_item", ":quest_target_amount"),
+      (add_xp_as_reward, 500),
+      (quest_get_slot, ":quest_reward", "$g_gm_quest", slot_quest_gold_reward),
+      (troop_add_gold, "trp_player", ":quest_reward"),
+      (call_script, "script_change_player_relation_with_faction", "$g_talk_troop_faction", 6),
+      (call_script, "script_succeed_quest", "$g_gm_quest"),
+      (call_script, "script_end_quest", "$g_gm_quest"),
+    (else_try),
+      (display_message, "@The grain delivery could not be completed because the required goods were no longer in your inventory.", 0xFF6666),
+    (try_end),
    ]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_talk_06.py:L1-L9 ] anyone|plyr::gm_talk->gm_deliver_bastard_thank [store_partner_quest|eq|party_count_prisoners_of_type] {i brought you this bloody bastard.}
 [anyone|plyr, "gm_talk", [(store_partner_quest, ":elder_quest"),
@@ -4360,12 +4479,13 @@ dialogs = [
     (call_script, "script_succeed_quest", "qst_elephant_guard_capture_the_bastard"),
     (call_script, "script_end_quest", "qst_elephant_guard_capture_the_bastard"),
    ]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_talk_07.py:L1-L16 ] anyone|plyr::gm_talk->gm_raise_troops_thank [store_partner_quest|this_or_next|eq|this_or_next|eq] {i brought you {var} {var}.}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_talk_07.py:L1-L17 ] anyone|plyr::gm_talk->gm_raise_troops_thank [store_partner_quest|this_or_next|eq|this_or_next|eq] {i brought you {var} {var}.}
 [anyone|plyr, "gm_talk", [(store_partner_quest, "$g_gm_quest"),
                                                  (this_or_next|eq, "$g_gm_quest", "qst_serpent_host_raise_troops"),
                                                  (this_or_next|eq, "$g_gm_quest", "qst_bc_raise_troops"),
 												(this_or_next|eq, "$g_gm_quest", "qst_black_army_raise_troops"),
 												 (eq, "$g_gm_quest", "qst_conquistadors_raise_troops"),
+                                                 (check_quest_active, "$g_gm_quest"),
                                                  (quest_get_slot, ":quest_target_amount", "$g_gm_quest", slot_quest_target_amount),
 												 (quest_get_slot, ":quest_target_troop", "$g_gm_quest", slot_quest_target_troop),
                                                  (party_count_companions_of_type, ":num_companions", "p_main_party", ":quest_target_troop"),
@@ -4375,17 +4495,23 @@ dialogs = [
                                                  ],
    "I brought you {reg1} {s13}.", "gm_raise_troops_thank",
    []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_raise_troops_thank.py:L1-L13 ] anyone::gm_raise_troops_thank->gm_pretalk [no_conditions] {thank you {var}, we will never forget what you have done for us.}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_raise_troops_thank.py:L1-L19 ] anyone::gm_raise_troops_thank->gm_pretalk [no_conditions] {good. they will be posted before the day is out. here is the agr}
 [anyone, "gm_raise_troops_thank", [],
-   "Thank you {playername},\
- We will never forget what you have done for us.", "gm_pretalk",
+   "Good. They will be posted before the day is out. Here is the agreed bounty.", "gm_pretalk",
    [(quest_get_slot, ":quest_target_troop", "$g_gm_quest", slot_quest_target_troop),
 	(quest_get_slot, ":quest_target_amount", "$g_gm_quest", slot_quest_target_amount),
-	(call_script, "script_change_player_relation_with_faction", "$g_talk_troop_faction", 8),
-	(party_remove_members, "p_main_party", ":quest_target_troop", ":quest_target_amount"),
-	(call_script, "script_succeed_quest", "$g_gm_quest"),
-	(call_script, "script_end_quest", "$g_gm_quest"),
-	(troop_add_gold, "trp_player", 500),
+    (party_count_companions_of_type, ":num_companions", "p_main_party", ":quest_target_troop"),
+    (try_begin),
+      (check_quest_active, "$g_gm_quest"),
+      (ge, ":num_companions", ":quest_target_amount"),
+      (call_script, "script_change_player_relation_with_faction", "$g_talk_troop_faction", 8),
+      (party_remove_members, "p_main_party", ":quest_target_troop", ":quest_target_amount"),
+      (call_script, "script_succeed_quest", "$g_gm_quest"),
+      (call_script, "script_end_quest", "$g_gm_quest"),
+      (troop_add_gold, "trp_player", 500),
+    (else_try),
+      (display_message, "@The troop delivery could not be completed because the required soldiers were no longer in your party.", 0xFF6666),
+    (try_end),
 	]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_talk_08.py:L1-L9 ] anyone|plyr::gm_talk->lost_sh_spy [store_partner_quest|eq|check_quest_active] {unfortunately i lost the spy on the way here...}
 [anyone|plyr, "gm_talk", [(store_partner_quest, ":partner_quest"),
@@ -4401,44 +4527,63 @@ dialogs = [
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_lost_sh_spy_2.py:L1-L4 ] anyone|plyr::lost_sh_spy_2->lost_sh_spy_3 [no_conditions] {i'm sorry. i could do nothing about it.}
 [anyone|plyr, "lost_sh_spy_2", [],
    "I'm sorry. I could do nothing about it.", "lost_sh_spy_3", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_lost_sh_spy_3.py:L1-L17 ] anyone::lost_sh_spy_3->lost_sh_spy_4 [no_conditions] {you let me down {var}. i had trusted you. i will let people know}
-[anyone, "lost_sh_spy_3", [],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_lost_sh_spy_3.py:L1-L29 ] anyone::lost_sh_spy_3->lost_sh_spy_4 [check_quest_active|neg|check_quest_concluded|quest_get_slot] {you let me down {var}. i had trusted you. i will let people know}
+[anyone, "lost_sh_spy_3", [
+   (check_quest_active, "qst_serpent_host_free_spy"),
+   (neg|check_quest_concluded, "qst_serpent_host_free_spy"),
+   (quest_get_slot, reg8, "qst_serpent_host_free_spy", slot_quest_target_amount),
+],
    "You let me down {playername}. I had trusted you.\
  I will let people know of your incompetence at this task.\
  Also, I want back that {reg8} denars I gave you as the ransom fee.", "lost_sh_spy_4",
-   [(quest_get_slot, reg8, "qst_serpent_host_free_spy", slot_quest_target_amount),
-    (try_for_parties, ":cur_party"),
-      (party_count_members_of_type, ":num_members", ":cur_party", "trp_sh_spy"),
-      (gt, ":num_members", 0),
-      (party_remove_members, ":cur_party", "trp_sh_spy", 1),
-      (party_remove_prisoners, ":cur_party", "trp_sh_spy", 1),
+   [(quest_get_slot, "$g_sod_lost_rescue_repayment_amount", "qst_serpent_host_free_spy", slot_quest_target_amount),
+    (try_begin),
+      (check_quest_active, "qst_serpent_host_free_spy"),
+      (neg|check_quest_concluded, "qst_serpent_host_free_spy"),
+      (try_for_parties, ":cur_party"),
+        (party_count_members_of_type, ":num_members", ":cur_party", "trp_sh_spy"),
+        (party_count_prisoners_of_type, ":num_prisoners", ":cur_party", "trp_sh_spy"),
+        (val_add, ":num_members", ":num_prisoners"),
+        (gt, ":num_members", 0),
+        (party_remove_members, ":cur_party", "trp_sh_spy", 1),
+        (party_remove_prisoners, ":cur_party", "trp_sh_spy", 1),
+      (try_end),
+      (call_script, "script_fail_quest", "qst_serpent_host_free_spy"),
+      (call_script, "script_end_quest", "qst_serpent_host_free_spy"),
+      (call_script, "script_change_troop_renown", "trp_player", -5),
+    (else_try),
+      (display_message, "@The lost spy report could not be completed because the quest is no longer active.", 0xFF6666),
     (try_end),
-    (call_script, "script_fail_quest", "qst_serpent_host_free_spy"),
-    (call_script, "script_end_quest", "qst_serpent_host_free_spy"),
-    (call_script, "script_change_troop_renown", "trp_player", -5),
     ]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_lost_sh_spy_4.py:L1-L9 ] anyone|plyr::lost_sh_spy_4->sh_quest_about_job_5a [store_troop_gold|quest_get_slot|ge] {of course. here you are...}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_lost_sh_spy_4.py:L1-L10 ] anyone|plyr::lost_sh_spy_4->sh_quest_about_job_5a [store_troop_gold|gt|ge] {of course. here you are.}
 [anyone|plyr, "lost_sh_spy_4", [(store_troop_gold, ":gold", "trp_player"),
-                                          (quest_get_slot, ":quest_target_amount", "qst_serpent_host_free_spy", slot_quest_target_amount),
-                                          (ge, ":gold", ":quest_target_amount"),
+                                          (gt, "$g_sod_lost_rescue_repayment_amount", 0),
+                                          (ge, ":gold", "$g_sod_lost_rescue_repayment_amount"),
                                           ],
-   "Of course. Here you are...", "sh_quest_about_job_5a", [(quest_get_slot, ":quest_target_amount", "qst_serpent_host_free_spy", slot_quest_target_amount),
-                                                                (call_script, "script_sod_player_charge_gold", ":quest_target_amount"), (play_sound, "snd_money_paid"),
+   "Of course. Here you are.", "sh_quest_about_job_5a", [(call_script, "script_sod_player_charge_gold", "$g_sod_lost_rescue_repayment_amount"),
+                                                                (play_sound, "snd_money_paid"),
+                                                                (assign, "$g_sod_lost_rescue_repayment_amount", 0),
                                                                 ]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_sh_quest_about_job_5a.py:L1-L5 ] anyone::sh_quest_about_job_5a->close_window [no_conditions] {at least you have the decency to return the money.}
 [anyone, "sh_quest_about_job_5a", [],
    "At least you have the decency to return the money.", "close_window", [
   (finish_mission),]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_lost_sh_spy_4_02.py:L1-L4 ] anyone|plyr::lost_sh_spy_4->merchant_quest_about_job_5b [no_conditions] {that silver is not in my purse today.}
-[anyone|plyr, "lost_sh_spy_4", [],
-   "That silver is not in my purse today.", "merchant_quest_about_job_5b", []],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_merchant_quest_about_job_5b.py:L1-L10 ] anyone::merchant_quest_about_job_5b->close_window [no_conditions] {do you expect me to believe that? you are going to pay that rans}
-[anyone, "merchant_quest_about_job_5b", [],
-   "Do you expect me to believe that? You are going to pay that ransom fee back! Go and bring the money now!",
-   "close_window", [(quest_get_slot, ":quest_target_amount", "qst_serpent_host_free_spy", slot_quest_target_amount),
-                   (faction_get_slot, ":cur_debt", "$g_talk_troop_faction", player_debt_to_faction),
-				   (val_add, ":cur_debt", ":quest_target_amount"),
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_lost_sh_spy_4_02.py:L1-L7 ] anyone|plyr::lost_sh_spy_4->lost_sh_spy_debt [store_troop_gold|gt|lt] {that silver is not in my purse today.}
+[anyone|plyr, "lost_sh_spy_4", [(store_troop_gold, ":gold", "trp_player"),
+                                  (gt, "$g_sod_lost_rescue_repayment_amount", 0),
+                                  (lt, ":gold", "$g_sod_lost_rescue_repayment_amount"),
+                                  ],
+   "That silver is not in my purse today.", "lost_sh_spy_debt", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_lost_sh_spy_4_03.py:L1-L4 ] anyone|plyr::lost_sh_spy_4->close_window [le] {there is nothing more to settle here.}
+[anyone|plyr, "lost_sh_spy_4", [(le, "$g_sod_lost_rescue_repayment_amount", 0)],
+   "There is nothing more to settle here.", "close_window", [(finish_mission),]],
+# [ src/dialogs/ZC01_centers_and_economy/anyone_merchant_quest_about_job_5b.py:L1-L10 ] anyone::lost_sh_spy_debt->close_window [gt] {then the debt stands with my faction. bring the money when you h}
+[anyone, "lost_sh_spy_debt", [(gt, "$g_sod_lost_rescue_repayment_amount", 0)],
+   "Then the debt stands with my faction. Bring the money when you have it.",
+   "close_window", [(faction_get_slot, ":cur_debt", "$g_talk_troop_faction", player_debt_to_faction),
+				   (val_add, ":cur_debt", "$g_sod_lost_rescue_repayment_amount"),
 				   (faction_set_slot, "$g_talk_troop_faction", player_debt_to_faction, ":cur_debt"),
+                   (assign, "$g_sod_lost_rescue_repayment_amount", 0),
                   
   (finish_mission), ]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_talk_09.py:L1-L5 ] anyone|plyr::gm_talk->gm_intro [neq] {who are you?}
@@ -4547,11 +4692,12 @@ dialogs = [
    (party_get_slot, "$hero_requested_to_learn_location", ":faction_base", slot_town_lord),
    (str_store_troop_name, s43, "$hero_requested_to_learn_location"),
    ], "I need {s43}. Where was that banner last seen?", "gm_ask_location", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_ask_location.py:L1-L6 ] anyone::gm_ask_location->gm_pretalk [call_script|call_script] {{var}}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_ask_location.py:L1-L7 ] anyone::gm_ask_location->gm_pretalk [call_script|call_script|str_store_string_reg] {{var}}
 [anyone, "gm_ask_location", [
    (call_script, "script_update_troop_location_notes", "$hero_requested_to_learn_location", 1),
    (call_script, "script_get_information_about_troops_position", "$hero_requested_to_learn_location", 0),
-    ], "{s1}", "gm_pretalk", []],
+   (str_store_string_reg, s68, s1),
+    ], "{s68}", "gm_pretalk", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_talk_17.py:L1-L8 ] anyone|plyr::gm_talk->gm_talk_sell_prisoners [this_or_next|eq|eq|store_num_regular_prisoners] {i've brought you some prisoners. would you like a look?}
 [anyone|plyr, "gm_talk", [
    (this_or_next|eq,"$g_talk_troop", slavers_rep),
@@ -4725,7 +4871,7 @@ dialogs = [
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_pact1_02.py:L1-L12 ] anyone::gm_pact1->gm_pretalk [assign|try_for_range|eq] {i have heard that you didn't pay one of the guilds for they work}
 [anyone, "gm_pact1",[
 	(assign, ":has_debt", 0),
-	(try_for_range, ":merc_guild", "fac_sod_merc_guild1", "fac_player_faction"),
+	(try_for_range, ":merc_guild", guilds_begin, guilds_end),
 		(eq, ":has_debt", 0),
 		(faction_get_slot, ":debt", ":merc_guild", player_debt_to_faction),
 		(gt, ":debt", 0),
@@ -4740,9 +4886,10 @@ dialogs = [
 	(faction_get_slot, ":day", "$g_talk_troop_faction", slot_faction_pact_broken_day),
 	(lt, ":cur_day", ":day"),
 	], "Forget about it.", "gm_pretalk",[]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_pact1_04.py:L1-L10 ] anyone::gm_pact1->gm_pact_e2 [try_for_range|faction_get_slot|eq] {we already have an employer, he pays us well, so we're not inter}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_pact1_04.py:L1-L11 ] anyone::gm_pact1->gm_pact_e2 [assign|try_for_range|faction_get_slot] {we already have an employer, he pays us well, so we're not inter}
 [anyone, "gm_pact1",[
-   (try_for_range, "$temp_faction", kingdoms_begin, kingdoms_end),
+   (assign, ":is_hired", 0),
+   (try_for_range, "$temp_faction", native_kingdoms_begin, native_kingdoms_end),
 	(faction_get_slot, ":mercenaries", "$temp_faction", slot_faction_merc_pact),
 	(eq, ":mercenaries", "$g_talk_troop_faction"),
 	(assign, ":is_hired", 1),
@@ -5168,14 +5315,14 @@ This town cannot afford to let fugitives become another trade on the road.", "gm
      (call_script, "script_change_player_relation_with_faction", "$g_talk_troop_faction", 2),
      (assign, "$g_leave_encounter", 1),
   (finish_mission),]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_tell_mission_06.py:L1-L8 ] anyone::gm_tell_mission->gm_mission_told_free_spy [eq|quest_get_slot|str_store_party_name_link] {there's a man i sent out to {var} to spy around, but word came t}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_tell_mission_06.py:L1-L8 ] anyone::gm_tell_mission->gm_mission_told_free_spy [eq|quest_get_slot|str_store_party_name_link] {one of my spies was taken near {var}. the militia want ransom; i}
 [anyone, "gm_tell_mission", [(eq, "$random_quest_no", "qst_serpent_host_free_spy"),
                                 (quest_get_slot, ":quest_target_center", "$random_quest_no", slot_quest_target_center),
                                 (str_store_party_name_link, s13, ":quest_target_center")],
-   "There's a man I sent out to {s13} to spy around, but word came that he was caught and his captors now demand a ransom for him. Going out to negotiate would be a source of shame. Ramsacking a whole village for a single man is unreasonable. But sending a 'third person' like you would have no diplomatic weight. However, once you're there, you'll have to make a decision to either bribe the guards keeping our spy captive or fight the town watch and free my subject from his cell. Whichever you choose, afterwards you'll have to escort him back to the headquarters. Make sure he arrives safe and sound - if you do, you may be sure to receive a fitting reward.", "gm_mission_told_free_spy",
+   "One of my spies was taken near {s13}. The militia want ransom; if I send soldiers, it becomes politics. Take the money, judge the captors yourself, and bring him back to Sukbathar alive. Pay them if that buys silence. Cut him out if it does not.", "gm_mission_told_free_spy",
    [
    ]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_mission_told_free_spy.py:L1-L34 ] anyone|plyr::gm_mission_told_free_spy->gm_mission_told_free_spy_taken [quest_get_slot|party_is_active|party_is_active] {i will get your spy out before silence becomes a sentence.}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_mission_told_free_spy.py:L1-L35 ] anyone|plyr::gm_mission_told_free_spy->gm_mission_told_free_spy_taken [quest_get_slot|party_is_active|party_is_active] {i will get your spy out before silence becomes a sentence.}
 [anyone|plyr, "gm_mission_told_free_spy", [
       (quest_get_slot, ":quest_target_center", "qst_serpent_host_free_spy", slot_quest_target_center),
       (party_is_active, ":quest_target_center"),
@@ -5195,6 +5342,7 @@ This town cannot afford to let fugitives become another trade on the road.", "gm
                                    (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_current_state, 0),
                                    (call_script, "script_store_troop_name_link", s9, "$g_talk_troop"),
                                    (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_target_party, ":quest_target_party"),
+                                   (party_add_prisoners, ":quest_target_party", "trp_sh_spy", 1),
                                    (party_set_ai_behavior, ":quest_target_party", ai_bhvr_hold),
                                    (party_set_ai_object, ":quest_target_party", "p_main_party"),
                                    (party_set_flags, ":quest_target_party", pf_default_behavior, 0),
@@ -5421,8 +5569,8 @@ This town cannot afford to let fugitives become another trade on the road.", "gm
    ]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_tell_mission_collect_debt.py:L1-L3 ] anyone|plyr::gm_tell_mission_collect_debt->gm_tell_mission_collect_debt_accepted [no_conditions] {then i will put your ledger in front of {var} and make it diffic}
 [anyone|plyr, "gm_tell_mission_collect_debt", [], "Then I will put your ledger in front of {s3} and make it difficult to ignore.", "gm_tell_mission_collect_debt_accepted", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_tell_mission_collect_debt_02.py:L1-L3 ] anyone|plyr::gm_tell_mission_collect_debt->gm_tell_mission_collect_debt_rejected [no_conditions] {no. if your own seal cannot shake coin loose, my voice will not }
-[anyone|plyr, "gm_tell_mission_collect_debt", [], "No. If your own seal cannot shake coin loose, my voice will not make the debt cleaner.", "gm_tell_mission_collect_debt_rejected", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_tell_mission_collect_debt_02.py:L1-L3 ] anyone|plyr::gm_tell_mission_collect_debt->gm_tell_mission_collect_debt_rejected_slavers [no_conditions] {no. if your own seal cannot shake coin loose, my voice will not }
+[anyone|plyr, "gm_tell_mission_collect_debt", [], "No. If your own seal cannot shake coin loose, my voice will not make the debt cleaner.", "gm_tell_mission_collect_debt_rejected_slavers", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_tell_mission_collect_debt_accepted.py:L1-L8 ] anyone::gm_tell_mission_collect_debt_accepted->close_window [no_conditions] {you made me very happy by accepting this {var}. please, talk to }
 [anyone, "gm_tell_mission_collect_debt_accepted", [], "You made me very happy by accepting this {playername}. Please, talk to {s3} and don't leave him without my money.", "close_window",
    [(call_script, "script_start_quest", "$random_quest_no", "$g_talk_troop"),
@@ -5430,8 +5578,8 @@ This town cannot afford to let fugitives become another trade on the road.", "gm
     (assign, "$g_leave_encounter", 1),
   (finish_mission),
    ]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_tell_mission_collect_debt_rejected.py:L1-L4 ] anyone::gm_tell_mission_collect_debt_rejected->gm_pretalk [no_conditions] {i suppose i'll have to make this less humanitary...}
-[anyone, "gm_tell_mission_collect_debt_rejected", [], "I suppose I'll have to make this less humanitary...", "gm_pretalk",
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_tell_mission_collect_debt_rejected.py:L1-L4 ] anyone::gm_tell_mission_collect_debt_rejected_slavers->gm_pretalk [no_conditions] {then i will stop asking politely.}
+[anyone, "gm_tell_mission_collect_debt_rejected_slavers", [], "Then I will stop asking politely.", "gm_pretalk",
    [(troop_set_slot, "$g_talk_troop", slot_troop_does_not_give_quest, 1)]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_tell_mission_11.py:L1-L14 ] anyone::gm_tell_mission->gm_tell_mission_collect_debt_2 [eq|quest_get_slot|call_script] {one of the vaegir lords, {var} refused to pay for our services i}
 [anyone, "gm_tell_mission", [(eq, "$random_quest_no", "qst_conquistadors_collect_debt"),
@@ -5461,12 +5609,12 @@ This town cannot afford to let fugitives become another trade on the road.", "gm
    ]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_tell_mission_collect_debt_2.py:L1-L3 ] anyone|plyr::gm_tell_mission_collect_debt_2->gm_tell_mission_collect_debt_accepted [no_conditions] {then i will put your ledger in front of {var} and make it diffic}
 [anyone|plyr, "gm_tell_mission_collect_debt_2", [], "Then I will put your ledger in front of {s3} and make it difficult to ignore.", "gm_tell_mission_collect_debt_accepted", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_tell_mission_collect_debt_2_02.py:L1-L3 ] anyone|plyr::gm_tell_mission_collect_debt_2->gm_tell_mission_collect_debt_rejected [no_conditions] {no. if your own seal cannot shake coin loose, my voice will not }
-[anyone|plyr, "gm_tell_mission_collect_debt_2", [], "No. If your own seal cannot shake coin loose, my voice will not make the debt cleaner.", "gm_tell_mission_collect_debt_rejected", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_tell_mission_collect_debt_2_02.py:L1-L3 ] anyone|plyr::gm_tell_mission_collect_debt_2->gm_tell_mission_collect_debt_rejected_other [no_conditions] {no. if your own seal cannot shake coin loose, my voice will not }
+[anyone|plyr, "gm_tell_mission_collect_debt_2", [], "No. If your own seal cannot shake coin loose, my voice will not make the debt cleaner.", "gm_tell_mission_collect_debt_rejected_other", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_tell_mission_collect_debt_accepted_02.py:L1-L1 ]
 
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_tell_mission_collect_debt_rejected_02.py:L1-L4 ] anyone::gm_tell_mission_collect_debt_rejected->gm_pretalk [no_conditions] {perhaps not, {var}. i suppose i'm never getting that money back.}
-[anyone, "gm_tell_mission_collect_debt_rejected", [], "Perhaps not, {playername}. I suppose I'm never getting that money back...", "gm_pretalk",
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_tell_mission_collect_debt_rejected_02.py:L1-L4 ] anyone::gm_tell_mission_collect_debt_rejected_other->gm_pretalk [no_conditions] {perhaps not, {var}. i suppose i'm never getting that money back.}
+[anyone, "gm_tell_mission_collect_debt_rejected_other", [], "Perhaps not, {playername}. I suppose I'm never getting that money back...", "gm_pretalk",
    []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_tell_mission_13.py:L1-L10 ] anyone::gm_tell_mission->gm_tell_deliver_grain_mission [eq] {we are still in the process to adapt to the northern environment}
 [anyone, "gm_tell_mission", [(eq, "$random_quest_no", "qst_elephant_guard_deliver_grain")],
@@ -5486,14 +5634,20 @@ This town cannot afford to let fugitives become another trade on the road.", "gm
 	 (call_script, "script_store_troop_name_link", s9, "$g_talk_troop"),
 	 (str_store_item_name_plural, s13, ":quest_target_item"),
    ]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_tell_mission_15.py:L1-L9 ] anyone::gm_tell_mission->gm_tell_deliver_grain_mission_3 [eq] {while we managed to carry on our duty so far, our lack of cavalr}
-[anyone, "gm_tell_mission", [(eq, "$random_quest_no", "qst_conquistadors_deliver_horses")],
-   "While we managed to carry on our duty so far, our lack of cavalry is becoming a pressing issue.  I was planning to expand the Lancer branch of the company, but I want only the best breeds in the land, and I don't trust the local stable masters too much, because they are just as suspicious towards us like the other merchants and might cheat us.  I trust your eyes are better at judging the local steeds than mine, because due to some gossip, I'm particularly interested in a certain breed.  If you could visit the stables and bring us {reg5?{reg5}:a} {s13} mount{reg5?s:}, we would be very thankful and eager to pay well for them.", "gm_tell_deliver_grain_mission_3",
-   [
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_tell_mission_15.py:L1-L15 ] anyone::gm_tell_mission->gm_tell_deliver_grain_mission_3 [eq|quest_get_slot|quest_get_slot] {{var}}
+[anyone, "gm_tell_mission", [(eq, "$random_quest_no", "qst_conquistadors_deliver_horses"),
 	 (quest_get_slot, ":quest_target_item", "$random_quest_no", slot_quest_target_item),
      (quest_get_slot, reg5, "$random_quest_no", slot_quest_target_amount),
 	 (str_store_item_name_plural, s13, ":quest_target_item"),
-   ]],
+     (try_begin),
+       (le, reg5, 1),
+       (str_store_string, s68, "@While we managed to carry on our duty so far, our lack of cavalry is becoming a pressing issue.  I was planning to expand the Lancer branch of the company, but I want only the best breeds in the land, and I don't trust the local stable masters too much, because they are just as suspicious towards us like the other merchants and might cheat us.  I trust your eyes are better at judging the local steeds than mine, because due to some gossip, I'm particularly interested in a certain breed.  If you could visit the stables and bring us a {s13} mount, we would be very thankful and eager to pay well for them."),
+     (else_try),
+       (str_store_string, s68, "@While we managed to carry on our duty so far, our lack of cavalry is becoming a pressing issue.  I was planning to expand the Lancer branch of the company, but I want only the best breeds in the land, and I don't trust the local stable masters too much, because they are just as suspicious towards us like the other merchants and might cheat us.  I trust your eyes are better at judging the local steeds than mine, because due to some gossip, I'm particularly interested in a certain breed.  If you could visit the stables and bring us {reg5} {s13} mounts, we would be very thankful and eager to pay well for them."),
+     (try_end),
+   ],
+   "{s68}", "gm_tell_deliver_grain_mission_3",
+   []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_tell_deliver_grain_mission.py:L1-L4 ] anyone|plyr::gm_tell_deliver_grain_mission->gm_tell_deliver_grain_mission_2 [no_conditions] {how much {var} keeps your kitchens and contracts alive?}
 [anyone|plyr, "gm_tell_deliver_grain_mission", [],
    "How much {s13} keeps your kitchens and contracts alive?", "gm_tell_deliver_grain_mission_2", []],
@@ -5650,7 +5804,7 @@ This town cannot afford to let fugitives become another trade on the road.", "gm
    ],
  "One of my Norn sisters just rushed to me and told that some of our brethren have been caught by an outnumbering enemy warband near {s8} and need help as soon as possible else they will be overwhelmed. We don't have many fighters to spare, and as such, your aid would be most welcome - help them win! Should you succeed, come back and we'll be more than eager to reward your help.", "gm_jc_aid_warband_quest_brief",
    []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_jc_aid_warband_quest_brief.py:L1-L22 ] anyone|plyr::gm_jc_aid_warband_quest_brief->gm_merchant_quest_taken_bandits [no_conditions] {i will help them before this becomes another tavern story.}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_jc_aid_warband_quest_brief.py:L1-L23 ] anyone|plyr::gm_jc_aid_warband_quest_brief->gm_merchant_quest_taken_bandits [no_conditions] {i will help them before this becomes another tavern story.}
 [anyone|plyr, "gm_jc_aid_warband_quest_brief", [],
    "I will help them before this becomes another tavern story.", "gm_merchant_quest_taken_bandits",
    [
@@ -5664,6 +5818,7 @@ This town cannot afford to let fugitives become another trade on the road.", "gm
       (party_set_ai_behavior, ":quest_target_party", ai_bhvr_hold),
       (quest_set_slot, "qst_jotnar_clan_aid_warband", slot_quest_target_party, ":quest_target_party"),
       (call_script, "script_store_troop_name_link", s9, "$g_talk_troop"),
+      (str_store_party_name_link, s8, ":quest_target_center"),
       (setup_quest_text, "$random_quest_no"),
       (str_store_string, s2, "@{s9} asked you to help Jotnar Clan warriors garrisoned near {s8}."),
       (call_script, "script_start_quest", "$random_quest_no", "$g_talk_troop"),
@@ -5710,26 +5865,28 @@ This town cannot afford to let fugitives become another trade on the road.", "gm
 	(str_store_party_name_link, s13, ":target_center"),
 	(setup_quest_text, "$random_quest_no"),
 	(party_add_members, "p_main_party", jotnar_clan_noble, 1),
-    (str_store_string, s2, "@{s9} sked you to escort a Norn Mistress to {s13}."),
+    (str_store_string, s2, "@{s9} asked you to escort a Norn Mistress to {s13}."),
     (call_script, "script_start_quest", "$random_quest_no", "$g_talk_troop"),
 	]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_tell_mission_22.py:L1-L7 ] anyone::gm_tell_mission->gm_good_guys_ask [eq|quest_get_slot|str_store_party_name_link] {we've been making some pretty flourishing profit out of the inha}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_tell_mission_22.py:L1-L7 ] anyone::gm_tell_mission->gm_good_guys_ask [eq|quest_get_slot|str_store_party_name_link] {the people of {var} used to pay quietly. now a band of locals pl}
 [anyone, "gm_tell_mission", [
   (eq, "$random_quest_no", "qst_slavers_deal_with_good_guys"),
   (quest_get_slot, ":village", "qst_slavers_deal_with_good_guys", slot_quest_target_center),
   (str_store_party_name_link, s14, ":village"),
-  ],"We've been making some pretty flourishing profit out of the inhabitants of {s14}, but recently a band of self-proclaimed heroes have ruined our business there.  Such arrogance cannot be tolerated, don't you agree?  Sadly, we can't interfere, as employing too many men may catch the eye of the local lord, and we don't wish to complicate things if we don't have to.  Just take your own best men and set things wrong like they should be.  You can earn quite some respect from us with this job, if you get my drift...", "gm_good_guys_ask", []],
+  ],"The people of {s14} used to pay quietly. Now a band of locals playing hero has shut the road and made us look weak. We cannot send a column without drawing the lord's eye. Take your own men, break them, and the Slavers will remember it.", "gm_good_guys_ask", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_good_guys_ask.py:L1-L4 ] anyone|plyr::gm_good_guys_ask->gm_good_guys_accepted [no_conditions] {i will meet them in the open and make your point in a language a}
 [anyone|plyr, "gm_good_guys_ask", [
   ],"I will meet them in the open and make your point in a language armed men understand.", "gm_good_guys_accepted", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_good_guys_ask_02.py:L1-L4 ] anyone|plyr::gm_good_guys_ask->gm_pretalk [no_conditions] {no way, find someone else}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_good_guys_ask_02.py:L1-L4 ] anyone|plyr::gm_good_guys_ask->gm_pretalk [no_conditions] {no. find someone else.}
 [anyone|plyr, "gm_good_guys_ask", [
-  ],"No way, find someone else", "gm_pretalk", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_good_guys_accepted.py:L1-L10 ] anyone::gm_good_guys_accepted->gm_pretalk [no_conditions] {good, {var}.}
+  ],"No. Find someone else.", "gm_pretalk", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_gm_good_guys_accepted.py:L1-L12 ] anyone::gm_good_guys_accepted->gm_pretalk [no_conditions] {good. make it clean enough that the road understands.}
 [anyone, "gm_good_guys_accepted", [
-  ],"Good, {playername}.", "gm_pretalk", [
+  ],"Good. Make it clean enough that the road understands.", "gm_pretalk", [
   (str_store_party_name_link, s4, "$g_encountered_party"),
   (call_script, "script_store_troop_name_link", s9, "$g_talk_troop"),
+  (quest_get_slot, ":village", "$random_quest_no", slot_quest_target_center),
+  (str_store_party_name_link, s14, ":village"),
   (setup_quest_text, "$random_quest_no"),
     (str_store_string, s2, "@{s9} of {s4} has asked you to deal with the rebellious peasants at {s14}."),
     (call_script, "script_start_quest", "$random_quest_no", "$g_talk_troop"),
@@ -5738,9 +5895,9 @@ This town cannot afford to let fugitives become another trade on the road.", "gm
 [anyone, "gm_tell_mission", [(eq, "$random_quest_no", "qst_elephant_guard_capture_the_bastard")],
  "There is a lesser Khergit chieftain who once attacked my kinsmen with his warriors before we allied with Sanjar Khan. Now that we are bound together with the Khergits, he didn't dare to attack us anymore, but the wounds he caused will take a long time to heal, and despite the fact that he holds no ties with Sanjar, his deeds went unpunished so far. I ask you wanderer, if your sense of justice is aligned with ours, catch this man and bring him to our village where he shall answer for his crimes.", "gm_bastard_quest_brief",
    []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_bastard_quest_brief.py:L1-L40 ] anyone|plyr::gm_bastard_quest_brief->gm_merchant_quest_taken_bastard [no_conditions] {i'll fing this bastard and bring him to you.}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_bastard_quest_brief.py:L1-L40 ] anyone|plyr::gm_bastard_quest_brief->gm_merchant_quest_taken_bastard [no_conditions] {i'll find this bastard and bring him to you.}
 [anyone|plyr, "gm_bastard_quest_brief", [],
-   "I'll fing this bastard and bring him to you.", "gm_merchant_quest_taken_bastard",
+   "I'll find this bastard and bring him to you.", "gm_merchant_quest_taken_bastard",
    [(set_spawn_radius, 1),
 	(assign, reg0, "p_village_44"),
     (assign, reg1, "p_village_41"),
@@ -6122,12 +6279,12 @@ This town cannot afford to let fugitives become another trade on the road.", "gm
 			(try_for_range, ":entry_p", 1, 5),
 				(set_visitor, ":entry_p", "trp_slave_hunter"),
 			(try_end),
-			(store_random_in_range, ":random_guild", "fac_sod_merc_guild1", "fac_sod_merc_guild6"),
+			(store_random_in_range, ":random_guild", guilds_begin, guilds_end),
 			(faction_get_slot, ":t1", ":random_guild", slot_guild_tier_1_unit_1),
 			(try_for_range, ":entry_p", 10, 15),
 				(set_visitor, ":entry_p", ":t1"),
 			(try_end),
-			(store_random_in_range, ":random_guild", "fac_sod_merc_guild1", "fac_sod_merc_guild6"),
+			(store_random_in_range, ":random_guild", guilds_begin, guilds_end),
 			(faction_get_slot, ":t1", ":random_guild", slot_guild_tier_1_unit_2),
 			(try_for_range, ":entry_p", 15, 20),
 				(set_visitor, ":entry_p", ":t1"),
@@ -6253,8 +6410,12 @@ This town cannot afford to let fugitives become another trade on the road.", "gm
     (quest_get_slot, ":quest_target_center", "qst_slavers_escort_merchant_caravan", slot_quest_target_center),
     (str_store_party_name, s8, ":quest_target_center"),
    ]],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_slavers_escort_merchant_caravan_quest_brief.py:L1-L25 ] anyone|plyr::slavers_escort_merchant_caravan_quest_brief->gm_merchant_quest_taken_bandits [no_conditions] {i will escort the caravan. keep your side of the bargain clean.}
-[anyone|plyr, "slavers_escort_merchant_caravan_quest_brief", [],
+# [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_slavers_escort_merchant_caravan_quest_brief.py:L1-L29 ] anyone|plyr::slavers_escort_merchant_caravan_quest_brief->gm_merchant_quest_taken_bandits [quest_get_slot|party_is_active|party_is_active] {i will escort the caravan. keep your side of the bargain clean.}
+[anyone|plyr, "slavers_escort_merchant_caravan_quest_brief", [
+    (quest_get_slot, ":quest_target_center", "qst_slavers_escort_merchant_caravan", slot_quest_target_center),
+    (party_is_active, ":quest_target_center"),
+    (party_is_active, "$g_encountered_party"),
+    ],
    "I will escort the caravan. Keep your side of the bargain clean.", "gm_merchant_quest_taken_bandits",
    [(quest_get_slot, ":quest_target_center", "qst_slavers_escort_merchant_caravan", slot_quest_target_center),
     (set_spawn_radius, 1),
@@ -6313,8 +6474,12 @@ This town cannot afford to let fugitives become another trade on the road.", "gm
     (quest_get_slot, ":quest_target_center", "qst_black_army_escort_merchant_caravan", slot_quest_target_center),
     (str_store_party_name, s8, ":quest_target_center"),
    ]],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_black_army_escort_merchant_caravan_quest_brief.py:L1-L28 ] anyone|plyr::black_army_escort_merchant_caravan_quest_brief->gm_merchant_quest_taken_bandits [no_conditions] {i will see the caravan through. make sure the ledgers remember t}
-[anyone|plyr, "black_army_escort_merchant_caravan_quest_brief", [],
+# [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_black_army_escort_merchant_caravan_quest_brief.py:L1-L32 ] anyone|plyr::black_army_escort_merchant_caravan_quest_brief->gm_merchant_quest_taken_bandits [quest_get_slot|party_is_active|party_is_active] {i will see the caravan through. make sure the ledgers remember t}
+[anyone|plyr, "black_army_escort_merchant_caravan_quest_brief", [
+    (quest_get_slot, ":quest_target_center", "qst_black_army_escort_merchant_caravan", slot_quest_target_center),
+    (party_is_active, ":quest_target_center"),
+    (party_is_active, "$g_encountered_party"),
+    ],
    "I will see the caravan through. Make sure the ledgers remember the risk.", "gm_merchant_quest_taken_bandits",
    [(quest_get_slot, ":quest_target_center", "qst_black_army_escort_merchant_caravan", slot_quest_target_center),
     (set_spawn_radius, 1),
@@ -6419,10 +6584,10 @@ When I joined the Black Army at the age of 20, it composed of but a few hundred 
 [anyone, "gm_guild_history", [
    (eq,"$g_talk_troop", "trp_boar_clan_guild_master")
    ],"Ahh, a fellow lover of history.  I will indulge your curiosity for the foreign.  The men I now lead were once descendants of a wealthy village located in the Sarranid Sultanate.  Our tribe's honesty and loyalty was rewarded with the status of a minor Sarranid clan for paying forgotten back taxes.  The boar was selected as our banner for its resiliency and strength but most importantly, for bravery and courage.  For years, our ancestors honorably served as guards fighting for just causes in times of war or peace.  It was not until the heir of the fifth Boar Clan war chief that problems ensued.", "gm_guild_history2", []],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_gm_guild_history2_02.py:L1-L5 ] anyone::gm_guild_history2->gm_guild_history3 [eq] {our champion, shahid, witnessed price aahil of the sarranid sult}
+# [ src/dialogs/ZC01_centers_and_economy/anyone_gm_guild_history2_02.py:L1-L5 ] anyone::gm_guild_history2->gm_guild_history3 [eq] {our champion, shahid, witnessed prince aahil of the sarranid sul}
 [anyone, "gm_guild_history2", [
    (eq,"$g_talk_troop", "trp_boar_clan_guild_master")
-   ],"Our champion, Shahid, witnessed Price Aahil of the Sarranid Sultanate cheat and murder a lesser noble in an illegal dual.  Shahid and an attendant to the Kings wife were the only witnesses to the crime.  Of course the other witness died under mysterious violent circumstances.  Without the testimony of two witnesses, the end of the matter depended upon a duel between Prince Aahil and the accuser.", "gm_guild_history3", []],
+   ],"Our champion, Shahid, witnessed Prince Aahil of the Sarranid Sultanate cheat and murder a lesser noble in an illegal duel. Shahid and an attendant to the king's wife were the only witnesses to the crime. The other witness died under violent circumstances. Without two testimonies, the matter fell to a duel between Prince Aahil and the accuser.", "gm_guild_history3", []],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_gm_guild_history3_02.py:L1-L5 ] anyone::gm_guild_history3->gm_guild_history4 [eq] {as honorable and inspiring as shahid was, he was not known for h}
 [anyone, "gm_guild_history3", [
    (eq,"$g_talk_troop", "trp_boar_clan_guild_master")
@@ -7219,11 +7384,12 @@ Laugh if you wish princeling, but know that many failed to get past their format
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_party_encounter_mercs_hostile_attacker_2.py:L1-L4 ] anyone|plyr::party_encounter_mercs_hostile_attacker_2->close_window [no_conditions] {don't attack! we surrender.}
 [anyone|plyr, "party_encounter_mercs_hostile_attacker_2", [
   ], "Don't attack! We surrender.", "close_window", [(assign, "$g_player_surrenders", 1)]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_party_encounter_mercs_hostile_attacker_2_02.py:L1-L7 ] anyone|plyr::party_encounter_mercs_hostile_attacker_2->close_window [no_conditions] {we will fight you to the end!}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_party_encounter_mercs_hostile_attacker_2_02.py:L1-L8 ] anyone|plyr::party_encounter_mercs_hostile_attacker_2->close_window [no_conditions] {we will fight you to the end!}
 [anyone|plyr, "party_encounter_mercs_hostile_attacker_2", [
   ],"We will fight you to the end!", "close_window", [
   (assign, "$g_enemy_party", "$g_encountered_party"),
   (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack),
   ]],
 # [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_black_army_patrol_start.py:L1-L15 ] party_tpl|pt_black_army_patrol::start->black_army_world_patrol_talk [eq|store_relation|lt] {hold and keep your hands honest. black army road detail. our con}
 [party_tpl|pt_black_army_patrol, "start", [
@@ -7262,7 +7428,83 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (party_get_slot, ":role", "$g_encountered_party", slot_party_sod_patrol_role),
     (eq, ":role", sod_castle_patrol_role_border_harasser),
 ], "Careful on this road. {s1} sent us to make enemies nervous, not travelers comfortable. Speak quickly.", "castle_patrol_talk", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_messenger_party_start.py:L1-L145 ] party_tpl|pt_messenger_party::start->tax_courier_player_talk [party_slot_eq|party_slot_eq|party_get_slot] {your banner is a relief, not a problem. we carry sealed tax from}
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_messenger_party_start.py:L1-L225 ] party_tpl|pt_messenger_party::start->public_health_relief_talk [party_slot_eq|party_get_slot|party_get_slot] {we carry healers, clean cloth, bitter draughts, and prayers from}
+[party_tpl|pt_messenger_party, "start", [
+    (party_slot_eq, "$g_encountered_party", slot_party_sod_messenger_role, sod_messenger_role_public_health_relief),
+    (party_get_slot, ":origin_center", "$g_encountered_party", slot_party_sod_public_health_origin),
+    (party_get_slot, ":destination", "$g_encountered_party", slot_party_sod_public_health_destination),
+    (try_begin),
+      (is_between, ":origin_center", centers_begin, centers_end),
+      (str_store_party_name, s1, ":origin_center"),
+      (call_script, "script_sod_center_public_health_relief_institution_to_s0", ":origin_center"),
+      (str_store_string_reg, s3, s0),
+    (else_try),
+      (str_store_string, s1, "@a house of care"),
+      (str_store_string, s3, "@the care houses of"),
+    (try_end),
+    (try_begin),
+      (is_between, ":destination", centers_begin, centers_end),
+      (str_store_party_name, s2, ":destination"),
+    (else_try),
+      (str_store_string, s2, "@a sick settlement"),
+    (try_end),
+], "We carry healers, clean cloth, bitter draughts, and prayers from {s3} {s1} to {s2}. Our escort keeps steel sheathed unless someone bars the sick from mercy.", "public_health_relief_talk", []],
+
+[anyone|plyr, "public_health_relief_talk", [], "Ride on. The sick need you more than I do.", "close_window", [
+    (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_help_village, 1),
+    (assign, "$g_leave_encounter", 1),
+]],
+
+[anyone|plyr, "public_health_relief_talk", [], "Take these supplies and hurry. (300 denars)", "close_window", [
+    (store_troop_gold, ":gold", "trp_player"),
+    (try_begin),
+      (ge, ":gold", 300),
+      (call_script, "script_sod_player_charge_gold", 300),
+      (party_get_slot, ":payload", "$g_encountered_party", slot_party_sod_public_health_health_payload),
+      (val_add, ":payload", 1),
+      (party_set_slot, "$g_encountered_party", slot_party_sod_public_health_health_payload, ":payload"),
+      (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_build_healing, 1),
+      (display_message, "@The relief party adds your supplies to its litters and presses on.", 0x66CC66),
+    (else_try),
+      (display_message, "@You do not have enough coin to supply the relief party.", 0xCC3333),
+    (try_end),
+    (assign, "$g_leave_encounter", 1),
+]],
+
+[anyone|plyr, "public_health_relief_talk", [
+    (party_get_slot, ":origin_faith", "$g_encountered_party", slot_party_sod_public_health_origin_faith),
+    (is_between, ":origin_faith", sod_faiths_begin, sod_faiths_end),
+    (eq, ":origin_faith", "$g_sod_faith"),
+    (store_troop_gold, ":gold", "trp_player"),
+    (ge, ":gold", 700),
+    (store_current_day, ":cur_day"),
+    (store_sub, ":days_since_blessing", ":cur_day", "$g_sod_public_health_last_clergy_blessing_day"),
+    (this_or_next|ge, ":days_since_blessing", 7),
+    (lt, "$g_sod_public_health_last_clergy_blessing_day", 1),
+], "Offer alms and ask for a blessing. (700 denars)", "public_health_relief_blessing", [
+    (call_script, "script_sod_player_charge_gold", 700),
+    (store_current_day, "$g_sod_public_health_last_clergy_blessing_day"),
+    (call_script, "script_sod_center_public_health_apply_player_clergy_blessing", 2),
+]],
+
+[anyone, "public_health_relief_blessing", [], "Then walk lighter, and let mercy find roads faster than fear.", "close_window", [
+    (assign, "$g_leave_encounter", 1),
+]],
+
+[anyone|plyr, "public_health_relief_talk", [
+    (party_get_slot, ":origin_faith", "$g_encountered_party", slot_party_sod_public_health_origin_faith),
+    (is_between, ":origin_faith", sod_faiths_begin, sod_faiths_end),
+    (neq, ":origin_faith", "$g_sod_faith"),
+], "This road will not carry a rival faith's mercy. Defend yourselves.", "close_window", [
+    (call_script, "script_change_badboy_rating", 6),
+    (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_abuse_village, 2),
+    (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_dirty_profit, 1),
+    (display_message, "@Word spreads that you attacked a clergy relief party on the road.", 0xCC3333),
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+    (encounter_attack),
+]],
+
 [party_tpl|pt_messenger_party, "start", [
     (party_slot_eq, "$g_encountered_party", slot_party_sod_messenger_role, sod_messenger_role_tax_courier),
     (party_slot_eq, "$g_encountered_party", slot_party_sod_tax_courier_recipient_troop, "trp_player"),
@@ -7386,10 +7628,14 @@ Laugh if you wish princeling, but know that many failed to get past their format
 ]],
 
 [anyone, "tax_courier_surrender_demand", [], "No. If I return empty by choice, I am dead anyway. Better to earn it honestly. The chest reaches its lord or we die around it.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
 ]],
 
 [anyone|plyr, "tax_courier_hostile_talk", [], "Then defend it.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
 ]],
 
@@ -7545,10 +7791,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
   ], "I will leave you to your work.", "close_window", [
     (assign, "$g_leave_encounter", 1),
   ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_black_army_world_patrol_talk_03.py:L1-L9 ] anyone|plyr::black_army_world_patrol_talk->close_window [no_conditions] {then you can be broken like any other armed band.}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_black_army_world_patrol_talk_03.py:L1-L8 ] anyone|plyr::black_army_world_patrol_talk->close_window [no_conditions] {then you can be broken like any other armed band.}
 [anyone|plyr, "black_army_world_patrol_talk", [
   ], "Then you can be broken like any other armed band.", "close_window", [
-    (call_script, "script_sod_black_army_apply_player_action", sod_black_army_action_attack_patrol, 25),
     (assign, "$g_enemy_party", "$g_encountered_party"),
     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
@@ -7582,7 +7827,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "black_army_world_patrol_about", [
    (call_script, "script_sod_black_army_describe_status_to_s24"),
    (assign, ":employer_faction", 0),
-   (try_for_range, ":cur_faction", kingdoms_begin, kingdoms_end),
+   (try_for_range, ":cur_faction", native_kingdoms_begin, native_kingdoms_end),
      (eq, ":employer_faction", 0),
      (faction_slot_eq, ":cur_faction", slot_faction_merc_pact, "fac_sod_merc_guild1"),
      (faction_slot_eq, ":cur_faction", slot_faction_state, sfs_active),
@@ -7631,10 +7876,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
   ], "Carry on, then.", "close_window", [
     (assign, "$g_leave_encounter", 1),
   ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_conquistador_world_logistics_talk_03.py:L1-L9 ] anyone|plyr::conquistador_world_logistics_talk->close_window [no_conditions] {your stores are mine now.}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_conquistador_world_logistics_talk_03.py:L1-L8 ] anyone|plyr::conquistador_world_logistics_talk->close_window [no_conditions] {your stores are mine now.}
 [anyone|plyr, "conquistador_world_logistics_talk", [
   ], "Your stores are mine now.", "close_window", [
-    (call_script, "script_sod_conquistador_apply_player_action", sod_conquistador_action_take_stores, 50),
     (assign, "$g_enemy_party", "$g_encountered_party"),
     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
@@ -7664,7 +7908,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "conquistador_world_logistics_about", [
    (call_script, "script_sod_conquistador_describe_status_to_s25"),
    (assign, ":employer_faction", 0),
-   (try_for_range, ":cur_faction", kingdoms_begin, kingdoms_end),
+   (try_for_range, ":cur_faction", native_kingdoms_begin, native_kingdoms_end),
      (eq, ":employer_faction", 0),
      (faction_slot_eq, ":cur_faction", slot_faction_merc_pact, "fac_sod_merc_guild2"),
      (faction_slot_eq, ":cur_faction", slot_faction_state, sfs_active),
@@ -7729,10 +7973,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
   ], "I will leave the shrine-road in peace.", "close_window", [
     (assign, "$g_leave_encounter", 1),
   ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_elephant_guard_world_talk_05.py:L1-L9 ] anyone|plyr::elephant_guard_world_talk->close_window [no_conditions] {relics and vows will not save you from me.}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_elephant_guard_world_talk_05.py:L1-L8 ] anyone|plyr::elephant_guard_world_talk->close_window [no_conditions] {relics and vows will not save you from me.}
 [anyone|plyr, "elephant_guard_world_talk", [
   ], "Relics and vows will not save you from me.", "close_window", [
-    (call_script, "script_change_player_relation_with_faction", "fac_sod_merc_guild3", -3),
     (assign, "$g_enemy_party", "$g_encountered_party"),
     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
@@ -7826,8 +8069,12 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone|plyr, "elephant_guard_world_rites_talk", [], "What are your people doing out here?", "elephant_guard_world_rites_about", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_elephant_guard_world_rites_talk_02.py:L1-L3 ] anyone|plyr::elephant_guard_world_rites_talk->close_window [no_conditions] {i will not interfere with your rites.}
 [anyone|plyr, "elephant_guard_world_rites_talk", [], "I will not interfere with your rites.", "close_window", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_elephant_guard_world_rites_talk_03.py:L1-L3 ] anyone|plyr::elephant_guard_world_rites_talk->party_encounter_attack [no_conditions] {stand aside. i mean to fight you.}
-[anyone|plyr, "elephant_guard_world_rites_talk", [], "Stand aside. I mean to fight you.", "party_encounter_attack", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_elephant_guard_world_rites_talk_03.py:L1-L7 ] anyone|plyr::elephant_guard_world_rites_talk->close_window [no_conditions] {stand aside. i mean to fight you.}
+[anyone|plyr, "elephant_guard_world_rites_talk", [], "Stand aside. I mean to fight you.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+    (encounter_attack),
+]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_elephant_guard_world_rites_about.py:L1-L5 ] anyone::elephant_guard_world_rites_about->elephant_guard_world_rites_talk [call_script] {the elephant remembers hunger. where fear, sickness, and empty f}
 [anyone, "elephant_guard_world_rites_about", [
    (call_script, "script_sod_elephant_guard_describe_status_to_s21"),
@@ -7864,8 +8111,12 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone|plyr, "jotnar_world_hearth_talk", [], "Whose hearth are you guarding on this road?", "jotnar_world_hearth_about", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_jotnar_world_hearth_talk_02.py:L1-L3 ] anyone|plyr::jotnar_world_hearth_talk->close_window [no_conditions] {i will leave your camp be.}
 [anyone|plyr, "jotnar_world_hearth_talk", [], "I will leave your camp be.", "close_window", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_jotnar_world_hearth_talk_03.py:L1-L3 ] anyone|plyr::jotnar_world_hearth_talk->party_encounter_attack [no_conditions] {then defend it.}
-[anyone|plyr, "jotnar_world_hearth_talk", [], "Then defend it.", "party_encounter_attack", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_jotnar_world_hearth_talk_03.py:L1-L7 ] anyone|plyr::jotnar_world_hearth_talk->close_window [no_conditions] {then defend it.}
+[anyone|plyr, "jotnar_world_hearth_talk", [], "Then defend it.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+    (encounter_attack),
+]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_jotnar_world_hearth_talk_04.py:L1-L11 ] anyone|plyr::jotnar_world_hearth_talk->close_window [store_troop_gold|ge] {take 300 denars for hearth stores and winter medicine.}
 [anyone|plyr, "jotnar_world_hearth_talk", [
    (store_troop_gold, ":player_gold", "trp_player"),
@@ -8006,9 +8257,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone|plyr, "serpent_host_world_route_talk", [], "Ride on. I have no quarrel with you.", "close_window", [
   (assign, "$g_leave_encounter", 1),
 ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_serpent_host_world_route_talk_03.py:L1-L5 ] anyone|plyr::serpent_host_world_route_talk->party_encounter_attack [no_conditions] {i will break your screen.}
-[anyone|plyr, "serpent_host_world_route_talk", [], "I will break your screen.", "party_encounter_attack", [
-  (call_script, "script_sod_serpent_host_apply_player_action", sod_serpent_action_attack_screen, 20),
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_serpent_host_world_route_talk_03.py:L1-L7 ] anyone|plyr::serpent_host_world_route_talk->close_window [no_conditions] {i will break your line.}
+[anyone|plyr, "serpent_host_world_route_talk", [], "I will break your line.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+    (encounter_attack),
 ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_serpent_host_world_route_talk_04.py:L1-L12 ] anyone|plyr::serpent_host_world_route_talk->close_window [store_troop_gold|ge] {sell me road intelligence.}
 [anyone|plyr, "serpent_host_world_route_talk", [
@@ -8074,20 +8327,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
    (party_slot_eq, ":cur_party", slot_party_type, spt_ai_mercenaries),
 	(eq, "$talk_context", tc_party_encounter),
 	],"You have found sellswords under arms, not villagers with empty hands. State your offer, warning, or challenge.", "party_encounter_mercs", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_party_encounter_mercs.py:L1-L4 ] anyone|plyr::party_encounter_mercs->party_encounter_mercs_ask [no_conditions] {wha are you?}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_party_encounter_mercs.py:L1-L4 ] anyone|plyr::party_encounter_mercs->party_encounter_mercs_ask [no_conditions] {who are you?}
 [anyone|plyr, "party_encounter_mercs", [
-  ], "Wha are you?", "party_encounter_mercs_ask", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_party_encounter_mercs_02.py:L1-L10 ] anyone|plyr::party_encounter_mercs->party_encounter_mercs_attack [no_conditions] {surrender or die!}
+  ], "Who are you?", "party_encounter_mercs_ask", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_party_encounter_mercs_02.py:L1-L5 ] anyone|plyr::party_encounter_mercs->party_encounter_mercs_attack [no_conditions] {surrender or die!}
 [anyone|plyr, "party_encounter_mercs", [
   ],"Surrender or die!", "party_encounter_mercs_attack", [
-  (party_get_slot, ":troop", "$g_encountered_party", slot_party_boss),
-  (store_troop_faction, ":troop_fac", ":troop"),
-  (call_script, "script_make_kingdom_hostile_to_player", ":troop_fac", -3),
-  (assign, "$g_enemy_party", "$g_encountered_party"),
-  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
   ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_party_encounter_mercs_attack.py:L1-L22 ] anyone|plyr::party_encounter_mercs_attack->close_window [no_conditions] {so be it. defend yourself!}
-[anyone|plyr, "party_encounter_mercs_attack", [],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_party_encounter_mercs_attack.py:L1-L30 ] anyone::party_encounter_mercs_attack->close_window [no_conditions] {so be it. defend yourself!}
+[anyone, "party_encounter_mercs_attack", [],
   "So be it. Defend yourself!", "close_window", [
   (try_begin),
     (gt, "$g_encountered_party", 0),
@@ -8095,8 +8343,16 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (party_is_active, "$g_encountered_party"),
     (party_get_num_companions, ":num_companions", "$g_encountered_party"),
     (gt, ":num_companions", 0),
+    (party_get_slot, ":troop", "$g_encountered_party", slot_party_boss),
+    (try_begin),
+      (is_between, ":troop", 0, "trp_last_troop"),
+      (store_troop_faction, ":troop_fac", ":troop"),
+      (is_between, ":troop_fac", 0, "fac_factions_end"),
+      (call_script, "script_make_kingdom_hostile_to_player", ":troop_fac", -3),
+    (try_end),
     (assign, "$g_enemy_party", "$g_encountered_party"),
     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+    (encounter_attack),
   (else_try),
     (gt, "$g_encountered_party", 0),
     (neq, "$g_encountered_party", "p_main_party"),
@@ -8173,18 +8429,26 @@ Laugh if you wish princeling, but know that many failed to get past their format
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_ravaging_bandits_intro_1.py:L1-L4 ] anyone|plyr::ravaging_bandits_intro_1->ravaging_bandits_intro_2 [no_conditions] {stop attacking the elephant guard hunters and workers! they are }
 [anyone|plyr, "ravaging_bandits_intro_1", [],
    "Stop attacking the Elephant Guard hunters and workers! They are under my protection.", "ravaging_bandits_intro_2", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_ravaging_bandits_intro_2.py:L1-L4 ] anyone::ravaging_bandits_intro_2->close_window [no_conditions] {a hero! ... i hate heroes! kill {var}! kill {var} now!}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_ravaging_bandits_intro_2.py:L1-L8 ] anyone::ravaging_bandits_intro_2->close_window [no_conditions] {a hero! ... i hate heroes! kill {var}! kill {var} now!}
 [anyone, "ravaging_bandits_intro_2", [],
-   "A hero! ... I hate heroes! Kill {him/her}! Kill {him/her} now!", "close_window", [(encounter_attack)]],
+   "A hero! ... I hate heroes! Kill {him/her}! Kill {him/her} now!", "close_window", [
+     (assign, "$g_enemy_party", "$g_encountered_party"),
+     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+     (encounter_attack),
+   ]],
 # [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_ravaging_bandits_start.py:L1-L4 ] party_tpl|pt_ravaging_bandits::start->chieftain_intro_1 [quest_slot_eq] {bad road for mercy, worse road for witnesses. you have ridden in}
 [party_tpl|pt_ravaging_bandits, "start", [(quest_slot_eq, "qst_elephant_guard_capture_the_bastard", slot_quest_target_party, "$g_encountered_party")],
    "Bad road for mercy, worse road for witnesses. You have ridden into our account.", "chieftain_intro_1", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_chieftain_intro_1.py:L1-L4 ] anyone|plyr::chieftain_intro_1->chieftain_intro_2 [no_conditions] {i'm here to capture you and take you to the elephant guard base }
 [anyone|plyr, "chieftain_intro_1", [],
    "I'm here to capture you and take you to the Elephant Guard base where you'll answr for your crimes.", "chieftain_intro_2", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_chieftain_intro_2.py:L1-L4 ] anyone::chieftain_intro_2->close_window [no_conditions] {ha ha ha! i don't have time for this. kill {var}!}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_chieftain_intro_2.py:L1-L8 ] anyone::chieftain_intro_2->close_window [no_conditions] {ha ha ha! i don't have time for this. kill {var}!}
 [anyone, "chieftain_intro_2", [],
-   "Ha Ha Ha! I don't have time for this. Kill {him/her}!", "close_window", [(assign, "$g_e_g_after_battle", 1),(encounter_attack)]],
+   "Ha Ha Ha! I don't have time for this. Kill {him/her}!", "close_window", [
+  (assign, "$g_e_g_after_battle", 1),
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)]],
 # [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_slaves_with_jotnar_clansmen_start.py:L1-L4 ] party_tpl|pt_slaves_with_jotnar_clansmen::start->slavers_jc_intro_1 [no_conditions] {keep your eyes off the chains unless you mean to join them.}
 [party_tpl|pt_slaves_with_jotnar_clansmen, "start", [],
    "Keep your eyes off the chains unless you mean to join them.", "slavers_jc_intro_1", []],
@@ -8192,40 +8456,58 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone|plyr, "slavers_jc_intro_1", [],
    "I'm here to free jotnar clansmen whom you are holding captive.", "slavers_jc_intro_2", [
    ]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_slavers_jc_intro_2.py:L1-L4 ] anyone::slavers_jc_intro_2->close_window [no_conditions] {ha ha ha! i don't have time for this. kill {var}!}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_slavers_jc_intro_2.py:L1-L7 ] anyone::slavers_jc_intro_2->close_window [no_conditions] {ha ha ha! i don't have time for this. kill {var}!}
 [anyone, "slavers_jc_intro_2", [],
-   "Ha Ha Ha! I don't have time for this. Kill {him/her}!", "close_window", [(encounter_attack)]],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_jotnar_clansmen_start.py:L1-L20 ] party_tpl|pt_jotnar_clansmen::start->close_window [store_distance_to_party_from_party|lt] {the base is close now. we can cover the last stretch ourselves. }
+   "Ha Ha Ha! I don't have time for this. Kill {him/her}!", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)]],
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_jotnar_clansmen_start.py:L1-L28 ] party_tpl|pt_jotnar_clansmen::start->close_window [check_quest_active|neg|check_quest_concluded|quest_get_slot] {the base is close now. we can cover the last stretch ourselves. }
 [party_tpl|pt_jotnar_clansmen, "start", [
-                                           (store_distance_to_party_from_party, ":dist", "p_main_party", "p_sod_merc_guild_4"),
+                                           (check_quest_active, "qst_jotnar_clan_free_clansmen"),
+                                           (neg|check_quest_concluded, "qst_jotnar_clan_free_clansmen"),
+                                           (quest_get_slot, ":quest_target_party", "qst_jotnar_clan_free_clansmen", slot_quest_target_party),
+                                           (eq, "$g_encountered_party", ":quest_target_party"),
+                                           (party_is_active, "$g_encountered_party"),
+                                           (store_distance_to_party_from_party, ":dist", "$g_encountered_party", "p_sod_merc_guild_4"),
                                            (lt, ":dist", 2),
                                            ],
    "The base is close now. We can cover the last stretch ourselves.\
  You have our thanks, and every chain left behind will remember your name.", "close_window", [
+                                                       (quest_get_slot, ":quest_target_party", "qst_jotnar_clan_free_clansmen", slot_quest_target_party),
                                                        (call_script, "script_succeed_quest", "qst_jotnar_clan_free_clansmen"),
+                                                       (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_jotnar_support, 2),
+                                                       (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_free_captives, 1),
                                                        (call_script, "script_change_troop_renown", "trp_player", 2),
                                                        (try_begin),
-                                                         (gt, "$g_encountered_party", 0),
-                                                         (neq, "$g_encountered_party", "p_main_party"),
-                                                         (party_is_active, "$g_encountered_party"),
-                                                         (party_get_template_id, ":encounter_template", "$g_encountered_party"),
+                                                         (gt, ":quest_target_party", 0),
+                                                         (neq, ":quest_target_party", "p_main_party"),
+                                                         (party_is_active, ":quest_target_party"),
+                                                         (party_get_template_id, ":encounter_template", ":quest_target_party"),
                                                          (eq, ":encounter_template", "pt_jotnar_clansmen"),
-													     (remove_party, "$g_encountered_party"), #twan456
+													     (remove_party, ":quest_target_party"), #twan456
                                                        (try_end),
                                                        (assign, "$g_leave_encounter", 1),
                                                        ]],
 # [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_jotnar_clansmen_start_02.py:L1-L4 ] party_tpl|pt_jotnar_clansmen::start->jotnar_clansmen [no_conditions] {thank you for your help, stranger. did mistress velandir send yo}
 [party_tpl|pt_jotnar_clansmen, "start", [],
    "Thank you for your help, stranger. Did Mistress Velandir send you?", "jotnar_clansmen", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_jotnar_clansmen.py:L1-L7 ] anyone|plyr::jotnar_clansmen->close_window [no_conditions] {yes, she sent me. now i'll escort you to your base.}
-[anyone|plyr, "jotnar_clansmen", [],
-   "Yes, she sent me. Now I'll escort you to your base.", "close_window", [(assign, "$g_leave_encounter", 1),
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_jotnar_clansmen.py:L1-L14 ] anyone|plyr::jotnar_clansmen->close_window [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {yes. stay close and i will get you home.}
+[anyone|plyr, "jotnar_clansmen", [
+   (check_quest_active, "qst_jotnar_clan_free_clansmen"),
+   (neg|check_quest_concluded, "qst_jotnar_clan_free_clansmen"),
+   (quest_slot_eq, "qst_jotnar_clan_free_clansmen", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+   ],
+   "Yes. Stay close and I will get you home.", "close_window", [(assign, "$g_leave_encounter", 1),
    (party_set_ai_behavior, "$g_encountered_party", ai_bhvr_escort_party),
    (party_set_ai_object, "$g_encountered_party", "p_main_party"),
+   (party_set_flags, "$g_encountered_party", pf_default_behavior, 0),
+   (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_free_captives, 1),
    ]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_jotnar_clansmen_02.py:L1-L5 ] anyone|plyr::jotnar_clansmen->close_window [no_conditions] {wait a minute. i have to do something.}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_jotnar_clansmen_02.py:L1-L5 ] anyone|plyr::jotnar_clansmen->close_window [no_conditions] {wait here. i need a moment.}
 [anyone|plyr, "jotnar_clansmen", [],
-   "Wait a minute. I have to do something.", "close_window", [(assign, "$g_leave_encounter", 1),
+   "Wait here. I need a moment.", "close_window", [(assign, "$g_leave_encounter", 1),
    ]],
 # [ src/dialogs/ZA01_startup_and_dispatch/trp_wine_recipient_event_triggered.py:L1-L6 ] trp_wine_recipient::event_triggered->quest_smuggle_wine [check_quest_active] {the cellar was told to expect you. wine travels badly when too m}
 [trp_wine_recipient, "event_triggered", [
@@ -8240,22 +8522,34 @@ Laugh if you wish princeling, but know that many failed to get past their format
                                      (assign, reg9, ":quest_target_amount"),
                                      ],
    "{reg9} units of wine, here they are.", "tavernkeeper_smuggle_wine", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_smuggle_wine.py:L1-L18 ] anyone::tavernkeeper_smuggle_wine->close_window [no_conditions] {at last! my stock was almost depleted. i had paid the cost of th}
-[anyone, "tavernkeeper_smuggle_wine", [],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_smuggle_wine.py:L1-L30 ] anyone::tavernkeeper_smuggle_wine->close_window [check_quest_active|quest_get_slot|quest_get_slot] {at last! my stock was almost depleted. i had paid the cost of th}
+[anyone, "tavernkeeper_smuggle_wine", [
+   (check_quest_active, "qst_slavers_deliver_wine"),
+   (quest_get_slot, ":quest_target_amount", "qst_slavers_deliver_wine", slot_quest_target_amount),
+   (quest_get_slot, reg5, "qst_slavers_deliver_wine", slot_quest_gold_reward),
+   (store_item_kind_count, ":item_count", "itm_wine"),
+   (ge, ":item_count", ":quest_target_amount"),
+   ],
    "At last! My stock was almost depleted. I had paid the cost of the wine in advance. Here, take these {reg5} denars. That should cover your pay.",
    "close_window",
    [(quest_get_slot, ":quest_target_amount", "qst_slavers_deliver_wine", slot_quest_target_amount),
     (quest_get_slot, ":quest_gold_reward", "qst_slavers_deliver_wine", slot_quest_gold_reward),
-    (troop_remove_items, "trp_player", "itm_wine", ":quest_target_amount"),
-    (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),
-    (assign, ":xp_reward", ":quest_gold_reward"),
-    (val_mul, ":xp_reward", 4),
-    (add_xp_as_reward, ":xp_reward"),
-    (assign, reg5, ":quest_gold_reward"),
-    (call_script, "script_change_player_relation_with_center", "$current_town", 1),
-	(call_script, "script_change_player_relation_with_faction", "fac_sod_merc_guild6", 1),
-    (call_script, "script_succeed_quest", "qst_slavers_deliver_wine"),
-    (call_script, "script_end_quest", "qst_slavers_deliver_wine"),
+    (store_item_kind_count, ":item_count", "itm_wine"),
+    (try_begin),
+      (check_quest_active, "qst_slavers_deliver_wine"),
+      (ge, ":item_count", ":quest_target_amount"),
+      (troop_remove_items, "trp_player", "itm_wine", ":quest_target_amount"),
+      (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),
+      (assign, ":xp_reward", ":quest_gold_reward"),
+      (val_mul, ":xp_reward", 4),
+      (add_xp_as_reward, ":xp_reward"),
+      (call_script, "script_change_player_relation_with_center", "$current_town", 1),
+	  (call_script, "script_change_player_relation_with_faction", "fac_sod_merc_guild6", 1),
+      (call_script, "script_succeed_quest", "qst_slavers_deliver_wine"),
+      (call_script, "script_end_quest", "qst_slavers_deliver_wine"),
+    (else_try),
+      (display_message, "@The smuggled wine delivery could not be completed because the cargo was no longer in your inventory.", 0xFF6666),
+    (try_end),
     ]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_quest_smuggle_wine_02.py:L1-L10 ] anyone|plyr::quest_smuggle_wine->tavernkeeper_smuggle_wine_incomplete [quest_get_slot|store_item_kind_count|lt] {i lost some of the cargo on the way.}
 [anyone|plyr, "quest_smuggle_wine", [
@@ -8266,55 +8560,86 @@ Laugh if you wish princeling, but know that many failed to get past their format
                                      (assign, reg9, ":quest_target_amount"),
                                      ],
    "I lost some of the cargo on the way.", "tavernkeeper_smuggle_wine_incomplete", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_smuggle_wine_incomplete.py:L1-L35 ] anyone::tavernkeeper_smuggle_wine_incomplete->close_window [no_conditions] {attacked by bandits eh? you are lucky they left you alive. anywa}
-[anyone, "tavernkeeper_smuggle_wine_incomplete", [],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_smuggle_wine_incomplete.py:L1-L54 ] anyone::tavernkeeper_smuggle_wine_incomplete->close_window [check_quest_active|quest_get_slot|quest_get_slot] {attacked by bandits eh? you are lucky they left you alive. anywa}
+[anyone, "tavernkeeper_smuggle_wine_incomplete", [
+   (check_quest_active, "qst_slavers_deliver_wine"),
+   (quest_get_slot, ":quest_target_amount", "qst_slavers_deliver_wine", slot_quest_target_amount),
+   (quest_get_slot, ":quest_gold_reward", "qst_slavers_deliver_wine", slot_quest_gold_reward),
+   (store_item_kind_count, ":item_count", "itm_wine"),
+   (gt, ":item_count", 0),
+   (lt, ":item_count", ":quest_target_amount"),
+   (val_mul, ":quest_gold_reward", ":item_count"),
+   (try_begin),
+     (gt, ":quest_target_amount", 0),
+     (val_div, ":quest_gold_reward", ":quest_target_amount"),
+   (try_end),
+   (assign, reg5, ":quest_gold_reward"),
+   ],
    "Attacked by bandits eh? You are lucky they left you alive. Anyway, I can pay you no more than {reg5} denars for this. And I will let the Slavers know that my masters order was delivered less than completely, so you will probably be charged for this loss.",
    "close_window",
    [
    (quest_get_slot, ":quest_target_amount", "qst_slavers_deliver_wine", slot_quest_target_amount),
     (quest_get_slot, ":quest_gold_reward", "qst_slavers_deliver_wine", slot_quest_gold_reward),
     (store_item_kind_count, ":item_count", "itm_wine"),
-    (troop_remove_items, "trp_player", "itm_wine", ":item_count"),
-    (val_mul, ":quest_gold_reward", ":item_count"),
     (try_begin),
-    (gt, ":quest_target_amount", 0),
-    (val_div, ":quest_gold_reward", ":quest_target_amount"),
+      (check_quest_active, "qst_slavers_deliver_wine"),
+      (gt, ":item_count", 0),
+      (lt, ":item_count", ":quest_target_amount"),
+      (troop_remove_items, "trp_player", "itm_wine", ":item_count"),
+      (val_mul, ":quest_gold_reward", ":item_count"),
+      (try_begin),
+        (gt, ":quest_target_amount", 0),
+        (val_div, ":quest_gold_reward", ":quest_target_amount"),
+      (try_end),
+      (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),
+      (assign, ":xp_reward", ":quest_gold_reward"),
+      (val_mul, ":xp_reward", 4),
+      (add_xp_as_reward, ":xp_reward"),
+      (assign, ":debt", "$qst_slavers_deliver_wine_debt"),
+      (store_sub, ":item_left", ":quest_target_amount", ":item_count"),
+      (val_mul, ":debt", ":item_left"),
+      (try_begin),
+        (gt, ":quest_target_amount", 0),
+        (val_div, ":debt", ":quest_target_amount"),
+      (try_end),
+      (faction_get_slot, ":plyr_debt", "fac_sod_merc_guild6", player_debt_to_faction),
+	  (val_add, ":plyr_debt", ":debt"),
+	  (faction_set_slot, "fac_sod_merc_guild6", player_debt_to_faction, ":plyr_debt"),
+      (quest_get_slot, ":giver_town", "qst_slavers_deliver_wine", slot_quest_giver_center),
+      (call_script, "script_change_player_relation_with_center", ":giver_town", 1),
+      (call_script, "script_succeed_quest", "qst_slavers_deliver_wine"),
+      (call_script, "script_end_quest", "qst_slavers_deliver_wine"),
+    (else_try),
+      (display_message, "@The partial smuggled wine delivery could not be completed because the cargo count changed.", 0xFF6666),
     (try_end),
-    (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),
-    (assign, reg5, ":quest_gold_reward"),
-    (assign, ":xp_reward", ":quest_gold_reward"),
-    (val_mul, ":xp_reward", 4),
-    (add_xp_as_reward, ":xp_reward"),
-    (assign, ":debt", "$qst_deliver_wine_debt"),
-    (store_sub, ":item_left", ":quest_target_amount", ":item_count"),
-    (val_mul, ":debt", ":item_left"),
-    (try_begin),
-    (gt, ":quest_target_amount", 0),
-    (val_div, ":debt", ":quest_target_amount"),
-    (try_end),
-    (faction_get_slot, ":plyr_debt", "fac_sod_merc_guild6", player_debt_to_faction),
-	(val_add, ":plyr_debt", ":debt"),
-	(faction_set_slot, "fac_sod_merc_guild6", player_debt_to_faction, ":plyr_debt"),
-    (quest_get_slot, ":giver_town", "qst_slavers_deliver_wine", slot_quest_giver_center),
-    (call_script, "script_change_player_relation_with_center", ":giver_town", 1),
-    (call_script, "script_succeed_quest", "qst_slavers_deliver_wine"),
-    (call_script, "script_end_quest", "qst_slavers_deliver_wine"),
     ]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_quest_smuggle_wine_03.py:L1-L8 ] anyone|plyr::quest_smuggle_wine->tavernkeeper_smuggle_wine_lost [store_item_kind_count|eq|quest_get_slot] {i lost the cargo on the way.}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_quest_smuggle_wine_03.py:L1-L9 ] anyone|plyr::quest_smuggle_wine->tavernkeeper_smuggle_wine_lost [check_quest_active|store_item_kind_count|eq] {i lost the cargo on the way.}
 [anyone|plyr, "quest_smuggle_wine", [
+                                     (check_quest_active, "qst_slavers_deliver_wine"),
                                      (store_item_kind_count, ":item_count", "itm_wine"),
                                      (eq, ":item_count", 0),
                                      (quest_get_slot, reg9, "qst_slavers_deliver_wine", slot_quest_target_amount),
                                      ],
    "I lost the cargo on the way.", "tavernkeeper_smuggle_wine_lost", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_smuggle_wine_lost.py:L1-L10 ] anyone::tavernkeeper_smuggle_wine_lost->close_window [no_conditions] {what? i was waiting for that wine for weeks! and now you are tel}
-[anyone, "tavernkeeper_smuggle_wine_lost", [], "What? I was waiting for that wine for weeks! And now you are telling me that you lost it? You may rest assured that I will let the Slavers know about this.", "close_window",
-   [(add_xp_as_reward, 40),
-    (faction_get_slot, ":plyr_debt", "fac_sod_merc_guild6", player_debt_to_faction),
-	(val_add, ":plyr_debt", "$qst_slavers_deliver_wine_debt"),
-	(faction_set_slot, "fac_sod_merc_guild6", player_debt_to_faction, ":plyr_debt"),
-    (call_script, "script_fail_quest", "qst_slavers_deliver_wine"),
-    (call_script, "script_end_quest", "qst_slavers_deliver_wine"),
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_smuggle_wine_lost.py:L1-L21 ] anyone::tavernkeeper_smuggle_wine_lost->close_window [check_quest_active|store_item_kind_count|eq] {what? i was waiting for that wine for weeks! and now you are tel}
+[anyone, "tavernkeeper_smuggle_wine_lost", [
+    (check_quest_active, "qst_slavers_deliver_wine"),
+    (store_item_kind_count, ":item_count", "itm_wine"),
+    (eq, ":item_count", 0),
+   ], "What? I was waiting for that wine for weeks! And now you are telling me that you lost it? You may rest assured that I will let the Slavers know about this.", "close_window",
+   [(store_item_kind_count, ":item_count", "itm_wine"),
+    (try_begin),
+      (check_quest_active, "qst_slavers_deliver_wine"),
+      (eq, ":item_count", 0),
+      (add_xp_as_reward, 40),
+      (faction_get_slot, ":plyr_debt", "fac_sod_merc_guild6", player_debt_to_faction),
+	  (val_add, ":plyr_debt", "$qst_slavers_deliver_wine_debt"),
+	  (faction_set_slot, "fac_sod_merc_guild6", player_debt_to_faction, ":plyr_debt"),
+      (call_script, "script_fail_quest", "qst_slavers_deliver_wine"),
+      (call_script, "script_end_quest", "qst_slavers_deliver_wine"),
+    (else_try),
+      (display_message, "@The lost smuggled wine report could not be completed because the cargo state changed.", 0xFF6666),
+    (try_end),
    ]],
 # [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_runaway_slaves_start.py:L1-L5 ]
 [party_tpl|pt_runaway_slaves, "start", [(party_slot_eq, "$g_encountered_party", slot_town_center, 0)], #slot_town_center is used for first time meeting
@@ -8426,31 +8751,50 @@ Laugh if you wish princeling, but know that many failed to get past their format
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_merc_lord_pretalk.py:L1-L4 ] anyone::merc_lord_pretalk->merc_lord_talk [no_conditions] {coin, blood, and reputation all spend differently, {var}. which }
 [anyone, "merc_lord_pretalk", [],
    "Coin, blood, and reputation all spend differently, {playername}. Which are we discussing?", "merc_lord_talk", [],],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_militia_awaiting_ransom_start.py:L1-L5 ] party_tpl|pt_militia_awaiting_ransom::start->militia_awaiting_ransom_intro_1 [check_quest_active|neg|quest_slot_eq] {are you the one that brought the ransom hor this poor spy? quick}
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_militia_awaiting_ransom_start.py:L1-L5 ] party_tpl|pt_militia_awaiting_ransom::start->militia_awaiting_ransom_intro_1 [check_quest_active|neg|quest_slot_eq] {are you the one with the ransom for this spy? quick, give us the}
 [party_tpl|pt_militia_awaiting_ransom, "start", [(check_quest_active, "qst_serpent_host_free_spy"), 
 		(neg|quest_slot_eq, "qst_serpent_host_free_spy", slot_quest_current_state, 1), ],
-   "Are you the one that brought the ransom hor this poor spy? Quick, give us the money now.", "militia_awaiting_ransom_intro_1", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/party_tpl_pt_militia_awaiting_ransom_plyr_militia_awaiting_ransom_intro_1.py:L1-L7 ] party_tpl|pt_militia_awaiting_ransom|plyr::militia_awaiting_ransom_intro_1->militia_awaiting_ransom_pay [store_troop_gold|quest_get_slot|ge] {here, take the money. just set him free.}
+   "Are you the one with the ransom for this spy? Quick, give us the money.", "militia_awaiting_ransom_intro_1", []],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/party_tpl_pt_militia_awaiting_ransom_plyr_militia_awaiting_ransom_intro_1.py:L1-L11 ] party_tpl|pt_militia_awaiting_ransom|plyr::militia_awaiting_ransom_intro_1->militia_awaiting_ransom_pay [store_troop_gold|check_quest_active|neg|check_quest_concluded] {here, take the money. just set him free.}
 [party_tpl|pt_militia_awaiting_ransom|plyr, "militia_awaiting_ransom_intro_1", [(store_troop_gold, ":cur_gold", "trp_player"),
+                                                                                  (check_quest_active, "qst_serpent_host_free_spy"),
+                                                                                  (neg|check_quest_concluded, "qst_serpent_host_free_spy"),
+                                                                                  (quest_slot_eq, "qst_serpent_host_free_spy", slot_quest_target_party, "$g_encountered_party"),
+                                                                                  (party_is_active, "$g_encountered_party"),
                                                                                   (quest_get_slot, ":quest_target_amount", "qst_serpent_host_free_spy", slot_quest_target_amount),
                                                                                   (ge, ":cur_gold", ":quest_target_amount")
                                                                                   ],
    "Here, take the money. Just set him free.", "militia_awaiting_ransom_pay", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/party_tpl_pt_militia_awaiting_ransom_militia_awaiting_ransom_pay.py:L1-L28 ] party_tpl|pt_militia_awaiting_ransom::militia_awaiting_ransom_pay->close_window [no_conditions] {heh. you've brought the money all right. you can take the spy no}
-[party_tpl|pt_militia_awaiting_ransom, "militia_awaiting_ransom_pay", [],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/party_tpl_pt_militia_awaiting_ransom_militia_awaiting_ransom_pay.py:L1-L43 ] party_tpl|pt_militia_awaiting_ransom::militia_awaiting_ransom_pay->close_window [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {heh. you've brought the money all right. you can take the spy no}
+[party_tpl|pt_militia_awaiting_ransom, "militia_awaiting_ransom_pay", [
+   (check_quest_active, "qst_serpent_host_free_spy"),
+   (neg|check_quest_concluded, "qst_serpent_host_free_spy"),
+   (quest_slot_eq, "qst_serpent_host_free_spy", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+   (party_count_prisoners_of_type, ":spy_prisoners", "$g_encountered_party", "trp_sh_spy"),
+   (gt, ":spy_prisoners", 0),
+],
    "Heh. You've brought the money all right. You can take the spy now. It was a pleasure doing business with you...", "close_window",
    [(quest_get_slot, ":quest_target_amount", "qst_serpent_host_free_spy", slot_quest_target_amount),
     (quest_get_slot, ":quest_target_party", "qst_serpent_host_free_spy", slot_quest_target_party),
     (quest_get_slot, ":quest_target_center", "qst_serpent_host_free_spy", slot_quest_target_center),
-    (set_spawn_radius, 1),
-    (spawn_around_party, ":quest_target_party", "pt_sh_spy"),
-    (assign, "$g_sh_spy", reg0),
     (try_begin),
+      (check_quest_active, "qst_serpent_host_free_spy"),
+      (neg|check_quest_concluded, "qst_serpent_host_free_spy"),
+      (eq, ":quest_target_party", "$g_encountered_party"),
+      (party_is_active, ":quest_target_party"),
+      (party_count_prisoners_of_type, ":spy_prisoners", ":quest_target_party", "trp_sh_spy"),
+      (gt, ":spy_prisoners", 0),
+      (set_spawn_radius, 1),
+      (spawn_around_party, ":quest_target_party", "pt_sh_spy"),
+      (assign, "$g_sh_spy", reg0),
       (gt, "$g_sh_spy", 0),
       (party_is_active, "$g_sh_spy"),
       (call_script, "script_sod_player_charge_gold", ":quest_target_amount"),
       (play_sound, "snd_money_paid"),
+      (party_remove_prisoners, ":quest_target_party", "trp_sh_spy", 1),
       (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_current_state, 1),
+      (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_target_party, "$g_sh_spy"),
       (party_set_ai_behavior, "$g_sh_spy", ai_bhvr_hold),
       (party_set_flags, "$g_sh_spy", pf_default_behavior, 0),
       (party_set_ai_behavior, ":quest_target_party", ai_bhvr_travel_to_party),
@@ -8469,8 +8813,12 @@ Laugh if you wish princeling, but know that many failed to get past their format
 # [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_militia_awaiting_ransom_b.py:L1-L4 ] anyone::militia_awaiting_ransom_b->militia_awaiting_ransom_b2 [no_conditions] {you fool! stop playing games and give us the money!}
 [anyone, "militia_awaiting_ransom_b", [],
    "You fool! Stop playing games and give us the money! ", "militia_awaiting_ransom_b2", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_militia_awaiting_ransom_b2.py:L1-L6 ] anyone|plyr::militia_awaiting_ransom_b2->militia_awaiting_ransom_pay [store_troop_gold|quest_get_slot|ge] {all right. here's your money. let the spy go now.}
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_militia_awaiting_ransom_b2.py:L1-L10 ] anyone|plyr::militia_awaiting_ransom_b2->militia_awaiting_ransom_pay [store_troop_gold|check_quest_active|neg|check_quest_concluded] {all right. here's your money. let the spy go now.}
 [anyone|plyr, "militia_awaiting_ransom_b2", [(store_troop_gold, ":cur_gold", "trp_player"),
+                                               (check_quest_active, "qst_serpent_host_free_spy"),
+                                               (neg|check_quest_concluded, "qst_serpent_host_free_spy"),
+                                               (quest_slot_eq, "qst_serpent_host_free_spy", slot_quest_target_party, "$g_encountered_party"),
+                                               (party_is_active, "$g_encountered_party"),
                                                (quest_get_slot, ":quest_target_amount", "qst_serpent_host_free_spy", slot_quest_target_amount),
                                                (ge, ":cur_gold", ":quest_target_amount")],
    "All right. Here's your money. Let the spy go now.", "militia_awaiting_ransom_pay", []],
@@ -8483,37 +8831,100 @@ Laugh if you wish princeling, but know that many failed to get past their format
 # [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_militia_awaiting_ransom_b2_03.py:L1-L4 ] anyone|plyr::militia_awaiting_ransom_b2->militia_awaiting_ransom_fight [no_conditions] {i have no intention to pay you anything. i demand that you relea}
 [anyone|plyr, "militia_awaiting_ransom_b2", [],
    "I have no intention to pay you anything. I demand that you release the spy now!", "militia_awaiting_ransom_fight", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_militia_awaiting_ransom_fight.py:L1-L18 ] anyone::militia_awaiting_ransom_fight->close_window [no_conditions] {you won't be demanding anything when you're dead.}
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_militia_awaiting_ransom_fight.py:L1-L15 ] anyone::militia_awaiting_ransom_fight->close_window [no_conditions] {you won't be demanding anything when you're dead.}
 [anyone, "militia_awaiting_ransom_fight", [],
-   "You won't be demanding anything when you're dead.", "close_window", [
-    (quest_get_slot, ":quest_target_party", "qst_serpent_host_free_spy", slot_quest_target_party),
-    (set_spawn_radius, 1),
-    (spawn_around_party, ":quest_target_party", "pt_sh_spy"),
-    (assign, "$g_sh_spy", reg0),
+   "You won't be demanding anything when you're dead.", "close_window",
+   [(quest_get_slot, ":quest_target_party", "qst_serpent_host_free_spy", slot_quest_target_party),
     (try_begin),
-      (gt, "$g_sh_spy", 0),
-      (party_is_active, "$g_sh_spy"),
-      (party_set_ai_behavior, "$g_sh_spy", ai_bhvr_hold),
-      (party_set_flags, "$g_sh_spy", pf_default_behavior, 0),
-      (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_current_state, 1),
-    (else_try),
-      (assign, "$g_sh_spy", 0),
-      (display_message, "@The freed spy could not be placed on the map. The fight can wait until the prisoner is located.", 0xFFCC66),
-    (try_end),]],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_sh_spy_start.py:L1-L4 ] party_tpl|pt_sh_spy::start->sh_spy_encounter_1 [no_conditions] {thank you for rescuing me {var}. will you take me to sukbathar n}
-[party_tpl|pt_sh_spy, "start", [],
-   "Thank you for rescuing me {sir/madam}. Will you take me to Sukbathar now?", "sh_spy_encounter_1", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_sh_spy_encounter_1.py:L1-L3 ] anyone|plyr::sh_spy_encounter_1->sh_spy_join [no_conditions] {yes. come with me. i'll take you to the base.}
-[anyone|plyr, "sh_spy_encounter_1", [], "Yes. Come with me. I'll take you to the base.", "sh_spy_join", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_sh_spy_join.py:L1-L3 ] anyone::sh_spy_join->close_window [neg|party_can_join] {unfortunately. you do not have room in your party for me.}
-[anyone, "sh_spy_join", [(neg|party_can_join)], "Unfortunately. You do not have room in your party for me.", "close_window", [(assign, "$g_leave_encounter", 1)]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_sh_spy_join_02.py:L1-L4 ] anyone::sh_spy_join->close_window [no_conditions] {thank you, {var}.}
-[anyone, "sh_spy_join", [], "Thank you, {playername}.",
-   "close_window", [(assign, "$g_leave_encounter", 1),(party_join),]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_sh_spy_encounter_1_02.py:L1-L3 ] anyone|plyr::sh_spy_encounter_1->spy_wait [no_conditions] {wait here a while longer. i'll come back for you.}
-[anyone|plyr, "sh_spy_encounter_1", [], "Wait here a while longer. I'll come back for you.", "spy_wait", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_spy_wait.py:L1-L3 ] anyone::spy_wait->close_window [no_conditions] {do not leave me here for long. i nee to give my report to sukbat}
-[anyone, "spy_wait", [], "Do not leave me here for long. I nee to give my report to Sukbathar.", "close_window", [(assign, "$g_leave_encounter", 1)]],
+      (gt, ":quest_target_party", 0),
+      (party_is_active, ":quest_target_party"),
+      (party_count_prisoners_of_type, ":spy_prisoners", ":quest_target_party", "trp_sh_spy"),
+      (eq, ":spy_prisoners", 0),
+      (party_add_prisoners, ":quest_target_party", "trp_sh_spy", 1),
+    (try_end),
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+    (encounter_attack)]],
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_sh_spy_start.py:L1-L9 ] party_tpl|pt_sh_spy::start->sh_spy_encounter_1 [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {thank you for getting me out, {var}. can we reach sukbathar now?}
+[party_tpl|pt_sh_spy, "start", [
+    (check_quest_active, "qst_serpent_host_free_spy"),
+    (neg|check_quest_concluded, "qst_serpent_host_free_spy"),
+    (quest_slot_eq, "qst_serpent_host_free_spy", slot_quest_target_party, "$g_encountered_party"),
+    (party_is_active, "$g_encountered_party"),
+    ],
+   "Thank you for getting me out, {sir/madam}. Can we reach Sukbathar now?", "sh_spy_encounter_1", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_sh_spy_encounter_1.py:L1-L9 ] anyone|plyr::sh_spy_encounter_1->sh_spy_join [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {yes. stay close and i will get you to sukbathar.}
+[anyone|plyr, "sh_spy_encounter_1", [
+    (check_quest_active, "qst_serpent_host_free_spy"),
+    (neg|check_quest_concluded, "qst_serpent_host_free_spy"),
+    (quest_slot_eq, "qst_serpent_host_free_spy", slot_quest_target_party, "$g_encountered_party"),
+    (party_is_active, "$g_encountered_party"),
+    ],
+   "Yes. Stay close and I will get you to Sukbathar.", "sh_spy_join", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_sh_spy_join.py:L1-L8 ] anyone::sh_spy_join->close_window [neg|party_can_join] {there is no room for me in your company. make space, or tell me }
+[anyone, "sh_spy_join", [(neg|party_can_join)], "There is no room for me in your company. Make space, or tell me where to hide.",
+   "close_window", [(party_set_ai_behavior, "$g_encountered_party", ai_bhvr_hold),
+                    (party_set_flags, "$g_encountered_party", pf_default_behavior, 0),
+                    (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_target_party, "$g_encountered_party"),
+                    (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_current_state, 1),
+                    (assign, "$g_leave_encounter", 1)]],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_sh_spy_join_02.py:L1-L7 ] anyone::sh_spy_join->close_window [no_conditions] {good. i will keep up.}
+[anyone, "sh_spy_join", [], "Good. I will keep up.",
+   "close_window", [(quest_set_slot, "qst_serpent_host_free_spy", slot_quest_current_state, 1),
+                    (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_free_captives, 1),
+                    (assign, "$g_leave_encounter", 1),
+                    (party_join),]],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_sh_spy_encounter_1_02.py:L1-L9 ] anyone|plyr::sh_spy_encounter_1->spy_wait [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {stay hidden. i will come back for you.}
+[anyone|plyr, "sh_spy_encounter_1", [
+    (check_quest_active, "qst_serpent_host_free_spy"),
+    (neg|check_quest_concluded, "qst_serpent_host_free_spy"),
+    (quest_slot_eq, "qst_serpent_host_free_spy", slot_quest_target_party, "$g_encountered_party"),
+    (party_is_active, "$g_encountered_party"),
+    ],
+   "Stay hidden. I will come back for you.", "spy_wait", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_spy_wait.py:L1-L8 ] anyone::spy_wait->close_window [no_conditions] {do not leave me here long. sukbathar needs my report.}
+[anyone, "spy_wait", [], "Do not leave me here long. Sukbathar needs my report.", "close_window",
+   [(party_set_ai_behavior, "$g_encountered_party", ai_bhvr_hold),
+    (party_set_flags, "$g_encountered_party", pf_default_behavior, 0),
+    (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_target_party, "$g_encountered_party"),
+    (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_current_state, 1),
+    (assign, "$g_leave_encounter", 1)]],
+# [ src/dialogs/ZZ99_misc_dialogs/trp_sh_spy_plyr_sh_spy_liberated_battle.py:L1-L7 ] trp_sh_spy|plyr::sh_spy_liberated_battle->sh_spy_liberated_battle_join [check_quest_active|neg|check_quest_concluded] {yes. stay close and i will get you to sukbathar.}
+[trp_sh_spy|plyr, "sh_spy_liberated_battle", [
+    (check_quest_active, "qst_serpent_host_free_spy"),
+    (neg|check_quest_concluded, "qst_serpent_host_free_spy"),
+    ],
+   "Yes. Stay close and I will get you to Sukbathar.", "sh_spy_liberated_battle_join", []],
+# [ src/dialogs/ZZ99_misc_dialogs/trp_sh_spy_sh_spy_liberated_battle_join.py:L1-L5 ] trp_sh_spy::sh_spy_liberated_battle_join->sh_spy_liberated_battle_wait [neg|hero_can_join] {there is no room for me in your company. hide me nearby and come}
+[trp_sh_spy, "sh_spy_liberated_battle_join", [(neg|hero_can_join, "p_main_party")],
+   "There is no room for me in your company. Hide me nearby and come back.",
+   "sh_spy_liberated_battle_wait", []],
+# [ src/dialogs/ZZ99_misc_dialogs/trp_sh_spy_sh_spy_liberated_battle_join_02.py:L1-L6 ] trp_sh_spy::sh_spy_liberated_battle_join->close_window [no_conditions] {then i am with you.}
+[trp_sh_spy, "sh_spy_liberated_battle_join", [], "Then I am with you.",
+   "close_window", [(party_add_members, "p_main_party", "trp_sh_spy", 1),
+                    (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_current_state, 1),
+                    (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_free_captives, 1)]],
+# [ src/dialogs/ZZ99_misc_dialogs/trp_sh_spy_plyr_sh_spy_liberated_battle_02.py:L1-L7 ] trp_sh_spy|plyr::sh_spy_liberated_battle->sh_spy_liberated_battle_wait [check_quest_active|neg|check_quest_concluded] {find cover. i will come back for you.}
+[trp_sh_spy|plyr, "sh_spy_liberated_battle", [
+    (check_quest_active, "qst_serpent_host_free_spy"),
+    (neg|check_quest_concluded, "qst_serpent_host_free_spy"),
+    ],
+   "Find cover. I will come back for you.", "sh_spy_liberated_battle_wait", []],
+# [ src/dialogs/ZZ99_misc_dialogs/trp_sh_spy_sh_spy_liberated_battle_wait.py:L1-L16 ] trp_sh_spy::sh_spy_liberated_battle_wait->close_window [no_conditions] {i will keep my head down. do not take long.}
+[trp_sh_spy, "sh_spy_liberated_battle_wait", [], "I will keep my head down. Do not take long.",
+   "close_window", [(set_spawn_radius, 1),
+                    (spawn_around_party, "p_main_party", "pt_sh_spy"),
+                    (assign, ":spy_party", reg0),
+                    (try_begin),
+                      (gt, ":spy_party", 0),
+                      (party_is_active, ":spy_party"),
+                      (party_set_ai_behavior, ":spy_party", ai_bhvr_hold),
+                      (party_set_flags, ":spy_party", pf_default_behavior, 0),
+                      (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_target_party, ":spy_party"),
+                      (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_current_state, 1),
+                    (else_try),
+                      (display_message, "@The freed spy could not find a safe place on the map. Make room before leaving the area.", 0xFFCC66),
+                    (try_end)]],
 # [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_mercenaries_start.py:L1-L9 ] party_tpl|pt_mercenaries::start->mercenaries_talk [store_party_size|call_script|val_mul] {welcome, sir. you look like somene who could hire some men. we a}
 [party_tpl|pt_mercenaries, "start", [
   (store_party_size, reg1, "$g_encountered_party"),
@@ -8703,8 +9114,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_37.py:L1-L6 ] anyone::start->close_window [eq|call_script] {{var}}
 [anyone, "start", [
   (eq, "$talk_context", tc_mercenary_base),
-  (call_script, "script_get_random_string_for_troop", s1, "$g_talk_troop"),
-  ], "{s1}", "close_window", []],
+  (call_script, "script_get_random_string_for_troop", s68, "$g_talk_troop"),
+  ], "{s68}", "close_window", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/trp_sod_marshal_start.py:L1-L6 ]
 [trp_sod_marshal, "start", [(troop_slot_eq, "trp_sod_marshal", slot_troop_met_previously, 0)],
     "Greetings Your Royal Highness. Thank You for appointing me for as the Marshall. I will serve you as with utter diligence and care.  "\
@@ -8885,44 +9296,55 @@ Laugh if you wish princeling, but know that many failed to get past their format
     [(faction_set_slot, "$players_kingdom", slot_faction_ai_state, sfai_gathering_army),
      (call_script, "script_sod_player_kingdom_summon_marshal_campaign", "$players_kingdom"),
      (assign, "$g_recalculate_ais", 1), ]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_garrison_check.py:L1-L12 ] trp_sod_marshal::marshal_upgrade_garrison_check->marshal_talk_again [assign|try_for_range|party_count_companions_of_type] {none of your troops are ready to upgrade, my liege. please retur}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_garrison_check.py:L1-L16 ] trp_sod_marshal::marshal_upgrade_garrison_check->marshal_talk_again [assign|try_for_range|party_count_companions_of_type] {no garrison troops here can be promoted, my liege. bring me trai}
 [trp_sod_marshal, "marshal_upgrade_garrison_check",
     [
       # only present this if there are NO troops to upgrade at all...
       (assign, ":total", 0),
       (try_for_range, ":troop_no", "trp_experience_troop", "trp_last_troop"),
         (party_count_companions_of_type, ":troop_count", "$g_encountered_party", ":troop_no"),
+        (troop_get_slot, ":upgrade1", ":troop_no", slot_troop_sod_upgrade1),
+        (troop_get_slot, ":upgrade2", ":troop_no", slot_troop_sod_upgrade2),
+        (this_or_next|is_between, ":upgrade1", 1, "trp_last_troop"),
+        (is_between, ":upgrade2", 1, "trp_last_troop"),
         (val_add, ":total", ":troop_count"),
       (try_end),
       (eq, ":total", 0),
-    ], "None of your troops are ready to upgrade, my liege.  Please return to me when your troops have become more experienced.", "marshal_talk_again", []],
+    ], "No garrison troops here can be promoted, my liege. Bring me trained soldiers with a valid promotion path.", "marshal_talk_again", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_garrison_check_02.py:L1-L3 ] trp_sod_marshal::marshal_upgrade_garrison_check->marshal_upgrade_garrison_which [no_conditions] {indeed some of them are ready for upgrading my liege.}
 [trp_sod_marshal, "marshal_upgrade_garrison_check", [], "Indeed some of them are ready for upgrading my Liege.", "marshal_upgrade_garrison_which", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_garrison_check_again.py:L1-L12 ] trp_sod_marshal::marshal_upgrade_garrison_check_again->marshal_talk [assign|try_for_range|party_count_companions_of_type] {all of your troops have been upgraded, your majesty.}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_garrison_check_again.py:L1-L16 ] trp_sod_marshal::marshal_upgrade_garrison_check_again->marshal_talk [assign|try_for_range|party_count_companions_of_type] {every eligible garrison troop here has been promoted, my liege.}
 [trp_sod_marshal, "marshal_upgrade_garrison_check_again",
     [
       # only present this if there are NO troops to upgrade at all...
       (assign, ":total", 0),
       (try_for_range, ":troop_no", "trp_experience_troop", "trp_last_troop"),
         (party_count_companions_of_type, ":troop_count", "$g_encountered_party", ":troop_no"),
+        (troop_get_slot, ":upgrade1", ":troop_no", slot_troop_sod_upgrade1),
+        (troop_get_slot, ":upgrade2", ":troop_no", slot_troop_sod_upgrade2),
+        (this_or_next|is_between, ":upgrade1", 1, "trp_last_troop"),
+        (is_between, ":upgrade2", 1, "trp_last_troop"),
         (val_add, ":total", ":troop_count"),
       (try_end),
       (eq, ":total", 0),
-    ], "All of your troops have been upgraded, your majesty.", "marshal_talk", []],
+    ], "Every eligible garrison troop here has been promoted, my liege.", "marshal_talk", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_garrison_check_again_02.py:L1-L3 ] trp_sod_marshal::marshal_upgrade_garrison_check_again->marshal_upgrade_garrison_which [no_conditions] {what other troops would you like to upgrade, my liege?}
 [trp_sod_marshal, "marshal_upgrade_garrison_check_again", [], "What other troops would you like to upgrade, my liege?", "marshal_upgrade_garrison_which", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_repeat_for_troops_marshal_upgrade_garrison_which.py:L1-L48 ] trp_sod_marshal|plyr|repeat_for_troops::marshal_upgrade_garrison_which->marshal_upgrade_garrison_list_options [store_repeat_object|gt|party_count_companions_of_type] {{var} {var}}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_repeat_for_troops_marshal_upgrade_garrison_which.py:L1-L51 ] trp_sod_marshal|plyr|repeat_for_troops::marshal_upgrade_garrison_which->marshal_upgrade_garrison_list_options [store_repeat_object|gt|troop_get_slot] {{var} {var}}
 [trp_sod_marshal|plyr|repeat_for_troops, "marshal_upgrade_garrison_which",
     [
       (store_repeat_object, ":troop_no"),
       (gt, ":troop_no", "trp_experience_troop"),
+      (troop_get_slot, ":upgrade1", ":troop_no", slot_troop_sod_upgrade1),
+      (troop_get_slot, ":upgrade2", ":troop_no", slot_troop_sod_upgrade2),
+      (this_or_next|is_between, ":upgrade1", 1, "trp_last_troop"),
+      (is_between, ":upgrade2", 1, "trp_last_troop"),
       (party_count_companions_of_type, ":troop_count", "$g_encountered_party", ":troop_no"),
       (gt, ":troop_count", 0),
-      (str_store_troop_name_by_count, s1, ":troop_no", ":troop_count"),
+      (str_store_troop_name_by_count, s68, ":troop_no", ":troop_count"),
       (assign, reg1, ":troop_count"),
-      (str_store_string, s2, "@{reg1}"),
     ],
-    "{s2} {s1}", "marshal_upgrade_garrison_list_options",
+    "{reg1} {s68}", "marshal_upgrade_garrison_list_options",
     [
       (assign, "$can_upgrade1", 0),
       (assign, "$can_upgrade2", 0),
@@ -8948,12 +9370,12 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (try_begin),
         (eq, "$g_sod_debug", 1),
         (eq, 1, 0), # DISABLE
-        (call_script, "script_store_troop_name", s1, ":upgrade1"),
+        (call_script, "script_store_troop_name", s69, ":upgrade1"),
         (assign, reg0, ":upgrade1"),
-        (display_message, "@upgrade1 = {s1} ({reg0})", debug_color),
-        (call_script, "script_store_troop_name", s1, ":upgrade2"),
+        (display_message, "@upgrade1 = {s69} ({reg0})", debug_color),
+        (call_script, "script_store_troop_name", s69, ":upgrade2"),
         (assign, reg0, ":upgrade2"),
-        (display_message, "@upgrade2 = {s1} ({reg0})", debug_color),
+        (display_message, "@upgrade2 = {s69} ({reg0})", debug_color),
         (display_message, "@$can_upgrade1 = {reg1}, $can_upgrade2 = {reg2}", debug_color),
       (try_end),
     ]
@@ -8963,8 +9385,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_garrison_list_options.py:L1-L4 ] trp_sod_marshal::marshal_upgrade_garrison_list_options->marshal_upgrade_garrison_sorry [eq|eq] {i apologize, my liege, but we do not have any facilities to upgr}
 [trp_sod_marshal, "marshal_upgrade_garrison_list_options", [(eq, "$can_upgrade1", 0), (eq, "$can_upgrade2", 0)],
     "I apologize, my Liege, but we do not have any facilities to upgrade those units here.", "marshal_upgrade_garrison_sorry", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_upgrade_garrison_sorry.py:L1-L3 ] trp_sod_marshal|plyr::marshal_upgrade_garrison_sorry->marshal_upgrade_garrison_check_again [no_conditions] {ahh..., i see. i shall have to commision a new building project }
-[trp_sod_marshal|plyr, "marshal_upgrade_garrison_sorry", [], "Ahh..., I see.  I shall have to commision a new building project post haste!", "marshal_upgrade_garrison_check_again", []],
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_upgrade_garrison_sorry.py:L1-L3 ] trp_sod_marshal|plyr::marshal_upgrade_garrison_sorry->marshal_upgrade_garrison_check_again [no_conditions] {then this garrison needs the right facilities before those troop}
+[trp_sod_marshal|plyr, "marshal_upgrade_garrison_sorry", [], "Then this garrison needs the right facilities before those troops can be promoted.", "marshal_upgrade_garrison_check_again", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_garrison_list_options_02.py:L1-L25 ] trp_sod_marshal::marshal_upgrade_garrison_list_options->marshal_upgrade_garrison_sorry2 [troop_get_slot|troop_get_slot|troop_get_slot] {my apologies, my {var}, but you haven't the necessary funds to u}
 [trp_sod_marshal, "marshal_upgrade_garrison_list_options",
     [
@@ -8989,15 +9411,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (this_or_next|lt, reg60, reg61),(eq, "$can_upgrade1", 0),
       (this_or_next|lt, reg60, reg62),(eq, "$can_upgrade2", 0),
     ], "My apologies, my {Lord/Lady}, but you haven't the necessary funds to upgrade any of those troops.", "marshal_upgrade_garrison_sorry2", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_upgrade_garrison_sorry2.py:L1-L3 ] trp_sod_marshal|plyr::marshal_upgrade_garrison_sorry2->marshal_upgrade_garrison_check_again [no_conditions] {ahh..., i see. yes, how embarrasing! carry on then.}
-[trp_sod_marshal|plyr, "marshal_upgrade_garrison_sorry2", [], "Ahh..., I see.  Yes, how embarrasing!  Carry on then.", "marshal_upgrade_garrison_check_again", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_garrison_list_options_03.py:L1-L8 ] trp_sod_marshal::marshal_upgrade_garrison_list_options->marshal_upgrade_garrison_choose [str_store_troop_name_by_count|assign] {you currently have {var} denars.^^what should your {var} {var} t}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_upgrade_garrison_sorry2.py:L1-L3 ] trp_sod_marshal|plyr::marshal_upgrade_garrison_sorry2->marshal_upgrade_garrison_check_again [no_conditions] {then we wait until the treasury can cover the garrison promotion}
+[trp_sod_marshal|plyr, "marshal_upgrade_garrison_sorry2", [], "Then we wait until the treasury can cover the garrison promotion.", "marshal_upgrade_garrison_check_again", []],
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_garrison_list_options_03.py:L1-L8 ] trp_sod_marshal::marshal_upgrade_garrison_list_options->marshal_upgrade_garrison_choose [str_store_troop_name_by_count|assign] {you currently have {var} denars.^^promote your {var} {var} into }
 [trp_sod_marshal, "marshal_upgrade_garrison_list_options",
     [
-      (str_store_troop_name_by_count, s1, "$g_upgrade_troop", "$upgrade_count"),
+      (str_store_troop_name_by_count, s68, "$g_upgrade_troop", "$upgrade_count"),
       (assign, reg1, "$upgrade_count"),
     ],
-    "You currently have {reg60} denars.^^What should your {reg1} {s1} train to become?", "marshal_upgrade_garrison_choose", []],
+    "You currently have {reg60} denars.^^Promote your {reg1} {s68} into which troop?", "marshal_upgrade_garrison_choose", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_upgrade_garrison_choose.py:L1-L47 ] trp_sod_marshal|plyr::marshal_upgrade_garrison_choose->marshal_upgrade_garrison_check_again [eq|ge|troop_get_slot] {promote all {var} to {var} ({var} denars)}
 [trp_sod_marshal|plyr, "marshal_upgrade_garrison_choose",
     [
@@ -9276,10 +9698,10 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (val_sub, "$upgrade_count", 1),
     ]
   ],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_upgrade_garrison_choose_07.py:L1-L4 ] trp_sod_marshal|plyr::marshal_upgrade_garrison_choose->marshal_talk_again [no_conditions] {i do not wish to upgrade them at this time....}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_upgrade_garrison_choose_07.py:L1-L4 ] trp_sod_marshal|plyr::marshal_upgrade_garrison_choose->marshal_talk_again [no_conditions] {not now.}
 [trp_sod_marshal|plyr, "marshal_upgrade_garrison_choose", [],
-  "I do not wish to upgrade them at this time....", "marshal_talk_again", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_check.py:L1-L16 ] trp_sod_marshal::marshal_upgrade_check->marshal_talk_again [assign|try_for_range|party_count_companions_of_type] {none of your troops are ready to upgrade, my liege. please retur}
+  "Not now.", "marshal_talk_again", []],
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_check.py:L1-L16 ] trp_sod_marshal::marshal_upgrade_check->marshal_talk_again [assign|try_for_range|party_count_companions_of_type] {no troops in your party can be promoted, my liege. bring me trai}
 [trp_sod_marshal, "marshal_upgrade_check",
     [
       # only present this if there are NO troops to upgrade at all...
@@ -9293,10 +9715,10 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(val_add, ":total", ":troop_count"),
 	  (try_end),
       (eq, ":total", 0),
-    ], "None of your troops are ready to upgrade, my liege.  Please return to me when your troops have become more experienced.", "marshal_talk_again", []],
+    ], "No troops in your party can be promoted, my liege. Bring me trained soldiers with a valid promotion path.", "marshal_talk_again", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_check_02.py:L1-L3 ] trp_sod_marshal::marshal_upgrade_check->marshal_upgrade_which [no_conditions] {indeed some of them are ready for upgrading my liege.}
 [trp_sod_marshal, "marshal_upgrade_check", [], "Indeed some of them are ready for upgrading my Liege.", "marshal_upgrade_which", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_check_again.py:L1-L16 ] trp_sod_marshal::marshal_upgrade_check_again->marshal_talk [assign|try_for_range|party_count_companions_of_type] {all of your troops have been upgraded, your majesty.}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_check_again.py:L1-L16 ] trp_sod_marshal::marshal_upgrade_check_again->marshal_talk [assign|try_for_range|party_count_companions_of_type] {every eligible troop in your party has been promoted, my liege.}
 [trp_sod_marshal, "marshal_upgrade_check_again",
     [
       # only present this if there are NO troops to upgrade at all...
@@ -9310,10 +9732,10 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(val_add, ":total", ":troop_count"),
 	  (try_end),
       (eq, ":total", 0),
-    ], "All of your troops have been upgraded, your majesty.", "marshal_talk", []],
+    ], "Every eligible troop in your party has been promoted, my liege.", "marshal_talk", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_check_again_02.py:L1-L3 ] trp_sod_marshal::marshal_upgrade_check_again->marshal_upgrade_which [no_conditions] {what other troops would you like to upgrade, my liege?}
 [trp_sod_marshal, "marshal_upgrade_check_again", [], "What other troops would you like to upgrade, my liege?", "marshal_upgrade_which", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_repeat_for_troops_marshal_upgrade_which.py:L1-L51 ] trp_sod_marshal|plyr|repeat_for_troops::marshal_upgrade_which->marshal_upgrade_list_options [store_repeat_object|troop_get_slot|troop_get_slot] {{var} {var}}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_repeat_for_troops_marshal_upgrade_which.py:L1-L50 ] trp_sod_marshal|plyr|repeat_for_troops::marshal_upgrade_which->marshal_upgrade_list_options [store_repeat_object|troop_get_slot|troop_get_slot] {{var} {var}}
 [trp_sod_marshal|plyr|repeat_for_troops, "marshal_upgrade_which",
     [
       (store_repeat_object, ":troop_no"),
@@ -9323,11 +9745,10 @@ Laugh if you wish princeling, but know that many failed to get past their format
 	(is_between, ":upgrade2", 1, "trp_last_troop"),
       (party_count_companions_of_type, ":troop_count", "p_main_party", ":troop_no"),
       (gt, ":troop_count", 0),
-      (str_store_troop_name_by_count, s1, ":troop_no", ":troop_count"),
+      (str_store_troop_name_by_count, s68, ":troop_no", ":troop_count"),
       (assign, reg1, ":troop_count"),
-      (str_store_string, s2, "@{reg1}"),
     ],
-    "{s2} {s1}", "marshal_upgrade_list_options",
+    "{reg1} {s68}", "marshal_upgrade_list_options",
     [
       (assign, "$can_upgrade1", 0),
       (assign, "$can_upgrade2", 0),
@@ -9353,12 +9774,12 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (try_begin),
         (eq, "$g_sod_debug", 1),
         (eq, 1, 0), # DISABLE
-        (call_script, "script_store_troop_name", s1, ":upgrade1"),
+        (call_script, "script_store_troop_name", s69, ":upgrade1"),
         (assign, reg0, ":upgrade1"),
-        (display_message, "@upgrade1 = {s1} ({reg0})", debug_color),
-        (call_script, "script_store_troop_name", s1, ":upgrade2"),
+        (display_message, "@upgrade1 = {s69} ({reg0})", debug_color),
+        (call_script, "script_store_troop_name", s69, ":upgrade2"),
         (assign, reg0, ":upgrade2"),
-        (display_message, "@upgrade2 = {s1} ({reg0})", debug_color),
+        (display_message, "@upgrade2 = {s69} ({reg0})", debug_color),
         (display_message, "@$can_upgrade1 = {reg1}, $can_upgrade2 = {reg2}", debug_color),
       (try_end),
     ]
@@ -9368,8 +9789,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_list_options.py:L1-L4 ] trp_sod_marshal::marshal_upgrade_list_options->marshal_upgrade_sorry [eq|eq] {i apologize, my liege, but we do not have any facilities to upgr}
 [trp_sod_marshal, "marshal_upgrade_list_options", [(eq, "$can_upgrade1", 0), (eq, "$can_upgrade2", 0)],
     "I apologize, my Liege, but we do not have any facilities to upgrade those units here.", "marshal_upgrade_sorry", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_upgrade_sorry.py:L1-L3 ] trp_sod_marshal|plyr::marshal_upgrade_sorry->marshal_upgrade_check_again [no_conditions] {ahh..., i see. i shall have to commision a new building project }
-[trp_sod_marshal|plyr, "marshal_upgrade_sorry", [], "Ahh..., I see.  I shall have to commision a new building project post haste!", "marshal_upgrade_check_again", []],
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_upgrade_sorry.py:L1-L3 ] trp_sod_marshal|plyr::marshal_upgrade_sorry->marshal_upgrade_check_again [no_conditions] {then we need the right facilities before those men can be promot}
+[trp_sod_marshal|plyr, "marshal_upgrade_sorry", [], "Then we need the right facilities before those men can be promoted.", "marshal_upgrade_check_again", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_list_options_02.py:L1-L25 ] trp_sod_marshal::marshal_upgrade_list_options->marshal_upgrade_sorry2 [troop_get_slot|troop_get_slot|troop_get_slot] {my apologies, my {var}, but you haven't the necessary funds to u}
 [trp_sod_marshal, "marshal_upgrade_list_options",
     [
@@ -9394,15 +9815,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (this_or_next|lt, reg60, reg61),(eq, "$can_upgrade1", 0),
       (this_or_next|lt, reg60, reg62),(eq, "$can_upgrade2", 0),
     ], "My apologies, my {Lord/Lady}, but you haven't the necessary funds to upgrade any of those troops.", "marshal_upgrade_sorry2", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_upgrade_sorry2.py:L1-L3 ] trp_sod_marshal|plyr::marshal_upgrade_sorry2->marshal_upgrade_check_again [no_conditions] {ahh..., i see. yes, how embarrasing! carry on then.}
-[trp_sod_marshal|plyr, "marshal_upgrade_sorry2", [], "Ahh..., I see.  Yes, how embarrasing!  Carry on then.", "marshal_upgrade_check_again", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_list_options_03.py:L1-L8 ] trp_sod_marshal::marshal_upgrade_list_options->marshal_upgrade_choose [str_store_troop_name_by_count|assign] {you currently have {var} denars.^^what should your {var} {var} t}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_upgrade_sorry2.py:L1-L3 ] trp_sod_marshal|plyr::marshal_upgrade_sorry2->marshal_upgrade_check_again [no_conditions] {then we wait until the treasury can cover the promotion.}
+[trp_sod_marshal|plyr, "marshal_upgrade_sorry2", [], "Then we wait until the treasury can cover the promotion.", "marshal_upgrade_check_again", []],
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_upgrade_list_options_03.py:L1-L8 ] trp_sod_marshal::marshal_upgrade_list_options->marshal_upgrade_choose [str_store_troop_name_by_count|assign] {you currently have {var} denars.^^promote your {var} {var} into }
 [trp_sod_marshal, "marshal_upgrade_list_options",
     [
-      (str_store_troop_name_by_count, s1, "$g_upgrade_troop", "$upgrade_count"),
+      (str_store_troop_name_by_count, s68, "$g_upgrade_troop", "$upgrade_count"),
       (assign, reg1, "$upgrade_count"),
     ],
-    "You currently have {reg60} denars.^^What should your {reg1} {s1} train to become?", "marshal_upgrade_choose", []],
+    "You currently have {reg60} denars.^^Promote your {reg1} {s68} into which troop?", "marshal_upgrade_choose", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_upgrade_choose.py:L1-L47 ] trp_sod_marshal|plyr::marshal_upgrade_choose->marshal_upgrade_check_again [eq|ge|troop_get_slot] {promote all {var} to {var} ({var} denars)}
 [trp_sod_marshal|plyr, "marshal_upgrade_choose",
     [
@@ -9681,9 +10102,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (val_sub, "$upgrade_count", 1),
     ]
   ],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_upgrade_choose_07.py:L1-L4 ] trp_sod_marshal|plyr::marshal_upgrade_choose->marshal_talk_again [no_conditions] {i do not wish to upgrade them at this time....}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_upgrade_choose_07.py:L1-L4 ] trp_sod_marshal|plyr::marshal_upgrade_choose->marshal_talk_again [no_conditions] {not now.}
 [trp_sod_marshal|plyr, "marshal_upgrade_choose", [],
-  "I do not wish to upgrade them at this time....", "marshal_talk_again", []],
+  "Not now.", "marshal_talk_again", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_location.py:L1-L3 ] trp_sod_marshal::marshal_location->marshal_location_who [no_conditions] {very well. about whom do you wish to hear?}
 [trp_sod_marshal, "marshal_location", [], "Very well. About whom do you wish to hear?", "marshal_location_who", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/anyone_plyr_repeat_for_troops_marshal_location_who.py:L1-L17 ] anyone|plyr|repeat_for_troops::marshal_location_who->marshal_location_show [store_repeat_object|is_between|this_or_next|troop_slot_eq] {{var}}
@@ -9768,102 +10189,118 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [trp_sod_chancellor, "chancellor_lord_recruited", [(ge, "$temp_lord", 1)], "It is done. {s60}^^Give the new lord a fief soon, or his household will have title without purse enough to serve the realm.", "chancellor_lord_prelude", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_chancellor_chancellor_fiefs_prelude.py:L1-L3 ] trp_sod_chancellor::chancellor_fiefs_prelude->chancellor_fiefs_which [no_conditions] {which fief do you wish to reassign?}
 [trp_sod_chancellor, "chancellor_fiefs_prelude", [], "Which fief do you wish to reassign?", "chancellor_fiefs_which", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_chancellor_plyr_repeat_for_parties_chancellor_fiefs_which.py:L1-L59 ] trp_sod_chancellor|plyr|repeat_for_parties::chancellor_fiefs_which->chancellor_fiefs_who [store_repeat_object|is_between|store_faction_of_party] {{var} ({var})}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_chancellor_plyr_repeat_for_parties_chancellor_fiefs_which.py:L1-L67 ] trp_sod_chancellor|plyr|repeat_for_parties::chancellor_fiefs_which->chancellor_fiefs_who [store_repeat_object|is_between|store_faction_of_party] {{var} ({var})}
 [trp_sod_chancellor|plyr|repeat_for_parties, "chancellor_fiefs_which",
     [
       (store_repeat_object, ":fief"),
       (is_between, ":fief", "p_town_1", "p_salt_mine"),
       (store_faction_of_party, ":center_faction", ":fief"),
       (eq, ":center_faction", "fac_player_supporters_faction"),
-      (str_store_party_name, s1, ":fief"),
+      (str_store_party_name, s68, ":fief"),
       (try_begin),
         (party_slot_eq, ":fief", slot_party_type, spt_village),
         (party_get_slot, ":bound_to", ":fief", slot_village_bound_center),
-        (str_store_party_name, s2, ":bound_to"),
-        (str_store_string, s1, "@Village of {s1} bound to {s2}"),
+        (str_store_party_name, s69, ":bound_to"),
+        (str_store_string, s70, "@Village of {s68} bound to {s69}"),
       (else_try),
-        (str_clear, s3),
+        (str_clear, s69),
         (assign, ":count", 0),
         (try_for_range, ":village", villages_begin, villages_end),
           (party_slot_eq, ":village", slot_village_bound_center, ":fief"),
-          (str_store_party_name, s2, ":village"),
+          (str_store_party_name, s71, ":village"),
           (val_add, ":count", 1),
           (try_begin),
             (eq, ":count", 1),
-            (str_store_string_reg, s3, s2),
+            (str_store_string_reg, s69, s71),
           (else_try),
-            (str_store_string, s3, "@{s3},{s2}"),
+            (str_store_string_reg, s97, s69),
+            (str_store_string, s69, "@{s97}, {s71}"),
           (try_end),
         (try_end),
         (try_begin),
+          (eq, ":count", 0),
           (party_slot_eq, ":fief", slot_party_type, spt_town),
-          (str_store_string, s1, "@Town of {s1}+{s3}"),
+          (str_store_string, s70, "@Town of {s68}"),
         (else_try),
-          (str_store_string, s1, "@{s1}+{s3}"),
+          (eq, ":count", 0),
+          (str_store_string, s70, "@{s68}"),
+        (else_try),
+          (party_slot_eq, ":fief", slot_party_type, spt_town),
+          (str_store_string, s70, "@Town of {s68}: {s69}"),
+        (else_try),
+          (str_store_string, s70, "@{s68}: {s69}"),
         (try_end),
       (try_end),
       (party_get_slot, ":lord", ":fief", slot_town_lord),
-      (call_script, "script_store_troop_name", s2, ":lord"),
+      (call_script, "script_store_troop_name", s71, ":lord"),
       (call_script, "script_troop_get_player_relation", ":lord"),
-      (call_script, "script_describe_troop_relation", s3, reg0),
+      (call_script, "script_describe_troop_relation", s72, reg0),
       (call_script, "script_get_number_of_hero_centers", ":lord"),
       (try_begin),
         (eq, ":lord", "trp_player"),
         (try_begin),
           (gt, reg0, 0),
-          (str_store_string, s2, "@{s2}, {reg0} fiefs"),
+          (str_store_string, s73, "@{s71}, {reg0} fiefs"),
         (else_try),
-          (str_store_string, s2, "@{s2}, no fiefs"),
+          (str_store_string, s73, "@{s71}, no fiefs"),
         (try_end),
       (else_try),
         (try_begin),
           (gt, reg0, 0),
-          (str_store_string, s2, "@{s2}, {reg0} fiefs, {s3}"),
+          (str_store_string, s73, "@{s71}, {reg0} fiefs, {s72}"),
         (else_try),
-          (str_store_string, s2, "@{s2}, no fiefs, {s3}"),
+          (str_store_string, s73, "@{s71}, no fiefs, {s72}"),
         (try_end),
       (try_end),
     ],
-    "{s1} ({s2})", "chancellor_fiefs_who", [(store_repeat_object, "$assign_fief")]
+    "{s70} ({s73})", "chancellor_fiefs_who", [(store_repeat_object, "$assign_fief")]
   ],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_chancellor_plyr_chancellor_fiefs_which.py:L1-L3 ] trp_sod_chancellor|plyr::chancellor_fiefs_which->chancellor_talk_again [no_conditions] {let's look at other topics to make decisions about.}
 [trp_sod_chancellor|plyr, "chancellor_fiefs_which", [], "Let's look at other topics to make decisions about.", "chancellor_talk_again", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_chancellor_chancellor_fiefs_who.py:L1-L37 ] trp_sod_chancellor::chancellor_fiefs_who->chancellor_fiefs_reassign [party_get_slot|str_store_party_name|try_begin] {{var} ({var}). who shall be your vassal to manage these lands?}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_chancellor_chancellor_fiefs_who.py:L1-L45 ] trp_sod_chancellor::chancellor_fiefs_who->chancellor_fiefs_reassign [party_get_slot|str_store_party_name|try_begin] {{var} ({var}). who shall be your vassal to manage these lands?}
 [trp_sod_chancellor, "chancellor_fiefs_who",
     [
       (party_get_slot, ":lord", "$assign_fief", slot_town_lord),
 
-      (str_store_party_name, s1, "$assign_fief"),
+      (str_store_party_name, s68, "$assign_fief"),
       (try_begin),
         (party_slot_eq, "$assign_fief", slot_party_type, spt_village),
         (party_get_slot, ":bound_to", "$assign_fief", slot_village_bound_center),
-        (str_store_party_name, s2, ":bound_to"),
-        (str_store_string, s1, "@The village of {s1} bound to {s2}"),
+        (str_store_party_name, s69, ":bound_to"),
+        (str_store_string, s70, "@The village of {s68} bound to {s69}"),
       (else_try),
-        (str_clear, s3),
+        (str_clear, s69),
         (assign, ":count", 0),
         (try_for_range, ":village", villages_begin, villages_end),
           (party_slot_eq, ":village", slot_village_bound_center, "$assign_fief"),
-          (str_store_party_name, s2, ":village"),
+          (str_store_party_name, s71, ":village"),
           (val_add, ":count", 1),
           (try_begin),
             (eq, ":count", 1),
-            (str_store_string_reg, s3, s2),
+            (str_store_string_reg, s69, s71),
           (else_try),
-            (str_store_string, s3, "@{s3},{s2}"),
+            (str_store_string_reg, s97, s69),
+            (str_store_string, s69, "@{s97}, {s71}"),
           (try_end),
         (try_end),
         (try_begin),
+          (eq, ":count", 0),
           (party_slot_eq, "$assign_fief", slot_party_type, spt_town),
-          (str_store_string, s1, "@Town of {s1}+{s3}"),
+          (str_store_string, s70, "@Town of {s68}"),
         (else_try),
-          (str_store_string, s1, "@{s1}+{s3}"),
+          (eq, ":count", 0),
+          (str_store_string, s70, "@{s68}"),
+        (else_try),
+          (party_slot_eq, "$assign_fief", slot_party_type, spt_town),
+          (str_store_string, s70, "@Town of {s68}: {s69}"),
+        (else_try),
+          (str_store_string, s70, "@{s68}: {s69}"),
         (try_end),
       (try_end),
 
-      (call_script, "script_store_troop_name", s2, ":lord"),
+      (call_script, "script_store_troop_name", s71, ":lord"),
     ],
-    "{s1} ({s2}). Who shall be your vassal to manage these lands?", "chancellor_fiefs_reassign", []],
+    "{s70} ({s71}). Who shall be your vassal to manage these lands?", "chancellor_fiefs_reassign", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_chancellor_plyr_chancellor_fiefs_reassign.py:L1-L27 ] trp_sod_chancellor|plyr::chancellor_fiefs_reassign->chancellor_fiefs_prelude [neg|party_slot_eq] {i want it for myself.}
 [trp_sod_chancellor|plyr, "chancellor_fiefs_reassign",
     [
@@ -10382,33 +10819,71 @@ Laugh if you wish princeling, but know that many failed to get past their format
 ], "Debug item categories.", "jester_cheatc", [
 
     ]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_cheat.py:L1-L5 ] trp_sod_jester::jester_cheat->jester_cheat1 [no_conditions] {item cheat.}
-[trp_sod_jester, "jester_cheat", [], "ITEM CHEAT.", "jester_cheat1", [
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_cheat.py:L1-L12 ] trp_sod_jester::jester_cheat->jester_cheat1 [this_or_next|eq|eq] {item cheat menu.}
+[trp_sod_jester, "jester_cheat", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "Item cheat menu.", "jester_cheat1", [
 
     ]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_cheatc.py:L1-L5 ] trp_sod_jester::jester_cheatc->jester_cheatc1 [no_conditions] {item cheat2.}
-[trp_sod_jester, "jester_cheatc", [], "ITEM CHEAT2.", "jester_cheatc1", [
+[trp_sod_jester, "jester_cheat", [
+  (neq, "$cheat_mode", 1),
+  (neq, "$g_sod_cheat_mode", 1),
+], "That door is closed in this campaign.", "close_window", []],
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_cheatc.py:L1-L12 ] trp_sod_jester::jester_cheatc->jester_cheatc1 [this_or_next|eq|eq] {item category cheat menu.}
+[trp_sod_jester, "jester_cheatc", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "Item category cheat menu.", "jester_cheatc1", [
 
     ]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_cheatt.py:L1-L5 ] trp_sod_jester::jester_cheatt->jester_cheatt1 [no_conditions] {troop cheat.}
-[trp_sod_jester, "jester_cheatt", [], "TROOP CHEAT.", "jester_cheatt1", [
+[trp_sod_jester, "jester_cheatc", [
+  (neq, "$cheat_mode", 1),
+  (neq, "$g_sod_cheat_mode", 1),
+], "That door is closed in this campaign.", "close_window", []],
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_cheatt.py:L1-L12 ] trp_sod_jester::jester_cheatt->jester_cheatt1 [this_or_next|eq|eq] {troop cheat menu.}
+[trp_sod_jester, "jester_cheatt", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "Troop cheat menu.", "jester_cheatt1", [
 
     ]],
+[trp_sod_jester, "jester_cheatt", [
+  (neq, "$cheat_mode", 1),
+  (neq, "$g_sod_cheat_mode", 1),
+], "That door is closed in this campaign.", "close_window", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_talk_06.py:L1-L7 ] trp_sod_jester|plyr::jester_talk->jester_relations [this_or_next|eq|eq] {debug faction relations.}
 [trp_sod_jester|plyr, "jester_talk", [
   (this_or_next|eq, "$cheat_mode", 1),
   (eq, "$g_sod_cheat_mode", 1),
 ], "Debug faction relations.", "jester_relations", [ (assign, reg6, 0),
     ]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_relations.py:L1-L3 ] trp_sod_jester::jester_relations->jester_faction_choice [no_conditions] {{var} by 10 your relations with...}
-[trp_sod_jester, "jester_relations", [], "{reg6?Decrease:Increase} by 10 your relations with...", "jester_faction_choice", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_faction_choice.py:L1-L3 ] trp_sod_jester|plyr::jester_faction_choice->jester_relations [eq] {decrease relations instead.}
-[trp_sod_jester|plyr, "jester_faction_choice", [(eq, reg6, 0)], "Decrease relations instead.", "jester_relations", [(assign, reg6, 1)]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_faction_choice_02.py:L1-L3 ] trp_sod_jester|plyr::jester_faction_choice->jester_relations [eq] {increase relations instead.}
-[trp_sod_jester|plyr, "jester_faction_choice", [(eq, reg6, 1)], "Increase relations instead.", "jester_relations", [(assign, reg6, 0)]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_repeat_for_factions_jester_faction_choice.py:L1-L22 ] trp_sod_jester|plyr|repeat_for_factions::jester_faction_choice->jester_relations [store_repeat_object|neq|neq] {{var}.}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_relations.py:L1-L10 ] trp_sod_jester::jester_relations->jester_faction_choice [this_or_next|eq|eq] {{var} by 10 your relations with...}
+[trp_sod_jester, "jester_relations", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "{reg6?Decrease:Increase} by 10 your relations with...", "jester_faction_choice", []],
+[trp_sod_jester, "jester_relations", [
+  (neq, "$cheat_mode", 1),
+  (neq, "$g_sod_cheat_mode", 1),
+], "That door is closed in this campaign.", "close_window", []],
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_faction_choice.py:L1-L7 ] trp_sod_jester|plyr::jester_faction_choice->jester_relations [this_or_next|eq|eq|eq] {decrease relations instead.}
+[trp_sod_jester|plyr, "jester_faction_choice", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+  (eq, reg6, 0),
+], "Decrease relations instead.", "jester_relations", [(assign, reg6, 1)]],
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_faction_choice_02.py:L1-L7 ] trp_sod_jester|plyr::jester_faction_choice->jester_relations [this_or_next|eq|eq|eq] {increase relations instead.}
+[trp_sod_jester|plyr, "jester_faction_choice", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+  (eq, reg6, 1),
+], "Increase relations instead.", "jester_relations", [(assign, reg6, 0)]],
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_repeat_for_factions_jester_faction_choice.py:L1-L24 ] trp_sod_jester|plyr|repeat_for_factions::jester_faction_choice->jester_relations [this_or_next|eq|eq|store_repeat_object] {{var}.}
 [trp_sod_jester|plyr|repeat_for_factions, "jester_faction_choice", 
-	[ (store_repeat_object, ":faction_no"),
+	[ (this_or_next|eq, "$cheat_mode", 1),
+	(eq, "$g_sod_cheat_mode", 1),
+	(store_repeat_object, ":faction_no"),
 	(neq, ":faction_no", "fac_player_supporters_faction"),
 	(neq, ":faction_no", "fac_player_faction"),
 	(str_store_faction_name, s1, ":faction_no")], "{s1}.", "jester_relations", [
@@ -10427,24 +10902,30 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (call_script, "script_change_player_relation_with_faction", ":faction_no", -10),
 	(try_end),
 	]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_faction_choice_03.py:L1-L13 ] trp_sod_jester|plyr::jester_faction_choice->jester_relations [no_conditions] {start wars between all kingdoms.}
-[trp_sod_jester|plyr, "jester_faction_choice", [], "Start wars between all kingdoms.", "jester_relations", [
-	(try_for_range, ":kingdom_1", kingdoms_begin, kingdoms_end),
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_faction_choice_03.py:L1-L16 ] trp_sod_jester|plyr::jester_faction_choice->jester_relations [this_or_next|eq|eq] {start wars between all kingdoms.}
+[trp_sod_jester|plyr, "jester_faction_choice", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "Start wars between all kingdoms.", "jester_relations", [
+	(try_for_range, ":kingdom_1", native_kingdoms_begin, native_kingdoms_end),
 	(faction_slot_eq, ":kingdom_1", slot_faction_state, sfs_active),
-	(try_for_range, ":kingdom_2", kingdoms_begin, kingdoms_end),
-    (faction_slot_eq, ":kingdom_1", slot_faction_state, sfs_active),
+	(try_for_range, ":kingdom_2", native_kingdoms_begin, native_kingdoms_end),
+    (faction_slot_eq, ":kingdom_2", slot_faction_state, sfs_active),
 	(neq, ":kingdom_1", ":kingdom_2"),
 	(call_script, "script_diplomacy_start_war_between_kingdoms", ":kingdom_1", ":kingdom_2", 3),
     (val_add, "$g_sod_cheat_mode_used", 1),
 	(try_end),	
 	(try_end),
 	]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_faction_choice_04.py:L1-L13 ] trp_sod_jester|plyr::jester_faction_choice->jester_relations [no_conditions] {start peaces between all kingdoms.}
-[trp_sod_jester|plyr, "jester_faction_choice", [], "Start peaces between all kingdoms.", "jester_relations", [
-    (try_for_range, ":kingdom_1", kingdoms_begin, kingdoms_end),
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_faction_choice_04.py:L1-L16 ] trp_sod_jester|plyr::jester_faction_choice->jester_relations [this_or_next|eq|eq] {start peaces between all kingdoms.}
+[trp_sod_jester|plyr, "jester_faction_choice", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "Start peaces between all kingdoms.", "jester_relations", [
+    (try_for_range, ":kingdom_1", native_kingdoms_begin, native_kingdoms_end),
 	(faction_slot_eq, ":kingdom_1", slot_faction_state, sfs_active),
-	(try_for_range, ":kingdom_2", kingdoms_begin, kingdoms_end),
-    (faction_slot_eq, ":kingdom_1", slot_faction_state, sfs_active),
+	(try_for_range, ":kingdom_2", native_kingdoms_begin, native_kingdoms_end),
+    (faction_slot_eq, ":kingdom_2", slot_faction_state, sfs_active),
 	(neq, ":kingdom_1", ":kingdom_2"),
 	(call_script, "script_diplomacy_start_peace_between_kingdoms", ":kingdom_1", ":kingdom_2", 3),
     (val_add, "$g_sod_cheat_mode_used", 1),
@@ -10459,11 +10940,20 @@ Laugh if you wish princeling, but know that many failed to get past their format
   (eq, "$g_sod_cheat_mode", 1),
 ], "Debug fief ownership.", "jester_cheat_fief", [
     ]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_cheat_fief.py:L1-L3 ] trp_sod_jester::jester_cheat_fief->jester_cheat_fief_choice [no_conditions] {take control of...}
-[trp_sod_jester, "jester_cheat_fief", [], "Take control of...", "jester_cheat_fief_choice", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_repeat_for_parties_jester_cheat_fief_choice.py:L1-L18 ] trp_sod_jester|plyr|repeat_for_parties::jester_cheat_fief_choice->jester_cheat_fief [store_repeat_object|is_between|neg|party_slot_eq] {{var}.}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_jester_cheat_fief.py:L1-L10 ] trp_sod_jester::jester_cheat_fief->jester_cheat_fief_choice [this_or_next|eq|eq] {change fief ownership.}
+[trp_sod_jester, "jester_cheat_fief", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "Change fief ownership.", "jester_cheat_fief_choice", []],
+[trp_sod_jester, "jester_cheat_fief", [
+  (neq, "$cheat_mode", 1),
+  (neq, "$g_sod_cheat_mode", 1),
+], "That door is closed in this campaign.", "close_window", []],
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_repeat_for_parties_jester_cheat_fief_choice.py:L1-L20 ] trp_sod_jester|plyr|repeat_for_parties::jester_cheat_fief_choice->jester_cheat_fief [this_or_next|eq|eq|store_repeat_object] {{var}.}
 [trp_sod_jester|plyr|repeat_for_parties, "jester_cheat_fief_choice", 
-	[ (store_repeat_object, ":party_no"),
+	[ (this_or_next|eq, "$cheat_mode", 1),
+	(eq, "$g_sod_cheat_mode", 1),
+	(store_repeat_object, ":party_no"),
 	(is_between, ":party_no", walled_centers_begin, walled_centers_end),
 	(neg|party_slot_eq, ":party_no", slot_town_lord, "trp_player"),
 	(str_store_party_name, s1, ":party_no")
@@ -10482,9 +10972,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [trp_sod_jester|plyr, "jester_cheat_fief_choice", [], "Let's do something else.", "jester_else", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheat1.py:L1-L3 ] trp_sod_jester|plyr::jester_cheat1->close_window [no_conditions] {that trick is enough for now.}
 [trp_sod_jester|plyr, "jester_cheat1", [], "That trick is enough for now.", "close_window", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_repeat_for_1000_jester_cheat1.py:L1-L14 ] trp_sod_jester|plyr|repeat_for_1000::jester_cheat1->jester_cheat [store_repeat_object|is_between|str_store_item_name] {{var}}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_repeat_for_1000_jester_cheat1.py:L1-L16 ] trp_sod_jester|plyr|repeat_for_1000::jester_cheat1->jester_cheat [this_or_next|eq|eq|store_repeat_object] {{var}}
 [trp_sod_jester|plyr|repeat_for_1000, "jester_cheat1",
    [
+     (this_or_next|eq, "$cheat_mode", 1),
+     (eq, "$g_sod_cheat_mode", 1),
      (store_repeat_object, ":item_no"),
    (is_between, ":item_no", "itm_sumpter_horse", "itm_items_end"),
      (str_store_item_name, s1, ":item_no")
@@ -10497,9 +10989,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
    ],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatt1.py:L1-L3 ] trp_sod_jester|plyr::jester_cheatt1->close_window [no_conditions] {that trick is enough for now.}
 [trp_sod_jester|plyr, "jester_cheatt1", [], "That trick is enough for now.", "close_window", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_repeat_for_troops_jester_cheatt1.py:L1-L14 ] trp_sod_jester|plyr|repeat_for_troops::jester_cheatt1->jester_cheatt1 [store_repeat_object|is_between|call_script] {{var}}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_repeat_for_troops_jester_cheatt1.py:L1-L16 ] trp_sod_jester|plyr|repeat_for_troops::jester_cheatt1->jester_cheatt1 [this_or_next|eq|eq|store_repeat_object] {{var}}
 [trp_sod_jester|plyr|repeat_for_troops, "jester_cheatt1",
    [
+     (this_or_next|eq, "$cheat_mode", 1),
+     (eq, "$g_sod_cheat_mode", 1),
      (store_repeat_object, ":troop_no"),
    (is_between, ":troop_no", "trp_sod_ant_regular", "trp_sod_peasant11"),
      (call_script, "script_store_troop_name", s1, ":troop_no")
@@ -10510,62 +11004,103 @@ Laugh if you wish princeling, but know that many failed to get past their format
    (val_add, "$g_sod_cheat_mode_used", 1)
    ]
    ],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1.py:L1-L5 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [no_conditions] {clear inventory}
-[trp_sod_jester|plyr, "jester_cheatc1", [], "CLEAR INVENTORY", "jester_else", [
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1.py:L1-L9 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [this_or_next|eq|eq] {clear inventory}
+[trp_sod_jester|plyr, "jester_cheatc1", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "CLEAR INVENTORY", "jester_else", [
   (troop_clear_inventory, "trp_player"),
+  (val_add, "$g_sod_cheat_mode_used", 1),
   ]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_02.py:L1-L8 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [no_conditions] {add horses}
-[trp_sod_jester|plyr, "jester_cheatc1", [], "ADD HORSES", "jester_else", [
-  (try_for_range, ":item_no", "itm_sumpter_horse", "itm_arrows"),
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_02.py:L1-L11 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [this_or_next|eq|eq] {add horses}
+[trp_sod_jester|plyr, "jester_cheatc1", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "ADD HORSES", "jester_else", [
+  (try_for_range, ":item_no", horses_begin, horses_end),
   (troop_add_item, "trp_player", ":item_no", 0),
   (try_end),
   (val_add, "$g_sod_cheat_mode_used", 1)
   ]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_03.py:L1-L8 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [no_conditions] {add arrows, gloves, boots}
-[trp_sod_jester|plyr, "jester_cheatc1", [], "ADD ARROWS, GLOVES, BOOTS", "jester_else", [
-  (try_for_range, ":item_no", "itm_arrows", "itm_lady_dress_ruby"),
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_03.py:L1-L11 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [this_or_next|eq|eq] {add ranged weapons}
+[trp_sod_jester|plyr, "jester_cheatc1", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "ADD RANGED WEAPONS", "jester_else", [
+  (try_for_range, ":item_no", ranged_weapons_begin, ranged_weapons_end),
   (troop_add_item, "trp_player", ":item_no", 0),
   (try_end),
   (val_add, "$g_sod_cheat_mode_used", 1)
   ]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_04.py:L1-L8 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [no_conditions] {add armors}
-[trp_sod_jester|plyr, "jester_cheatc1", [], "ADD ARMORS", "jester_else", [
-  (try_for_range, ":item_no", "itm_leather_vest", "itm_turret_hat_ruby"),
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_04.py:L1-L11 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [this_or_next|eq|eq] {add armors}
+[trp_sod_jester|plyr, "jester_cheatc1", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "ADD ARMORS", "jester_else", [
+  (try_for_range, ":item_no", armors_begin, armors_end),
   (troop_add_item, "trp_player", ":item_no", 0),
   (try_end),
   (val_add, "$g_sod_cheat_mode_used", 1)
   ]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_05.py:L1-L8 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [no_conditions] {add native weapons 1}
-[trp_sod_jester|plyr, "jester_cheatc1", [], "ADD NATIVE WEAPONS 1", "jester_else", [
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_05.py:L1-L11 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [this_or_next|eq|eq] {add native weapons 1}
+[trp_sod_jester|plyr, "jester_cheatc1", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "ADD NATIVE WEAPONS 1", "jester_else", [
   (try_for_range, ":item_no", "itm_wooden_stick", "itm_mace_1"),
   (troop_add_item, "trp_player", ":item_no", 0),
   (try_end),
   (val_add, "$g_sod_cheat_mode_used", 1)
   ]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_06.py:L1-L8 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [no_conditions] {add native weapons 2}
-[trp_sod_jester|plyr, "jester_cheatc1", [], "ADD NATIVE WEAPONS 2", "jester_else", [
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_06.py:L1-L11 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [this_or_next|eq|eq] {add native weapons 2}
+[trp_sod_jester|plyr, "jester_cheatc1", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "ADD NATIVE WEAPONS 2", "jester_else", [
   (try_for_range, ":item_no", "itm_mace_1", "itm_wooden_shield"),
   (troop_add_item, "trp_player", ":item_no", 0),
   (try_end),
   (val_add, "$g_sod_cheat_mode_used", 1)
   ]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_07.py:L1-L8 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [no_conditions] {add new weapons}
-[trp_sod_jester|plyr, "jester_cheatc1", [], "ADD NEW WEAPONS", "jester_else", [
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_07.py:L1-L15 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [this_or_next|eq|eq] {add custom melee weapons}
+[trp_sod_jester|plyr, "jester_cheatc1", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "ADD CUSTOM MELEE WEAPONS", "jester_else", [
   (try_for_range, ":item_no", "itm_talak_warhammer", "itm_items_end"),
+  (item_get_type, ":item_type", ":item_no"),
+  (this_or_next|eq, ":item_type", itp_type_one_handed_wpn),
+  (this_or_next|eq, ":item_type", itp_type_two_handed_wpn),
+  (eq, ":item_type", itp_type_polearm),
   (troop_add_item, "trp_player", ":item_no", 0),
   (try_end),
   (val_add, "$g_sod_cheat_mode_used", 1)
   ]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_08.py:L1-L8 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [no_conditions] {add shields}
-[trp_sod_jester|plyr, "jester_cheatc1", [], "ADD SHIELDS", "jester_else", [
-  (try_for_range, ":item_no", "itm_wooden_shield", "itm_jarid"),
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_08.py:L1-L11 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [this_or_next|eq|eq] {add shields}
+[trp_sod_jester|plyr, "jester_cheatc1", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "ADD SHIELDS", "jester_else", [
+  (try_for_range, ":item_no", shields_begin, shields_end),
   (troop_add_item, "trp_player", ":item_no", 0),
   (try_end),
   (val_add, "$g_sod_cheat_mode_used", 1)
   ]],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_09.py:L1-L8 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [no_conditions] {add rangef}
-[trp_sod_jester|plyr, "jester_cheatc1", [], "ADD RANGEF", "jester_else", [
-  (try_for_range, ":item_no", "itm_jarid", "itm_talak_warhammer"),
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_jester_plyr_jester_cheatc1_09.py:L1-L20 ] trp_sod_jester|plyr::jester_cheatc1->jester_else [this_or_next|eq|eq] {add custom ranged weapons}
+[trp_sod_jester|plyr, "jester_cheatc1", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "ADD CUSTOM RANGED WEAPONS", "jester_else", [
+  (try_for_range, ":item_no", "itm_talak_warhammer", "itm_items_end"),
+  (item_get_type, ":item_type", ":item_no"),
+  (this_or_next|eq, ":item_type", itp_type_arrows),
+  (this_or_next|eq, ":item_type", itp_type_bolts),
+  (this_or_next|eq, ":item_type", itp_type_bullets),
+  (this_or_next|eq, ":item_type", itp_type_thrown),
+  (this_or_next|eq, ":item_type", itp_type_bow),
+  (this_or_next|eq, ":item_type", itp_type_crossbow),
+  (this_or_next|eq, ":item_type", itp_type_pistol),
+  (eq, ":item_type", itp_type_musket),
   (troop_add_item, "trp_player", ":item_no", 0),
   (try_end),
   (val_add, "$g_sod_cheat_mode_used", 1)
@@ -11447,11 +11982,13 @@ Laugh if you wish princeling, but know that many failed to get past their format
   ], "Your riders know me now. Before you move camp, lend me a few lances.", "black_khergit_khan_hire_offer", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_black_khergit_khan_hire_offer.py:L1-L3 ] anyone::black_khergit_khan_hire_offer->black_khergit_khan_hire_confirm [no_conditions] {temujin studies the horse lines, then gives a small nod. 'for {v}
 [anyone, "black_khergit_khan_hire_offer", [], "Temujin studies the horse lines, then gives a small nod. 'For {reg42} denars, {reg40} horsemen and {reg41} camp guards will ride beneath your banner. Choose all, choose some, or leave them to their fires. They are not tame men. Spend them well.'", "black_khergit_khan_hire_confirm", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_black_khergit_khan_hire_confirm.py:L1-L12 ] anyone|plyr::black_khergit_khan_hire_confirm->close_window [store_troop_gold|ge|store_add] {done. send them to my line.}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_black_khergit_khan_hire_confirm.py:L1-L14 ] anyone|plyr::black_khergit_khan_hire_confirm->close_window [gt|store_troop_gold|ge] {done. send them to my line.}
 [anyone|plyr, "black_khergit_khan_hire_confirm", [
+    (gt, "$g_sod_black_khergit_hire_cost", 0),
     (store_troop_gold, ":player_gold", "trp_player"),
     (ge, ":player_gold", "$g_sod_black_khergit_hire_cost"),
     (store_add, ":total_hired", "$g_sod_black_khergit_hire_horsemen", "$g_sod_black_khergit_hire_guards"),
+    (gt, ":total_hired", 0),
     (party_get_free_companions_capacity, ":free_capacity", "p_main_party"),
     (ge, ":free_capacity", ":total_hired"),
   ], "Done. Send them to my line.", "close_window", [
@@ -11494,8 +12031,10 @@ Laugh if you wish princeling, but know that many failed to get past their format
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_black_khergit_khan_prisoner_offer.py:L1-L4 ] anyone::black_khergit_khan_prisoner_offer->black_khergit_khan_prisoner_confirm [no_conditions] {temujin glances toward the bound line. 'for {var} denars, {var} }
 [anyone, "black_khergit_khan_prisoner_offer", [],
   "Temujin glances toward the bound line. 'For {reg45} denars, {reg44} captives leave with you. First among them: {s28}. Take them under guard, or let the hard ones choose your pay. Heroes we do not sell. If one is found in our ropes, they are cut loose before shame settles.'", "black_khergit_khan_prisoner_confirm", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_black_khergit_khan_prisoner_confirm.py:L1-L10 ] anyone|plyr::black_khergit_khan_prisoner_confirm->black_khergit_khan_talk [store_troop_gold|ge|party_get_free_prisoners_capacity] {done. cut them loose and put them under my guard.}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_black_khergit_khan_prisoner_confirm.py:L1-L12 ] anyone|plyr::black_khergit_khan_prisoner_confirm->black_khergit_khan_talk [gt|gt|store_troop_gold] {done. cut them loose and put them under my guard.}
 [anyone|plyr, "black_khergit_khan_prisoner_confirm", [
+    (gt, "$g_sod_black_khergit_prisoner_buy_count", 0),
+    (gt, "$g_sod_black_khergit_prisoner_buy_cost", 0),
     (store_troop_gold, ":player_gold", "trp_player"),
     (ge, ":player_gold", "$g_sod_black_khergit_prisoner_buy_cost"),
     (party_get_free_prisoners_capacity, ":free_capacity", "p_main_party"),
@@ -11656,12 +12195,20 @@ Laugh if you wish princeling, but know that many failed to get past their format
   ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/party_tpl_pt_bandits_looters_1.py:L1-L3 ] party_tpl|pt_bandits::looters_1->looters_2 [no_conditions] {{var}}
 [party_tpl|pt_bandits, "looters_1", [], "{s4}", "looters_2", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/party_tpl_pt_bandits_plyr_looters_2.py:L1-L4 ] party_tpl|pt_bandits|plyr::looters_2->close_window [1|1] {i may be new to this road, but i know a robbery when i hear one.}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/party_tpl_pt_bandits_plyr_looters_2.py:L1-L8 ] party_tpl|pt_bandits|plyr::looters_2->close_window [1|1] {i may be new to this road, but i know a robbery when i hear one.}
 [party_tpl|pt_bandits|plyr, "looters_2", [[store_character_level, reg(1), "trp_player"], [lt, reg(1), 4]], "I may be new to this road, but I know a robbery when I hear one. Come on, then.", "close_window",
-   [[encounter_attack]]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/party_tpl_pt_bandits_plyr_looters_2_02.py:L1-L4 ] party_tpl|pt_bandits|plyr::looters_2->close_window [1|1] {you picked the wrong purse and the wrong road. take your lesson }
+   [
+     (assign, "$g_enemy_party", "$g_encountered_party"),
+     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+     (encounter_attack),
+   ]],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/party_tpl_pt_bandits_plyr_looters_2_02.py:L1-L8 ] party_tpl|pt_bandits|plyr::looters_2->close_window [1|1] {you picked the wrong purse and the wrong road. take your lesson }
 [party_tpl|pt_bandits|plyr, "looters_2", [[store_character_level, reg(1), "trp_player"], [ge, reg(1), 4]], "You picked the wrong purse and the wrong road. Take your lesson in steel.", "close_window",
-   [[encounter_attack]]],
+   [
+     (assign, "$g_enemy_party", "$g_encountered_party"),
+     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+     (encounter_attack),
+   ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_looters_2_food.py:L1-L12 ] anyone|plyr::looters_2->hostile_food_passage_offer [party_get_num_companions|le|call_script] {take food and scatter. i will not cut down starving people for s}
 [anyone|plyr, "looters_2", [
     (party_get_num_companions, ":enemy_size", "$g_encountered_party"),
@@ -11687,12 +12234,10 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (troop_get_slot, ":renown", "trp_player", slot_troop_renown),
     (ge, ":renown", 100),
 ], "Run before I bother learning your names.", "bandit_scatter_demand", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_village_farmers_start.py:L1-L28 ] party_tpl|pt_village_farmers::start->village_farmer_talk [eq|agent_play_sound] {my {var}, we're only poor farmers from the village of {var}. {va}
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_village_farmers_start.py:L1-L34 ] party_tpl|pt_village_farmers::start->village_farmer_talk [eq|agent_play_sound|party_get_slot] {{var}}
 [party_tpl|pt_village_farmers, "start", [(eq, "$talk_context", tc_party_encounter),
                                           (agent_play_sound, "$g_talk_agent", "snd_encounter_farmers"),
-  ],
-   " My {lord/lady}, we're only poor farmers from the village of {s11}. {reg1?We are taking our products to the market at {s12}.:We are returning from the market at {s12} back to our village.}", "village_farmer_talk",
-   [(party_get_slot, ":target_center", "$g_encountered_party", slot_party_ai_object),
+   (party_get_slot, ":target_center", "$g_encountered_party", slot_party_ai_object),
     (party_get_slot, ":home_center", "$g_encountered_party", slot_party_home_center),
     (try_begin),
       (is_between, ":home_center", villages_begin, villages_end),
@@ -11713,7 +12258,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (is_between, ":target_center", villages_begin, villages_end),
       (assign, reg1, 0),
     (try_end),
-    ]],
+    (try_begin),
+      (eq, reg1, 1),
+      (str_store_string, s68, "@ My {lord/lady}, we're only poor farmers from the village of {s11}. We are taking our products to the market at {s12}."),
+    (else_try),
+      (str_store_string, s68, "@ My {lord/lady}, we're only poor farmers from the village of {s11}. We are returning from the market at {s12} back to our village."),
+    (try_end),
+  ],
+   "{s68}", "village_farmer_talk",
+   []],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_village_farmer_talk.py:L1-L17 ] anyone|plyr::village_farmer_talk->close_window [no_conditions] {we'll see how poor you are after i take what you've got!}
 [anyone|plyr, "village_farmer_talk", [], "We'll see how poor you are after I take what you've got!", "close_window",
    [(party_get_slot, ":home_center", "$g_encountered_party", slot_party_home_center),
@@ -11786,8 +12339,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
  Please, {sir/madam}, get me home before courage leaves me.", "close_window", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/trp_sh_spy_member_chat.py:L1-L3 ] trp_sh_spy::member_chat->spy_chat_1 [no_conditions] {yes, {var}? are there any complications in our journey?}
 [trp_sh_spy, "member_chat", [], "Yes, {playername}? Are there any complications in our journey?", "spy_chat_1", []],
-# [ src/dialogs/ZZ99_misc_dialogs/trp_sh_spy_plyr_spy_chat_1.py:L1-L3 ] trp_sh_spy|plyr::spy_chat_1->spy_chat_2 [no_conditions] {when i'll get my reward?}
-[trp_sh_spy|plyr, "spy_chat_1", [], "When I'll get my reward?", "spy_chat_2", []],
+# [ src/dialogs/ZZ99_misc_dialogs/trp_sh_spy_plyr_spy_chat_1.py:L1-L3 ] trp_sh_spy|plyr::spy_chat_1->spy_chat_2 [no_conditions] {when do i get my reward?}
+[trp_sh_spy|plyr, "spy_chat_1", [], "When do I get my reward?", "spy_chat_2", []],
 # [ src/dialogs/ZZ99_misc_dialogs/trp_sh_spy_spy_chat_2.py:L1-L3 ] trp_sh_spy::spy_chat_2->close_window [no_conditions] {don't worry. my boss will pay you well.}
 [trp_sh_spy, "spy_chat_2", [], "Don't worry. My boss will pay you well.", "close_window", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_member_chat_02.py:L1-L6 ] anyone::member_chat->member_lady_1 [troop_slot_eq] {{var}, when do you think we can reach our destination?}
@@ -11892,7 +12445,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
          (str_store_string, s30, "@we have made very little progress so far"),
        (else_try),
          (lt, ":our_ratio", 30),
-         (str_store_string, s30, "@we have suceeded in gaining some ground, but we still have a long way to go"),
+         (str_store_string, s30, "@we have succeeded in gaining some ground, but we still have a long way to go"),
        (else_try),
          (lt, ":our_ratio", 50),
          (str_store_string, s30, "@we have become a significant force, and we have an even chance of victory"),
@@ -12052,7 +12605,1388 @@ Laugh if you wish princeling, but know that many failed to get past their format
                           (troop_get_slot, ":honorific", "$g_talk_troop", slot_troop_honorific),
                           (str_store_string, s5, ":honorific"),
                           ], "Yes, {playername}?", "member_talk", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_borcha.py:L1-L26 ] anyone|plyr::member_talk->companion_depth_borcha_road_pending [eq|main_party_has_troop|eq] {borcha, show me the road before someone else chooses it for us.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_warning_reconciliation.py:L1-L22 ] anyone|plyr::member_talk->companion_warning_direct [is_between|main_party_has_troop|troop_slot_eq] {you have a grievance. speak plainly.}
+[anyone|plyr, "member_talk",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (troop_slot_eq, "$g_talk_troop", slot_troop_companion_warning_state, sod_companion_warning_pending),
+  ],
+  "You have a grievance. Speak plainly.", "companion_warning_direct",
+  []],
+
+[anyone|plyr, "member_talk",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (this_or_next|troop_slot_eq, "$g_talk_troop", slot_troop_companion_warning_state, sod_companion_warning_final),
+    (troop_slot_eq, "$g_talk_troop", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
+    (troop_get_slot, ":approval", "$g_talk_troop", slot_troop_companion_approval),
+    (lt, ":approval", 45),
+  ],
+  "We need to mend this.", "companion_reconciliation_direct",
+  []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_warning_reconciliation.py:L1-L69 ] anyone::companion_warning_direct->member_talk [is_between|main_party_has_troop|troop_slot_eq] {{var}}
+[anyone, "companion_warning_direct",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (troop_slot_eq, "$g_talk_troop", slot_troop_companion_warning_state, sod_companion_warning_pending),
+    (call_script, "script_sod_companion_warning_to_s68", "$g_talk_troop"),
+    (str_store_string_reg, s2, s68),
+  ],
+  "{s2}",
+  "member_talk",
+  [
+    (troop_get_slot, ":approval", "$g_talk_troop", slot_troop_companion_approval),
+    (try_begin),
+      (ge, ":approval", 45),
+      (troop_set_slot, "$g_talk_troop", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (else_try),
+      (troop_set_slot, "$g_talk_troop", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
+    (try_end),
+  ]],
+
+[anyone, "companion_reconciliation_direct",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (this_or_next|troop_slot_eq, "$g_talk_troop", slot_troop_companion_warning_state, sod_companion_warning_final),
+    (troop_slot_eq, "$g_talk_troop", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
+    (troop_get_slot, ":approval", "$g_talk_troop", slot_troop_companion_approval),
+    (lt, ":approval", 45),
+    (call_script, "script_sod_companion_reconciliation_to_s68", "$g_talk_troop"),
+    (str_store_string_reg, s2, s68),
+  ],
+  "{s2}",
+  "companion_reconciliation_direct_choice",
+  []],
+
+[anyone|plyr, "companion_reconciliation_direct_choice",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (this_or_next|troop_slot_eq, "$g_talk_troop", slot_troop_companion_warning_state, sod_companion_warning_final),
+    (troop_slot_eq, "$g_talk_troop", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
+    (troop_get_slot, ":approval", "$g_talk_troop", slot_troop_companion_approval),
+    (lt, ":approval", 45),
+  ],
+  "I hear you. I will prove it.", "member_talk",
+  [
+    (call_script, "script_sod_companion_shift_approval", "$g_talk_troop", 8),
+    (troop_get_slot, ":approval", "$g_talk_troop", slot_troop_companion_approval),
+    (try_begin),
+      (ge, ":approval", 45),
+      (troop_set_slot, "$g_talk_troop", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (else_try),
+      (troop_set_slot, "$g_talk_troop", slot_troop_companion_warning_state, sod_companion_warning_none),
+    (try_end),
+    (store_current_day, ":cur_day"),
+    (troop_set_slot, "$g_talk_troop", slot_troop_companion_last_reaction_day, ":cur_day"),
+    (str_store_troop_name, s1, "$g_talk_troop"),
+    (display_message, "@You have made room for {s1}'s grievance. Deeds must carry the rest.", 0x99CCFF),
+  ]],
+
+[anyone|plyr, "companion_reconciliation_direct_choice",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+  ],
+  "Not yet.", "member_talk",
+  []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_quest_branches.py:L1-L857 ] anyone|plyr::member_talk->companion_quest_branch_prompt [is_between|main_party_has_troop|troop_slot_eq] {let's settle the matter you raised.}
+[anyone|plyr, "member_talk",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (troop_slot_eq, "$g_talk_troop", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Let's settle the matter you raised.", "companion_quest_branch_prompt",
+  []],
+
+[anyone, "companion_quest_branch_prompt",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (troop_slot_eq, "$g_talk_troop", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Tell me how you want it handled.", "companion_quest_branch_choice",
+  []],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc1"),
+    (main_party_has_troop, "trp_npc1"),
+    (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc1", slot_troop_companion_approval, 45),
+  ],
+  "Borcha, tell me about The Road Keeps Its Own.", "companion_depth_borcha",
+  [
+    (troop_set_slot, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc1"),
+    (main_party_has_troop, "trp_npc1"),
+    (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Trust your read. Set scouts on the hidden route.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_start_borcha_road_incident", 1),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_safe_roadcraft, 3),
+    (str_store_string, s68, "@Borcha nods once. 'Good. We ask who saw the road first. Bleed later, if bleeding has to happen.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc1"),
+    (main_party_has_troop, "trp_npc1"),
+    (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Use the route to bait raiders for plunder.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_start_borcha_road_incident", 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc1", 1),
+    (str_store_string, s68, "@Borcha snorts. 'Dirty, but not stupid. Ask at the road town. Bait has a short life if the hook is slow.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc1"),
+    (main_party_has_troop, "trp_npc1"),
+    (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Drop it. The road can wait.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_shift_approval", "trp_npc1", -4),
+    (assign, "$g_sod_borcha_road_result_grade", 1),
+    (troop_set_slot, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
+    (str_store_string, s68, "@Borcha smooths the dirt with his boot. 'Roads wait. Knives do not.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc2"),
+    (main_party_has_troop, "trp_npc2"),
+    (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc2", slot_troop_companion_approval, 45),
+  ],
+  "Marnid, tell me about The Honest Price.", "companion_depth_marnid",
+  [
+    (troop_set_slot, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc2"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc2"),
+    (main_party_has_troop, "trp_npc2"),
+    (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Back your clean trade contacts.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_start_marnid_market_incident", 1),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_orderly_profit, 3),
+    (str_store_string, s68, "@Marnid marks three names and crosses out two. 'Good. Now we ask the market which names are missing.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc2"),
+    (main_party_has_troop, "trp_npc2"),
+    (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Use the contacts for dirtier prisoner profit.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_start_marnid_market_incident", 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_dirty_profit, 2),
+    (str_store_string, s68, "@Marnid closes the ledger slowly. 'Profitable, yes. But some accounts charge interest in sleep. We ask the market before it collects.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc3"),
+    (main_party_has_troop, "trp_npc3"),
+    (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc3", slot_troop_companion_approval, 45),
+  ],
+  "Ymira, tell me about Mercy Under Arms.", "companion_depth_ymira",
+  [
+    (troop_set_slot, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc3"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc3"),
+    (main_party_has_troop, "trp_npc3"),
+    (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "The helpless will be protected.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_ymira_refugee_incident", 3),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_free_captives, 3),
+    (str_store_string, s68, "@Ymira lets out a breath she had been holding. 'Then mercy has a place in this company, not just a corner where it hides.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc3"),
+    (main_party_has_troop, "trp_npc3"),
+    (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Mercy still answers to ransom and supply.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_ymira_refugee_incident", 3),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc3", -2),
+    (str_store_string, s68, "@Ymira nods, but not happily. 'I know supplies matter. I only fear the day every person becomes a line in the stores.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc3"),
+    (main_party_has_troop, "trp_npc3"),
+    (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Not every wound can be my concern.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_shift_approval", "trp_npc3", -5),
+    (assign, "$g_sod_ymira_refugee_result_grade", 1),
+    (troop_set_slot, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc3"),
+    (str_store_string, s68, "@Ymira looks back to the dark beyond camp. 'No. Only the ones we choose not to see.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc4"),
+    (main_party_has_troop, "trp_npc4"),
+    (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc4", slot_troop_companion_approval, 45),
+  ],
+  "Rolf, tell me about A Name Worth Wearing.", "companion_depth_rolf",
+  [
+    (troop_set_slot, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc4"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc4"),
+    (main_party_has_troop, "trp_npc4"),
+    (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "A name is proven by conduct.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_rolf_name_challenge_incident", 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_hard_victory, 2),
+    (str_store_string, s68, "@Rolf begins to object, then smiles. 'Naturally. A great name improves the deeds beneath it.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc4"),
+    (main_party_has_troop, "trp_npc4"),
+    (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "I will defend your dignity in public.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_rolf_name_challenge_incident", 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc4", 3),
+    (str_store_string, s68, "@Rolf's bow is magnificent. 'At last, someone here understands lineage as a civic necessity.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc4"),
+    (main_party_has_troop, "trp_npc4"),
+    (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Drop the performance.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_rolf_name_challenge_incident", 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc4", -5),
+    (str_store_string, s68, "@Rolf's smile stays in place a moment too long. 'How brave, to strip a cloak and call the shivering man honest.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc5"),
+    (main_party_has_troop, "trp_npc5"),
+    (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc5", slot_troop_companion_approval, 45),
+  ],
+  "Baheshtur, tell me about The Unbroken Saddle.", "companion_depth_baheshtur",
+  [
+    (troop_set_slot, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc5"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc5"),
+    (main_party_has_troop, "trp_npc5"),
+    (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Ride hard before the rival gathers strength.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_baheshtur_saddle_incident", 1, 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_hard_victory, 2),
+    (str_store_string, s68, "@Baheshtur's nod is small and fierce. 'Good. Let him learn that open ground does not belong only to raiders.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc5"),
+    (main_party_has_troop, "trp_npc5"),
+    (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Free riders may swear, but only freely.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_baheshtur_saddle_incident", 1, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc5", 4),
+    (str_store_string, s68, "@Baheshtur watches you carefully. 'An oath taken by a free man has weight. Anything else is rope.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc5"),
+    (main_party_has_troop, "trp_npc5"),
+    (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Buy peace and let the insult pass.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_baheshtur_saddle_incident", 2, 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_black_khergit_tribute, 1),
+    (str_store_string, s68, "@Baheshtur looks toward the horse lines. 'A paid wolf is still a wolf. He only learns your purse has meat in it.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc6"),
+    (main_party_has_troop, "trp_npc6"),
+    (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc6", slot_troop_companion_approval, 45),
+  ],
+  "Firentis, tell me about Debt of the Sword.", "companion_depth_firentis",
+  [
+    (troop_set_slot, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc6"),
+    (main_party_has_troop, "trp_npc6"),
+    (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Make restitution.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_firentis_restitution_incident", 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_help_village, 2),
+    (str_store_string, s68, "@Firentis bows his head. 'Restitution will not make the dead answer. It may still keep the living from joining them.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc6"),
+    (main_party_has_troop, "trp_npc6"),
+    (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Confess publicly and accept judgment.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_firentis_restitution_incident", 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc6", 2),
+    (str_store_string, s68, "@Firentis looks afraid, then relieved by the fear. 'Then let truth do what steel cannot.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc6"),
+    (main_party_has_troop, "trp_npc6"),
+    (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Bury the past to preserve the company.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_firentis_restitution_incident", 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc6", -4),
+    (str_store_string, s68, "@Firentis sheathes the blade carefully. 'A buried thing is not absolved. It is only waiting.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc12"),
+    (main_party_has_troop, "trp_npc12"),
+    (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc12", slot_troop_companion_approval, 45),
+  ],
+  "Jeremus, tell me about Hands That Will Not Harden.", "companion_depth_jeremus",
+  [
+    (troop_set_slot, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc12"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc12"),
+    (main_party_has_troop, "trp_npc12"),
+    (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Civilians and helpless wounded come first.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_jeremus_triage_incident", 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_free_captives, 3),
+    (str_store_string, s68, "@Jeremus closes his eyes for a moment. 'Then we will still be an army, but not only an army.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc12"),
+    (main_party_has_troop, "trp_npc12"),
+    (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Use hard triage. Save who can still be saved.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_jeremus_triage_incident", 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc12", 1),
+    (str_store_string, s68, "@Jeremus nods sadly. 'Cruel arithmetic, but not cruelty. I can work with that difference.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc12"),
+    (main_party_has_troop, "trp_npc12"),
+    (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Our soldiers come before all others.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_jeremus_triage_incident", 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc12", -4),
+    (str_store_string, s68, "@Jeremus folds the clean cloth with care. 'Then I pray our banner never becomes the measure of a life.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc10"),
+    (main_party_has_troop, "trp_npc10"),
+    (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc10", slot_troop_companion_approval, 45),
+  ],
+  "Bunduk, tell me about The Men Who Hold the Line.", "companion_depth_bunduk",
+  [
+    (troop_set_slot, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc10"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc10"),
+    (main_party_has_troop, "trp_npc10"),
+    (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Speak for the common soldiers.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_bunduk_line_incident", 1, 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_train_troops, 2),
+    (str_store_string, s68, "@Bunduk nods. 'Good. They do not need soft words. They need boots, bolts, pay, and orders that are not stupid.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc10"),
+    (main_party_has_troop, "trp_npc10"),
+    (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Back fair stores and watches.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_bunduk_line_incident", 2, 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_food_security, 2),
+    (str_store_string, s68, "@Bunduk gives a short laugh. 'Amazing thing, feeding men before asking them to die. Should write a book.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc10"),
+    (main_party_has_troop, "trp_npc10"),
+    (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "The line needs harsher discipline.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_bunduk_line_incident", 1, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc10", -5),
+    (str_store_string, s68, "@Bunduk's face hardens. 'Aye. I have heard officers say that just before blaming dead men for obeying.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc11"),
+    (main_party_has_troop, "trp_npc11"),
+    (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc11", slot_troop_companion_approval, 45),
+  ],
+  "Katrin, tell me about The Last Coin in Camp.", "companion_depth_katrin",
+  [
+    (troop_set_slot, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc11"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc11"),
+    (main_party_has_troop, "trp_npc11"),
+    (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Spend it on stores, wages, and medicine.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_katrin_last_coin_incident", 1, 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_food_security, 3),
+    (str_store_string, s68, "@Katrin sniffs. 'Sensible. Dangerous habit, that. Keep it up and the camp may start expecting to live.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc11"),
+    (main_party_has_troop, "trp_npc11"),
+    (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Stretch the stores to feed refugees too.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_katrin_last_coin_incident", 2, 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_help_village, 2),
+    (str_store_string, s68, "@Katrin begins counting portions under her breath. 'Mercy with arithmetic. Harder than speeches, better for everyone.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc11"),
+    (main_party_has_troop, "trp_npc11"),
+    (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Spend it on the bold opportunity.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_katrin_last_coin_incident", 2, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc11", -5),
+    (str_store_string, s68, "@Katrin folds her arms. 'Of course. A hungry man loves hearing he is part of history.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc8"),
+    (main_party_has_troop, "trp_npc8"),
+    (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc8", slot_troop_companion_approval, 45),
+  ],
+  "Matheld, tell me about No Backward Step.", "companion_depth_matheld",
+  [
+    (troop_set_slot, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc8"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc8"),
+    (main_party_has_troop, "trp_npc8"),
+    (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Stand firm and answer the threat.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_matheld_no_backward_step_incident", 1, 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_hard_victory, 2),
+    (str_store_string, s68, "@Matheld bares her teeth. 'Good. Let them see the shield before they feel it.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc8"),
+    (main_party_has_troop, "trp_npc8"),
+    (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Save lives without turning away.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_matheld_no_backward_step_incident", 1, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc8", 2),
+    (str_store_string, s68, "@Matheld grunts. 'Planning is not cowardice if the shield still faces forward.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc8"),
+    (main_party_has_troop, "trp_npc8"),
+    (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Yield ground and avoid the challenge.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_matheld_no_backward_step_incident", 2, 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_cowardice, 2),
+    (str_store_string, s68, "@Matheld's voice drops. 'Every backward step teaches someone to chase.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc9"),
+    (main_party_has_troop, "trp_npc9"),
+    (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc9", slot_troop_companion_approval, 45),
+  ],
+  "Alayen, tell me about The Standard and the Self.", "companion_depth_alayen",
+  [
+    (troop_set_slot, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc9"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc9"),
+    (main_party_has_troop, "trp_npc9"),
+    (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Honor means duty beneath the banner.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_alayen_standard_incident", 1, 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_help_village, 2),
+    (str_store_string, s68, "@Alayen inclines his head. 'Then nobility is not a height. It is a weight. Good.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc9"),
+    (main_party_has_troop, "trp_npc9"),
+    (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Keep the oath, even at real cost.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_alayen_standard_incident", 1, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc9", 4),
+    (str_store_string, s68, "@Alayen's expression steadies. 'Cost is where oath becomes more than speech.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc9"),
+    (main_party_has_troop, "trp_npc9"),
+    (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Use the standard for prestige and obedience.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_alayen_standard_incident", 2, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc9", -4),
+    (str_store_string, s68, "@Alayen goes very still. 'A banner used as ornament soon becomes a rag.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc13"),
+    (main_party_has_troop, "trp_npc13"),
+    (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc13", slot_troop_companion_approval, 45),
+  ],
+  "Nizar, tell me about The Impossible Charge.", "companion_depth_nizar",
+  [
+    (troop_set_slot, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc13"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc13"),
+    (main_party_has_troop, "trp_npc13"),
+    (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Take the daring rescue now.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_nizar_charge_incident", 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_hard_victory, 2),
+    (str_store_string, s68, "@Nizar springs up smiling. 'At last, a decision with a pulse. I shall try not to improve it too much when I retell it.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc13"),
+    (main_party_has_troop, "trp_npc13"),
+    (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Plan the way out first.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_nizar_charge_incident", 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc13", 2),
+    (str_store_string, s68, "@Nizar makes a face, then laughs. 'A cautious legend. Disgraceful. Useful. Possibly immortal.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc13"),
+    (main_party_has_troop, "trp_npc13"),
+    (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Refuse the charge as needless theater.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_nizar_charge_incident", 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_cowardice, 1),
+    (str_store_string, s68, "@Nizar bows too deeply. 'Of course. We shall leave the impossible to poorer poets.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc14"),
+    (main_party_has_troop, "trp_npc14"),
+    (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc14", slot_troop_companion_approval, 45),
+  ],
+  "Lezalit, tell me about Discipline Without Chains.", "companion_depth_lezalit",
+  [
+    (troop_set_slot, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc14"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc14"),
+    (main_party_has_troop, "trp_npc14"),
+    (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Reform the drills without softening standards.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_lezalit_ief_discipline_incident", "trp_kingdom_6_lord"),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_train_troops, 3),
+    (str_store_string, s68, "@Lezalit studies you for a long moment. 'Good. Mercy that preserves standards is not weakness. It is efficiency with a conscience.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc14"),
+    (main_party_has_troop, "trp_npc14"),
+    (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Use harsh punishment to restore order.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_lezalit_ief_discipline_incident", "trp_kingdom_6_lord"),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc14", 2),
+    (str_store_string, s68, "@Lezalit nods once. 'The line will hold. Whether it learns why is another matter.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc14"),
+    (main_party_has_troop, "trp_npc14"),
+    (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "The men need less discipline, not more.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_shift_approval", "trp_npc14", -5),
+    (assign, "$g_sod_lezalit_ief_discipline_result_grade", 1),
+    (troop_set_slot, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc14"),
+    (str_store_string, s68, "@Lezalit's expression closes like a gate. 'Then pray sentiment can hold a shield wall.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc15"),
+    (main_party_has_troop, "trp_npc15"),
+    (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc15", slot_troop_companion_approval, 45),
+  ],
+  "Artimenner, tell me about The Siege That Should Have Worked.", "companion_depth_artimenner",
+  [
+    (troop_set_slot, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc15"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc15"),
+    (main_party_has_troop, "trp_npc15"),
+    (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Take the time and materials to do it properly.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_artimenner_siege_incident", 1, 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_orderly_profit, 2),
+    (str_store_string, s68, "@Artimenner blinks, as if bracing for argument that never comes. 'Good. Remarkable. We may yet defeat gravity and stupidity in the same week.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc15"),
+    (main_party_has_troop, "trp_npc15"),
+    (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Improvise with what the army has.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_artimenner_siege_incident", 1, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc15", 2),
+    (str_store_string, s68, "@Artimenner pinches the bridge of his nose. 'Inferior, but possible. I prefer possible to glorious nonsense.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc15"),
+    (main_party_has_troop, "trp_npc15"),
+    (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "If the works fail, the blame is yours.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_artimenner_siege_incident", 2, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc15", -6),
+    (str_store_string, s68, "@Artimenner's voice goes flat. 'Ah. So I am not an engineer. I am a bucket for falling stones.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc7"),
+    (main_party_has_troop, "trp_npc7"),
+    (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc7", slot_troop_companion_approval, 45),
+  ],
+  "Deshavi, tell me about Tracks Through Ash.", "companion_depth_deshavi",
+  [
+    (troop_set_slot, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc7"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc7"),
+    (main_party_has_troop, "trp_npc7"),
+    (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Follow the trail to rescue survivors.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_deshavi_trail_warning_incident", 1, 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_food_security, 3),
+    (str_store_string, s68, "@Deshavi nods without smiling. 'Good. Poor folk leave signs because rich men do not leave help.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc7"),
+    (main_party_has_troop, "trp_npc7"),
+    (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Use the trail to ambush the raiders.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_deshavi_trail_warning_incident", 1, 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_safe_roadcraft, 2),
+    (str_store_string, s68, "@Deshavi checks her bowstring. 'Better to find wolves before they find doors.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc7"),
+    (main_party_has_troop, "trp_npc7"),
+    (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "The company cannot chase every burned trail.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_shift_approval", "trp_npc7", -5),
+    (assign, "$g_sod_deshavi_trail_result_grade", 1),
+    (troop_set_slot, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc7"),
+    (str_store_string, s68, "@Deshavi gathers the twigs back into her palm. 'No. Only the trails poor enough to be quiet.'"),
+  ]],
+
+[anyone|plyr, "member_talk",
+  [
+    (eq, "$g_talk_troop", "trp_npc16"),
+    (main_party_has_troop, "trp_npc16"),
+    (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
+    (troop_slot_ge, "trp_npc16", slot_troop_companion_approval, 45),
+  ],
+  "Klethi, tell me about A Knife With a Name.", "companion_depth_klethi",
+  [
+    (troop_set_slot, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+    (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc16"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc16"),
+    (main_party_has_troop, "trp_npc16"),
+    (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "I will protect you from the old accusation.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_klethi_old_job_incident", 1, 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_stealth_success, 3),
+    (str_store_string, s68, "@Klethi's smile almost reaches her eyes. 'Careful. Protecting thieves is how honest people learn useful habits.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc16"),
+    (main_party_has_troop, "trp_npc16"),
+    (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Face the damage, but on your terms.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_klethi_old_job_incident", 1, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc16", 2),
+    (str_store_string, s68, "@Klethi pockets the knife. 'My terms, then. That is the part people forget when they say justice.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (eq, "$g_talk_troop", "trp_npc16"),
+    (main_party_has_troop, "trp_npc16"),
+    (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Trade the old secret for leverage.", "companion_quest_branch_reply",
+  [
+    (call_script, "script_sod_companion_try_klethi_old_job_incident", 2, 2),
+    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_betray_autonomy, 2),
+    (str_store_string, s68, "@Klethi laughs once. Small sound. No warmth. 'There it is. Belonging with a price tag.'"),
+  ]],
+
+[anyone|plyr, "companion_quest_branch_choice",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (troop_slot_eq, "$g_talk_troop", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+  ],
+  "Not yet.", "member_talk",
+  []],
+
+[anyone, "companion_quest_branch_reply", [], "{s68}", "member_talk", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_role_assign.py:L1-L437 ] anyone|plyr::member_talk->companion_role_discuss [is_between|main_party_has_troop] {let's talk company duties.}
+[anyone|plyr, "member_talk",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+  ],
+  "Let's talk company duties.", "companion_role_discuss",
+  []],
+
+[anyone, "companion_role_discuss",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (neg|troop_slot_ge, "$g_talk_troop", slot_troop_companion_approval, 45),
+    (troop_slot_eq, "$g_talk_troop", slot_troop_companion_role, sod_companion_role_none),
+  ],
+  "Not while this sits between us. Mend that first, then ask me for an office.", "member_talk",
+  []],
+
+[anyone, "companion_role_discuss",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (neg|troop_slot_ge, "$g_talk_troop", slot_troop_companion_approval, 45),
+    (troop_slot_ge, "$g_talk_troop", slot_troop_companion_role, 1),
+  ],
+  "Trust is thin. I can stand down from this office, but I will not pretend it is sound.", "companion_role_low_trust_options",
+  []],
+
+[anyone, "companion_role_discuss",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (troop_slot_ge, "$g_talk_troop", slot_troop_companion_approval, 45),
+  ],
+  "What do you need from me?", "companion_role_options",
+  []],
+
+[anyone|plyr, "companion_role_low_trust_options",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (neg|troop_slot_ge, "$g_talk_troop", slot_troop_companion_approval, 45),
+    (troop_slot_ge, "$g_talk_troop", slot_troop_companion_role, 1),
+  ],
+  "Stand down until trust is repaired.", "companion_role_stood_down",
+  [
+    (call_script, "script_sod_companion_assign_role", "$g_talk_troop", sod_companion_role_none),
+  ]],
+
+[anyone|plyr, "companion_role_low_trust_options",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+  ],
+  "Leave it for now.", "member_talk",
+  []],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc1"),
+    (main_party_has_troop, "trp_npc1"),
+    (neg|troop_slot_eq, "trp_npc1", slot_troop_companion_role, sod_companion_role_scout),
+  ],
+  "Borcha, scout ahead for the company.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc1", sod_companion_role_scout),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc1"),
+    (main_party_has_troop, "trp_npc1"),
+    (neg|troop_slot_eq, "trp_npc1", slot_troop_companion_role, sod_companion_role_quartermaster),
+  ],
+  "Borcha, watch the road stores.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc1", sod_companion_role_quartermaster),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc2"),
+    (main_party_has_troop, "trp_npc2"),
+    (neg|troop_slot_eq, "trp_npc2", slot_troop_companion_role, sod_companion_role_quartermaster),
+  ],
+  "Marnid, take charge of the stores.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc2", sod_companion_role_quartermaster),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc2"),
+    (main_party_has_troop, "trp_npc2"),
+    (neg|troop_slot_eq, "trp_npc2", slot_troop_companion_role, sod_companion_role_envoy),
+  ],
+  "Marnid, speak for us as envoy.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc2", sod_companion_role_envoy),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc3"),
+    (main_party_has_troop, "trp_npc3"),
+    (neg|troop_slot_eq, "trp_npc3", slot_troop_companion_role, sod_companion_role_surgeon),
+  ],
+  "Ymira, tend the wounded as surgeon.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc3", sod_companion_role_surgeon),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc3"),
+    (main_party_has_troop, "trp_npc3"),
+    (neg|troop_slot_eq, "trp_npc3", slot_troop_companion_role, sod_companion_role_envoy),
+  ],
+  "Ymira, speak softly where steel would fail.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc3", sod_companion_role_envoy),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc4"),
+    (main_party_has_troop, "trp_npc4"),
+    (neg|troop_slot_eq, "trp_npc4", slot_troop_companion_role, sod_companion_role_envoy),
+  ],
+  "Rolf, lend your name as envoy.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc4", sod_companion_role_envoy),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc4"),
+    (main_party_has_troop, "trp_npc4"),
+    (neg|troop_slot_eq, "trp_npc4", slot_troop_companion_role, sod_companion_role_captain),
+  ],
+  "Rolf, command a section of the line.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc4", sod_companion_role_captain),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc5"),
+    (main_party_has_troop, "trp_npc5"),
+    (neg|troop_slot_eq, "trp_npc5", slot_troop_companion_role, sod_companion_role_scout),
+  ],
+  "Baheshtur, scout the open ground.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc5", sod_companion_role_scout),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc5"),
+    (main_party_has_troop, "trp_npc5"),
+    (neg|troop_slot_eq, "trp_npc5", slot_troop_companion_role, sod_companion_role_captain),
+  ],
+  "Baheshtur, command the riders.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc5", sod_companion_role_captain),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc6"),
+    (main_party_has_troop, "trp_npc6"),
+    (neg|troop_slot_eq, "trp_npc6", slot_troop_companion_role, sod_companion_role_captain),
+  ],
+  "Firentis, keep discipline in the line.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc6", sod_companion_role_captain),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc6"),
+    (main_party_has_troop, "trp_npc6"),
+    (neg|troop_slot_eq, "trp_npc6", slot_troop_companion_role, sod_companion_role_envoy),
+  ],
+  "Firentis, carry our word as envoy.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc6", sod_companion_role_envoy),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc7"),
+    (main_party_has_troop, "trp_npc7"),
+    (neg|troop_slot_eq, "trp_npc7", slot_troop_companion_role, sod_companion_role_scout),
+  ],
+  "Deshavi, read the tracks for us.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc7", sod_companion_role_scout),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc7"),
+    (main_party_has_troop, "trp_npc7"),
+    (neg|troop_slot_eq, "trp_npc7", slot_troop_companion_role, sod_companion_role_spymaster),
+  ],
+  "Deshavi, keep the quiet roads watched.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc7", sod_companion_role_spymaster),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc8"),
+    (main_party_has_troop, "trp_npc8"),
+    (neg|troop_slot_eq, "trp_npc8", slot_troop_companion_role, sod_companion_role_captain),
+  ],
+  "Matheld, take command where the line must hold.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc8", sod_companion_role_captain),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc9"),
+    (main_party_has_troop, "trp_npc9"),
+    (neg|troop_slot_eq, "trp_npc9", slot_troop_companion_role, sod_companion_role_envoy),
+  ],
+  "Alayen, bear our standard as envoy.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc9", sod_companion_role_envoy),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc9"),
+    (main_party_has_troop, "trp_npc9"),
+    (neg|troop_slot_eq, "trp_npc9", slot_troop_companion_role, sod_companion_role_captain),
+  ],
+  "Alayen, command with the standard in mind.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc9", sod_companion_role_captain),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc13"),
+    (main_party_has_troop, "trp_npc13"),
+    (neg|troop_slot_eq, "trp_npc13", slot_troop_companion_role, sod_companion_role_captain),
+  ],
+  "Nizar, lead the charge when courage matters.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc13", sod_companion_role_captain),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc13"),
+    (main_party_has_troop, "trp_npc13"),
+    (neg|troop_slot_eq, "trp_npc13", slot_troop_companion_role, sod_companion_role_scout),
+  ],
+  "Nizar, scout for bold openings.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc13", sod_companion_role_scout),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc10"),
+    (main_party_has_troop, "trp_npc10"),
+    (neg|troop_slot_eq, "trp_npc10", slot_troop_companion_role, sod_companion_role_captain),
+  ],
+  "Bunduk, command for the common soldiers.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc10", sod_companion_role_captain),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc10"),
+    (main_party_has_troop, "trp_npc10"),
+    (neg|troop_slot_eq, "trp_npc10", slot_troop_companion_role, sod_companion_role_quartermaster),
+  ],
+  "Bunduk, watch the soldiers' stores.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc10", sod_companion_role_quartermaster),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc11"),
+    (main_party_has_troop, "trp_npc11"),
+    (neg|troop_slot_eq, "trp_npc11", slot_troop_companion_role, sod_companion_role_quartermaster),
+  ],
+  "Katrin, keep the stores honest.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc11", sod_companion_role_quartermaster),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc11"),
+    (main_party_has_troop, "trp_npc11"),
+    (neg|troop_slot_eq, "trp_npc11", slot_troop_companion_role, sod_companion_role_surgeon),
+  ],
+  "Katrin, help tend the camp as surgeon.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc11", sod_companion_role_surgeon),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc12"),
+    (main_party_has_troop, "trp_npc12"),
+    (neg|troop_slot_eq, "trp_npc12", slot_troop_companion_role, sod_companion_role_surgeon),
+  ],
+  "Jeremus, take charge of the wounded.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc12", sod_companion_role_surgeon),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc12"),
+    (main_party_has_troop, "trp_npc12"),
+    (neg|troop_slot_eq, "trp_npc12", slot_troop_companion_role, sod_companion_role_envoy),
+  ],
+  "Jeremus, speak for restraint when tempers rise.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc12", sod_companion_role_envoy),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc16"),
+    (main_party_has_troop, "trp_npc16"),
+    (neg|troop_slot_eq, "trp_npc16", slot_troop_companion_role, sod_companion_role_spymaster),
+  ],
+  "Klethi, keep the quiet doors open.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc16", sod_companion_role_spymaster),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc16"),
+    (main_party_has_troop, "trp_npc16"),
+    (neg|troop_slot_eq, "trp_npc16", slot_troop_companion_role, sod_companion_role_scout),
+  ],
+  "Klethi, scout the road no one admits using.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc16", sod_companion_role_scout),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc14"),
+    (main_party_has_troop, "trp_npc14"),
+    (neg|troop_slot_eq, "trp_npc14", slot_troop_companion_role, sod_companion_role_captain),
+  ],
+  "Lezalit, drill the line as captain.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc14", sod_companion_role_captain),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc14"),
+    (main_party_has_troop, "trp_npc14"),
+    (neg|troop_slot_eq, "trp_npc14", slot_troop_companion_role, sod_companion_role_engineer),
+  ],
+  "Lezalit, oversee the works as engineer.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc14", sod_companion_role_engineer),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc15"),
+    (main_party_has_troop, "trp_npc15"),
+    (neg|troop_slot_eq, "trp_npc15", slot_troop_companion_role, sod_companion_role_engineer),
+  ],
+  "Artimenner, inspect the works as engineer.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc15", sod_companion_role_engineer),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (eq, "$g_talk_troop", "trp_npc15"),
+    (main_party_has_troop, "trp_npc15"),
+    (neg|troop_slot_eq, "trp_npc15", slot_troop_companion_role, sod_companion_role_quartermaster),
+  ],
+  "Artimenner, organize the tools and stores.", "companion_role_assigned",
+  [
+    (call_script, "script_sod_companion_assign_role", "trp_npc15", sod_companion_role_quartermaster),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (troop_slot_ge, "$g_talk_troop", slot_troop_companion_role, 1),
+  ],
+  "Stand down from your camp office for now.", "companion_role_stood_down",
+  [
+    (call_script, "script_sod_companion_assign_role", "$g_talk_troop", sod_companion_role_none),
+  ]],
+
+[anyone|plyr, "companion_role_options",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+  ],
+  "Leave the offices as they are.", "member_talk",
+  []],
+
+[anyone, "companion_role_assigned",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (troop_slot_ge, "$g_talk_troop", slot_troop_companion_approval, 45),
+    (troop_slot_ge, "$g_talk_troop", slot_troop_companion_role, 1),
+  ],
+  "Understood. I will see it done.", "member_talk",
+  []],
+
+[anyone, "companion_role_stood_down",
+  [
+    (is_between, "$g_talk_troop", companions_begin, companions_end),
+    (main_party_has_troop, "$g_talk_troop"),
+    (troop_slot_eq, "$g_talk_troop", slot_troop_companion_role, sod_companion_role_none),
+  ],
+  "Understood. I will stand down for now.", "member_talk",
+  []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_borcha.py:L1-L26 ] anyone|plyr::member_talk->companion_depth_borcha_road_pending [eq|main_party_has_troop|eq] {borcha, show me the road before it chooses us.}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc1"),
@@ -12060,7 +13994,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_borcha_road_pending", 1),
     (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Borcha, show me the road before someone else chooses it for us.", "companion_depth_borcha_road_pending",
+  "Borcha, show me the road before it chooses us.", "companion_depth_borcha_road_pending",
   [
     (try_begin),
       (le, "$g_sod_borcha_road_origin_center", 0),
@@ -12077,7 +14011,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc1"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_borcha.py:L1-L151 ] anyone::companion_depth_borcha_road_pending->member_talk [eq|gt|party_is_active] {road says {var} to {var}. but a road witness first. tavern keepe}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_borcha.py:L1-L188 ] anyone::companion_depth_borcha_road_pending->member_talk [eq|gt|party_is_active] {the route runs from {var} to {var}, but i want a witness before }
 [anyone, "companion_depth_borcha_road_pending",
   [
     (eq, "$g_sod_borcha_road_witnessed", 0),
@@ -12091,8 +14025,21 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (str_store_string, s4, "@the far village"),
     (try_end),
   ],
-  "Road says {s3} to {s4}. But a road witness first. Tavern keeper, caravan hand, anybody who hears wheels before gossip. Ask in {s3}, then I show you where the clean dirt lies.",
+  "The route runs from {s3} to {s4}, but I want a witness before I trust it. Ask a tavern keeper, caravan hand, anybody who hears wheels before gossip. Then I show you where the clean dirt lies.",
   "member_talk",
+  []],
+
+[anyone, "companion_depth_borcha_road_pending",
+  [
+    (eq, "$g_sod_borcha_road_witnessed", 1),
+    (eq, "$g_sod_borcha_road_confronted", 0),
+    (gt, "$g_sod_borcha_road_origin_center", 0),
+    (party_is_active, "$g_sod_borcha_road_origin_center"),
+    (eq, "$current_town", "$g_sod_borcha_road_origin_center"),
+    (str_store_party_name_link, s3, "$g_sod_borcha_road_origin_center"),
+  ],
+  "Now we have my read and the witness. We are at {s3}; take the side road with me, and we let the ambush show its teeth first.",
+  "companion_depth_borcha_counter_ambush_choice",
   []],
 
 [anyone, "companion_depth_borcha_road_pending",
@@ -12103,9 +14050,29 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (party_is_active, "$g_sod_borcha_road_origin_center"),
     (str_store_party_name_link, s3, "$g_sod_borcha_road_origin_center"),
   ],
-  "Now the road has two mouths: mine and the witness. Ride from {s3} with me. We step beside the path and let the ambush show its teeth first.",
+  "Now we have my read and the witness. Ride from {s3} with me. We step beside the path and let the ambush show its teeth first.",
   "member_talk",
   []],
+
+[anyone|plyr, "companion_depth_borcha_counter_ambush_choice",
+  [
+    (main_party_has_troop, "trp_npc1"),
+    (eq, "$g_sod_borcha_road_pending", 1),
+    (eq, "$g_sod_borcha_road_witnessed", 1),
+    (eq, "$g_sod_borcha_road_confronted", 0),
+    (eq, "$current_town", "$g_sod_borcha_road_origin_center"),
+  ],
+  "Take the side road now.", "close_window",
+  [
+    (jump_to_menu, "mnu_borcha_road_counter_ambush"),
+    (finish_mission),
+  ]],
+
+[anyone|plyr, "companion_depth_borcha_counter_ambush_choice",
+  [
+    (main_party_has_troop, "trp_npc1"),
+  ],
+  "Not yet.", "member_talk", []],
 
 [anyone, "companion_depth_borcha_road_pending",
   [
@@ -12115,7 +14082,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (party_is_active, "$g_sod_borcha_road_origin_center"),
     (str_store_party_name_link, s3, "$g_sod_borcha_road_origin_center"),
   ],
-  "We found the teeth under the road from {s3}. Good. Now decide what we do with a road that tried to eat someone.",
+  "We found the ambush off the road from {s3}. Decide what happens to that route now.",
   "companion_depth_borcha_road_choice",
   []],
 
@@ -12125,16 +14092,17 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_borcha_road_witnessed", 1),
     (eq, "$g_sod_borcha_road_confronted", 1),
   ],
-  "Mark it safe and warn the next travelers.", "member_talk",
+  "Mark it safe. Warn the next travelers.", "member_talk",
   [
     (assign, "$g_sod_borcha_road_pending", 0),
     (assign, "$g_sod_borcha_road_result_grade", 3),
     (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_metadata, "$g_sod_borcha_road_result_grade"),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_safe_roadcraft, 3),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc1", 3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc1", 1),
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
-    (display_message, "@The hidden route is marked, watched, and broken before it can swallow another caravan. Borcha says nothing grand. He only marks a safer road for the company.", 0x99CCFF),
+    (display_message, "@The hidden route is marked, watched, and broken before it can cut another caravan apart. Borcha says nothing grand. He only marks a safer way for the company.", 0x99CCFF),
   ]],
 
 [anyone|plyr, "companion_depth_borcha_road_choice",
@@ -12143,7 +14111,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_borcha_road_witnessed", 1),
     (eq, "$g_sod_borcha_road_confronted", 1),
   ],
-  "Keep the counter-ambush working until the road is clean.", "member_talk",
+  "Keep the counter-ambush working until the route is clean.", "member_talk",
   [
     (assign, "$g_sod_borcha_road_pending", 0),
     (try_begin),
@@ -12156,7 +14124,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (call_script, "script_sod_companion_shift_approval", "trp_npc1", 2),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc1", 1),
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
-    (display_message, "@Borcha keeps the ambush site baited until the raiders stop trusting their own road. It is useful, if not gentle.", 0xCCCC66),
+    (display_message, "@Borcha keeps the ambush site baited until the raiders stop trusting their own trap. It is useful, if not gentle.", 0xCCCC66),
   ]],
 
 [anyone|plyr, "companion_depth_borcha_road_choice",
@@ -12165,26 +14133,28 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_borcha_road_witnessed", 1),
     (eq, "$g_sod_borcha_road_confronted", 1),
   ],
-  "Use the route for profit before it becomes common knowledge.", "member_talk",
+  "Profit from the route before others learn it.", "member_talk",
   [
     (assign, "$g_sod_borcha_road_pending", 0),
     (assign, "$g_sod_borcha_road_result_grade", 1),
     (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_metadata, "$g_sod_borcha_road_result_grade"),
     (call_script, "script_troop_add_gold", "trp_player", 250),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc1", -3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc1", 0),
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
     (troop_set_slot, "trp_npc1", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (display_message, "@The route yields coin and bad looks from Borcha. 'You can skin a road, sure. Then do not ask why it stops feeding you.'", 0xCC9966),
+    (display_message, "@The route yields coin and bad looks from Borcha. 'Sell a warning once, sure. Then do not ask why no one trusts your warnings after.'", 0xCC9966),
   ]],
 
 [anyone, "companion_depth_borcha",
   [
     (troop_slot_ge, "trp_npc1", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc1"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc1", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc1"),
+    (str_store_string_reg, s2, s68),
   ],
-  "Roads feed people who respect them. They also remember who sold warning by the purse. My trust is {s2}.",
+  "Routes feed people who respect them. They also remember who sold warning by the purse. My trust is {s2}.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc1", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -12193,30 +14163,30 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_borcha",
   [
     (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc1"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc1"),
+    (str_store_string_reg, s2, s68),
   ],
-  "That road will still lie, but now it lies badly. Travelers hear the warning before the wheels turn. My trust is {s2}.",
+  "That route will still lie, but now it lies badly. Travelers hear the warning before the wheels turn. My trust is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_borcha",
   [
     (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc1"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc1"),
+    (str_store_string_reg, s2, s68),
   ],
-  "Profit is a road too. Short, usually. Sometimes it ends in a ditch with a rich man swearing he knew the way. My trust is {s2}.",
+  "Quick profit is a short route. Sometimes it ends in a ditch with a rich man swearing he knew the way. My trust is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_borcha",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc1"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc1"),
+    (str_store_string_reg, s2, s68),
     (troop_get_slot, reg2, "trp_npc1", slot_troop_companion_personal_quest_stage),
   ],
-  "Road says plenty. Mud says who passed. Grass says who lied about passing. Men say less useful things. I am still watching your road, and right now my trust is {s2}. The hidden-route matter stands at {reg2}.",
+  "Mud says who passed. Grass says who lied. Men say less useful things. I am still watching the route you choose, and right now my trust is {s2}. The hidden-route matter stands at {reg2}.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc1", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -12224,10 +14194,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (troop_slot_ge, "trp_npc1", slot_troop_companion_approval, 70),
       (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
       (troop_set_slot, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
       (display_message, "@Borcha seems ready to speak at camp about a hidden road that has been bothering him.", 0x99CCFF),
     (try_end),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_marnid.py:L1-L26 ] anyone|plyr::member_talk->companion_depth_marnid_price_pending [eq|main_party_has_troop|eq] {marnid, walk me through the suspect contract.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_marnid.py:L1-L26 ] anyone|plyr::member_talk->companion_depth_marnid_price_pending [eq|main_party_has_troop|eq] {marnid, show me the suspect contract.}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc2"),
@@ -12235,7 +14206,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_marnid_market_pending", 1),
     (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Marnid, walk me through the suspect contract.", "companion_depth_marnid_price_pending",
+  "Marnid, show me the suspect contract.", "companion_depth_marnid_price_pending",
   [
     (try_begin),
       (le, "$g_sod_marnid_market_focus_center", 0),
@@ -12252,7 +14223,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc2"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_marnid.py:L1-L145 ] anyone::companion_depth_marnid_price_pending->member_talk [eq|gt|party_is_active] {the figures balance too easily. that is the smell. bring me to t}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_marnid.py:L1-L182 ] anyone::companion_depth_marnid_price_pending->member_talk [eq|gt|party_is_active] {the figures balance too neatly. that is what worries me. bring m}
 [anyone, "companion_depth_marnid_price_pending",
   [
     (eq, "$g_sod_marnid_market_evidence", 0),
@@ -12260,8 +14231,21 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (party_is_active, "$g_sod_marnid_market_focus_center"),
     (str_store_party_name_link, s3, "$g_sod_marnid_market_focus_center"),
   ],
-  "The figures balance too easily. That is the smell. Bring me to the goods merchant in {s3}; I want a plain account from someone whose shelves depend on this market surviving tomorrow.",
+  "The figures balance too neatly. That is what worries me. Bring me to the goods merchant in {s3}; I want a plain account from someone whose shelves depend on this market surviving tomorrow.",
   "member_talk",
+  []],
+
+[anyone, "companion_depth_marnid_price_pending",
+  [
+    (ge, "$g_sod_marnid_market_evidence", 1),
+    (eq, "$g_sod_marnid_market_confronted", 0),
+    (gt, "$g_sod_marnid_market_focus_center", 0),
+    (party_is_active, "$g_sod_marnid_market_focus_center"),
+    (eq, "$current_town", "$g_sod_marnid_market_focus_center"),
+    (str_store_party_name_link, s3, "$g_sod_marnid_market_focus_center"),
+  ],
+  "The merchant gave us a witness and a direction. We are in {s3}; the warehouse is where clean ink can hide missing names. We inspect it now, before anyone edits the debt again.",
+  "companion_depth_marnid_warehouse_choice",
   []],
 
 [anyone, "companion_depth_marnid_price_pending",
@@ -12272,16 +14256,36 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (party_is_active, "$g_sod_marnid_market_focus_center"),
     (str_store_party_name_link, s3, "$g_sod_marnid_market_focus_center"),
   ],
-  "The merchant gave us a witness and a direction. The warehouse in {s3} is where the clean ink hides its missing names. We inspect it before anyone edits the debt again.",
+  "The merchant gave us a witness and a direction. The warehouse in {s3} is where clean ink can hide missing names. We inspect it before anyone edits the debt again.",
   "member_talk",
   []],
+
+[anyone|plyr, "companion_depth_marnid_warehouse_choice",
+  [
+    (main_party_has_troop, "trp_npc2"),
+    (eq, "$g_sod_marnid_market_pending", 1),
+    (ge, "$g_sod_marnid_market_evidence", 1),
+    (eq, "$g_sod_marnid_market_confronted", 0),
+    (eq, "$current_town", "$g_sod_marnid_market_focus_center"),
+  ],
+  "Open the warehouse now.", "close_window",
+  [
+    (jump_to_menu, "mnu_marnid_price_warehouse"),
+    (finish_mission),
+  ]],
+
+[anyone|plyr, "companion_depth_marnid_warehouse_choice",
+  [
+    (main_party_has_troop, "trp_npc2"),
+  ],
+  "Not yet.", "member_talk", []],
 
 [anyone, "companion_depth_marnid_price_pending",
   [
     (ge, "$g_sod_marnid_market_evidence", 1),
     (eq, "$g_sod_marnid_market_confronted", 1),
   ],
-  "The warehouse answered. Now the account is not numbers; it is what we choose to owe.",
+  "The warehouse answered. Now the account is not just numbers; it is a choice about who gets paid.",
   "companion_depth_marnid_price_choice",
   []],
 
@@ -12300,6 +14304,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (quest_set_slot, "qst_companion_marnid_honest_price", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_marnid_honest_price", slot_quest_sod_runtime_metadata, "$g_sod_marnid_market_result_grade"),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_orderly_profit, 3),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc2", 3),
     (call_script, "script_sod_companion_shift_core_value_proof", "trp_npc2", 2),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc2", 1),
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc2"),
@@ -12333,10 +14338,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (ge, "$g_sod_marnid_market_evidence", 1),
     (eq, "$g_sod_marnid_market_confronted", 1),
   ],
-  "Use the evidence for leverage and take the discount.", "member_talk",
+  "Use the evidence. Make them pay us to stay quiet.", "member_talk",
   [
     (assign, "$g_sod_marnid_market_pending", 0),
     (assign, "$g_sod_marnid_market_result_grade", 1),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc2", -3),
     (call_script, "script_troop_add_gold", "trp_player", 300),
     (quest_set_slot, "qst_companion_marnid_honest_price", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_marnid_honest_price", slot_quest_sod_runtime_metadata, "$g_sod_marnid_market_result_grade"),
@@ -12350,8 +14356,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_marnid",
   [
     (troop_slot_ge, "trp_npc2", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc2"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc2", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc2"),
+    (str_store_string_reg, s2, s68),
   ],
   "A ledger can record blackmail as income. It cannot make it trade. My confidence is {s2}.",
   "member_talk",
@@ -12362,18 +14369,18 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_marnid",
   [
     (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc2"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc2"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The contract still made profit. Better, it made memory: names paid, witnesses heard, and no page we need to hide. My confidence is {s2}.",
+  "The contract still made profit. Better, it left a record: names paid, witnesses heard, and no page we need to hide. My confidence is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_marnid",
   [
     (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc2"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc2"),
+    (str_store_string_reg, s2, s68),
   ],
   "The hard bargain worked. I have written that down. I have also written what it cost, because silence is how bad accounts become policy. My confidence is {s2}.",
   "member_talk",
@@ -12381,11 +14388,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
 [anyone, "companion_depth_marnid",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc2"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc2"),
+    (str_store_string_reg, s2, s68),
     (troop_get_slot, reg2, "trp_npc2", slot_troop_companion_personal_quest_stage),
   ],
-  "They say we are not bankrupt, which is not the same as healthy. Coin tells the truth if you stop asking it to flatter you. At present, my confidence is {s2}. The Honest Price stands at {reg2}.",
+  "They say we are not bankrupt, which is not the same as healthy. Coin tells the truth if you stop asking it to flatter you. My confidence is {s2}. The Honest Price stands at {reg2}.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc2", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -12393,10 +14400,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (troop_slot_ge, "trp_npc2", slot_troop_companion_approval, 70),
       (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
       (troop_set_slot, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc2"),
       (display_message, "@Marnid seems ready to speak at camp about the difference between profit and poison.", 0x99CCFF),
     (try_end),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_ymira.py:L1-L34 ] anyone|plyr::member_talk->companion_depth_ymira_captive_pending [eq|main_party_has_troop|call_script] {ymira, speak for the captives before i decide their fate.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_ymira.py:L1-L34 ] anyone|plyr::member_talk->companion_depth_ymira_captive_pending [eq|main_party_has_troop|call_script] {ymira, speak for the captives.}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc3"),
@@ -12410,7 +14418,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (val_max, ":slave_count", "$g_sod_ymira_refugee_captive_count"),
     (ge, ":slave_count", 3),
   ],
-  "Ymira, speak for the captives before I decide their fate.", "companion_depth_ymira_captive_pending",
+  "Ymira, speak for the captives.", "companion_depth_ymira_captive_pending",
   [
     (try_begin),
       (le, "$g_sod_ymira_refugee_focus_center", 0),
@@ -12425,11 +14433,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (main_party_has_troop, "trp_npc3"),
     (call_script, "script_cf_sod_companion_campaign_available", "trp_npc3", sod_companion_campaign_mode_dialog),
   ],
-  "Ymira, I want to know how this road is wearing on you.", "companion_depth_ymira",
+  "Ymira, how is this road wearing on you?", "companion_depth_ymira",
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc3"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_ymira.py:L1-L215 ] anyone::companion_depth_ymira_captive_pending->companion_depth_ymira_captive_choice [eq|eq|gt] {the elder at {var} heard them as people, not cargo, and the ride}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_ymira.py:L1-L233 ] anyone::companion_depth_ymira_captive_pending->companion_depth_ymira_captive_choice [eq|eq|gt] {the elder at {var} heard them as people, not cargo. the riders t}
 [anyone, "companion_depth_ymira_captive_pending",
   [
     (eq, "$g_sod_ymira_refugee_witnessed", 1),
@@ -12442,7 +14450,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (store_add, reg1, ":male_slaves", ":female_slaves"),
     (val_max, reg1, "$g_sod_ymira_refugee_captive_count"),
   ],
-  "The elder at {s3} heard them as people, not cargo, and the riders have tested the door. There are {reg1} lives still waiting on your order. Now mercy has witnesses.",
+  "The elder at {s3} heard them as people, not cargo. The riders tested the door. Now {reg1} lives wait on your order.",
   "companion_depth_ymira_captive_choice",
   []],
 
@@ -12454,7 +14462,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (party_is_active, "$g_sod_ymira_refugee_focus_center"),
     (str_store_party_name_link, s3, "$g_sod_ymira_refugee_focus_center"),
   ],
-  "The elder at {s3} has heard them. That matters. But the village is afraid of the riders who follow freed names. Please, stay long enough for mercy to have guards.",
+  "The elder at {s3} has heard them. That matters. But the village is afraid of the riders who hunt freed people. Please, stay long enough for mercy to have guards.",
   "member_talk",
   []],
 
@@ -12469,7 +14477,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
     (store_add, reg1, ":male_slaves", ":female_slaves"),
   ],
-  "There are {reg1} people in our camp who cannot choose where they stand. I can get them names, water, and a road, but shelter means reaching {s3}. Please, not a camp order from here.",
+  "There are {reg1} people in our camp who cannot choose where they stand. I can get them names, water, and a road, but shelter means reaching {s3}. Please, not an order from camp.",
   "member_talk",
   []],
 
@@ -12488,12 +14496,17 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (store_add, reg1, ":male_slaves", ":female_slaves"),
     (val_max, reg1, "$g_sod_ymira_refugee_captive_count"),
   ],
-  "We are close enough to {s3} to do more than talk. There are {reg1} people here who cannot choose where they stand. Let the village hear at least one name before a ledger decides anything.",
+  "We are close enough to {s3} to do more than talk. There are {reg1} people here who cannot choose where they stand. Let the village hear at least one name before anyone writes them into a ledger.",
   "member_talk",
   []],
 
-[anyone|plyr, "companion_depth_ymira_captive_choice", [],
-  "Guard, feed, and release them under your care.", "member_talk",
+[anyone|plyr, "companion_depth_ymira_captive_choice",
+  [
+    (main_party_has_troop, "trp_npc3"),
+    (eq, "$g_sod_ymira_refugee_witnessed", 1),
+    (eq, "$g_sod_ymira_refugee_confronted", 1),
+  ],
+  "Guard, feed, and release them with your care.", "member_talk",
   [
     (party_count_members_of_type, ":male_slaves", "p_main_party", "trp_slave"),
     (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
@@ -12512,6 +14525,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (assign, "$g_sod_ymira_refugee_result_grade", 3),
     (assign, "$g_sod_ymira_refugee_captive_count", 0),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_ymira_refugee_mercy, 5),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc3", 4),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc3", 1),
     (call_script, "script_sod_companion_ymira_apply_mercy_payoff", ":slave_count"),
     (quest_set_slot, "qst_companion_ymira_mercy_under_arms", slot_quest_sod_runtime_progress, 100),
@@ -12520,8 +14534,13 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (display_message, "@Ymira turns mercy into orders after the village witness: guards posted, water issued, routes chosen. Mercy Under Arms remembers protection.", 0x99CCFF),
   ]],
 
-[anyone|plyr, "companion_depth_ymira_captive_choice", [],
-  "Ransom the able-bodied and release the weakest.", "member_talk",
+[anyone|plyr, "companion_depth_ymira_captive_choice",
+  [
+    (main_party_has_troop, "trp_npc3"),
+    (eq, "$g_sod_ymira_refugee_witnessed", 1),
+    (eq, "$g_sod_ymira_refugee_confronted", 1),
+  ],
+  "Ransom the able-bodied. Release the weakest.", "member_talk",
   [
     (party_count_members_of_type, ":male_slaves", "p_main_party", "trp_slave"),
     (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
@@ -12555,7 +14574,12 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (display_message, "@Ymira helps secure {reg1} of the weakest refugees after the standoff, but the ransom purse weighs on the silence. You gain {reg2} denars.", 0xCC9966),
   ]],
 
-[anyone|plyr, "companion_depth_ymira_captive_choice", [],
+[anyone|plyr, "companion_depth_ymira_captive_choice",
+  [
+    (main_party_has_troop, "trp_npc3"),
+    (eq, "$g_sod_ymira_refugee_witnessed", 1),
+    (eq, "$g_sod_ymira_refugee_confronted", 1),
+  ],
   "Keep them chained. The army needs every advantage.", "member_talk",
   [
     (party_count_members_of_type, ":male_slaves", "p_main_party", "trp_slave"),
@@ -12563,6 +14587,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (store_add, ":slave_count", ":male_slaves", ":female_slaves"),
     (val_max, ":slave_count", "$g_sod_ymira_refugee_captive_count"),
     (assign, "$g_sod_ymira_refugee_result_grade", 1),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc3", -4),
     (call_script, "script_sod_companion_try_ymira_refugee_expedience", ":slave_count"),
     (assign, "$g_sod_ymira_refugee_captive_count", 0),
     (quest_set_slot, "qst_companion_ymira_mercy_under_arms", slot_quest_sod_runtime_progress, 100),
@@ -12574,10 +14599,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_ymira",
   [
     (troop_slot_ge, "trp_npc3", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc3", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc3"),
+    (str_store_string_reg, s2, s68),
   ],
-  "I can follow hard choices. I cannot follow a commander who starts calling helpless people convenient. If mercy has no place here, then I need to know it plainly. Right now, my trust is {s2}.",
+  "I can follow hard choices. I cannot follow a commander who starts calling helpless people convenient. If mercy has no place here, I need to know it plainly. My trust is {s2}.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc3", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -12586,50 +14612,50 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_ymira",
   [
     (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc3"),
+    (str_store_string_reg, s2, s68),
   ],
-  "You proved something I was afraid to ask for. Not that war can be clean. It cannot. But that a commander can put guards around mercy and mean it. Right now, my trust is {s2}.",
+  "You proved something I was afraid to ask for. War cannot be clean, but a commander can put guards around mercy and mean it. My trust is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_ymira",
   [
     (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc3"),
+    (str_store_string_reg, s2, s68),
   ],
-  "I stayed because I know armies starve and plans break. But I remember every face we decided was too heavy to carry. Necessary should leave a mark. Right now, my trust is {s2}.",
+  "I stayed because armies starve and plans break. But I remember every face we decided was too heavy to carry. Necessary should leave a mark. My trust is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_ymira",
   [
     (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc3"),
+    (str_store_string_reg, s2, s68),
   ],
-  "This is the part that matters after victory, after counting coin and stores, when nobody important is looking at the captives. That is where command shows its real face. Right now, my trust is {s2}.",
+  "After victory, after coin and stores are counted, captives are where command shows its real face. My trust is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_ymira",
   [
     (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc3"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The first thing I was ever praised for in a war camp was keeping a bowl steady while a man died. I learned then that small mercies are not small to the person receiving them. Right now, my trust is {s2}.",
+  "The first thing I was praised for in a war camp was keeping a bowl steady while a man died. Small mercies are not small to the person receiving them. My trust is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_ymira",
   [
     (troop_slot_ge, "trp_npc3", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc3"),
+    (str_store_string_reg, s2, s68),
   ],
-  "You keep making room for the wounded, the frightened, and the people who cannot bargain for themselves. I am starting to believe that is not an accident. Right now, my trust is {s2}.",
+  "You keep making room for the wounded, the frightened, and the people who cannot bargain for themselves. I am starting to believe that is not an accident. My trust is {s2}.",
   "member_talk",
   [
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc3", 1),
@@ -12637,13 +14663,13 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
 [anyone, "companion_depth_ymira",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc3"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc3"),
+    (str_store_string_reg, s2, s68),
   ],
-  "I am still here, and that means something. I watch the wounded before I watch the banners, and I watch what happens to the helpless after our victories. Right now, my trust is {s2}.",
+  "I am still here, and that means something. I watch the wounded before the banners, and I watch what happens to the helpless after victories. My trust is {s2}.",
   "member_talk",
   []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_rolf.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_rolf_name_pending [eq|main_party_has_troop|eq] {rolf, answer the question about your name here, not from a pose.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_rolf.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_rolf_name_pending [eq|main_party_has_troop|eq] {rolf, answer the question of your name plainly.}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc4"),
@@ -12652,7 +14678,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_rolf_name_challenge_confronted", 1),
     (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Rolf, answer the question about your name here, not from a pose.", "companion_depth_rolf_name_pending",
+  "Rolf, answer the question of your name plainly.", "companion_depth_rolf_name_pending",
   []],
 
 [anyone|plyr, "member_talk",
@@ -12664,13 +14690,13 @@ Laugh if you wish princeling, but know that many failed to get past their format
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc4"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_rolf.py:L1-L167 ] anyone::companion_depth_rolf_name_pending->companion_depth_rolf_name_choice [eq|eq] {a crowd is a poor court, but it has asked a courtly question and}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_rolf.py:L1-L193 ] anyone::companion_depth_rolf_name_pending->companion_depth_rolf_name_choice [eq|eq] {a crowd is a poor court, but it has weighed my name in public. w}
 [anyone, "companion_depth_rolf_name_pending",
   [
     (eq, "$g_sod_rolf_name_challenge_witnessed", 1),
     (eq, "$g_sod_rolf_name_challenge_confronted", 1),
   ],
-  "A crowd is a poor court, but it has asked a courtly question and then watched the public proof. What is a name worth when witnesses stop admiring it and start weighing it?",
+  "A crowd is a poor court, but it has weighed my name in public. What is a name worth when witnesses stop admiring it?",
   "companion_depth_rolf_name_choice",
   []],
 
@@ -12680,7 +14706,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_rolf_name_challenge_confronted", 0),
   ],
   "The town has weighed my name. Vulgar, yes, but not irrelevant. Stage the public proof before we decide whether the name should become service, dignity, or a smaller story.",
-  "member_talk",
+  "companion_depth_rolf_public_proof_choice",
   []],
 
 [anyone, "companion_depth_rolf_name_pending", [],
@@ -12688,8 +14714,28 @@ Laugh if you wish princeling, but know that many failed to get past their format
   "member_talk",
   []],
 
+[anyone|plyr, "companion_depth_rolf_public_proof_choice",
+  [
+    (main_party_has_troop, "trp_npc4"),
+    (eq, "$g_sod_rolf_name_challenge_pending", 1),
+    (eq, "$g_sod_rolf_name_challenge_witnessed", 1),
+    (eq, "$g_sod_rolf_name_challenge_confronted", 0),
+  ],
+  "Stage the proof now.", "close_window",
+  [
+    (jump_to_menu, "mnu_rolf_public_proof"),
+    (finish_mission),
+  ]],
+
+[anyone|plyr, "companion_depth_rolf_public_proof_choice",
+  [
+    (main_party_has_troop, "trp_npc4"),
+  ],
+  "Not yet.", "member_talk", []],
+
 [anyone|plyr, "companion_depth_rolf_name_choice",
   [
+    (main_party_has_troop, "trp_npc4"),
     (eq, "$g_sod_rolf_name_challenge_witnessed", 1),
     (eq, "$g_sod_rolf_name_challenge_confronted", 1),
   ],
@@ -12700,6 +14746,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (quest_set_slot, "qst_companion_rolf_name_worth_wearing", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_rolf_name_worth_wearing", slot_quest_sod_runtime_metadata, "$g_sod_rolf_name_challenge_result_grade"),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_tournament_glory, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc4", 2),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc4", 1),
     (call_script, "script_sod_companion_rolf_apply_name_payoff"),
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc4"),
@@ -12708,6 +14755,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
 [anyone|plyr, "companion_depth_rolf_name_choice",
   [
+    (main_party_has_troop, "trp_npc4"),
     (eq, "$g_sod_rolf_name_challenge_witnessed", 1),
     (eq, "$g_sod_rolf_name_challenge_confronted", 1),
   ],
@@ -12729,13 +14777,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
 [anyone|plyr, "companion_depth_rolf_name_choice",
   [
+    (main_party_has_troop, "trp_npc4"),
     (eq, "$g_sod_rolf_name_challenge_witnessed", 1),
     (eq, "$g_sod_rolf_name_challenge_confronted", 1),
   ],
-  "Strip away the performance in front of the company.", "member_talk",
+  "Strip the performance away in public.", "member_talk",
   [
     (assign, "$g_sod_rolf_name_challenge_pending", 0),
     (assign, "$g_sod_rolf_name_challenge_result_grade", 1),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc4", -3),
     (quest_set_slot, "qst_companion_rolf_name_worth_wearing", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_rolf_name_worth_wearing", slot_quest_sod_runtime_metadata, "$g_sod_rolf_name_challenge_result_grade"),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc4", 0),
@@ -12747,10 +14797,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_rolf",
   [
     (troop_slot_ge, "trp_npc4", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc4", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc4"),
+    (str_store_string_reg, s2, s68),
   ],
-  "There is correction, and then there is public smallness dressed as honesty. My confidence in our grandeur is {s2}, though grandeur is presently nursing a bruise.",
+  "There is correction, and then there is public smallness dressed as honesty. My confidence in our grandeur is {s2}, though grandeur is nursing a bruise.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc4", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -12759,8 +14810,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_rolf",
   [
     (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc4"),
+    (str_store_string_reg, s2, s68),
   ],
   "A name earned in sight of witnesses has a sturdier ring than one shouted over objections. I knew this, naturally. My confidence in our grandeur is {s2}.",
   "member_talk",
@@ -12769,28 +14820,28 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_rolf",
   [
     (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc4"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The claim is quieter now. Perhaps too quiet. Still, a bruised banner can be raised again if the hand holding it is not mocked for bleeding. My confidence in our grandeur is {s2}.",
+  "The claim is quieter now. Perhaps too quiet. Still, a bruised banner can rise again if the hand holding it is not mocked for bleeding. My confidence in our grandeur is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_rolf",
   [
     (eq, "$g_sod_rolf_name_challenge_pending", 1),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc4"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The crowd gave me applause and questions in equal measure. A vulgar exchange. Still, ask the town, stage the public proof, and then we may answer. My confidence in our grandeur is {s2}.",
+  "The crowd gave me applause and questions in equal measure. Vulgar, but useful. Ask the town, stage the public proof, then we may answer. My confidence in our grandeur is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_rolf",
   [
     (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc4"),
+    (str_store_string_reg, s2, s68),
   ],
   "A Name Worth Wearing is more than cloth and vowels. Disappointing, perhaps, but occasionally useful. My confidence in our grandeur is {s2}.",
   "member_talk",
@@ -12799,38 +14850,39 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_rolf",
   [
     (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc4"),
+    (str_store_string_reg, s2, s68),
   ],
-  "There are men who inherit names, and lesser men who question them. Yet I begin to suspect a name can also be made heavier by conduct. My confidence in our grandeur is {s2}.",
+  "There are men who inherit names, and lesser men who question them. Yet I begin to suspect conduct can make a name heavier. My confidence in our grandeur is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_rolf",
   [
     (troop_slot_ge, "trp_npc4", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc4"),
+    (str_store_string_reg, s2, s68),
   ],
-  "You understand that dignity is not an ornament. It is a weapon for keeping lesser rooms from becoming lesser men. My confidence in our grandeur is {s2}.",
+  "You understand that dignity is not an ornament. It is a weapon against rooms that try to make men smaller. My confidence in our grandeur is {s2}.",
   "member_talk",
   [
     (try_begin),
       (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
       (troop_set_slot, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc4"),
       (display_message, "@Rolf seems ready to speak at camp about names, dignity, and the exhausting burden of being Rolf.", 0x99CCFF),
     (try_end),
   ]],
 
 [anyone, "companion_depth_rolf",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc4"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc4"),
+    (str_store_string_reg, s2, s68),
   ],
   "A name of stature can endure mud, blood, and even poor tailoring. It cannot endure smallness forever. My confidence in our grandeur is {s2}.",
   "member_talk",
   []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_baheshtur.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_baheshtur_saddle_pending [eq|main_party_has_troop|eq] {baheshtur, speak for the beaten riders before i answer them.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_baheshtur.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_baheshtur_saddle_pending [eq|main_party_has_troop|eq] {baheshtur, speak for the beaten riders.}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc5"),
@@ -12839,7 +14891,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_baheshtur_saddle_confronted", 1),
     (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Baheshtur, speak for the beaten riders before I answer them.", "companion_depth_baheshtur_saddle_pending",
+  "Baheshtur, speak for the beaten riders.", "companion_depth_baheshtur_saddle_pending",
   []],
 
 [anyone|plyr, "member_talk",
@@ -12847,11 +14899,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_talk_troop", "trp_npc5"),
     (main_party_has_troop, "trp_npc5"),
   ],
-  "Baheshtur, does this road still feel freely chosen?", "companion_depth_baheshtur",
+  "Baheshtur, is this ride still freely chosen?", "companion_depth_baheshtur",
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc5"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_baheshtur.py:L1-L204 ] anyone::companion_depth_baheshtur_saddle_pending->companion_depth_baheshtur_saddle_choice [eq|eq|try_begin] {you heard him. {var}. a horse can carry a free oath or a chain w}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_baheshtur.py:L1-L228 ] anyone::companion_depth_baheshtur_saddle_pending->companion_depth_baheshtur_saddle_choice [eq|eq|try_begin] {you heard him. {var}. a horse can carry a free oath or a chain w}
 [anyone, "companion_depth_baheshtur_saddle_pending",
   [
     (eq, "$g_sod_baheshtur_saddle_witnessed", 1),
@@ -12860,7 +14912,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (eq, "$g_sod_baheshtur_saddle_cause", 2),
       (str_store_string, s1, "@a broken camp leaves many saddles empty"),
     (else_try),
-      (str_store_string, s1, "@a broken raid leaves proud riders measuring rope against road"),
+      (str_store_string, s1, "@a broken raid leaves proud riders measuring rope against open sky"),
     (try_end),
   ],
   "You heard him. {s1}. A horse can carry a free oath or a chain with better leather. We choose which one we offer.",
@@ -12879,7 +14931,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (try_end),
   ],
   "{s1}. The rider has spoken, but words are cheap under another man's blade. Run the rider oath trial with me before you choose what freedom means.",
-  "member_talk",
+  "companion_depth_baheshtur_oath_trial_choice",
   []],
 
 [anyone, "companion_depth_baheshtur_saddle_pending",
@@ -12892,19 +14944,38 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (str_store_string, s1, "@the raider band is broken, and survivors are waiting to learn whether defeat means a new master"),
     (try_end),
   ],
-  "{s1}. Find a living rider and let him say whether a saddle is road or rope. Then we will answer.",
+  "{s1}. Find a living rider and let him say whether a saddle means choice or rope. Then we will answer.",
   "member_talk",
   []],
 
+[anyone|plyr, "companion_depth_baheshtur_oath_trial_choice", [
+    (main_party_has_troop, "trp_npc5"),
+    (eq, "$g_sod_baheshtur_saddle_pending", 1),
+    (eq, "$g_sod_baheshtur_saddle_witnessed", 1),
+    (eq, "$g_sod_baheshtur_saddle_confronted", 0),
+  ],
+  "Run the oath trial now.", "close_window",
+  [
+    (jump_to_menu, "mnu_baheshtur_rider_oath_trial"),
+    (finish_mission),
+  ]],
+
+[anyone|plyr, "companion_depth_baheshtur_oath_trial_choice", [
+    (main_party_has_troop, "trp_npc5"),
+  ],
+  "Not yet.", "member_talk", []],
+
 [anyone|plyr, "companion_depth_baheshtur_saddle_choice", [
+    (main_party_has_troop, "trp_npc5"),
     (eq, "$g_sod_baheshtur_saddle_witnessed", 1),
     (eq, "$g_sod_baheshtur_saddle_confronted", 1),
   ],
-  "Offer honorable freedom to riders who swear freely.", "member_talk",
+  "Offer freedom to riders who swear freely.", "member_talk",
   [
     (assign, "$g_sod_baheshtur_saddle_pending", 0),
     (assign, "$g_sod_baheshtur_saddle_result_grade", 3),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_black_khergit_camp_defeat, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc5", 3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc5", 1),
     (quest_set_slot, "qst_companion_baheshtur_unbroken_saddle", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_baheshtur_unbroken_saddle", slot_quest_sod_runtime_metadata, "$g_sod_baheshtur_saddle_result_grade"),
@@ -12914,10 +14985,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
   ]],
 
 [anyone|plyr, "companion_depth_baheshtur_saddle_choice", [
+    (main_party_has_troop, "trp_npc5"),
     (eq, "$g_sod_baheshtur_saddle_witnessed", 1),
     (eq, "$g_sod_baheshtur_saddle_confronted", 1),
   ],
-  "Ride hard after the raiders, but leave surrender unchained.", "member_talk",
+  "Ride hard, but leave surrender unchained.", "member_talk",
   [
     (assign, "$g_sod_baheshtur_saddle_pending", 0),
     (try_begin),
@@ -12941,13 +15013,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
   ]],
 
 [anyone|plyr, "companion_depth_baheshtur_saddle_choice", [
+    (main_party_has_troop, "trp_npc5"),
     (eq, "$g_sod_baheshtur_saddle_witnessed", 1),
     (eq, "$g_sod_baheshtur_saddle_confronted", 1),
   ],
-  "Force submission. Broken riders are useful riders.", "member_talk",
+  "Force submission. Useful riders are useful.", "member_talk",
   [
     (assign, "$g_sod_baheshtur_saddle_pending", 0),
     (assign, "$g_sod_baheshtur_saddle_result_grade", 1),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc5", -4),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc5", 0),
     (troop_set_slot, "trp_npc5", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (quest_set_slot, "qst_companion_baheshtur_unbroken_saddle", slot_quest_sod_runtime_progress, 100),
@@ -12959,10 +15033,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_baheshtur",
   [
     (troop_slot_ge, "trp_npc5", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc5", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc5"),
+    (str_store_string_reg, s2, s68),
   ],
-  "A forced oath is a rope with better words. My trust in your saddle hand is {s2}, and I am watching which roads you call free.",
+  "A forced oath is a rope with better words. My trust in your hand on the reins is {s2}; I am watching which riders you call free.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc5", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -12971,20 +15046,20 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_baheshtur",
   [
     (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc5"),
+    (str_store_string_reg, s2, s68),
   ],
-  "Those who stayed did so by their own word. Now they ride with us, not under us. My trust in your saddle hand is {s2}.",
+  "Those who stayed did so by their own word. Now they ride with us, not under us. My trust in your hand on the reins is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_baheshtur",
   [
     (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc5"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The riders obey. Obedience is not loyalty. A broken saddle carries weight until the horse finds a cliff. My trust in your saddle hand is {s2}.",
+  "The riders obey. Obedience is not loyalty. A broken saddle carries weight until it throws the rider. My trust in your hand on the reins is {s2}.",
   "member_talk",
   []],
 
@@ -12993,68 +15068,69 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_baheshtur_saddle_pending", 1),
     (eq, "$g_sod_baheshtur_saddle_witnessed", 1),
     (eq, "$g_sod_baheshtur_saddle_confronted", 0),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc5"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The rider has given us a living witness. Now run the rider oath trial with me, and we will see who calls the saddle free when steel is near. My trust in your saddle hand is {s2}.",
+  "The rider has given us a living witness. Run the oath trial with me, and we will see whether choice survives when steel is near. My trust in your hand on the reins is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_baheshtur",
   [
     (eq, "$g_sod_baheshtur_saddle_pending", 1),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc5"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The horde riders are beaten enough to listen and proud enough to remember. First we need a living witness, then an oath tested under open sky. My trust in your saddle hand is {s2}.",
+  "The horde riders are beaten enough to listen and proud enough to remember. We need a living witness, then an oath tested under open sky. My trust in your hand on the reins is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_baheshtur",
   [
     (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc5"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The Unbroken Saddle is simple enough. A road chosen can be hard and still be free. A road forced is a chain, even under open sky. My trust is {s2}.",
+  "The Unbroken Saddle is simple enough. A hard ride can still be freely chosen. A forced ride is a chain, even under open sky. My trust is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_baheshtur",
   [
     (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc5"),
+    (str_store_string_reg, s2, s68),
   ],
-  "A saddle can carry a man or mark him owned. The difference is who chose the road. My trust in your saddle hand is {s2}.",
+  "A saddle can carry a man or mark him owned. The difference is who chose the ride. My trust in your hand on the reins is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_baheshtur",
   [
     (troop_slot_ge, "trp_npc5", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc5"),
+    (str_store_string_reg, s2, s68),
   ],
-  "You understand that open ground is not freedom if another man holds the reins. That is worth riding beside. My trust in your saddle hand is {s2}.",
+  "You understand that open ground is not freedom if another man holds the reins. That is worth riding beside. My trust in your hand on the reins is {s2}.",
   "member_talk",
   [
     (try_begin),
       (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
       (troop_set_slot, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc5"),
       (display_message, "@Baheshtur seems ready to speak at camp about The Unbroken Saddle and the price of chosen loyalty.", 0x99CCFF),
     (try_end),
   ]],
 
 [anyone, "companion_depth_baheshtur",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc5"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc5"),
+    (str_store_string_reg, s2, s68),
   ],
-  "A road chosen can be hard and still be free. A road forced is a chain, even under open sky. My trust in your saddle hand is {s2}.",
+  "A hard ride can still be freely chosen. A forced ride is a chain, even under open sky. My trust in your hand on the reins is {s2}.",
   "member_talk",
   []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_firentis.py:L1-L29 ] anyone|plyr::member_talk->companion_depth_firentis_restitution_pending [eq|main_party_has_troop|call_script] {firentis, tell me what restitution still asks of us.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_firentis.py:L1-L29 ] anyone|plyr::member_talk->companion_depth_firentis_restitution_pending [eq|main_party_has_troop|call_script] {firentis, what does restitution ask of us?}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc6"),
@@ -13063,7 +15139,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_firentis_restitution_pending", 1),
     (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Firentis, tell me what restitution still asks of us.", "companion_depth_firentis_restitution_pending",
+  "Firentis, what does restitution ask of us?", "companion_depth_firentis_restitution_pending",
   [
     (try_begin),
       (le, "$g_sod_firentis_restitution_focus_center", 0),
@@ -13078,11 +15154,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (main_party_has_troop, "trp_npc6"),
     (call_script, "script_cf_sod_companion_campaign_available", "trp_npc6", sod_companion_campaign_mode_dialog),
   ],
-  "Firentis, how does the company sit with your conscience?", "companion_depth_firentis",
+  "Firentis, how does the company sit with you?", "companion_depth_firentis",
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc6"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_firentis.py:L1-L179 ] anyone::companion_depth_firentis_restitution_pending->companion_depth_firentis_restitution_choice [eq|eq|gt] {the elder at {var} did not absolve us. good. absolution would be}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_firentis.py:L1-L198 ] anyone::companion_depth_firentis_restitution_pending->companion_depth_firentis_restitution_choice [eq|eq|gt] {the elder at {var} did not absolve us. good. the village spoke; }
 [anyone, "companion_depth_firentis_restitution_pending",
   [
     (eq, "$g_sod_firentis_restitution_witnessed", 1),
@@ -13091,7 +15167,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (party_is_active, "$g_sod_firentis_restitution_focus_center"),
     (str_store_party_name_link, s3, "$g_sod_firentis_restitution_focus_center"),
   ],
-  "The elder at {s3} did not absolve us. Good. Absolution would be too easy. The village spoke, the hearing tested us, and now restitution can answer a living voice.",
+  "The elder at {s3} did not absolve us. Good. The village spoke; now restitution needs more than words.",
   "companion_depth_firentis_restitution_choice",
   []],
 
@@ -13103,7 +15179,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (party_is_active, "$g_sod_firentis_restitution_focus_center"),
     (str_store_party_name_link, s3, "$g_sod_firentis_restitution_focus_center"),
   ],
-  "The elder at {s3} gave us a living voice. Now we owe that village more than a private answer. Stand with me at the hearing before we decide what penance means.",
+  "The elder at {s3} gave us a public witness. Now we owe that village more than a private answer. Stand with me at the hearing before we decide what restitution costs.",
   "member_talk",
   []],
 
@@ -13122,17 +15198,23 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (str_store_string, s3, "@the nearest harmed village"),
     (try_end),
   ],
-  "A saved village can still flinch at mailed hands. We brought swords. Go with me to the elder at {s3}, if you would have this judged by more than campfire guilt.",
+  "A saved village can still flinch at mailed hands. We brought swords. Go with me to the elder at {s3}, if you would have this judged by more than private guilt.",
   "member_talk",
   []],
 
-[anyone|plyr, "companion_depth_firentis_restitution_choice", [],
-  "Leave guards, coin, and supplies. Protection is part of penance.", "member_talk",
+[anyone|plyr, "companion_depth_firentis_restitution_choice",
+  [
+    (main_party_has_troop, "trp_npc6"),
+    (eq, "$g_sod_firentis_restitution_witnessed", 1),
+    (eq, "$g_sod_firentis_restitution_confronted", 1),
+  ],
+  "Leave guards, coin, and supplies. Penance must protect.", "member_talk",
   [
     (assign, "$g_sod_firentis_restitution_pending", 0),
     (assign, "$g_sod_firentis_restitution_result_grade", 3),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_help_village, 3),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_honorable_peace, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc6", 3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc6", 1),
     (call_script, "script_sod_companion_firentis_apply_restitution_payoff"),
     (quest_set_slot, "qst_companion_firentis_debt_restitution", slot_quest_sod_runtime_progress, 100),
@@ -13141,7 +15223,12 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (display_message, "@Firentis accepts that penance must become shelter, coin, and restraint. Debt of the Sword remembers restitution.", 0x99CCFF),
   ]],
 
-[anyone|plyr, "companion_depth_firentis_restitution_choice", [],
+[anyone|plyr, "companion_depth_firentis_restitution_choice",
+  [
+    (main_party_has_troop, "trp_npc6"),
+    (eq, "$g_sod_firentis_restitution_witnessed", 1),
+    (eq, "$g_sod_firentis_restitution_confronted", 1),
+  ],
   "Let truth be spoken. Ask the village what justice can still mean.", "member_talk",
   [
     (assign, "$g_sod_firentis_restitution_pending", 0),
@@ -13161,11 +15248,17 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (display_message, "@The answer is not clean, but it is honest. Firentis hears judgment without reaching for steel.", 0xCCCC66),
   ]],
 
-[anyone|plyr, "companion_depth_firentis_restitution_choice", [],
-  "Say nothing more. The village needed swords, not confession.", "member_talk",
+[anyone|plyr, "companion_depth_firentis_restitution_choice",
+  [
+    (main_party_has_troop, "trp_npc6"),
+    (eq, "$g_sod_firentis_restitution_witnessed", 1),
+    (eq, "$g_sod_firentis_restitution_confronted", 1),
+  ],
+  "Stay silent. The village needed swords, not confession.", "member_talk",
   [
     (assign, "$g_sod_firentis_restitution_pending", 0),
     (assign, "$g_sod_firentis_restitution_result_grade", 1),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc6", -3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc6", 0),
     (troop_set_slot, "trp_npc6", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (quest_set_slot, "qst_companion_firentis_debt_restitution", slot_quest_sod_runtime_progress, 100),
@@ -13177,10 +15270,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_firentis",
   [
     (troop_slot_ge, "trp_npc6", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc6", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc6"),
+    (str_store_string_reg, s2, s68),
   ],
-  "I have hidden behind obedience before. It is a fine shield until a man notices whose blood is on the rim. My faith in your command is {s2}, but I need the truth named.",
+  "I have hidden behind obedience before. It holds until a man notices whose blood is on the rim. My faith in your command is {s2}, but I need the truth named.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc6", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -13189,18 +15283,18 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_firentis",
   [
     (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc6"),
+    (str_store_string_reg, s2, s68),
   ],
-  "Restitution did not raise the dead. It did give the living something more honest than another speech beside a sword. My faith in your command is {s2}.",
+  "Restitution did not raise the dead. It did give the living something better than another speech beside a sword. My faith in your command is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_firentis",
   [
     (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc6"),
+    (str_store_string_reg, s2, s68),
   ],
   "The matter is quiet now. Quiet can be mercy, or cowardice, or only a grave with grass over it. I remain, but my faith in your command is {s2}.",
   "member_talk",
@@ -13209,8 +15303,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_firentis",
   [
     (eq, "$g_sod_firentis_restitution_pending", 1),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc6"),
+    (str_store_string_reg, s2, s68),
   ],
   "The village is saved, and still something in it asks payment from every armed hand. I would have your order before I mistake silence for discipline. My faith in your command is {s2}.",
   "member_talk",
@@ -13219,8 +15313,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_firentis",
   [
     (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc6"),
+    (str_store_string_reg, s2, s68),
   ],
   "There will come a village, a prisoner, or a frightened face that asks whether this sword has changed hands or merely changed banners. My faith in your command is {s2}.",
   "member_talk",
@@ -13229,8 +15323,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_firentis",
   [
     (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc6"),
+    (str_store_string_reg, s2, s68),
   ],
   "A sword remembers what the hand asks of it. So do the living. I think I am near a reckoning, and my faith in your command is {s2}.",
   "member_talk",
@@ -13239,8 +15333,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_firentis",
   [
     (troop_slot_ge, "trp_npc6", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc6"),
+    (str_store_string_reg, s2, s68),
   ],
   "You have shown me that strength can kneel without becoming weak. That is a harder lesson than any fencing master ever gave. My faith in your command is {s2}.",
   "member_talk",
@@ -13248,19 +15342,20 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (try_begin),
       (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
       (troop_set_slot, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
       (display_message, "@Firentis seems ready to speak at camp about the debts a sword cannot pay alone.", 0x99CCFF),
     (try_end),
   ]],
 
 [anyone, "companion_depth_firentis",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc6"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc6"),
+    (str_store_string_reg, s2, s68),
   ],
-  "Conscience is not a thing I would trust to comfort, my friend. It is a watchman. At present, my faith in your command is {s2}.",
+  "Conscience is not a comfort. It keeps watch. My faith in your command is {s2}.",
   "member_talk",
   []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_deshavi.py:L1-L31 ] anyone|plyr::member_talk->companion_depth_deshavi_tracks_pending [eq|main_party_has_troop|call_script] {deshavi, show me the trail before it goes cold.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_deshavi.py:L1-L31 ] anyone|plyr::member_talk->companion_depth_deshavi_tracks_pending [eq|main_party_has_troop|call_script] {deshavi, show me the trail before it fades.}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc7"),
@@ -13269,7 +15364,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_deshavi_trail_warning_pending", 1),
     (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Deshavi, show me the trail before it goes cold.", "companion_depth_deshavi_tracks_pending",
+  "Deshavi, show me the trail before it fades.", "companion_depth_deshavi_tracks_pending",
   [
     (try_begin),
       (le, "$g_sod_deshavi_trail_focus_center", 0),
@@ -13290,7 +15385,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc7"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_deshavi.py:L1-L223 ] anyone::companion_depth_deshavi_tracks_pending->companion_depth_deshavi_tracks_choice [eq|eq|gt] {the elder at {var} saw it too: {var}. tracks are stronger when s}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_deshavi.py:L1-L227 ] anyone::companion_depth_deshavi_tracks_pending->companion_depth_deshavi_tracks_choice [eq|eq|gt] {the elder at {var} saw it too: {var}. tracks are stronger when s}
 [anyone, "companion_depth_deshavi_tracks_pending",
   [
     (eq, "$g_sod_deshavi_trail_witnessed", 1),
@@ -13300,7 +15395,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (str_store_party_name_link, s3, "$g_sod_deshavi_trail_focus_center"),
     (try_begin),
       (eq, "$g_sod_deshavi_trail_warning_cause", 2),
-      (str_store_string, s1, "@freed captives, with Slaver hunters close enough to smell fear"),
+      (str_store_string, s1, "@freed captives, with slaver hunters close enough to smell fear"),
     (else_try),
       (str_store_string, s1, "@hungry people moving badly and hiding worse"),
     (try_end),
@@ -13317,7 +15412,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (party_is_active, "$g_sod_deshavi_trail_focus_center"),
     (str_store_party_name_link, s3, "$g_sod_deshavi_trail_focus_center"),
   ],
-  "The witness at {s3} gave the trail a living voice. Now follow me beyond the village before the quiet camp learns we are coming.",
+  "The witness at {s3} put a human voice to the trail. Now follow me beyond the village before the hunters learn we are coming.",
   "member_talk",
   []],
 
@@ -13330,12 +15425,12 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (str_store_party_name_link, s3, "$g_sod_deshavi_trail_focus_center"),
     (try_begin),
       (eq, "$g_sod_deshavi_trail_warning_cause", 2),
-      (str_store_string, s1, "@freed captives, with Slaver hunters close enough to smell fear"),
+      (str_store_string, s1, "@freed captives, with slaver hunters close enough to smell fear"),
     (else_try),
       (str_store_string, s1, "@hungry people moving badly and hiding worse"),
     (try_end),
   ],
-  "Broken grass, ash, rope-scrap, wrong silence. The signs point to {s1}, and the trail bends toward {s3}. We need to ride there before it becomes smoke.",
+  "Broken grass, ash, rope-scrap, wrong silence. The signs point to {s1}, and the trail bends toward {s3}. We need to ride there before it turns to smoke.",
   "member_talk",
   []],
 
@@ -13350,7 +15445,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (try_end),
     (try_begin),
       (eq, "$g_sod_deshavi_trail_warning_cause", 2),
-      (str_store_string, s1, "@freed captives, with Slaver hunters close enough to smell fear"),
+      (str_store_string, s1, "@freed captives, with slaver hunters close enough to smell fear"),
     (else_try),
       (str_store_string, s1, "@hungry people moving badly and hiding worse"),
     (try_end),
@@ -13365,7 +15460,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_deshavi_trail_witnessed", 1),
     (eq, "$g_sod_deshavi_trail_confronted", 1),
   ],
-  "Follow the trail, shelter the vulnerable, and cover their tracks.", "member_talk",
+  "Shelter the vulnerable and cover their tracks.", "member_talk",
   [
     (assign, "$g_sod_deshavi_trail_warning_pending", 0),
     (assign, "$g_sod_deshavi_trail_result_grade", 3),
@@ -13373,6 +15468,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (quest_set_slot, "qst_companion_deshavi_tracks_through_ash", slot_quest_sod_runtime_metadata, "$g_sod_deshavi_trail_result_grade"),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_scout_warning, 3),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_food_security, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc7", 3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc7", 1),
     (call_script, "script_sod_companion_deshavi_apply_trail_payoff"),
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc7"),
@@ -13385,7 +15481,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_deshavi_trail_witnessed", 1),
     (eq, "$g_sod_deshavi_trail_confronted", 1),
   ],
-  "Use the trail to set an ambush before helping survivors move.", "member_talk",
+  "Set an ambush, then move the survivors.", "member_talk",
   [
     (assign, "$g_sod_deshavi_trail_warning_pending", 0),
     (try_begin),
@@ -13414,10 +15510,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_deshavi_trail_witnessed", 1),
     (eq, "$g_sod_deshavi_trail_confronted", 1),
   ],
-  "Hunt the pursuers. The weak must keep moving on their own.", "member_talk",
+  "Hunt the pursuers. The vulnerable can keep moving.", "member_talk",
   [
     (assign, "$g_sod_deshavi_trail_warning_pending", 0),
     (assign, "$g_sod_deshavi_trail_result_grade", 1),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc7", -4),
     (quest_set_slot, "qst_companion_deshavi_tracks_through_ash", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_deshavi_tracks_through_ash", slot_quest_sod_runtime_metadata, "$g_sod_deshavi_trail_result_grade"),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc7", 0),
@@ -13429,10 +15526,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_deshavi",
   [
     (troop_slot_ge, "trp_npc7", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc7", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc7"),
+    (str_store_string_reg, s2, s68),
   ],
-  "Poor folk vanish when leaders decide tracks are too small to follow. I am watching whether your camp learns that habit. My trust is {s2}.",
+  "Poor folk vanish when leaders decide tracks are too small to follow. I am watching whether your command learns that habit. My trust is {s2}.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc7", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -13441,8 +15539,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_deshavi",
   [
     (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc7"),
+    (str_store_string_reg, s2, s68),
   ],
   "They lived because you looked down before looking ahead. Tracks are small things until someone follows them in time. My trust is {s2}.",
   "member_talk",
@@ -13451,8 +15549,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_deshavi",
   [
     (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc7"),
+    (str_store_string_reg, s2, s68),
   ],
   "Dead hunters cannot chase anyone. That is true. It is also not the same as saving the people they were hunting. My trust is {s2}.",
   "member_talk",
@@ -13461,18 +15559,18 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_deshavi",
   [
     (eq, "$g_sod_deshavi_trail_warning_pending", 1),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc7"),
+    (str_store_string_reg, s2, s68),
   ],
-  "There is a trail outside camp that will be smoke by morning if we leave it alone. I can read it. You decide whether it matters. My trust is {s2}.",
+  "There is a trail outside our camp that will be smoke by morning if we leave it alone. I can read it. You decide whether it matters. My trust is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_deshavi",
   [
     (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc7"),
+    (str_store_string_reg, s2, s68),
   ],
   "Tracks Through Ash is not about finding enemies. Anyone can find enemies once they are burning fields. It is about finding people before they disappear. My trust is {s2}.",
   "member_talk",
@@ -13481,8 +15579,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_deshavi",
   [
     (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc7"),
+    (str_store_string_reg, s2, s68),
   ],
   "Ash, rope marks, hunger tracks, old boot cuts. They all tell the same story when nobody important listens. I will see what you do when I bring you that story. My trust is {s2}.",
   "member_talk",
@@ -13491,8 +15589,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_deshavi",
   [
     (troop_slot_ge, "trp_npc7", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc7"),
+    (str_store_string_reg, s2, s68),
   ],
   "You have started looking where frightened people leave signs. That is rarer than courage. Courage is loud. Looking down takes practice. My trust is {s2}.",
   "member_talk",
@@ -13500,19 +15598,20 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (try_begin),
       (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
       (troop_set_slot, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc7"),
       (display_message, "@Deshavi seems ready to speak at camp about ash, tracks, and villages nobody important counted.", 0x99CCFF),
     (try_end),
   ]],
 
 [anyone, "companion_depth_deshavi",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc7"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc7"),
+    (str_store_string_reg, s2, s68),
   ],
-  "Smoke carries farther than noble promises. Tracks tell me who ran, who chased, and who never had a horse. I am still watching your camp. My trust is {s2}.",
+  "Smoke carries farther than noble promises. Tracks tell me who ran, who chased, and who never had a horse. I am watching what you choose to notice. My trust is {s2}.",
   "member_talk",
   []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_matheld.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_matheld_step_pending [eq|main_party_has_troop|eq] {matheld, tell me what the line learned in that fight.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_matheld.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_matheld_step_pending [eq|main_party_has_troop|eq] {matheld, what did the line learn?}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc8"),
@@ -13521,7 +15620,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_matheld_no_backward_step_confronted", 1),
     (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Matheld, tell me what the line learned in that fight.", "companion_depth_matheld_step_pending",
+  "Matheld, what did the line learn?", "companion_depth_matheld_step_pending",
   []],
 
 [anyone|plyr, "member_talk",
@@ -13533,7 +15632,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc8"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_matheld.py:L1-L192 ] anyone::companion_depth_matheld_step_pending->companion_depth_matheld_step_choice [eq|eq|try_begin] {{var}. the next line will learn from what you praise, punish, an}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_matheld.py:L1-L216 ] anyone::companion_depth_matheld_step_pending->companion_depth_matheld_step_choice [eq|eq|try_begin] {{var}. the next line will learn from what you praise, punish, an}
 [anyone, "companion_depth_matheld_step_pending",
   [
     (eq, "$g_sod_matheld_no_backward_step_witnessed", 1),
@@ -13555,7 +15654,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_matheld_no_backward_step_confronted", 0),
   ],
   "The ranker has said what the line remembers. Now we put shields in hands and test the lesson where fear can push back.",
-  "member_talk",
+  "companion_depth_matheld_shield_test_choice",
   []],
 
 [anyone, "companion_depth_matheld_step_pending",
@@ -13566,15 +15665,34 @@ Laugh if you wish princeling, but know that many failed to get past their format
   "member_talk",
   []],
 
+[anyone|plyr, "companion_depth_matheld_shield_test_choice", [
+    (main_party_has_troop, "trp_npc8"),
+    (eq, "$g_sod_matheld_no_backward_step_pending", 1),
+    (eq, "$g_sod_matheld_no_backward_step_witnessed", 1),
+    (eq, "$g_sod_matheld_no_backward_step_confronted", 0),
+  ],
+  "Test the shield line now.", "close_window",
+  [
+    (jump_to_menu, "mnu_matheld_shield_line_test"),
+    (finish_mission),
+  ]],
+
+[anyone|plyr, "companion_depth_matheld_shield_test_choice", [
+    (main_party_has_troop, "trp_npc8"),
+  ],
+  "Not yet.", "member_talk", []],
+
 [anyone|plyr, "companion_depth_matheld_step_choice", [
+    (main_party_has_troop, "trp_npc8"),
     (eq, "$g_sod_matheld_no_backward_step_witnessed", 1),
     (eq, "$g_sod_matheld_no_backward_step_confronted", 1),
   ],
-  "Temper courage into a shield wall that saves lives.", "member_talk",
+  "Temper courage into a shield wall that lives.", "member_talk",
   [
     (assign, "$g_sod_matheld_no_backward_step_pending", 0),
     (assign, "$g_sod_matheld_no_backward_step_result_grade", 3),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_honorable_peace, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc8", 3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc8", 1),
     (quest_set_slot, "qst_companion_matheld_no_backward_step", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_matheld_no_backward_step", slot_quest_sod_runtime_metadata, "$g_sod_matheld_no_backward_step_result_grade"),
@@ -13584,10 +15702,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
   ]],
 
 [anyone|plyr, "companion_depth_matheld_step_choice", [
+    (main_party_has_troop, "trp_npc8"),
     (eq, "$g_sod_matheld_no_backward_step_witnessed", 1),
     (eq, "$g_sod_matheld_no_backward_step_confronted", 1),
   ],
-  "Stand firm and answer the next threat directly.", "member_talk",
+  "Stand firm and answer the next threat.", "member_talk",
   [
     (assign, "$g_sod_matheld_no_backward_step_pending", 0),
     (try_begin),
@@ -13611,13 +15730,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
   ]],
 
 [anyone|plyr, "companion_depth_matheld_step_choice", [
+    (main_party_has_troop, "trp_npc8"),
     (eq, "$g_sod_matheld_no_backward_step_witnessed", 1),
     (eq, "$g_sod_matheld_no_backward_step_confronted", 1),
   ],
-  "Make every insult cost blood. No one calls the company soft.", "member_talk",
+  "Make every insult cost blood.", "member_talk",
   [
     (assign, "$g_sod_matheld_no_backward_step_pending", 0),
     (assign, "$g_sod_matheld_no_backward_step_result_grade", 1),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc8", -3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc8", 0),
     (troop_set_slot, "trp_npc8", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (quest_set_slot, "qst_companion_matheld_no_backward_step", slot_quest_sod_runtime_progress, 100),
@@ -13629,10 +15750,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_matheld",
   [
     (troop_slot_ge, "trp_npc8", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc8", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc8"),
+    (str_store_string_reg, s2, s68),
   ],
-  "Blood-price is easy. Wisdom is harder, and less fun to sing about. My trust in your courage is {s2}, but courage is not just who dies loudest.",
+  "Blood-price is easy. Wisdom is harder, and less fun to sing about. My trust in your courage is {s2}, but courage is not who dies loudest.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc8", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -13641,18 +15763,18 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_matheld",
   [
     (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc8"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The line stood and lived enough to stand again. That is courage with teeth, not courage with an empty skull. My trust in your courage is {s2}.",
+  "The line stood and lived enough to stand again. That is courage with teeth, not an empty skull. My trust in your courage is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_matheld",
   [
     (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc8"),
+    (str_store_string_reg, s2, s68),
   ],
   "No one calls us soft. Good. Some also do not answer when names are called. Less good. My trust in your courage is {s2}.",
   "member_talk",
@@ -13663,18 +15785,18 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_matheld_no_backward_step_pending", 1),
     (eq, "$g_sod_matheld_no_backward_step_witnessed", 1),
     (eq, "$g_sod_matheld_no_backward_step_confronted", 0),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc8"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The line has spoken. Now run the shield-line test with me. Then we can decide what courage should teach. My trust in your courage is {s2}.",
+  "The line has spoken. Run the shield-line test with me. Then we decide what courage should teach. My trust in your courage is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_matheld",
   [
     (eq, "$g_sod_matheld_no_backward_step_pending", 1),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc8"),
+    (str_store_string_reg, s2, s68),
   ],
   "The line learned something in that fight. Ask a ranker what it was, then test the lesson with shields in hand. My trust in your courage is {s2}.",
   "member_talk",
@@ -13683,18 +15805,18 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_matheld",
   [
     (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc8"),
+    (str_store_string_reg, s2, s68),
   ],
-  "No Backward Step is not about never moving. It is about keeping your face toward the danger even when the feet must be clever. My trust is {s2}.",
+  "No Backward Step is not about never moving. It is keeping your face toward danger while your feet stay clever. My trust is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_matheld",
   [
     (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc8"),
+    (str_store_string_reg, s2, s68),
   ],
   "There are days a company learns whether its back is bone or smoke. I am waiting for that day. My trust in your courage is {s2}.",
   "member_talk",
@@ -13703,8 +15825,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_matheld",
   [
     (troop_slot_ge, "trp_npc8", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc8"),
+    (str_store_string_reg, s2, s68),
   ],
   "You know a shield wall must breathe if it means to last. Good. I prefer courage that can fight again tomorrow. My trust in your courage is {s2}.",
   "member_talk",
@@ -13712,19 +15834,20 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (try_begin),
       (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
       (troop_set_slot, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc8"),
       (display_message, "@Matheld seems ready to speak at camp about the line between a backward step and a living shield.", 0x99CCFF),
     (try_end),
   ]],
 
 [anyone, "companion_depth_matheld",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc8"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc8"),
+    (str_store_string_reg, s2, s68),
   ],
-  "Courage is not a song. It is what remains when the shield is heavy and the road behind you looks kinder than the one ahead. My trust in your courage is {s2}.",
+  "Courage is not a song. It is what remains when the shield is heavy and the road behind you looks kinder. My trust in your courage is {s2}.",
   "member_talk",
   []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_alayen.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_alayen_standard_pending [eq|main_party_has_troop|eq] {alayen, tell me what the standard is asking of us.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_alayen.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_alayen_standard_pending [eq|main_party_has_troop|eq] {alayen, what does the standard ask of us?}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc9"),
@@ -13733,7 +15856,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_alayen_standard_confronted", 1),
     (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Alayen, tell me what the standard is asking of us.", "companion_depth_alayen_standard_pending",
+  "Alayen, what does the standard ask of us?", "companion_depth_alayen_standard_pending",
   []],
 
 [anyone|plyr, "member_talk",
@@ -13741,11 +15864,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_talk_troop", "trp_npc9"),
     (main_party_has_troop, "trp_npc9"),
   ],
-  "Alayen, does my command still honor the standard?", "companion_depth_alayen",
+  "Alayen, does my command still honor it?", "companion_depth_alayen",
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc9"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_alayen.py:L1-L174 ] anyone::companion_depth_alayen_standard_pending->companion_depth_alayen_standard_choice [eq|eq|try_begin] {the standard was raised over {var}. a witness has named its prom}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_alayen.py:L1-L200 ] anyone::companion_depth_alayen_standard_pending->companion_depth_alayen_standard_choice [eq|eq|try_begin] {the standard was raised over {var}. witnesses have tested its pr}
 [anyone, "companion_depth_alayen_standard_pending",
   [
     (eq, "$g_sod_alayen_standard_witnessed", 1),
@@ -13757,7 +15880,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (str_store_string, s1, "@people who needed protection more than ceremony"),
     (try_end),
   ],
-  "The standard was raised over {s1}. A witness has named its promise, and the public test has asked whether that promise is duty or display. Which shall it be?",
+  "The standard was raised over {s1}. Witnesses have tested its promise. Is it duty, or display?",
   "companion_depth_alayen_standard_choice",
   []],
 
@@ -13767,7 +15890,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_alayen_standard_confronted", 0),
   ],
   "The witness has spoken. Now stand the public standard test before we decide what the cloth means in comfort instead of cost.",
-  "member_talk",
+  "companion_depth_alayen_standard_test_choice",
   []],
 
 [anyone, "companion_depth_alayen_standard_pending", [],
@@ -13775,12 +15898,32 @@ Laugh if you wish princeling, but know that many failed to get past their format
   "member_talk",
   []],
 
+[anyone|plyr, "companion_depth_alayen_standard_test_choice",
+  [
+    (main_party_has_troop, "trp_npc9"),
+    (eq, "$g_sod_alayen_standard_pending", 1),
+    (eq, "$g_sod_alayen_standard_witnessed", 1),
+    (eq, "$g_sod_alayen_standard_confronted", 0),
+  ],
+  "Stand the test now.", "close_window",
+  [
+    (jump_to_menu, "mnu_alayen_standard_test"),
+    (finish_mission),
+  ]],
+
+[anyone|plyr, "companion_depth_alayen_standard_test_choice",
+  [
+    (main_party_has_troop, "trp_npc9"),
+  ],
+  "Not yet.", "member_talk", []],
+
 [anyone|plyr, "companion_depth_alayen_standard_choice",
   [
+    (main_party_has_troop, "trp_npc9"),
     (eq, "$g_sod_alayen_standard_witnessed", 1),
     (eq, "$g_sod_alayen_standard_confronted", 1),
   ],
-  "Make the standard a promise to protect those beneath it.", "member_talk",
+  "Make the standard protect those beneath it.", "member_talk",
   [
     (assign, "$g_sod_alayen_standard_pending", 0),
     (assign, "$g_sod_alayen_standard_result_grade", 3),
@@ -13788,6 +15931,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (quest_set_slot, "qst_companion_alayen_standard_self", slot_quest_sod_runtime_metadata, "$g_sod_alayen_standard_result_grade"),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_help_village, 3),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_honorable_peace, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc9", 3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc9", 1),
     (call_script, "script_sod_companion_alayen_apply_standard_payoff"),
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc9"),
@@ -13796,10 +15940,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
 [anyone|plyr, "companion_depth_alayen_standard_choice",
   [
+    (main_party_has_troop, "trp_npc9"),
     (eq, "$g_sod_alayen_standard_witnessed", 1),
     (eq, "$g_sod_alayen_standard_confronted", 1),
   ],
-  "Keep the oath publicly, even at a visible cost.", "member_talk",
+  "Keep the oath, even when it costs us.", "member_talk",
   [
     (assign, "$g_sod_alayen_standard_pending", 0),
     (try_begin),
@@ -13817,13 +15962,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
 [anyone|plyr, "companion_depth_alayen_standard_choice",
   [
+    (main_party_has_troop, "trp_npc9"),
     (eq, "$g_sod_alayen_standard_witnessed", 1),
     (eq, "$g_sod_alayen_standard_confronted", 1),
   ],
-  "Use the standard to secure obedience and prestige.", "member_talk",
+  "Use the standard for obedience and prestige.", "member_talk",
   [
     (assign, "$g_sod_alayen_standard_pending", 0),
     (assign, "$g_sod_alayen_standard_result_grade", 1),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc9", -3),
     (quest_set_slot, "qst_companion_alayen_standard_self", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_alayen_standard_self", slot_quest_sod_runtime_metadata, "$g_sod_alayen_standard_result_grade"),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc9", 0),
@@ -13835,10 +15982,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_alayen",
   [
     (troop_slot_ge, "trp_npc9", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc9", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc9"),
+    (str_store_string_reg, s2, s68),
   ],
-  "A banner used as ornament soon becomes a rag. At present, my trust in your honor is {s2}, and I am watching the cloth closely.",
+  "A banner used for display becomes a rag. My trust in your honor is {s2}; I am watching the cloth.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc9", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -13847,78 +15995,79 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_alayen",
   [
     (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc9"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The standard meant duty when duty cost us something. That is the only test worth naming. At present, my trust in your honor is {s2}.",
+  "The standard meant duty when duty cost us. That is the only test worth naming. My trust in your honor is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_alayen",
   [
     (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc9"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The standard drew eyes and obedience. It did not draw my respect. Those are different victories. At present, my trust in your honor is {s2}.",
+  "The standard drew eyes and obedience. It did not draw my respect. Those are different victories. My trust in your honor is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_alayen",
   [
     (eq, "$g_sod_alayen_standard_pending", 1),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc9"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The standard is raised, and people are watching what it promises. Ask a witness, stand the public test, and then decide whether it means duty or display. At present, my trust in your honor is {s2}.",
+  "The standard is raised, and people are watching what it promises. Ask a witness, stand the public test, then decide whether it means duty or display. My trust in your honor is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_alayen",
   [
     (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc9"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The Standard and the Self asks a simple question with no easy answer, who is the banner for when pride and duty part ways? My trust in your honor is {s2}.",
+  "The Standard and the Self asks one question: who is the banner for when pride and duty part ways? My trust in your honor is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_alayen",
   [
     (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc9"),
+    (str_store_string_reg, s2, s68),
   ],
-  "A standard is not decoration. It is a promise men die believing. I mean to learn whether your promises can bear that weight. My trust in your honor is {s2}.",
+  "A standard is not decoration. Men die believing it means something. I mean to learn whether your promises can bear that weight. My trust in your honor is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_alayen",
   [
     (troop_slot_ge, "trp_npc9", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc9"),
+    (str_store_string_reg, s2, s68),
   ],
-  "You have shown that honor can kneel beside common need without becoming common. That is rarer than a polished lineage. My trust in your honor is {s2}.",
+  "You let honor serve common need instead of standing above it. That is rarer than lineage. My trust in your honor is {s2}.",
   "member_talk",
   [
     (try_begin),
       (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
       (troop_set_slot, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc9"),
       (display_message, "@Alayen seems ready to speak at camp about the standard, the self, and the burden of noble duty.", 0x99CCFF),
     (try_end),
   ]],
 
 [anyone, "companion_depth_alayen",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc9"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc9"),
+    (str_store_string_reg, s2, s68),
   ],
-  "A standard is not honored by polish, but by what is done beneath it. At present, my trust in your honor is {s2}.",
+  "A standard is honored by what is done beneath it, not by polish. My trust in your honor is {s2}.",
   "member_talk",
   []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_bunduk.py:L1-L21 ] anyone|plyr::member_talk->companion_depth_bunduk_line_pending [eq|main_party_has_troop|eq] {bunduk, bring me the line's grievance plainly.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_bunduk.py:L1-L21 ] anyone|plyr::member_talk->companion_depth_bunduk_line_pending [eq|main_party_has_troop|eq] {bunduk, bring me the line's grievance.}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc10"),
@@ -13926,7 +16075,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_bunduk_line_pending", 1),
     (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Bunduk, bring me the line's grievance plainly.", "companion_depth_bunduk_line_pending",
+  "Bunduk, bring me the line's grievance.", "companion_depth_bunduk_line_pending",
   []],
 
 [anyone|plyr, "member_talk",
@@ -13938,14 +16087,14 @@ Laugh if you wish princeling, but know that many failed to get past their format
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc10"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_bunduk.py:L1-L169 ] anyone::companion_depth_bunduk_line_pending->member_talk [eq|eq] {good. you heard it from a ranker, not just from my ugly mouth. n}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_bunduk.py:L1-L202 ] anyone::companion_depth_bunduk_line_pending->companion_depth_bunduk_line_test_choice [eq|eq] {good. you heard it from a ranker, not just from my ugly mouth. n}
 [anyone, "companion_depth_bunduk_line_pending",
   [
     (eq, "$g_sod_bunduk_line_witnessed", 1),
     (eq, "$g_sod_bunduk_line_confronted", 0),
   ],
   "Good. You heard it from a ranker, not just from my ugly mouth. Now we test the watch line before command answers it. Men trust results longer than speeches.",
-  "member_talk",
+  "companion_depth_bunduk_line_test_choice",
   []],
 
 [anyone, "companion_depth_bunduk_line_pending",
@@ -13959,7 +16108,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (str_store_string, s1, "@bad watches, costly orders, and buried friends"),
     (try_end),
   ],
-  "Good. You heard it from a ranker, not just from my ugly mouth. This is about {s1}. Give them an answer they can carry back without spitting.",
+  "Good. You heard it from a ranker. This is about {s1}. Give them an answer they can carry back without spitting.",
   "companion_depth_bunduk_line_choice",
   []],
 
@@ -13977,21 +16126,47 @@ Laugh if you wish princeling, but know that many failed to get past their format
   "companion_depth_bunduk_line_choice",
   []],
 
-[anyone|plyr, "companion_depth_bunduk_line_choice", [(eq, "$g_sod_bunduk_line_confronted", 1)],
-  "I back you. Fix watches, stores, pay, and stupid orders.", "member_talk",
+[anyone|plyr, "companion_depth_bunduk_line_test_choice", [
+    (main_party_has_troop, "trp_npc10"),
+    (eq, "$g_sod_bunduk_line_pending", 1),
+    (eq, "$g_sod_bunduk_line_witnessed", 1),
+    (eq, "$g_sod_bunduk_line_confronted", 0),
+  ],
+  "Test the watch line now.", "close_window",
+  [
+    (jump_to_menu, "mnu_bunduk_line_test"),
+    (finish_mission),
+  ]],
+
+[anyone|plyr, "companion_depth_bunduk_line_test_choice", [
+    (main_party_has_troop, "trp_npc10"),
+  ],
+  "Not yet.", "member_talk", []],
+
+[anyone|plyr, "companion_depth_bunduk_line_choice", [
+    (main_party_has_troop, "trp_npc10"),
+    (eq, "$g_sod_bunduk_line_witnessed", 1),
+    (eq, "$g_sod_bunduk_line_confronted", 1),
+  ],
+  "I back you. Fix watches, stores, pay, and bad orders.", "member_talk",
   [
     (assign, "$g_sod_bunduk_line_pending", 0),
     (assign, "$g_sod_bunduk_line_result_grade", 3),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_food_security, 3),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_train_troops, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc10", 3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc10", 1),
     (call_script, "script_sod_companion_bunduk_apply_line_payoff"),
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc10"),
     (display_message, "@The line gets better watches, fairer stores, and orders worth obeying. Bunduk calls it common sense, which from him is almost poetry.", 0x99CCFF),
   ]],
 
-[anyone|plyr, "companion_depth_bunduk_line_choice", [(eq, "$g_sod_bunduk_line_confronted", 1)],
-  "Make a practical compromise. Some complaints wait until after the campaign.", "member_talk",
+[anyone|plyr, "companion_depth_bunduk_line_choice", [
+    (main_party_has_troop, "trp_npc10"),
+    (eq, "$g_sod_bunduk_line_witnessed", 1),
+    (eq, "$g_sod_bunduk_line_confronted", 1),
+  ],
+  "Compromise. Fix what we can; the rest waits.", "member_talk",
   [
     (assign, "$g_sod_bunduk_line_pending", 0),
     (assign, "$g_sod_bunduk_line_result_grade", 2),
@@ -14008,12 +16183,17 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (display_message, "@Bunduk accepts the compromise, but not warmly. 'Campaigns always need one more week from the men who already paid.'", 0xCC9966),
   ]],
 
-[anyone|plyr, "companion_depth_bunduk_line_choice", [(eq, "$g_sod_bunduk_line_confronted", 1)],
-  "Enforce command authority. The line obeys first and complains later.", "member_talk",
+[anyone|plyr, "companion_depth_bunduk_line_choice", [
+    (main_party_has_troop, "trp_npc10"),
+    (eq, "$g_sod_bunduk_line_witnessed", 1),
+    (eq, "$g_sod_bunduk_line_confronted", 1),
+  ],
+  "The line obeys first. Complaints wait.", "member_talk",
   [
     (assign, "$g_sod_bunduk_line_pending", 0),
     (assign, "$g_sod_bunduk_line_result_grade", 1),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_lezalit_ief_harsh, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc10", -4),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc10", 0),
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc10"),
     (troop_set_slot, "trp_npc10", slot_troop_companion_warning_state, sod_companion_warning_pending),
@@ -14023,10 +16203,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_bunduk",
   [
     (troop_slot_ge, "trp_npc10", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc10", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc10"),
+    (str_store_string_reg, s2, s68),
   ],
-  "Soldiers can forgive danger. They do not forgive being spent by men who call it discipline, glory, or necessity because those words sound cleaner than waste. Right now my trust in your command is {s2}.",
+  "Soldiers can forgive danger. They do not forgive being spent by men who dress waste as discipline, glory, or necessity. My trust in your command is {s2}.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc10", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -14035,78 +16216,79 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_bunduk",
   [
     (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc10"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The line knows you listened. Not because you gave a speech. Because watches changed, stores changed, and fewer orders smell like officer pride. Right now my trust in your command is {s2}.",
+  "The line knows you listened. Not from a speech. Watches changed, stores changed, and fewer orders smell like officer pride. My trust in your command is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_bunduk",
   [
     (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc10"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The line obeys. Aye, that matters. But men remember the difference between being led and being used. So do I. Right now my trust in your command is {s2}.",
+  "The line obeys. Aye, that matters. Men still know the difference between being led and being used. So do I. My trust in your command is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_bunduk",
   [
     (eq, "$g_sod_bunduk_line_pending", 1),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc10"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The men are listening for your answer, even the ones pretending to sharpen bolts. Boots, pay, watches, burial, blame. That is command too. Right now my trust in your command is {s2}.",
+  "The men are listening, even the ones pretending to sharpen bolts. Boots, pay, watches, burial, blame. That is command too. My trust in your command is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_bunduk",
   [
     (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc10"),
+    (str_store_string_reg, s2, s68),
   ],
-  "This is not about making soldiers comfortable. Comfortable soldiers are rare as honest taxmen. It is about not making them pay for every officer's mistake twice. Right now my trust in your command is {s2}.",
+  "This is not about making soldiers comfortable. It is about not making them pay for every officer's mistake twice. My trust in your command is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_bunduk",
   [
     (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc10"),
+    (str_store_string_reg, s2, s68),
   ],
-  "Men in the line know when officers are spending them. They know before the officers do. Question is whether anyone with command cares before the graves are dug. Right now my trust in your command is {s2}.",
+  "Men in the line know when officers are spending them. They know before the officers do. The question is whether command cares before the graves are dug. My trust in your command is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_bunduk",
   [
     (troop_slot_ge, "trp_npc10", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc10"),
+    (str_store_string_reg, s2, s68),
   ],
-  "You keep the line fed, paid, and ordered like men instead of ammunition. I complain because I am awake, not because I am leaving. Right now my trust in your command is {s2}.",
+  "You keep the line fed, paid, and ordered like men instead of ammunition. I complain because I am awake, not because I am leaving. My trust in your command is {s2}.",
   "member_talk",
   [
     (try_begin),
       (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
       (troop_set_slot, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc10"),
       (display_message, "@Bunduk seems ready to speak at camp about the men who hold the line while officers call it strategy.", 0x99CCFF),
     (try_end),
   ]],
 
 [anyone, "companion_depth_bunduk",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc10"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc10"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The line sees more than officers think. Boots, food, pay, who gets buried, who gets blamed. Right now my trust in your command is {s2}.",
+  "The line sees more than officers think: boots, food, pay, who gets buried, who gets blamed. My trust in your command is {s2}.",
   "member_talk",
   []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_katrin.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_katrin_coin_pending [eq|main_party_has_troop|eq] {katrin, put the ledger in my hands. what must be settled?}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_katrin.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_katrin_coin_pending [eq|main_party_has_troop|eq] {katrin, show me the ledger.}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc11"),
@@ -14115,7 +16297,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_katrin_last_coin_confronted", 1),
     (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Katrin, put the ledger in my hands. What must be settled?", "companion_depth_katrin_coin_pending",
+  "Katrin, show me the ledger.", "companion_depth_katrin_coin_pending",
   []],
 
 [anyone|plyr, "member_talk",
@@ -14127,7 +16309,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc11"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_katrin.py:L1-L197 ] anyone::companion_depth_katrin_coin_pending->companion_depth_katrin_coin_choice [eq|eq|try_begin] {you saw the ledger. good. no romance left in it, then: {var}. no}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_katrin.py:L1-L221 ] anyone::companion_depth_katrin_coin_pending->companion_depth_katrin_coin_choice [eq|eq|try_begin] {you saw the ledger. good. no pretty version left, then: {var}. n}
 [anyone, "companion_depth_katrin_coin_pending",
   [
     (eq, "$g_sod_katrin_last_coin_witnessed", 1),
@@ -14139,7 +16321,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (str_store_string, s1, "@thin sacks, hard broth, and medicine stretched until it becomes hope"),
     (try_end),
   ],
-  "You saw the ledger. Good. No romance left in it, then: {s1}. Now choose where the last coin goes.",
+  "You saw the ledger. Good. No pretty version left, then: {s1}. Now choose where the last coin goes.",
   "companion_depth_katrin_coin_choice",
   []],
 
@@ -14148,8 +16330,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_katrin_last_coin_witnessed", 1),
     (eq, "$g_sod_katrin_last_coin_confronted", 0),
   ],
-  "You saw the ledger. Good. Now put eyes on the supply watch. People get philosophical about shortages until someone stands beside the sacks.",
-  "member_talk",
+  "You saw the ledger. Good. Now put eyes on the supply watch. Shortages sound simple until someone stands beside the sacks.",
+  "companion_depth_katrin_supply_watch_choice",
   []],
 
 [anyone, "companion_depth_katrin_coin_pending",
@@ -14162,11 +16344,29 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (str_store_string, s1, "@food sacks are light and supper has become a negotiation"),
     (try_end),
   ],
-  "Here it is, then. {s1}. The brave version is expensive. The sensible version is also expensive. The foolish version pretends not to be.",
+  "Here it is, then. {s1}. No choice is cheap. The brave one costs coin, the sensible one costs coin, and the foolish one hides the cost.",
   "member_talk",
   []],
 
+[anyone|plyr, "companion_depth_katrin_supply_watch_choice", [
+    (main_party_has_troop, "trp_npc11"),
+    (eq, "$g_sod_katrin_last_coin_pending", 1),
+    (eq, "$g_sod_katrin_last_coin_witnessed", 1),
+    (eq, "$g_sod_katrin_last_coin_confronted", 0),
+  ],
+  "Stand the supply watch now.", "close_window",
+  [
+    (jump_to_menu, "mnu_katrin_supply_watch"),
+    (finish_mission),
+  ]],
+
+[anyone|plyr, "companion_depth_katrin_supply_watch_choice", [
+    (main_party_has_troop, "trp_npc11"),
+  ],
+  "Not yet.", "member_talk", []],
+
 [anyone|plyr, "companion_depth_katrin_coin_choice", [
+    (main_party_has_troop, "trp_npc11"),
     (eq, "$g_sod_katrin_last_coin_witnessed", 1),
     (eq, "$g_sod_katrin_last_coin_confronted", 1),
   ],
@@ -14175,6 +16375,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (assign, "$g_sod_katrin_last_coin_pending", 0),
     (assign, "$g_sod_katrin_last_coin_result_grade", 3),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_food_security, 3),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc11", 3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc11", 1),
     (quest_set_slot, "qst_companion_katrin_last_coin", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_katrin_last_coin", slot_quest_sod_runtime_metadata, "$g_sod_katrin_last_coin_result_grade"),
@@ -14184,10 +16385,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
   ]],
 
 [anyone|plyr, "companion_depth_katrin_coin_choice", [
+    (main_party_has_troop, "trp_npc11"),
     (eq, "$g_sod_katrin_last_coin_witnessed", 1),
     (eq, "$g_sod_katrin_last_coin_confronted", 1),
   ],
-  "Stretch the stores hard, but keep the burden shared.", "member_talk",
+  "Stretch the stores, but share the burden.", "member_talk",
   [
     (assign, "$g_sod_katrin_last_coin_pending", 0),
     (try_begin),
@@ -14210,13 +16412,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
   ]],
 
 [anyone|plyr, "companion_depth_katrin_coin_choice", [
+    (main_party_has_troop, "trp_npc11"),
     (eq, "$g_sod_katrin_last_coin_witnessed", 1),
     (eq, "$g_sod_katrin_last_coin_confronted", 1),
   ],
-  "Spend for momentum. The camp can tighten belts later.", "member_talk",
+  "Spend for speed. Rations can suffer later.", "member_talk",
   [
     (assign, "$g_sod_katrin_last_coin_pending", 0),
     (assign, "$g_sod_katrin_last_coin_result_grade", 1),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc11", -3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc11", 0),
     (troop_set_slot, "trp_npc11", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (quest_set_slot, "qst_companion_katrin_last_coin", slot_quest_sod_runtime_progress, 100),
@@ -14228,10 +16432,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_katrin",
   [
     (troop_slot_ge, "trp_npc11", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc11", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc11"),
+    (str_store_string_reg, s2, s68),
   ],
-  "Do not ask people to clap for glory while their bellies are arguing with their ribs. My trust in your sense is {s2}, and that is me being polite.",
+  "Do not ask people to clap for glory while their bellies argue with their ribs. My trust in your sense is {s2}, and that is me being polite.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc11", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -14240,18 +16445,18 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_katrin",
   [
     (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc11"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The coin went where it should: food, wages, medicine, and fewer foolish deaths. It was not grand. Grand things are usually expensive and poorly packed. My trust in your sense is {s2}.",
+  "The coin went where it should: food, wages, medicine, and fewer foolish deaths. Not grand. Grand things are usually expensive and badly packed. My trust in your sense is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_katrin",
   [
     (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc11"),
+    (str_store_string_reg, s2, s68),
   ],
   "We spent the coin on momentum and patched the consequences with boiled water and bad tempers. I kept the camp standing. Do not mistake that for approval. My trust in your sense is {s2}.",
   "member_talk",
@@ -14262,8 +16467,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_katrin_last_coin_pending", 1),
     (eq, "$g_sod_katrin_last_coin_witnessed", 1),
     (eq, "$g_sod_katrin_last_coin_confronted", 0),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc11"),
+    (str_store_string_reg, s2, s68),
   ],
   "The ledger is no longer private. Run the supply watch with me before you spend the last coin. My trust in your sense is {s2}.",
   "member_talk",
@@ -14272,38 +16477,38 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_katrin",
   [
     (eq, "$g_sod_katrin_last_coin_pending", 1),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc11"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The camp has reached the part of command where coins, bread, and promises stop pretending to be separate things. First hear the ledger witness, then stand the supply watch. My trust in your sense is {s2}.",
+  "The camp has reached the part of command where coins, bread, and promises stop pretending to be separate things. Hear the ledger witness, then stand the supply watch. My trust in your sense is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_katrin",
   [
     (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc11"),
+    (str_store_string_reg, s2, s68),
   ],
-  "Sooner or later the heroic plan reaches the cooking pot. I am waiting to see whether you notice before the pot is empty. My trust in your sense is {s2}.",
+  "Sooner or later the heroic plan reaches the cooking pot. I am watching whether you notice before it is empty. My trust in your sense is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_katrin",
   [
     (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc11"),
+    (str_store_string_reg, s2, s68),
   ],
-  "I have seen brave companies fail because nobody wanted to count spoons. The Last Coin in Camp will tell me plenty about you. My trust in your sense is {s2}.",
+  "I have seen brave companies fail because nobody wanted to count spoons. The Last Coin in Camp will tell me plenty. My trust in your sense is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_katrin",
   [
     (troop_slot_ge, "trp_npc11", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc11"),
+    (str_store_string_reg, s2, s68),
   ],
   "You remember that people march on feet, not banners, and eat bread, not intentions. Sensible. Suspiciously so. My trust in your sense is {s2}.",
   "member_talk",
@@ -14311,19 +16516,20 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (try_begin),
       (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
       (troop_set_slot, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc11"),
       (display_message, "@Katrin seems ready to speak at camp about the last coin left after heroics have eaten their fill.", 0x99CCFF),
     (try_end),
   ]],
 
 [anyone, "companion_depth_katrin",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc11"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc11"),
+    (str_store_string_reg, s2, s68),
   ],
   "It needs food before glory, wages before speeches, and clean cloth before another brave fool bleeds on my blankets. My trust in your sense is {s2}.",
   "member_talk",
   []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_jeremus.py:L1-L21 ] anyone|plyr::member_talk->companion_depth_jeremus_triage_pending [eq|main_party_has_troop|eq] {jeremus, take me to the wounded. i will give the order myself.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_jeremus.py:L1-L21 ] anyone|plyr::member_talk->companion_depth_jeremus_triage_pending [eq|main_party_has_troop|eq] {jeremus, take me to the wounded.}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc12"),
@@ -14331,7 +16537,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_jeremus_triage_pending", 1),
     (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Jeremus, take me to the wounded. I will give the order myself.", "companion_depth_jeremus_triage_pending",
+  "Jeremus, take me to the wounded.", "companion_depth_jeremus_triage_pending",
   []],
 
 [anyone|plyr, "member_talk",
@@ -14339,17 +16545,17 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_talk_troop", "trp_npc12"),
     (main_party_has_troop, "trp_npc12"),
   ],
-  "Jeremus, how are the wounded, and how are you?", "companion_depth_jeremus",
+  "Jeremus, how are the wounded? And how are you?", "companion_depth_jeremus",
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc12"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_jeremus.py:L1-L167 ] anyone::companion_depth_jeremus_triage_pending->companion_depth_jeremus_triage_choice [eq|eq] {you heard them, and you stood in the infirmary when the pressure}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_jeremus.py:L1-L193 ] anyone::companion_depth_jeremus_triage_pending->companion_depth_jeremus_triage_choice [eq|eq] {you heard the wounded and saw the infirmary under pressure. now }
 [anyone, "companion_depth_jeremus_triage_pending",
   [
     (eq, "$g_sod_jeremus_triage_witnessed", 1),
     (eq, "$g_sod_jeremus_triage_confronted", 1),
   ],
-  "You heard them, and you stood in the infirmary when the pressure found us. Not the numbers, not the report: the breath, the thirst, the way fear makes enemies and friends sound alike. Now we decide what rule survives the next bloodletting.",
+  "You heard the wounded and saw the infirmary under pressure. Now choose the rule I follow when blood outruns clean cloth.",
   "companion_depth_jeremus_triage_choice",
   []],
 
@@ -14359,7 +16565,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_jeremus_triage_confronted", 0),
   ],
   "The wounded have spoken, but the infirmary is still only held together by tired hands and hope. Face that crisis with me before you turn one frightened report into doctrine.",
-  "member_talk",
+  "companion_depth_jeremus_infirmary_choice",
   []],
 
 [anyone, "companion_depth_jeremus_triage_pending", [],
@@ -14367,8 +16573,28 @@ Laugh if you wish princeling, but know that many failed to get past their format
   "member_talk",
   []],
 
+[anyone|plyr, "companion_depth_jeremus_infirmary_choice",
+  [
+    (main_party_has_troop, "trp_npc12"),
+    (eq, "$g_sod_jeremus_triage_pending", 1),
+    (eq, "$g_sod_jeremus_triage_witnessed", 1),
+    (eq, "$g_sod_jeremus_triage_confronted", 0),
+  ],
+  "Face the infirmary now.", "close_window",
+  [
+    (jump_to_menu, "mnu_jeremus_triage_infirmary"),
+    (finish_mission),
+  ]],
+
+[anyone|plyr, "companion_depth_jeremus_infirmary_choice",
+  [
+    (main_party_has_troop, "trp_npc12"),
+  ],
+  "Not yet.", "member_talk", []],
+
 [anyone|plyr, "companion_depth_jeremus_triage_choice",
   [
+    (main_party_has_troop, "trp_npc12"),
     (eq, "$g_sod_jeremus_triage_witnessed", 1),
     (eq, "$g_sod_jeremus_triage_confronted", 1),
   ],
@@ -14380,6 +16606,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (quest_set_slot, "qst_companion_jeremus_hands_triage", slot_quest_sod_runtime_metadata, "$g_sod_jeremus_triage_result_grade"),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_free_captives, 3),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_honorable_peace, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc12", 3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc12", 1),
     (call_script, "script_sod_companion_jeremus_apply_triage_payoff"),
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc12"),
@@ -14388,6 +16615,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
 [anyone|plyr, "companion_depth_jeremus_triage_choice",
   [
+    (main_party_has_troop, "trp_npc12"),
     (eq, "$g_sod_jeremus_triage_witnessed", 1),
     (eq, "$g_sod_jeremus_triage_confronted", 1),
   ],
@@ -14408,6 +16636,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
 [anyone|plyr, "companion_depth_jeremus_triage_choice",
   [
+    (main_party_has_troop, "trp_npc12"),
     (eq, "$g_sod_jeremus_triage_witnessed", 1),
     (eq, "$g_sod_jeremus_triage_confronted", 1),
   ],
@@ -14415,6 +16644,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
   [
     (assign, "$g_sod_jeremus_triage_pending", 0),
     (assign, "$g_sod_jeremus_triage_result_grade", 1),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc12", -4),
     (quest_set_slot, "qst_companion_jeremus_hands_triage", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_jeremus_hands_triage", slot_quest_sod_runtime_metadata, "$g_sod_jeremus_triage_result_grade"),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc12", 0),
@@ -14426,10 +16656,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_jeremus",
   [
     (troop_slot_ge, "trp_npc12", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc12", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc12"),
+    (str_store_string_reg, s2, s68),
   ],
-  "I can bind wounds made by steel. I do not know how to bind the habit of deciding some lives are easier to leave behind. As for my faith in this company, it is {s2}.",
+  "I can bind wounds made by steel. I do not know how to bind the habit of deciding some lives are easier to leave behind. My faith in this company is {s2}.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc12", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -14438,78 +16669,79 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_jeremus",
   [
     (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc12"),
+    (str_store_string_reg, s2, s68),
   ],
-  "We did not save everyone. We never do. But we did not let rank or usefulness become the measure of breath, and that matters more than reports can say. As for my faith in this company, it is {s2}.",
+  "We did not save everyone. We never do. But rank and usefulness did not decide who deserved breath. My faith in this company is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_jeremus",
   [
     (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc12"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The company recovered. I will not pretend that means nothing. I also will not pretend the people left waiting were only numbers. As for my faith in this company, it is {s2}.",
+  "The company recovered. That matters. So do the people left waiting. My faith in this company is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_jeremus",
   [
     (eq, "$g_sod_jeremus_triage_pending", 1),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc12"),
+    (str_store_string_reg, s2, s68),
   ],
-  "There are too many wounded and too little time. I need you to hear the wounded, face the infirmary crisis, and then choose what sort of order will guide my hands. As for my faith in this company, it is {s2}.",
+  "There are too many wounded and too little time. Hear them, face the infirmary crisis, then choose what guides my hands. My faith in this company is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_jeremus",
   [
     (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc12"),
+    (str_store_string_reg, s2, s68),
   ],
-  "I used to think hard choices changed a healer into something else. Now I fear refusing to choose can do the same. As for my faith in this company, it is {s2}.",
+  "I used to think hard choices changed a healer into something else. Now I fear refusing to choose can do the same. My faith in this company is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_jeremus",
   [
     (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc12"),
+    (str_store_string_reg, s2, s68),
   ],
-  "There will be a day when we have too many wounded and too little time. I fear what that day will teach us. As for my faith in this company, it is {s2}.",
+  "There will be a day when we have too many wounded and too little time. I fear what that day will teach us. My faith in this company is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_jeremus",
   [
     (troop_slot_ge, "trp_npc12", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc12"),
+    (str_store_string_reg, s2, s68),
   ],
-  "You still look for another road before ordering blood onto this one. That is not softness. It is discipline of another kind. As for my faith in this company, it is {s2}.",
+  "You still look for another way before ordering blood. That is not softness. It is discipline of another kind. My faith in this company is {s2}.",
   "member_talk",
   [
     (try_begin),
       (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
       (troop_set_slot, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc12"),
       (display_message, "@Jeremus seems ready to speak at camp about a day when there may not be enough hands to save everyone.", 0x99CCFF),
     (try_end),
   ]],
 
 [anyone, "companion_depth_jeremus",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc12"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc12"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The wounded mend as bodies do: slowly, honestly, and never quite as cleanly as reports suggest. As for my faith in this company, it is {s2}.",
+  "The wounded mend slowly, honestly, and never as cleanly as reports suggest. My faith in this company is {s2}.",
   "member_talk",
   []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_nizar.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_nizar_charge_pending [eq|main_party_has_troop|eq] {nizar, show me this impossible charge before it becomes a song.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_nizar.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_nizar_charge_pending [eq|main_party_has_troop|eq] {nizar, show me the charge before it becomes a song.}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc13"),
@@ -14518,7 +16750,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_nizar_charge_confronted", 1),
     (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Nizar, show me this impossible charge before it becomes a song.", "companion_depth_nizar_charge_pending",
+  "Nizar, show me the charge before it becomes a song.", "companion_depth_nizar_charge_pending",
   []],
 
 [anyone|plyr, "member_talk",
@@ -14530,7 +16762,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc13"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_nizar.py:L1-L183 ] anyone::companion_depth_nizar_charge_pending->companion_depth_nizar_charge_choice [eq|eq] {the shape of it is speed, surprise, applause if we live, and ver}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_nizar.py:L1-L207 ] anyone::companion_depth_nizar_charge_pending->companion_depth_nizar_charge_choice [eq|eq] {the shape of it is speed, surprise, applause if we live, and ver}
 [anyone, "companion_depth_nizar_charge_pending", [
     (eq, "$g_sod_nizar_charge_witnessed", 1),
     (eq, "$g_sod_nizar_charge_confronted", 1),
@@ -14544,7 +16776,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_nizar_charge_confronted", 0),
   ],
   "The route is marked. Now we test the charge lane before the poets improve our mistakes.",
-  "member_talk",
+  "companion_depth_nizar_charge_lane_choice",
   []],
 
 [anyone, "companion_depth_nizar_charge_pending", [
@@ -14554,7 +16786,25 @@ Laugh if you wish princeling, but know that many failed to get past their format
   "member_talk",
   []],
 
+[anyone|plyr, "companion_depth_nizar_charge_lane_choice", [
+    (main_party_has_troop, "trp_npc13"),
+    (eq, "$g_sod_nizar_charge_pending", 1),
+    (eq, "$g_sod_nizar_charge_witnessed", 1),
+    (eq, "$g_sod_nizar_charge_confronted", 0),
+  ],
+  "Test the charge lane now.", "close_window",
+  [
+    (jump_to_menu, "mnu_nizar_charge_lane_test"),
+    (finish_mission),
+  ]],
+
+[anyone|plyr, "companion_depth_nizar_charge_lane_choice", [
+    (main_party_has_troop, "trp_npc13"),
+  ],
+  "Not yet.", "member_talk", []],
+
 [anyone|plyr, "companion_depth_nizar_charge_choice", [
+    (main_party_has_troop, "trp_npc13"),
     (eq, "$g_sod_nizar_charge_witnessed", 1),
     (eq, "$g_sod_nizar_charge_confronted", 1),
   ],
@@ -14563,6 +16813,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (assign, "$g_sod_nizar_charge_pending", 0),
     (assign, "$g_sod_nizar_charge_result_grade", 3),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_tournament_glory, 2),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc13", 2),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc13", 1),
     (quest_set_slot, "qst_companion_nizar_impossible_charge", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_nizar_impossible_charge", slot_quest_sod_runtime_metadata, "$g_sod_nizar_charge_result_grade"),
@@ -14572,10 +16823,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
   ]],
 
 [anyone|plyr, "companion_depth_nizar_charge_choice", [
+    (main_party_has_troop, "trp_npc13"),
     (eq, "$g_sod_nizar_charge_witnessed", 1),
     (eq, "$g_sod_nizar_charge_confronted", 1),
   ],
-  "Take the dazzling charge before anyone can make it sensible.", "member_talk",
+  "Take the dazzling charge. Sense can catch up later.", "member_talk",
   [
     (assign, "$g_sod_nizar_charge_pending", 0),
     (try_begin),
@@ -14599,13 +16851,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
   ]],
 
 [anyone|plyr, "companion_depth_nizar_charge_choice", [
+    (main_party_has_troop, "trp_npc13"),
     (eq, "$g_sod_nizar_charge_witnessed", 1),
     (eq, "$g_sod_nizar_charge_confronted", 1),
   ],
-  "Spend blood for a legend no one can ignore.", "member_talk",
+  "Spend blood for a legend.", "member_talk",
   [
     (assign, "$g_sod_nizar_charge_pending", 0),
     (assign, "$g_sod_nizar_charge_result_grade", 1),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc13", -3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc13", 0),
     (troop_set_slot, "trp_npc13", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (quest_set_slot, "qst_companion_nizar_impossible_charge", slot_quest_sod_runtime_progress, 100),
@@ -14617,10 +16871,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_nizar",
   [
     (troop_slot_ge, "trp_npc13", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc13", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc13"),
+    (str_store_string_reg, s2, s68),
   ],
-  "A legend that spends everyone else first is only vanity with better horses. My faith in our legend is {s2}, though the poets are being kept outside until further notice.",
+  "A legend that spends everyone else first is vanity with better horses. My faith in our legend is {s2}, and the poets can wait outside.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc13", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -14629,8 +16884,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_nizar",
   [
     (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc13"),
+    (str_store_string_reg, s2, s68),
   ],
   "The charge broke them, and the living came home. A rare triumph: the song need not lie about the ending. My faith in our legend is {s2}.",
   "member_talk",
@@ -14639,8 +16894,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_nizar",
   [
     (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc13"),
+    (str_store_string_reg, s2, s68),
   ],
   "The story will travel. So will the names of those who did not. I am discovering that applause can echo like an accusation. My faith in our legend is {s2}.",
   "member_talk",
@@ -14651,8 +16906,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_nizar_charge_pending", 1),
     (eq, "$g_sod_nizar_charge_witnessed", 1),
     (eq, "$g_sod_nizar_charge_confronted", 0),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc13"),
+    (str_store_string_reg, s2, s68),
   ],
   "The field setup is drawn. Run the charge lane with me, then we decide whether the song deserves survivors. My faith in our legend is {s2}.",
   "member_talk",
@@ -14661,53 +16916,54 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_nizar",
   [
     (eq, "$g_sod_nizar_charge_pending", 1),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc13"),
+    (str_store_string_reg, s2, s68),
   ],
-  "There is a charge waiting outside camp, beautiful enough to be dangerous and dangerous enough to be memorable. First mark it in the field, then test the lane. My faith in our legend is {s2}.",
+  "There is a charge outside camp, beautiful enough to be dangerous and dangerous enough to be remembered. Mark it in the field, then test the lane. My faith in our legend is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_nizar",
   [
     (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc13"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The Impossible Charge asks its question with spurs. Is this courage, theater, or blood pretending to be both? My faith in our legend is {s2}.",
+  "The Impossible Charge asks its question with spurs: courage, theater, or a costly mix of both? My faith in our legend is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_nizar",
   [
     (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc13"),
+    (str_store_string_reg, s2, s68),
   ],
-  "There is a charge men call impossible because they lack imagination. There is also the other kind. I would prefer we learn the difference before dawn. My faith in our legend is {s2}.",
+  "Some charges are called impossible for lack of imagination. Others earn the name honestly. I would prefer we learn the difference before dawn. My faith in our legend is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_nizar",
   [
     (troop_slot_ge, "trp_npc13", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc13"),
+    (str_store_string_reg, s2, s68),
   ],
-  "You have the rare gift of making danger feel chosen instead of merely suffered. Try not to become too sensible; I am attached to my work. My faith in our legend is {s2}.",
+  "You have the rare gift of making danger feel chosen instead of merely suffered. Do not spend it all on caution; I am attached to my work. My faith in our legend is {s2}.",
   "member_talk",
   [
     (try_begin),
       (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
       (troop_set_slot, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc13"),
       (display_message, "@Nizar seems ready to speak at camp about The Impossible Charge and the difference between courage and theater.", 0x99CCFF),
     (try_end),
   ]],
 
 [anyone, "companion_depth_nizar",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc13"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc13"),
+    (str_store_string_reg, s2, s68),
   ],
   "Worthy? It has moments. A charge here, a rumor there, a few silences I would edit before the poets arrive. My faith in our legend is {s2}.",
   "member_talk",
@@ -14728,17 +16984,17 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_talk_troop", "trp_npc14"),
     (main_party_has_troop, "trp_npc14"),
   ],
-  "Lezalit, speak plainly. What do you see in my command?", "companion_depth_lezalit",
+  "Lezalit, what do you see in my command?", "companion_depth_lezalit",
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc14"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_lezalit.py:L1-L160 ] anyone::companion_depth_lezalit_drill_pending->companion_depth_lezalit_drill_choice [eq|eq] {the soldier spoke correctly, and the trial has made the matter l}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_lezalit.py:L1-L184 ] anyone::companion_depth_lezalit_drill_pending->companion_depth_lezalit_drill_choice [eq|eq] {the trial proved the point. imperial drill carries useful order }
 [anyone, "companion_depth_lezalit_drill_pending",
   [
     (eq, "$g_sod_lezalit_ief_discipline_witnessed", 1),
     (eq, "$g_sod_lezalit_ief_discipline_confronted", 1),
   ],
-  "The soldier spoke correctly, and the trial has made the matter less theoretical. The Imperial drill contains useful order and stupid terror in the same hand. Our task is to keep the order and break the hand.",
+  "The trial proved the point. Imperial drill carries useful order and stupid terror in the same hand. Keep the order; break the hand.",
   "companion_depth_lezalit_drill_choice",
   []],
 
@@ -14748,7 +17004,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_lezalit_ief_discipline_confronted", 0),
   ],
   "The soldier spoke correctly. Now run the captured drill trial before you decide doctrine from a complaint alone. Discipline must be witnessed under pressure, not merely described beside a fire.",
-  "member_talk",
+  "companion_depth_lezalit_drill_trial_choice",
   []],
 
 [anyone, "companion_depth_lezalit_drill_pending", [],
@@ -14756,8 +17012,28 @@ Laugh if you wish princeling, but know that many failed to get past their format
   "member_talk",
   []],
 
+[anyone|plyr, "companion_depth_lezalit_drill_trial_choice",
+  [
+    (main_party_has_troop, "trp_npc14"),
+    (eq, "$g_sod_lezalit_ief_discipline_pending", 1),
+    (eq, "$g_sod_lezalit_ief_discipline_witnessed", 1),
+    (eq, "$g_sod_lezalit_ief_discipline_confronted", 0),
+  ],
+  "Run the drill trial now.", "close_window",
+  [
+    (jump_to_menu, "mnu_lezalit_drill_trial"),
+    (finish_mission),
+  ]],
+
+[anyone|plyr, "companion_depth_lezalit_drill_trial_choice",
+  [
+    (main_party_has_troop, "trp_npc14"),
+  ],
+  "Not yet.", "member_talk", []],
+
 [anyone|plyr, "companion_depth_lezalit_drill_choice",
   [
+    (main_party_has_troop, "trp_npc14"),
     (eq, "$g_sod_lezalit_ief_discipline_witnessed", 1),
     (eq, "$g_sod_lezalit_ief_discipline_confronted", 1),
   ],
@@ -14768,6 +17044,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (quest_set_slot, "qst_companion_lezalit_discipline_without_chains", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_lezalit_discipline_without_chains", slot_quest_sod_runtime_metadata, "$g_sod_lezalit_ief_discipline_result_grade"),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_lezalit_ief_reform, 4),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc14", 2),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc14", 1),
     (call_script, "script_sod_companion_lezalit_apply_discipline_payoff"),
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc14"),
@@ -14776,10 +17053,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
 [anyone|plyr, "companion_depth_lezalit_drill_choice",
   [
+    (main_party_has_troop, "trp_npc14"),
     (eq, "$g_sod_lezalit_ief_discipline_witnessed", 1),
     (eq, "$g_sod_lezalit_ief_discipline_confronted", 1),
   ],
-  "Use fear. The line must obey before it understands.", "member_talk",
+  "Use fear. Obedience first; understanding later.", "member_talk",
   [
     (assign, "$g_sod_lezalit_ief_discipline_pending", 0),
     (assign, "$g_sod_lezalit_ief_discipline_result_grade", 1),
@@ -14794,10 +17072,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
 [anyone|plyr, "companion_depth_lezalit_drill_choice",
   [
+    (main_party_has_troop, "trp_npc14"),
     (eq, "$g_sod_lezalit_ief_discipline_witnessed", 1),
     (eq, "$g_sod_lezalit_ief_discipline_confronted", 1),
   ],
-  "Refuse the lesson. The Imperial method is poison.", "member_talk",
+  "Refuse it. Imperial discipline is poison.", "member_talk",
   [
     (assign, "$g_sod_lezalit_ief_discipline_pending", 0),
     (assign, "$g_sod_lezalit_ief_discipline_result_grade", 0),
@@ -14812,10 +17091,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_lezalit",
   [
     (troop_slot_ge, "trp_npc14", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc14", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc14"),
+    (str_store_string_reg, s2, s68),
   ],
-  "Standards cannot exist only when they are pleasant. If you mean to command, command. If you mean to be liked, dismiss the army and hire flatterers. At present, my confidence is {s2}.",
+  "Standards cannot exist only when they are pleasant. If you mean to command, command. If you mean to be liked, dismiss the army and hire flatterers. My confidence is {s2}.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc14", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -14824,60 +17104,60 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_lezalit",
   [
     (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc14"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The Imperial method was efficient because it was consistent, not because it was cruel. That distinction should have been obvious to me sooner. Your standards remain hard. They no longer need chains. At present, my confidence is {s2}.",
+  "The Imperial method was efficient because it was consistent, not because it was cruel. I should have seen that sooner. Your standards remain hard. They no longer need chains. My confidence is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_lezalit",
   [
     (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc14"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The line obeys. It will march, wheel, strike, and hold. Do not confuse that with loyalty. Loyalty is slower to make and less predictable to use. At present, my confidence is {s2}.",
+  "The line obeys. It will march, wheel, strike, and hold. Do not confuse that with loyalty. Loyalty is slower to make and less predictable to use. My confidence is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_lezalit",
   [
     (eq, "$g_sod_lezalit_ief_discipline_pending", 1),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc14"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The captured Imperial drill is waiting. Hear the men, run the trial, and then decide what survives. A commander who cannot separate poison from structure deserves neither mercy nor discipline. At present, my confidence is {s2}.",
+  "The captured Imperial drill is waiting. Hear the men, run the trial, then decide what survives. A commander must separate poison from structure. My confidence is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_lezalit",
   [
     (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc14"),
+    (str_store_string_reg, s2, s68),
   ],
-  "We are past theory. The question is whether discipline makes soldiers stronger or merely quieter. I am less certain than I was. That irritates me. At present, my confidence is {s2}.",
+  "We are past theory. The question is whether discipline makes soldiers stronger or merely quieter. I am less certain than I was. That irritates me. My confidence is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_lezalit",
   [
     (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc14"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The first lesson of command is that men will fail the standard unless the standard is made real. The second lesson, which I dislike, is that fear is not the only tool that makes it real. At present, my confidence is {s2}.",
+  "Men fail a standard unless the standard is made real. I dislike the second lesson: fear is not the only tool that can do it. My confidence is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_lezalit",
   [
     (troop_slot_ge, "trp_npc14", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc14"),
+    (str_store_string_reg, s2, s68),
   ],
-  "You do not always choose the method I would choose. Annoying. But the company still forms, marches, and survives. I am forced to respect evidence. At present, my confidence is {s2}.",
+  "You do not always choose the method I would choose. Annoying. But the company still forms, marches, and survives. I am forced to respect evidence. My confidence is {s2}.",
   "member_talk",
   [
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc14", 1),
@@ -14885,13 +17165,13 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
 [anyone, "companion_depth_lezalit",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc14"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc14"),
+    (str_store_string_reg, s2, s68),
   ],
-  "I see an army deciding whether it is a blade or a crowd with weapons. Discipline is not cruelty. Cruelty is what weak commanders use when discipline fails them. At present, my confidence is {s2}.",
+  "I see an army deciding whether it is a blade or a crowd with weapons. Discipline is not cruelty. Cruelty is what weak commanders use when discipline fails them. My confidence is {s2}.",
   "member_talk",
   []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_artimenner.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_artimenner_siege_pending [eq|main_party_has_troop|eq] {artimenner, show me the weak point before it kills anyone.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_artimenner.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_artimenner_siege_pending [eq|main_party_has_troop|eq] {artimenner, show me the weak point.}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc15"),
@@ -14900,7 +17180,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_artimenner_siege_confronted", 1),
     (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Artimenner, show me the weak point before it kills anyone.", "companion_depth_artimenner_siege_pending",
+  "Artimenner, show me the weak point.", "companion_depth_artimenner_siege_pending",
   []],
 
 [anyone|plyr, "member_talk",
@@ -14912,7 +17192,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc15"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_artimenner.py:L1-L173 ] anyone::companion_depth_artimenner_siege_pending->companion_depth_artimenner_siege_choice [eq|eq|try_begin] {{var}. the weak point has been witnessed, and the repair watch h}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_artimenner.py:L1-L199 ] anyone::companion_depth_artimenner_siege_pending->companion_depth_artimenner_siege_choice [eq|eq|try_begin] {{var}. the weak point has a witness. now decide whether haste or}
 [anyone, "companion_depth_artimenner_siege_pending",
   [
     (eq, "$g_sod_artimenner_siege_witnessed", 1),
@@ -14924,7 +17204,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (str_store_string, s1, "@the ladders will carry men only if the rushed joints are corrected"),
     (try_end),
   ],
-  "{s1}. The weak point has been witnessed, and the repair watch has taught the workers which parts of haste were sabotage wearing a useful hat.",
+  "{s1}. The weak point has a witness. Now decide whether haste or engineering commands the work.",
   "companion_depth_artimenner_siege_choice",
   []],
 
@@ -14934,7 +17214,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_artimenner_siege_confronted", 0),
   ],
   "The weak point has a witness now. Guard the repair watch before we pretend a chalk mark has become engineering.",
-  "member_talk",
+  "companion_depth_artimenner_repair_watch_choice",
   []],
 
 [anyone, "companion_depth_artimenner_siege_pending", [],
@@ -14942,18 +17222,39 @@ Laugh if you wish princeling, but know that many failed to get past their format
   "member_talk",
   []],
 
+[anyone|plyr, "companion_depth_artimenner_repair_watch_choice",
+  [
+    (main_party_has_troop, "trp_npc15"),
+    (eq, "$g_sod_artimenner_siege_pending", 1),
+    (eq, "$g_sod_artimenner_siege_witnessed", 1),
+    (eq, "$g_sod_artimenner_siege_confronted", 0),
+  ],
+  "Guard the repair watch now.", "close_window",
+  [
+    (jump_to_menu, "mnu_artimenner_repair_watch"),
+    (finish_mission),
+  ]],
+
+[anyone|plyr, "companion_depth_artimenner_repair_watch_choice",
+  [
+    (main_party_has_troop, "trp_npc15"),
+  ],
+  "Not yet.", "member_talk", []],
+
 [anyone|plyr, "companion_depth_artimenner_siege_choice",
   [
+    (main_party_has_troop, "trp_npc15"),
     (eq, "$g_sod_artimenner_siege_witnessed", 1),
     (eq, "$g_sod_artimenner_siege_confronted", 1),
   ],
-  "Take the time and materials to rebuild the works properly.", "member_talk",
+  "Rebuild the works properly.", "member_talk",
   [
     (assign, "$g_sod_artimenner_siege_pending", 0),
     (assign, "$g_sod_artimenner_siege_result_grade", 3),
     (quest_set_slot, "qst_companion_artimenner_siege_that_should", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_artimenner_siege_that_should", slot_quest_sod_runtime_metadata, "$g_sod_artimenner_siege_result_grade"),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_siege_preparation, 3),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc15", 3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc15", 1),
     (call_script, "script_sod_companion_artimenner_apply_siege_payoff"),
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc15"),
@@ -14962,10 +17263,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
 [anyone|plyr, "companion_depth_artimenner_siege_choice",
   [
+    (main_party_has_troop, "trp_npc15"),
     (eq, "$g_sod_artimenner_siege_witnessed", 1),
     (eq, "$g_sod_artimenner_siege_confronted", 1),
   ],
-  "Improvise a leaner plan with what the army has.", "member_talk",
+  "Use a leaner plan with what we have.", "member_talk",
   [
     (assign, "$g_sod_artimenner_siege_pending", 0),
     (try_begin),
@@ -14983,13 +17285,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
 [anyone|plyr, "companion_depth_artimenner_siege_choice",
   [
+    (main_party_has_troop, "trp_npc15"),
     (eq, "$g_sod_artimenner_siege_witnessed", 1),
     (eq, "$g_sod_artimenner_siege_confronted", 1),
   ],
-  "You will answer for it if the works fail.", "member_talk",
+  "If the works fail, you answer for it.", "member_talk",
   [
     (assign, "$g_sod_artimenner_siege_pending", 0),
     (assign, "$g_sod_artimenner_siege_result_grade", 1),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc15", -3),
     (quest_set_slot, "qst_companion_artimenner_siege_that_should", slot_quest_sod_runtime_progress, 100),
     (quest_set_slot, "qst_companion_artimenner_siege_that_should", slot_quest_sod_runtime_metadata, "$g_sod_artimenner_siege_result_grade"),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc15", 0),
@@ -15001,10 +17305,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_artimenner",
   [
     (troop_slot_ge, "trp_npc15", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc15", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc15"),
+    (str_store_string_reg, s2, s68),
   ],
-  "I can calculate load, span, and failure. I cannot calculate how often pride will ask me to become a bucket for falling stones. My confidence in your respect for expertise is {s2}.",
+  "I can calculate load, span, and failure. I cannot calculate how often pride will ask me to catch falling stones. My confidence in your respect for expertise is {s2}.",
   "member_talk",
   [
     (troop_set_slot, "trp_npc15", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
@@ -15013,8 +17318,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_artimenner",
   [
     (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc15"),
+    (str_store_string_reg, s2, s68),
   ],
   "The works held because they were built to hold. A rare victory for timber, geometry, and being listened to. My confidence in your respect for expertise is {s2}.",
   "member_talk",
@@ -15023,8 +17328,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_artimenner",
   [
     (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc15"),
+    (str_store_string_reg, s2, s68),
   ],
   "The failed work found a culprit and the army moved on. A neat report. Shame it cannot carry a ladder. My confidence in your respect for expertise is {s2}.",
   "member_talk",
@@ -15033,28 +17338,28 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_artimenner",
   [
     (eq, "$g_sod_artimenner_siege_pending", 1),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc15"),
+    (str_store_string_reg, s2, s68),
   ],
-  "There is a weak point in the works. Inspect it, guard the repair watch, and then decide whether the army respects expertise before or after it becomes an epitaph. My confidence in your respect for expertise is {s2}.",
+  "There is a weak point in the works. Inspect it, guard the repair watch, then decide whether the army respects expertise before or after men die. My confidence in your respect for expertise is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_artimenner",
   [
     (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc15"),
+    (str_store_string_reg, s2, s68),
   ],
-  "The Siege That Should Have Worked is not a tragedy. Tragedy implies surprise. Ignored tolerances are a schedule. My confidence in your respect for expertise is {s2}.",
+  "The Siege That Should Have Worked is not a tragedy. Tragedy implies surprise. Ignored tolerances are a timetable. My confidence in your respect for expertise is {s2}.",
   "member_talk",
   []],
 
 [anyone, "companion_depth_artimenner",
   [
     (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc15"),
+    (str_store_string_reg, s2, s68),
   ],
   "This is how men die, not from courage, but from one brace nobody inspected. I intend to learn whether this company inspects braces. My confidence is {s2}.",
   "member_talk",
@@ -15063,8 +17368,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_artimenner",
   [
     (troop_slot_ge, "trp_npc15", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc15"),
+    (str_store_string_reg, s2, s68),
   ],
   "You let facts be inconvenient before they become fatal. I assure you, this is rarer than command tents suggest. My confidence in your respect for expertise is {s2}.",
   "member_talk",
@@ -15072,19 +17377,20 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (try_begin),
       (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
       (troop_set_slot, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc15"),
       (display_message, "@Artimenner seems ready to speak at camp about The Siege That Should Have Worked and the cost of ignored expertise.", 0x99CCFF),
     (try_end),
   ]],
 
 [anyone, "companion_depth_artimenner",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc15"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc15"),
+    (str_store_string_reg, s2, s68),
   ],
   "Plans hold when commanders let them. Timber, stone, grain, and time all answer to laws older than pride. My confidence in your respect for expertise is {s2}.",
   "member_talk",
   []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_klethi.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_klethi_knife_pending [eq|main_party_has_troop|call_script] {klethi, tell me whose old work found your knife.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_klethi.py:L1-L22 ] anyone|plyr::member_talk->companion_depth_klethi_knife_pending [eq|main_party_has_troop|call_script] {klethi, whose old work found your knife?}
 [anyone|plyr, "member_talk",
   [
     (eq, "$g_talk_troop", "trp_npc16"),
@@ -15093,7 +17399,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_klethi_old_job_pending", 1),
     (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Klethi, tell me whose old work found your knife.", "companion_depth_klethi_knife_pending",
+  "Klethi, whose old work found your knife?", "companion_depth_klethi_knife_pending",
   []],
 
 [anyone|plyr, "member_talk",
@@ -15105,7 +17411,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
   [
     (call_script, "script_sod_companion_try_trigger_reaction", "trp_npc16"),
   ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_klethi.py:L1-L209 ] anyone::companion_depth_klethi_knife_pending->companion_depth_klethi_knife_choice [eq|eq|try_begin] {the tavernkeeper named the smell of it: {var}, old marks, old ha}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_klethi.py:L1-L213 ] anyone::companion_depth_klethi_knife_pending->companion_depth_klethi_knife_choice [eq|eq|try_begin] {the tavernkeeper named the smell of it: {var}, old marks, old ha}
 [anyone, "companion_depth_klethi_knife_pending",
   [
     (eq, "$g_sod_klethi_old_job_contacted", 1),
@@ -15182,6 +17488,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (assign, "$g_sod_klethi_old_job_pending", 0),
     (assign, "$g_sod_klethi_old_job_result_grade", 3),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_stealth_success, 3),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc16", 3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc16", 1),
     (call_script, "script_sod_companion_klethi_apply_old_job_payoff"),
     (display_message, "@Klethi chooses the door, the knife, and the mercy herself. A Knife With a Name remembers chosen belonging.", 0x99CCFF),
@@ -15192,7 +17499,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_klethi_old_job_pending", 1),
     (eq, "$g_sod_klethi_old_job_confronted", 1),
   ],
-  "I will protect you, but keep the job clean.", "member_talk",
+  "I will protect you. Keep the job clean.", "member_talk",
   [
     (assign, "$g_sod_klethi_old_job_pending", 0),
     (try_begin),
@@ -15217,11 +17524,12 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (eq, "$g_sod_klethi_old_job_pending", 1),
     (eq, "$g_sod_klethi_old_job_confronted", 1),
   ],
-  "Use the old secret for leverage.", "member_talk",
+  "Use the secret as leverage.", "member_talk",
   [
     (assign, "$g_sod_klethi_old_job_pending", 0),
     (assign, "$g_sod_klethi_old_job_result_grade", 1),
     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_betray_autonomy, 3),
+    (call_script, "script_sod_companion_shift_approval", "trp_npc16", -3),
     (call_script, "script_sod_companion_advance_personal_quest", "trp_npc16", 0),
     (troop_set_slot, "trp_npc16", slot_troop_companion_warning_state, sod_companion_warning_pending),
     (display_message, "@The secret buys leverage. Klethi buys distance. A Knife With a Name remembers the price tag.", 0xCC6666),
@@ -15230,8 +17538,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_klethi",
   [
     (troop_slot_ge, "trp_npc16", slot_troop_companion_warning_state, sod_companion_warning_pending),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string_reg, s2, s0),
+    (neg|troop_slot_ge, "trp_npc16", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc16"),
+    (str_store_string_reg, s2, s68),
   ],
   "Belonging is a pretty word right up until someone starts pricing it. My trust is {s2}, and I am counting the doors again.",
   "member_talk",
@@ -15242,8 +17551,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_klethi",
   [
     (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc16"),
+    (str_store_string_reg, s2, s68),
   ],
   "I chose the door and came back through it. That is not nothing. Might even be trust, if we both squint. My trust is {s2}.",
   "member_talk",
@@ -15252,8 +17561,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_klethi",
   [
     (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_hard),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc16"),
+    (str_store_string_reg, s2, s68),
   ],
   "The secret bought what you wanted. Very efficient. People like that word when the cost is someone else. My trust is {s2}.",
   "member_talk",
@@ -15262,8 +17571,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_klethi",
   [
     (eq, "$g_sod_klethi_old_job_pending", 1),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc16"),
+    (str_store_string_reg, s2, s68),
   ],
   "Old work found my knife by name. We can cut a clean exit, or you can sell the name and pretend it was strategy. My trust is {s2}.",
   "member_talk",
@@ -15272,8 +17581,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_klethi",
   [
     (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc16"),
+    (str_store_string_reg, s2, s68),
   ],
   "A Knife With a Name is not about whether I can open a lock. It is about whether I get to decide what the opened door means. My trust is {s2}.",
   "member_talk",
@@ -15282,8 +17591,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_klethi",
   [
     (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc16"),
+    (str_store_string_reg, s2, s68),
   ],
   "One old face, one old knife, one old job. Funny how a person can carry all three and still be asked why she keeps her packs light. My trust is {s2}.",
   "member_talk",
@@ -15292,8 +17601,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone, "companion_depth_klethi",
   [
     (troop_slot_ge, "trp_npc16", slot_troop_companion_approval, 70),
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc16"),
+    (str_store_string_reg, s2, s68),
   ],
   "You leave me room to choose the lock and the exit. Dangerous kindness. Makes a person consider staying. My trust is {s2}.",
   "member_talk",
@@ -15301,14 +17610,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (try_begin),
       (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
       (troop_set_slot, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
+      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc16"),
       (display_message, "@Klethi seems ready to speak at camp about an old knife, an old name, and a debt she never meant to carry.", 0x99CCFF),
     (try_end),
   ]],
 
 [anyone, "companion_depth_klethi",
   [
-    (call_script, "script_sod_companion_get_approval_band", "trp_npc16"),
-    (str_store_string_reg, s2, s0),
+    (call_script, "script_sod_companion_get_approval_band_to_s68", "trp_npc16"),
+    (str_store_string_reg, s2, s68),
   ],
   "Plenty. That is why I still have all my fingers. But I will say this: people show you the lock before they show you the knife. My trust is {s2}.",
   "member_talk",
@@ -15326,9 +17636,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
   [
     (is_between, "$g_talk_troop", companions_begin, companions_end),
     (main_party_has_troop, "$g_talk_troop"),
-    (call_script, "script_sod_camp_passive_job_dialogue_to_s0", "$g_talk_troop"),
+    (call_script, "script_sod_camp_passive_job_dialogue_to_s68", "$g_talk_troop"),
   ],
-  "{s0}", "member_talk",
+  "{s68}", "member_talk",
   []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_member_talk.py:L1-L24 ] anyone|plyr::member_talk->member_anything_else [str_store_string|try_begin|troop_slot_eq] {{var}}
 [anyone|plyr, "member_talk",
@@ -15400,21 +17710,22 @@ Laugh if you wish princeling, but know that many failed to get past their format
     "member_automanage_report",
     []
   ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_member_automanage_report.py:L1-L19 ] anyone::member_automanage_report->member_automanage_change [store_conversation_troop|call_script|str_store_string] {i'm currently {var} and {var}. {var}}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_member_automanage_report.py:L1-L20 ] anyone::member_automanage_report->member_automanage_change [store_conversation_troop|call_script|str_store_string_reg] {i'm currently {var} and {var}. {var}}
 [anyone,
     "member_automanage_report",
     [
       (store_conversation_troop, reg3),
       (call_script, "script_print_wpn_upgrades_to_s0", reg3),
-      (str_store_string, s2, "@My weapon slot upgrades are as follows: {s0}"),
+      (str_store_string_reg, s68, s0),
+      (str_store_string, s2, "@My weapon slot upgrades are as follows: {s68}"),
       (troop_get_slot, reg4, reg3, slot_troop_upgrade_armor),
       (val_add, reg4, "str_hero_not_upgrading_armor"),
-      (str_store_string, 1, reg4),
+      (str_store_string, s69, reg4),
       (troop_get_slot, reg4, reg3, slot_troop_upgrade_horse),
       (val_add, reg4, "str_hero_not_upgrading_horse"),
-      (str_store_string, 4, reg4)
+      (str_store_string, s70, reg4)
     ],
-    "I'm currently {s1} and {s4}. {s2}",
+    "I'm currently {s69} and {s70}. {s2}",
     "member_automanage_change",
     []
   ],
@@ -15426,32 +17737,34 @@ Laugh if you wish princeling, but know that many failed to get past their format
     "member_automanage_select_melee_1",
     []
   ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_member_automanage_select_melee_1.py:L1-L12 ] anyone::member_automanage_select_melee_1->member_automanage_select_melee [call_script|str_store_string] {{var}^what would you like to change?}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_member_automanage_select_melee_1.py:L1-L13 ] anyone::member_automanage_select_melee_1->member_automanage_select_melee [call_script|str_store_string_reg|str_store_string] {{var}^what would you like to change?}
 [anyone,
     "member_automanage_select_melee_1",
     [
       (call_script, "script_print_wpn_upgrades_to_s0", reg3),
-      (str_store_string, s2, "@My weapon slot upgrades are as follows: {s0}")
+      (str_store_string_reg, s68, s0),
+      (str_store_string, s2, "@My weapon slot upgrades are as follows: {s68}")
     ],
     "{s2}^What would you like to change?",
     "member_automanage_select_melee",
     []
   ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_member_automanage_select_melee.py:L1-L11 ] anyone|plyr::member_automanage_select_melee->member_automanage_select_melee_2 [no_conditions] {upgrade your weapons as follows....}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_member_automanage_select_melee.py:L1-L11 ] anyone|plyr::member_automanage_select_melee->member_automanage_select_melee_2 [no_conditions] {set melee weapon upgrades.}
 [anyone|plyr,
     "member_automanage_select_melee",
     [],
-    "Upgrade your weapons as follows....",
+    "Set melee weapon upgrades.",
     "member_automanage_select_melee_2",
     [
       (assign, reg1, 0)
     ]
   ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_member_automanage_select_melee_2.py:L1-L17 ] anyone::member_automanage_select_melee_2->member_automanage_select_melee_slot [call_script|try_begin|eq] {my current weapon upgrade settings are: {var}^^{var}}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_member_automanage_select_melee_2.py:L1-L18 ] anyone::member_automanage_select_melee_2->member_automanage_select_melee_slot [call_script|str_store_string_reg|try_begin] {my current weapon upgrade settings are: {var}^^{var}}
 [anyone,
     "member_automanage_select_melee_2",
     [
       (call_script, "script_print_wpn_upgrades_to_s0", reg3),
+      (str_store_string_reg, s68, s0),
         (try_begin),
           (eq, reg1, 4),
           (str_store_string, s2, "@Is this satisfactory?"),
@@ -15459,7 +17772,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
           (str_store_string, s2, "@Select the type of item for slot {reg1}."),
         (try_end),
     ],
-    "My current weapon upgrade settings are: {s0}^^{s2}",
+    "My current weapon upgrade settings are: {s68}^^{s2}",
     "member_automanage_select_melee_slot",
     []
   ],
@@ -15476,9 +17789,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
         (else_try),
           (str_store_string, s10, "str_none"),
         (try_end),
-      (str_store_string, s1, ":type")
+      (str_store_string, s68, ":type")
     ],
-    "{s1}",
+    "{s68}",
     "member_automanage_select_melee_2",
     [
       (store_add, ":slot_num", reg1, slot_troop_upgrade_wpn_0),
@@ -15492,9 +17805,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
     [
       (neq, reg1, 4),
       (store_add, ":type", 2, "str_hero_wpn_slot_none"),
-      (str_store_string, s1, ":type")
+      (str_store_string, s68, ":type")
     ],
-    "{s1}",
+    "{s68}",
     "member_automanage_select_melee_2",
     [
       (store_add, ":slot_num", reg1, slot_troop_upgrade_wpn_0),
@@ -15508,9 +17821,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
     [
       (neq, reg1, 4),
       (store_add, ":type", 3, "str_hero_wpn_slot_none"),
-      (str_store_string, s1, ":type")
+      (str_store_string, s68, ":type")
     ],
-    "{s1}",
+    "{s68}",
     "member_automanage_select_melee_2",
     [
       (store_add, ":slot_num", reg1, slot_troop_upgrade_wpn_0),
@@ -15524,9 +17837,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
     [
       (neq, reg1, 4),
       (store_add, ":type", 4, "str_hero_wpn_slot_none"),
-      (str_store_string, s1, ":type")
+      (str_store_string, s68, ":type")
     ],
-    "{s1}",
+    "{s68}",
     "member_automanage_select_melee_2",
     [
       (store_add, ":slot_num", reg1, slot_troop_upgrade_wpn_0),
@@ -15540,9 +17853,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
     [
       (neq, reg1, 4),
       (store_add, ":type", 5, "str_hero_wpn_slot_none"),
-      (str_store_string, s1, ":type")
+      (str_store_string, s68, ":type")
     ],
-    "{s1}",
+    "{s68}",
     "member_automanage_select_melee_2",
     [
       (store_add, ":slot_num", reg1, slot_troop_upgrade_wpn_0),
@@ -15556,9 +17869,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
     [
       (neq, reg1, 4),
       (store_add, ":type", 6, "str_hero_wpn_slot_none"),
-      (str_store_string, s1, ":type")
+      (str_store_string, s68, ":type")
     ],
-    "{s1}",
+    "{s68}",
     "member_automanage_select_melee_2",
     [
       (store_add, ":slot_num", reg1, slot_troop_upgrade_wpn_0),
@@ -15572,9 +17885,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
     [
       (neq, reg1, 4),
       (store_add, ":type", 7, "str_hero_wpn_slot_none"),
-      (str_store_string, s1, ":type")
+      (str_store_string, s68, ":type")
     ],
-    "{s1}",
+    "{s68}",
     "member_automanage_select_melee_2",
     [
       (store_add, ":slot_num", reg1, slot_troop_upgrade_wpn_0),
@@ -15588,9 +17901,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
     [
       (neq, reg1, 4),
       (store_add, ":type", 8, "str_hero_wpn_slot_none"),
-      (str_store_string, s1, ":type")
+      (str_store_string, s68, ":type")
     ],
-    "{s1}",
+    "{s68}",
     "member_automanage_select_melee_2",
     [
       (store_add, ":slot_num", reg1, slot_troop_upgrade_wpn_0),
@@ -15604,9 +17917,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
     [
       (neq, reg1, 4),
       (store_add, ":type", 9, "str_hero_wpn_slot_none"),
-      (str_store_string, s1, ":type")
+      (str_store_string, s68, ":type")
     ],
-    "{s1}",
+    "{s68}",
     "member_automanage_select_melee_2",
     [
       (store_add, ":slot_num", reg1, slot_troop_upgrade_wpn_0),
@@ -15620,9 +17933,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
     [
       (neq, reg1, 4),
       (store_add, ":type", 10, "str_hero_wpn_slot_none"),
-      (str_store_string, s1, ":type")
+      (str_store_string, s68, ":type")
     ],
-    "{s1}",
+    "{s68}",
     "member_automanage_select_melee_2",
     [
       (store_add, ":slot_num", reg1, slot_troop_upgrade_wpn_0),
@@ -16701,8 +19014,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (str_store_party_name, 20, "$g_encountered_party"),
       ],
      "{s5}", "companion_recruit_signup_response", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_recruit_signup_response.py:L4-L7 ] anyone|plyr::companion_recruit_signup_response->close_window [neg|hero_can_join] {unfortunately, i cannot take on any more hands in my party right}
-[anyone|plyr, "companion_recruit_signup_response", [(neg|hero_can_join, "p_main_party"), ], "Unfortunately, I cannot take on any more hands in my party right now. If there is room later, I would rather bring in the right people than crowd the road with too many names.", "close_window", [
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_recruit_signup_response.py:L4-L7 ] anyone|plyr::companion_recruit_signup_response->close_window [neg|hero_can_join] {i have no room now. if that changes, i will come back with a rea}
+[anyone|plyr, "companion_recruit_signup_response", [(neg|hero_can_join, "p_main_party"), ], "I have no room now. If that changes, I will come back with a real offer.", "close_window", [
      ]],
 # [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_recruit_signup_response_02.py:L1-L7 ] anyone|plyr::companion_recruit_signup_response->companion_recruit_payment [hero_can_join|troop_get_slot|str_store_string] {{var}}
 [anyone|plyr, "companion_recruit_signup_response", [
@@ -16764,9 +19077,9 @@ Laugh if you wish princeling, but know that many failed to get past their format
    "We meet again.", "companion_recruit_meet_again", [
                      (troop_set_slot, "$g_talk_troop", slot_troop_turned_down_twice, 1),
        ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_recruit_meet_again.py:L1-L4 ] anyone|plyr::companion_recruit_meet_again->companion_recruit_backstory_delayed [no_conditions] {so... what have you been doing since our last encounter?}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_recruit_meet_again.py:L1-L4 ] anyone|plyr::companion_recruit_meet_again->companion_recruit_backstory_delayed [no_conditions] {what has changed since we last met?}
 [anyone|plyr, "companion_recruit_meet_again", [
-      ], "So... What have you been doing since our last encounter?", "companion_recruit_backstory_delayed", []],
+      ], "What has changed since we last met?", "companion_recruit_backstory_delayed", []],
 # [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_recruit_meet_again_02.py:L1-L5 ] anyone|plyr::companion_recruit_meet_again->close_window [no_conditions] {good day to you.}
 [anyone|plyr, "companion_recruit_meet_again", [
       ],  "Good day to you.", "close_window", [
@@ -16780,12 +19093,12 @@ Laugh if you wish princeling, but know that many failed to get past their format
    "Yes?", "companion_recruit_secondchance", [
                      (troop_set_slot, "$g_talk_troop", slot_troop_turned_down_twice, 1),
        ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_recruit_secondchance.py:L1-L4 ] anyone|plyr::companion_recruit_secondchance->companion_recruit_backstory_b [no_conditions] {my apologies if i was rude, earlier. what was your story again?}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_recruit_secondchance.py:L1-L4 ] anyone|plyr::companion_recruit_secondchance->companion_recruit_backstory_b [no_conditions] {i spoke poorly before. tell me again.}
 [anyone|plyr, "companion_recruit_secondchance", [
-      ], "My apologies if I was rude, earlier. What was your story again?", "companion_recruit_backstory_b", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_recruit_secondchance_02.py:L1-L5 ] anyone|plyr::companion_recruit_secondchance->close_window [no_conditions] {not today. the road is not ready for both of us yet.}
+      ], "I spoke poorly before. Tell me again.", "companion_recruit_backstory_b", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_recruit_secondchance_02.py:L1-L5 ] anyone|plyr::companion_recruit_secondchance->close_window [no_conditions] {the road is not ready for both of us yet.}
 [anyone|plyr, "companion_recruit_secondchance", [
-      ],  "Not today. The road is not ready for both of us yet.", "close_window", [
+      ],  "The road is not ready for both of us yet.", "close_window", [
           ]],
 # [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_recruit_backstory_delayed.py:L4-L10 ] anyone::companion_recruit_backstory_delayed->companion_recruit_backstory_delayed_response [troop_get_slot|str_store_string] {{var}}
 [anyone, "companion_recruit_backstory_delayed",
@@ -16793,11 +19106,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
       (str_store_string, 5, ":backstory_delayed"),
       ],
      "{s5}", "companion_recruit_backstory_delayed_response", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_recruit_backstory_delayed_response.py:L4-L6 ] anyone|plyr::companion_recruit_backstory_delayed_response->companion_recruit_signup_b [no_conditions] {i could use someone like you in my company, if you are ready to }
-[anyone|plyr, "companion_recruit_backstory_delayed_response", [], "I could use someone like you in my company, if you are ready to ride.", "companion_recruit_signup_b", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_recruit_backstory_delayed_response_02.py:L1-L5 ] anyone|plyr::companion_recruit_backstory_delayed_response->close_window [no_conditions] {not today. i will send word if the road opens for both of us.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_recruit_backstory_delayed_response.py:L4-L6 ] anyone|plyr::companion_recruit_backstory_delayed_response->companion_recruit_signup_b [no_conditions] {i could use someone like you, if you are ready.}
+[anyone|plyr, "companion_recruit_backstory_delayed_response", [], "I could use someone like you, if you are ready.", "companion_recruit_signup_b", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_recruit_backstory_delayed_response_02.py:L1-L5 ] anyone|plyr::companion_recruit_backstory_delayed_response->close_window [no_conditions] {not today. if that changes, i will find you.}
 [anyone|plyr, "companion_recruit_backstory_delayed_response", [
-      ],  "Not today. I will send word if the road opens for both of us.", "close_window", [
+      ],  "Not today. If that changes, I will find you.", "close_window", [
           ]],
 # [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_recruit_signup_confirm.py:L1-L4 ] anyone::companion_recruit_signup_confirm->close_window [no_conditions] {good! give me a few moments to prepare and i'll be ready to move}
 [anyone, "companion_recruit_signup_confirm", [], "Good! Give me a few moments to prepare and I'll be ready to move.", "close_window",
@@ -16846,28 +19159,28 @@ Laugh if you wish princeling, but know that many failed to get past their format
    "companion_was_dismissed", [
                      (troop_set_slot, "$g_talk_troop", slot_troop_playerparty_history, pp_history_indeterminate),
       ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_was_dismissed.py:L4-L6 ] anyone::companion_was_dismissed->close_window [no_conditions] {so it has come to this. i leave with my pride dented, not broken}
-[anyone, "companion_was_dismissed", [], "So it has come to this. I leave with my pride dented, not broken. If you want me back one day, you will have to do more than nod at an old wound.", "close_window", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_rehire.py:L1-L5 ] anyone|plyr::companion_rehire->companion_recruit_signup_confirm [hero_can_join] {welcome back, my friend!}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_was_dismissed.py:L4-L6 ] anyone::companion_was_dismissed->close_window [no_conditions] {then i go. pride dented, not broken. if you want me back, ask di}
+[anyone, "companion_was_dismissed", [], "Then I go. Pride dented, not broken. If you want me back, ask directly.", "close_window", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_rehire.py:L1-L5 ] anyone|plyr::companion_rehire->companion_recruit_signup_confirm [hero_can_join] {welcome back. take your place again.}
 [anyone|plyr, "companion_rehire", [
                     (hero_can_join, "p_main_party")
-      ], "Welcome back, my friend!", "companion_recruit_signup_confirm", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_rehire_02.py:L1-L5 ] anyone|plyr::companion_rehire->companion_rehire_refused [no_conditions] {not yet. my company is too crowded to take another oath.}
+      ], "Welcome back. Take your place again.", "companion_recruit_signup_confirm", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_rehire_02.py:L1-L5 ] anyone|plyr::companion_rehire->companion_rehire_refused [no_conditions] {not yet. there is no place open.}
 [anyone|plyr, "companion_rehire", [
-      ],  "Not yet. My company is too crowded to take another oath.", "companion_rehire_refused", [
+      ],  "Not yet. There is no place open.", "companion_rehire_refused", [
           ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_rehire_refused.py:L4-L6 ] anyone::companion_rehire->close_window [no_conditions] {no. you dismissed me once, and i will not pretend that meant not}
-[anyone, "companion_rehire", [], "No. You dismissed me once, and I will not pretend that meant nothing. I may forgive a debt, but I do not forget the hand that shoved me out of the door.", "close_window", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_03.py:L1-L10 ] anyone::event_triggered->center_captured_lord_advice [faction_slot_eq|ge|str_store_party_name] {{var} is not being managed by anyone. whom shall i put in charge}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_rehire_refused.py:L4-L6 ] anyone::companion_rehire_refused->close_window [no_conditions] {then call me when you mean it. i was dismissed once; i will not }
+[anyone, "companion_rehire_refused", [], "Then call me when you mean it. I was dismissed once; I will not wait on a half-open door.", "close_window", []],
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_03.py:L1-L10 ] anyone::event_triggered->center_captured_lord_advice [faction_slot_eq|is_between|str_store_party_name] {{var} is not being managed by anyone. whom shall i put in charge}
 [anyone, "event_triggered",
    [
      (faction_slot_eq, "fac_player_supporters_faction", slot_faction_leader, "$g_talk_troop"),
-     (ge, "$g_center_taken_by_player_faction", 0),
-     (str_store_party_name, s1, "$g_center_taken_by_player_faction"),
+     (is_between, "$g_center_taken_by_player_faction", centers_begin, centers_end),
+     (str_store_party_name, s68, "$g_center_taken_by_player_faction"),
      ],
-   "{s1} is not being managed by anyone. Whom shall I put in charge?", "center_captured_lord_advice",
+   "{s68} is not being managed by anyone. Whom shall I put in charge?", "center_captured_lord_advice",
    []],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_repeat_for_troops_center_captured_lord_advice.py:L1-L23 ] anyone|plyr|repeat_for_troops::center_captured_lord_advice->center_captured_lord_advice_2 [store_repeat_object|troop_slot_eq|neq] {{var}. {var}}
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_repeat_for_troops_center_captured_lord_advice.py:L1-L24 ] anyone|plyr|repeat_for_troops::center_captured_lord_advice->center_captured_lord_advice_2 [store_repeat_object|troop_slot_eq|neq] {{var}. {var}}
 [anyone|plyr|repeat_for_troops, "center_captured_lord_advice",
    [
      (store_repeat_object, ":troop_no"),
@@ -16878,75 +19191,104 @@ Laugh if you wish princeling, but know that many failed to get past their format
      (eq, ":faction_no", "fac_player_supporters_faction"),
      (call_script, "script_store_troop_name", s11, ":troop_no"),
      (call_script, "script_print_troop_owned_centers_in_numbers_to_s0", ":troop_no"),
+     (str_store_string_reg, s69, s0),
      (try_begin),
        (eq, reg0, 0),
        (str_store_string, s1, "@(no fiefs)"),
      (else_try),
-       (str_store_string, s1, "@(fiefs: {s0})"),
+       (str_store_string, s1, "@(fiefs: {s69})"),
      (try_end),
      ],
    "{s11}. {s1}", "center_captured_lord_advice_2",
    [
      (store_repeat_object, "$temp"),
      ]],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_center_captured_lord_advice.py:L1-L11 ] anyone|plyr::center_captured_lord_advice->center_captured_lord_advice_2 [call_script|str_store_party_name] {please {var}, grant {var} to me. i can hold it. (fiefs: {var})}
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_center_captured_lord_advice.py:L1-L12 ] anyone|plyr::center_captured_lord_advice->center_captured_lord_advice_2 [call_script|str_store_string_reg|str_store_party_name] {please {var}, grant {var} to me. i can hold it. (fiefs: {var})}
 [anyone|plyr, "center_captured_lord_advice",
    [
      (call_script, "script_print_troop_owned_centers_in_numbers_to_s0", "trp_player"),
+     (str_store_string_reg, s69, s0),
      (str_store_party_name, s1, "$g_center_taken_by_player_faction"),
     ],
-   "Please {s65}, grant {s1} to me. I can hold it. (fiefs: {s0})", "center_captured_lord_advice_2",
+   "Please {s65}, grant {s1} to me. I can hold it. (fiefs: {s69})", "center_captured_lord_advice_2",
    [
      (assign, "$temp", "trp_player"),
      ]],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_center_captured_lord_advice_02.py:L1-L11 ] anyone|plyr::center_captured_lord_advice->center_captured_lord_advice_2 [call_script|str_store_party_name] {{var}, you should have {var} for yourself. (fiefs: {var})}
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_center_captured_lord_advice_02.py:L1-L12 ] anyone|plyr::center_captured_lord_advice->center_captured_lord_advice_2 [call_script|str_store_string_reg|str_store_party_name] {{var}, you should have {var} for yourself. (fiefs: {var})}
 [anyone|plyr, "center_captured_lord_advice",
    [
      (call_script, "script_print_troop_owned_centers_in_numbers_to_s0", "$g_talk_troop"),
+     (str_store_string_reg, s69, s0),
      (str_store_party_name, s1, "$g_center_taken_by_player_faction"),
      ],
-   "{s66}, you should have {s1} for yourself. (fiefs: {s0})", "center_captured_lord_advice_2",
+   "{s66}, you should have {s1} for yourself. (fiefs: {s69})", "center_captured_lord_advice_2",
    [
      (assign, "$temp", "$g_talk_troop"),
      ]],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_center_captured_lord_advice_2.py:L1-L56 ] anyone::center_captured_lord_advice_2->close_window [no_conditions] {hmmm. all right, {var}. i value your counsel highly. {var}}} wil}
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_center_captured_lord_advice_2.py:L1-L82 ] anyone::center_captured_lord_advice_2->close_window [is_between|this_or_next|eq|is_between] {{var}}
 [anyone, "center_captured_lord_advice_2",
    [
+     (is_between, "$g_center_taken_by_player_faction", centers_begin, centers_end),
+     (this_or_next|eq, "$temp", "trp_player"),
+     (is_between, "$temp", kingdom_heroes_begin, kingdom_heroes_end),
+     (assign, ":new_owner_for_text", "$temp"),
+     (try_begin),
+       (eq, ":new_owner_for_text", "$g_talk_troop"),
+       (str_store_string, s69, "@I"),
+     (else_try),
+       (eq, ":new_owner_for_text", "trp_player"),
+       (str_store_string, s69, "@You"),
+     (else_try),
+       (call_script, "script_store_troop_name", s69, ":new_owner_for_text"),
+     (try_end),
+     (str_store_party_name, s70, "$g_center_taken_by_player_faction"),
+     (troop_get_type, reg3, ":new_owner_for_text"),
+     (try_begin),
+       (eq, reg3, 1),
+       (str_store_string, s68, "@Hmmm. All right, {playername}. I value your counsel highly. {s69} will be the new lady of {s70}."),
+     (else_try),
+       (str_store_string, s68, "@Hmmm. All right, {playername}. I value your counsel highly. {s69} will be the new lord of {s70}."),
+     (try_end),
      ],
-   "Hmmm. All right, {playername}. I value your counsel highly. {reg6?I:{reg7?You:{s11}}} will be the new {reg3?lady:lord} of {s1}.", "close_window",
+   "{s68}", "close_window",
    [
      (assign, ":new_owner", "$temp"),
-     (call_script, "script_calculate_troop_score_for_center", ":new_owner", "$g_center_taken_by_player_faction"),
-     (assign, ":new_owner_score", reg0),
-     (assign, ":total_negative_effect"),
-     (try_for_range, ":cur_troop", kingdom_heroes_begin, kingdom_heroes_end),
-       (store_troop_faction, ":cur_faction", ":cur_troop"),
-       (eq, ":cur_faction", "fac_player_supporters_faction"),
-       (neq, ":cur_troop", ":new_owner"),
-       (call_script, "script_calculate_troop_score_for_center", ":cur_troop", "$g_center_taken_by_player_faction"),
-       (assign, ":cur_troop_score", reg0),
-       (gt, ":cur_troop_score", ":new_owner_score"),
-       (store_sub, ":difference", ":cur_troop_score", ":new_owner_score"),
-       (store_random_in_range, ":random_dif", 0, ":difference"),
-       (val_div, ":random_dif", 1000),
-       (gt, ":random_dif", 0),
-       (val_add, ":total_negative_effect", ":random_dif"),
-       (val_mul, ":random_dif", -1),
-       (call_script, "script_change_player_relation_with_troop", ":cur_troop", ":random_dif"),
-     (try_end),
-     (val_mul, ":total_negative_effect", 2),
-     (val_div, ":total_negative_effect", 3),
-     (val_add, ":total_negative_effect", 5),
      (try_begin),
-       (neq, ":new_owner", "trp_player"),
-       (val_min, ":total_negative_effect", 30),
-       (call_script, "script_change_player_relation_with_troop", ":new_owner", ":total_negative_effect"),
-     (try_end),
-     (call_script, "script_give_center_to_lord", "$g_center_taken_by_player_faction", ":new_owner", 0),
-     (try_begin),
-       (neq, ":new_owner", "trp_player"),
-       (call_script, "script_cf_reinforce_party", "$g_center_taken_by_player_faction"),
-       (call_script, "script_cf_reinforce_party", "$g_center_taken_by_player_faction"),
+       (is_between, "$g_center_taken_by_player_faction", centers_begin, centers_end),
+       (this_or_next|eq, ":new_owner", "trp_player"),
+       (is_between, ":new_owner", kingdom_heroes_begin, kingdom_heroes_end),
+       (call_script, "script_calculate_troop_score_for_center", ":new_owner", "$g_center_taken_by_player_faction"),
+       (assign, ":new_owner_score", reg0),
+       (assign, ":total_negative_effect", 0),
+       (try_for_range, ":cur_troop", kingdom_heroes_begin, kingdom_heroes_end),
+         (store_troop_faction, ":cur_faction", ":cur_troop"),
+         (eq, ":cur_faction", "fac_player_supporters_faction"),
+         (neq, ":cur_troop", ":new_owner"),
+         (call_script, "script_calculate_troop_score_for_center", ":cur_troop", "$g_center_taken_by_player_faction"),
+         (assign, ":cur_troop_score", reg0),
+         (gt, ":cur_troop_score", ":new_owner_score"),
+         (store_sub, ":difference", ":cur_troop_score", ":new_owner_score"),
+         (store_random_in_range, ":random_dif", 0, ":difference"),
+         (val_div, ":random_dif", 1000),
+         (gt, ":random_dif", 0),
+         (val_add, ":total_negative_effect", ":random_dif"),
+         (val_mul, ":random_dif", -1),
+         (call_script, "script_change_player_relation_with_troop", ":cur_troop", ":random_dif"),
+       (try_end),
+       (val_mul, ":total_negative_effect", 2),
+       (val_div, ":total_negative_effect", 3),
+       (val_add, ":total_negative_effect", 5),
+       (try_begin),
+         (neq, ":new_owner", "trp_player"),
+         (val_min, ":total_negative_effect", 30),
+         (call_script, "script_change_player_relation_with_troop", ":new_owner", ":total_negative_effect"),
+       (try_end),
+       (call_script, "script_give_center_to_lord", "$g_center_taken_by_player_faction", ":new_owner", 0),
+       (try_begin),
+         (neq, ":new_owner", "trp_player"),
+         (call_script, "script_cf_reinforce_party", "$g_center_taken_by_player_faction"),
+         (call_script, "script_cf_reinforce_party", "$g_center_taken_by_player_faction"),
+       (try_end),
      (try_end),
 
      (assign, reg6, 0),
@@ -16960,7 +19302,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
      (else_try),
        (call_script, "script_store_troop_name", s11, "$temp"),
      (try_end),
-     (str_store_party_name, s1, "$g_center_taken_by_player_faction"),
+     (str_store_party_name, s70, "$g_center_taken_by_player_faction"),
      (troop_get_type, reg3, "$temp"),
      (assign, "$g_center_taken_by_player_faction", -1),
      ]],
@@ -16987,7 +19329,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc4),
 			(eq, "$g_companion_banter_pair_b", trp_npc4),
 		],
-		"Borcha watches Rolf like a man measuring how much trouble a title can hide. A camp stays honest when nobody is allowed to forget that steel still settles arguments faster than speeches.",
+		"Borcha watches Rolf like a man measuring how much trouble a title can hide. Steel settles arguments faster than speeches; he seems determined that nobody forgets it.",
 		"close_window",
 		[],
 	],
@@ -17002,7 +19344,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc4),
 			(eq, "$g_companion_banter_pair_b", trp_npc4),
 		],
-		"Borcha gives Rolf a flat look. Rank is useful right up until the road turns ugly. Then the man who keeps the camp moving earns the right to speak.",
+		"Borcha gives Rolf a flat look. Rank is useful until trouble starts. Then the man who keeps the packs moving earns the right to speak.",
 		"close_window",
 		[],
 	],
@@ -17017,7 +19359,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc4),
 			(eq, "$g_companion_banter_pair_b", trp_npc4),
 		],
-		"Borcha snorts, but the edge has gone out of his voice. Fine. Rolf can keep his title if he keeps his head. That is as close to peace as some camps ever get.",
+		"Borcha snorts, but the edge has gone out of his voice. Fine. Rolf can keep his title if he keeps his head. For them, that is nearly peace.",
 		"close_window",
 		[],
 	],
@@ -17031,7 +19373,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc4),
 			(eq, "$g_companion_banter_pair_b", trp_npc4),
 		],
-		"Borcha gives the camp a hard stare. Enough. Keep the packs tied, keep the watches awake, and let the road decide who was right by morning.",
+		"Borcha gives the fire a hard stare. Enough. Keep the packs tied, keep the watches awake, and argue again after dawn.",
 		"close_window",
 		[],
 	],
@@ -17076,7 +19418,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc3),
 			(eq, "$g_companion_banter_pair_b", trp_npc3),
 		],
-		"Marnid gives the saddlebags a final pat. Let the argument rest. A camp that settles itself can still reach the next town with a little coin left in it.",
+		"Marnid gives the saddlebags a final pat. Let the argument rest. A quarrel settled early can still reach the next town with coin left.",
 		"close_window",
 		[],
 	],
@@ -17090,7 +19432,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc3),
 			(eq, "$g_companion_banter_pair_b", trp_npc3),
 		],
-		"Enough. Keep the gear dry, the counts honest, and the watches awake. That is as much peace as the road usually allows.",
+		"Enough. Keep the gear dry, the counts honest, and the watches awake. That is enough peace for tonight.",
 		"close_window",
 		[],
 	],
@@ -17103,7 +19445,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc1),
 			(eq, "$g_companion_banter_pair_b", trp_npc1),
 		],
-		"Borcha warms his hands and says a road rewards the stubborn, not the comfortable. He sounds like a man who has never once wanted an easier life and resents those who do.",
+		"Borcha warms his hands and says hard miles reward the stubborn, not the comfortable. He sounds like a man who has never wanted an easier life.",
 		"close_window",
 		[],
 	],
@@ -17153,7 +19495,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc3),
 			(eq, "$g_companion_banter_pair_b", trp_npc3),
 		],
-		"Ymira watches the fire settle. People say the road makes them honest. It does not. It only gives them fewer places to hide.",
+		"Ymira watches the fire settle. People say hard travel makes them honest. It does not. It only gives them fewer places to hide.",
 		"close_window",
 		[],
 	],
@@ -17194,26 +19536,28 @@ Laugh if you wish princeling, but know that many failed to get past their format
 		"close_window",
 		[],
 	],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting.py:L4-L6 ] anyone::companion_quitting_response->companion_quitting_response [no_conditions] {if you have come to send me away, say it cleanly. i would rather}
-[anyone, "companion_quitting_response", [], "If you have come to send me away, say it cleanly. I would rather a hard truth than a gentle lie. I have lived through both, and one of them always costs more. A company can survive hunger and arrows; it starts to fail when people stop trusting each other to speak plainly.", "companion_quitting_response", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting_2.py:L1-L7 ] anyone::companion_quitting_response->companion_quitting_response [call_script] {to tell you the truth, {var}}
-[anyone, "companion_quitting_response", [
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting.py:L4-L6 ] anyone::companion_quitting->companion_quitting_2 [no_conditions] {if you mean to send me away, say it cleanly. i can take a hard o}
+[anyone, "companion_quitting", [], "If you mean to send me away, say it cleanly. I can take a hard order; I will not be managed out by silence.", "companion_quitting_2", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting_2.py:L1-L7 ] anyone::companion_quitting_2->companion_quitting_response [call_script] {to tell you the truth, {var}}
+[anyone, "companion_quitting_2", [
                     (call_script, "script_npc_morale", "$map_talk_troop"),
                      ],
    "To tell you the truth, {s21}", "companion_quitting_response", [
        ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_quitting_response.py:L4-L6 ] anyone|plyr::companion_quitting_response->companion_quitting_yes [no_conditions] {if the road is speaking that clearly to you, i will not chain yo}
-[anyone|plyr, "companion_quitting_response", [], "If the road is speaking that clearly to you, I will not chain you to it. Gather your things, and we will part with honesty instead of anger. A camp cannot stay strong if it forgets that people can leave without becoming enemies.", "companion_quitting_yes", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_quitting_response_02.py:L4-L6 ] anyone|plyr::companion_quitting_response->companion_quitting_no_confirm [no_conditions] {you have earned a place at this campfire. before you walk away f}
-[anyone|plyr, "companion_quitting_response", [], "You have earned a place at this campfire. Before you walk away from it, tell me what is hurting you enough to make leaving feel easier than staying.", "companion_quitting_no_confirm", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting_persuasion.py:L4-L6 ] anyone::companion_quitting_persuasion->companion_quitting_persuasion_02 [no_conditions] {you have earned more than coin here. you have earned a place, an}
-[anyone, "companion_quitting_persuasion", [], "You have earned more than coin here. You have earned a place, and I would rather keep your counsel than lose it. If you stay, do it because you mean to, not because I have cornered you.", "companion_quitting_persuasion_02", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting_persuasion_02.py:L4-L19 ] plyr::companion_quitting_persuasion_02->close_window [no_conditions] {then stay because the company is better with you in it, not beca}
-[plyr, "companion_quitting_persuasion_02", [], "Then stay because the company is better with you in it, not because I would rather not lose the argument.", "close_window", [
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_quitting_response.py:L4-L6 ] anyone|plyr::companion_quitting_response->companion_quitting_yes [no_conditions] {then go with my thanks. no bad blood between us.}
+[anyone|plyr, "companion_quitting_response", [], "Then go with my thanks. No bad blood between us.", "companion_quitting_yes", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_quitting_response_02.py:L4-L6 ] anyone|plyr::companion_quitting_response->companion_quitting_no_confirm [no_conditions] {you have a place here. tell me what made leaving look better.}
+[anyone|plyr, "companion_quitting_response", [], "You have a place here. Tell me what made leaving look better.", "companion_quitting_no_confirm", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting_persuasion.py:L4-L6 ] anyone::companion_quitting_persuasion->companion_quitting_persuasion_02 [no_conditions] {you have earned your place here. i would rather keep your counse}
+[anyone, "companion_quitting_persuasion", [], "You have earned your place here. I would rather keep your counsel. Stay if you can mean it.", "companion_quitting_persuasion_02", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting_persuasion_02.py:L4-L21 ] plyr::companion_quitting_persuasion_02->close_window [no_conditions] {then stay. we are stronger with you here.}
+[plyr, "companion_quitting_persuasion_02", [], "Then stay. We are stronger with you here.", "close_window", [
         (troop_get_slot, ":approval", "$g_talk_troop", slot_troop_companion_approval),
         (val_add, ":approval", 12),
         (val_clamp, ":approval", 0, 101),
         (troop_set_slot, "$g_talk_troop", slot_troop_companion_approval, ":approval"),
+        (call_script, "script_sod_companion_get_approval_band_to_reg", "$g_talk_troop"),
+        (troop_set_slot, "$g_talk_troop", slot_troop_companion_trust_tier, reg0),
         (try_begin),
           (ge, ":approval", 45),
           (troop_set_slot, "$g_talk_troop", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
@@ -17223,18 +19567,18 @@ Laugh if you wish princeling, but know that many failed to get past their format
         (store_current_day, ":cur_day"),
         (troop_set_slot, "$g_talk_troop", slot_troop_companion_last_reaction_day, ":cur_day"),
     ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_quitting_response_03.py:L4-L6 ] anyone|plyr::companion_quitting_response->companion_quitting_no_confirm [no_conditions] {no. not like this, and not over a few bad words. we have carried}
-[anyone|plyr, "companion_quitting_response", [], "No. Not like this, and not over a few bad words. We have carried worse than this together, so stay and let us deal with the real wound instead of pretending departure is the cure.", "companion_quitting_no_confirm", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_quitting_response_03.py:L4-L6 ] anyone|plyr::companion_quitting_response->companion_quitting_no_confirm [no_conditions] {no. stay, and we settle this now.}
+[anyone|plyr, "companion_quitting_response", [], "No. Stay, and we settle this now.", "companion_quitting_no_confirm", []],
 # [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting_no.py:L4-L6 ] plyr::companion_quitting_response->companion_quitting_persuasion [no_conditions] {no. i am not sending you off for the sake of my pride. stay, if }
 [plyr, "companion_quitting_response", [], "No. I am not sending you off for the sake of my pride. Stay, if you will.", "companion_quitting_persuasion", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_quitting_no_confirm.py:L4-L6 ] anyone|plyr::companion_quitting_no_confirm->companion_quitting_no_confirmed [no_conditions] {do not mistake patience for indifference. if you are trying to t}
-[anyone|plyr, "companion_quitting_no_confirm", [], "Do not mistake patience for indifference. If you are trying to test whether I will fight for this company, then I am answering plainly: yes, I will.", "companion_quitting_no_confirmed", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_quitting_no_confirm_02.py:L1-L5 ] anyone|plyr::companion_quitting_no_confirm->companion_quitting_yes [no_conditions] {no, actually i don't mean that. you are free to leave.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_quitting_no_confirm.py:L4-L6 ] anyone|plyr::companion_quitting_no_confirm->companion_quitting_no_confirmed [no_conditions] {i meant it. stay, speak straight, and i will answer straight.}
+[anyone|plyr, "companion_quitting_no_confirm", [], "I meant it. Stay, speak straight, and I will answer straight.", "companion_quitting_no_confirmed", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_quitting_no_confirm_02.py:L1-L5 ] anyone|plyr::companion_quitting_no_confirm->companion_quitting_yes [no_conditions] {no. i release you. go freely.}
 [anyone|plyr, "companion_quitting_no_confirm", [],
-   "No, actually I don't mean that. You are free to leave.", "companion_quitting_yes", [
+   "No. I release you. Go freely.", "companion_quitting_yes", [
        ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting_yes.py:L4-L26 ] anyone::companion_quitting_yes->close_window [no_conditions] {then i will take you at your word. i will not call this a victor}
-[anyone, "companion_quitting_yes", [], "Then I will take you at your word. I will not call this a victory, but I will remember that you chose honesty over dragging the matter into ugliness.", "close_window", [
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting_yes.py:L4-L26 ] anyone::companion_quitting_yes->close_window [no_conditions] {then i will take you at your word. no bitterness.}
+[anyone, "companion_quitting_yes", [], "Then I will take you at your word. No bitterness.", "close_window", [
         (assign, ":nearest_town", "p_town_1"),
         (assign, ":nearest_town_dist", 1000),
         (try_for_range, ":town_no", towns_begin, towns_end),
@@ -17255,12 +19599,14 @@ Laugh if you wish princeling, but know that many failed to get past their format
         (call_script, "script_sod_companion_cleanup_departed_companion", "$g_talk_troop"),
         (assign, "$npc_is_quitting", 0),
     ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting_no_confirmed.py:L4-L19 ] anyone::companion_quitting_no_confirmed->close_window [no_conditions] {very well. i hear you, and i am not looking for an excuse to tur}
-[anyone, "companion_quitting_no_confirmed", [], "Very well. I hear you, and I am not looking for an excuse to turn this into a feud. I will stay, but remember that respect runs both ways.", "close_window", [
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting_no_confirmed.py:L4-L21 ] anyone::companion_quitting_no_confirmed->close_window [no_conditions] {then i stay. respect runs both ways.}
+[anyone, "companion_quitting_no_confirmed", [], "Then I stay. Respect runs both ways.", "close_window", [
         (troop_get_slot, ":approval", "$g_talk_troop", slot_troop_companion_approval),
         (val_add, ":approval", 8),
         (val_clamp, ":approval", 0, 101),
         (troop_set_slot, "$g_talk_troop", slot_troop_companion_approval, ":approval"),
+        (call_script, "script_sod_companion_get_approval_band_to_reg", "$g_talk_troop"),
+        (troop_set_slot, "$g_talk_troop", slot_troop_companion_trust_tier, reg0),
         (try_begin),
           (ge, ":approval", 45),
           (troop_set_slot, "$g_talk_troop", slot_troop_companion_warning_state, sod_companion_warning_redeemed),
@@ -17314,7 +19660,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(eq, "$g_companion_banter_pair_b", trp_npc6),
 			(eq, "$g_companion_banter_context", 2),
 		],
-		"And if you must turn every warning into a fortress, Beheshtur, leave a gate for the rest of us. A camp survives by thinking together, not by bracing against its own people.",
+		"And if you must turn every warning into a fortress, Baheshtur, leave a gate for the rest of us. We survive by thinking together, not bracing against our own people.",
 		"close_window",
 		[],
 	],
@@ -17357,7 +19703,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(eq, "$g_companion_banter_context", 2),
 			(eq, "$g_companion_banter_variant", 1),
 		],
-		"If the night grows any quieter, I might start thinking the two of you can be reasoned into the same camp. That would be a dangerous kind of optimism.",
+		"If the night grows any quieter, I might start thinking the two of you can be reasoned into agreement. That would be a dangerous kind of optimism.",
 		"close_window",
 		[],
 	],
@@ -17386,7 +19732,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(eq, "$g_companion_banter_pair_b", trp_npc8),
 			(eq, "$g_companion_banter_context", 1),
 		],
-		"Matheld, you walk like every path owes you tribute. The road does not care. It only notices who keeps pace when the weather turns.",
+		"Matheld, you walk like every path owes you tribute. Paths do not care. They only notice who keeps pace when weather turns.",
 		"close_window",
 		[],
 	],
@@ -17400,7 +19746,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(eq, "$g_companion_banter_pair_b", trp_npc8),
 			(eq, "$g_companion_banter_context", 2),
 		],
-		"I glare at the road because it keeps producing fools, Deshavi. You, at least, have the sense to be a useful one.",
+		"I glare because the world keeps producing fools, Deshavi. You, at least, have the sense to be a useful one.",
 		"close_window",
 		[],
 	],
@@ -17414,7 +19760,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(eq, "$g_companion_banter_pair_b", trp_npc8),
 			(eq, "$g_companion_banter_context", 3),
 		],
-		"Matheld gives a short nod. Enough. A camp that can let a quarrel go is a camp that can still draw steel when it matters.",
+		"Matheld gives a short nod. Enough. If we can let a quarrel go, we can still draw steel when it matters.",
 		"close_window",
 		[],
 	],
@@ -17443,7 +19789,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(eq, "$g_companion_banter_context", 1),
 			(eq, "$g_companion_banter_variant", 1),
 		],
-		"Keep your gear where your hand can find it and your temper where it cannot be heard. That is how a camp stays alive when the road turns mean.",
+		"Keep your gear where your hand can find it and your temper where it cannot be heard. That is how a camp stays alive when travel turns mean.",
 		"close_window",
 		[],
 	],
@@ -17467,7 +19813,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(eq, "$g_companion_banter_pair_b", trp_npc6),
 			(eq, "$g_companion_banter_context", 2),
 		],
-		"Beheshtur watches a road the way a hawk watches a field. I respect that. I only wish he would speak before the storm is already over our heads.",
+		"Baheshtur watches a trail the way a hawk watches a field. I respect that. I only wish he would speak before the storm is already over our heads.",
 		"close_window",
 		[],
 	],
@@ -17504,7 +19850,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(eq, "$g_companion_banter_context", 2),
 			(eq, "$g_companion_banter_variant", 1),
 		],
-		"If the road stays calm, perhaps we can all stop bristling long enough to notice one another as people. That would be a novelty.",
+		"If the night stays calm, perhaps we can all stop bristling long enough to notice one another as people. That would be a novelty.",
 		"close_window",
 		[],
 	],
@@ -17516,7 +19862,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(eq, "$g_companion_banter_pair_b", trp_npc6),
 			(eq, "$g_companion_banter_context", 3),
 		],
-		"I do not mind the road so much. It teaches patience by force, and the world is merciful only when it runs out of patience with us first.",
+		"I do not mind hard miles. They teach patience by force, and the world is merciful only when it runs out of patience with us first.",
 		"close_window",
 		[],
 	],
@@ -17541,27 +19887,30 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(eq, "$g_companion_banter_context", 2),
 			(eq, "$g_companion_banter_variant", 2),
 		],
-		"A quiet camp is still a camp. Enjoy it while it lasts; dawn has a way of remembering who owes it blood.",
+		"Quiet is still useful. Enjoy it while it lasts; dawn has a way of remembering who owes it blood.",
 		"close_window",
 		[],
 	],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_objection_response.py:L1-L7 ] anyone|plyr::companion_objection_response->close_window [eq] {thanks, i appreciate your support.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_objection_response.py:L1-L8 ] anyone|plyr::companion_objection_response->close_window [eq] {thank you. i will remember it.}
 [anyone|plyr, "companion_objection_response", [
                     (eq, "$npc_praise_not_complaint", 1),
-      ], "Thanks, I appreciate your support.", "close_window", [
+      ], "Thank you. I will remember it.", "close_window", [
                     (troop_set_slot, "$map_talk_troop", "$npc_grievance_slot", tms_acknowledged),
+                    (call_script, "script_sod_companion_shift_approval", "$map_talk_troop", 1),
           ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_objection_response_02.py:L1-L7 ] anyone|plyr::companion_objection_response->close_window [eq] {hopefully it won't happen again.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_objection_response_02.py:L1-L8 ] anyone|plyr::companion_objection_response->close_window [eq] {you are heard. i will do better.}
 [anyone|plyr, "companion_objection_response", [
                     (eq, "$npc_praise_not_complaint", 0),
-      ], "Hopefully it won't happen again.", "close_window", [
+      ], "You are heard. I will do better.", "close_window", [
                     (troop_set_slot, "$map_talk_troop", "$npc_grievance_slot", tms_acknowledged),
+                    (call_script, "script_sod_companion_shift_approval", "$map_talk_troop", 1),
           ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_objection_response_03.py:L1-L10 ] anyone|plyr::companion_objection_response->close_window [eq] {your objection is noted. now fall back in line.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_objection_response_03.py:L1-L11 ] anyone|plyr::companion_objection_response->close_window [eq] {noted. back to your post.}
 [anyone|plyr, "companion_objection_response", [
                     (eq, "$npc_praise_not_complaint", 0),
-      ],  "Your objection is noted. Now fall back in line.", "close_window", [
+      ],  "Noted. Back to your post.", "close_window", [
                     (troop_set_slot, "$map_talk_troop", "$npc_grievance_slot", tms_dismissed),
+                    (call_script, "script_sod_companion_shift_approval", "$map_talk_troop", -2),
                     (troop_get_slot, ":grievance", "$map_talk_troop", slot_troop_morality_penalties),
                     (val_add, ":grievance", 10),
                     (troop_set_slot, "$map_talk_troop", slot_troop_morality_penalties, ":grievance"),
@@ -17654,12 +20003,12 @@ Laugh if you wish princeling, but know that many failed to get past their format
 		(ge, "$g_companion_banter_context", 0),
 		(eq, "$g_companion_banter_pair_a", trp_npc9),
 		(eq, "$g_companion_banter_pair_b", trp_npc10),
-	], "And your habit of scowling at every plan does not improve it, Bunduk. Still, a man who watches the roads for traps is worth listening to when the weather turns ugly.", "close_window", []],
+	], "And your habit of scowling at every plan does not improve it, Bunduk. Still, a man who watches the track for traps is worth listening to when weather turns ugly.", "close_window", []],
 	[trp_npc9, "event_triggered", [
 		(ge, "$g_companion_banter_context", 0),
 		(eq, "$g_companion_banter_pair_a", trp_npc10),
 		(eq, "$g_companion_banter_pair_b", trp_npc9),
-	], "He talks like every coin has a sermon attached to it. Fine. Ledgers keep a camp honest, and honesty is easier to trust than charm.", "close_window", []],
+	], "He talks like every coin has a sermon attached to it. Fine. Ledgers keep people honest, and honesty is easier to trust than charm.", "close_window", []],
 	[trp_npc10, "event_triggered", [
 		(ge, "$g_companion_banter_context", 0),
 		(eq, "$g_companion_banter_pair_a", trp_npc10),
@@ -17692,25 +20041,25 @@ Laugh if you wish princeling, but know that many failed to get past their format
 		(eq, "$g_companion_banter_variant", 0),
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc9),
 		(eq, "$g_companion_banter_pair_b", trp_npc9),
-	], "If we are delayed, I would rather it be by bad weather than by sloppy discipline. The road is cruel enough without us giving it help.", "close_window", []],
+	], "If we are delayed, I would rather it be by bad weather than by sloppy discipline. The march is cruel enough without us giving it help.", "close_window", []],
 	[trp_npc10, "event_triggered", [
 		(eq, "$g_companion_banter_context", 1),
 		(eq, "$g_companion_banter_variant", 0),
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc10),
 		(eq, "$g_companion_banter_pair_b", trp_npc10),
-	], "And I would rather the camp learn to look past your frown and into the actual supplies. Anger is cheaper than repairs, but repairs keep us moving.", "close_window", []],
+	], "And I would rather people learn to look past your frown and into the actual supplies. Anger is cheaper than repairs, but repairs keep us moving.", "close_window", []],
 	[trp_npc11, "event_triggered", [
 		(eq, "$g_companion_banter_context", 1),
 		(eq, "$g_companion_banter_variant", 1),
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc11),
 		(eq, "$g_companion_banter_pair_b", trp_npc11),
-	], "If the camp is restless, then I am restless. We have enough injuries already without inviting more through pride and bad timing.", "close_window", []],
+	], "If everyone is restless, then I am restless. We have enough injuries already without inviting more through pride and bad timing.", "close_window", []],
 	[trp_npc12, "event_triggered", [
 		(eq, "$g_companion_banter_context", 1),
 		(eq, "$g_companion_banter_variant", 1),
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc12),
 		(eq, "$g_companion_banter_pair_b", trp_npc12),
-	], "Then stop pacing and count the straps. A quiet hand does more for a camp than a loud conscience ever will.", "close_window", []],
+	], "Then stop pacing and count the straps. A quiet hand does more useful work than a loud conscience ever will.", "close_window", []],
 
 	[trp_npc9, "event_triggered", [
 		(eq, "$g_companion_banter_context", 2),
@@ -17743,7 +20092,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 		(eq, "$g_companion_banter_pair_b", trp_npc9),
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc10),
 		(eq, "$g_companion_banter_pair_b", trp_npc10),
-	], "Let it lie. A camp survives by knowing when to shut its mouth, tie down the tents, and save its temper for the fight that matters.", "close_window", []],
+	], "Let it lie. We survive by knowing when to shut our mouths, tie down the tents, and save temper for the fight that matters.", "close_window", []],
 	[trp_npc10, "event_triggered", [
 		(eq, "$g_companion_banter_context", 3),
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc10),
@@ -17764,8 +20113,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 		(eq, "$g_companion_banter_pair_b", trp_npc12),
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc11),
 		(eq, "$g_companion_banter_pair_b", trp_npc11),
-	], "Good. We have spent enough words for now. If the camp wants more peace, it can start by keeping its complaints to itself until dawn.", "close_window", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalityclash2_b.py:L4-L15 ] anyone::event_triggered->companion_personalityclash2_response [eq|store_conversation_troop|eq] {i have let this go too many times already. if we are to travel t}
+	], "Good. We have spent enough words for now. If anyone wants more peace, they can start by keeping complaints quiet until dawn.", "close_window", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalityclash2_b.py:L4-L15 ] anyone::event_triggered->companion_personalityclash2_response [eq|store_conversation_troop|eq] {i have let this go too many times. if we travel together, we nee}
 [anyone, "event_triggered", [
         (eq, "$npc_map_talk_context", slot_troop_personalityclash2_state),
         (store_conversation_troop, "$map_talk_troop"),
@@ -17773,15 +20122,30 @@ Laugh if you wish princeling, but know that many failed to get past their format
         (main_party_has_troop, "$map_talk_troop"),
         (troop_get_slot, ":object", "$map_talk_troop", slot_troop_personalityclash2_object),
         (main_party_has_troop, ":object"),
-    ], "I have let this go too many times already. If we are to travel together, then we need more than polite silence and sharper resentment. We need some way to stand in the same camp without drawing blood with our words.", "companion_personalityclash2_response", [
+    ], "I have let this go too many times. If we travel together, we need more than silence and resentment.", "companion_personalityclash2_response", [
         (assign, "$npc_with_personality_clash_2", 0),
     ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_personalityclash2_response.py:L4-L6 ] plyr::companion_personalityclash2_response->close_window [no_conditions] {we are a company, not a feast hall. if something is poisoning tr}
-[plyr, "companion_personalityclash2_response", [], "We are a company, not a feast hall. If something is poisoning trust, we deal with it openly and quickly instead of letting it spread through the ranks.", "close_window", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_personalityclash2_response_02.py:L4-L6 ] plyr::companion_personalityclash2_response->close_window [no_conditions] {i hear the grievance. i am asking you to stay, but not to swallo}
-[plyr, "companion_personalityclash2_response", [], "I hear the grievance. I am asking you to stay, but not to swallow it. Say what needs saying, and we will deal with it honestly.", "close_window", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_personalityclash2_response_03.py:L4-L6 ] plyr::companion_personalityclash2_response->close_window [no_conditions] {enough. i will not let one sharp word become a feud. take a brea}
-[plyr, "companion_personalityclash2_response", [], "Enough. I will not let one sharp word become a feud. Take a breath and we will sort it before it poisons the rest of us.", "close_window", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_personalityclash2_response.py:L4-L11 ] plyr::companion_personalityclash2_response->close_window [no_conditions] {then we deal with it in the open before it poisons the ranks.}
+[plyr, "companion_personalityclash2_response", [], "Then we deal with it in the open before it poisons the ranks.", "close_window", [
+        (call_script, "script_sod_companion_shift_approval", "$map_talk_troop", 2),
+        (troop_set_slot, "$map_talk_troop", slot_troop_personalityclash2_state, 1),
+        (assign, "$npc_with_personality_clash_2", 0),
+        (assign, "$npc_map_talk_context", 0),
+    ]],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_personalityclash2_response_02.py:L4-L11 ] plyr::companion_personalityclash2_response->close_window [no_conditions] {stay, but do not swallow it. say what needs saying.}
+[plyr, "companion_personalityclash2_response", [], "Stay, but do not swallow it. Say what needs saying.", "close_window", [
+        (call_script, "script_sod_companion_shift_approval", "$map_talk_troop", 3),
+        (troop_set_slot, "$map_talk_troop", slot_troop_personalityclash2_state, 1),
+        (assign, "$npc_with_personality_clash_2", 0),
+        (assign, "$npc_map_talk_context", 0),
+    ]],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_personalityclash2_response_03.py:L4-L11 ] plyr::companion_personalityclash2_response->close_window [no_conditions] {enough. breathe, then speak. i will not let this become a feud.}
+[plyr, "companion_personalityclash2_response", [], "Enough. Breathe, then speak. I will not let this become a feud.", "close_window", [
+        (call_script, "script_sod_companion_shift_approval", "$map_talk_troop", 1),
+        (troop_set_slot, "$map_talk_troop", slot_troop_personalityclash2_state, 1),
+        (assign, "$npc_with_personality_clash_2", 0),
+        (assign, "$npc_map_talk_context", 0),
+    ]],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_07.py:L5-L108 ] anyone::event_triggered->close_window [eq|eq|gt] {fine. truce, then. we still know how to stand together when the }
 [anyone, "event_triggered", [
         (eq, "$g_companion_event_reconciliation", 1),
@@ -17885,7 +20249,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
         (eq, "$g_companion_event_reaction_tier", 4),
         (eq, "$g_companion_event_variant", 2),
     ], "I won't forget this. None of us will.", "close_window", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalityclash_b.py:L4-L15 ] anyone::event_triggered->companion_personalityclash_response [eq|store_conversation_troop|eq] {i have been patient, but patience is not the same as approval. i}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalityclash_b.py:L4-L15 ] anyone::event_triggered->companion_personalityclash_response [eq|store_conversation_troop|eq] {i have held my tongue long enough. this quarrel needs an answer }
 [anyone, "event_triggered", [
         (eq, "$npc_map_talk_context", slot_troop_personalityclash_state),
         (store_conversation_troop, "$map_talk_troop"),
@@ -17893,32 +20257,28 @@ Laugh if you wish princeling, but know that many failed to get past their format
         (main_party_has_troop, "$map_talk_troop"),
         (troop_get_slot, ":object", "$map_talk_troop", slot_troop_personalityclash_object),
         (main_party_has_troop, ":object"),
-    ], "I have been patient, but patience is not the same as approval. If tempers keep scraping the same stone, we will warn the camp before a spark becomes a fire.", "companion_personalityclash_response", [
+    ], "I have held my tongue long enough. This quarrel needs an answer before the camp inherits it.", "companion_personalityclash_response", [
         (assign, "$npc_with_personality_clash", 0),
     ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_personalityclash_response.py:L4-L6 ] plyr::companion_personalityclash_response->close_window [no_conditions] {if you have a complaint, make it useful. i will hear hard truths}
-[plyr, "companion_personalityclash_response", [], "If you have a complaint, make it useful. I will hear hard truths in my camp, but I will not let every wounded ego turn itself into a public quarrel.", "close_window", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_personalityclash_response_02.py:L4-L6 ] plyr::companion_personalityclash_response->close_window [no_conditions] {you are right to be annoyed. i should have spoken sooner, and be}
-[plyr, "companion_personalityclash_response", [], "You are right to be annoyed. I should have spoken sooner, and better. Tell me what I can do to make this less of a wound.", "close_window", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_personalityclash_response_03.py:L4-L6 ] plyr::companion_personalityclash_response->close_window [no_conditions] {if this is the hill you want to die on, then say so. otherwise, }
-[plyr, "companion_personalityclash_response", [], "If this is the hill you want to die on, then say so. Otherwise, keep your temper and keep your place.", "close_window", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_08.py:L1-L17 ] anyone::event_triggered->companion_personalitymatch_b [eq|store_conversation_troop|eq] {{var}}
-[anyone, "event_triggered", [
-                     (eq, "$npc_map_talk_context", slot_troop_personalitymatch_state),
-                     (store_conversation_troop, "$map_talk_troop"),
-                     (eq, "$map_talk_troop", "$npc_with_personality_match"),
-                     (main_party_has_troop, "$map_talk_troop"),
-
-                     (troop_get_slot, ":speech", "$map_talk_troop", slot_troop_personalitymatch_speech),
-                     (troop_get_slot, ":object", "$map_talk_troop", slot_troop_personalitymatch_object),
-                     (main_party_has_troop, ":object"),
-                     (call_script, "script_store_troop_name", 11, ":object"),
-                     (str_store_string, 5, ":speech"),
-                     ],
-   "{s5}", "companion_personalitymatch_b", [
-                    (assign, "$npc_with_personality_match", 0),
-       ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/companions_banter_13_16.py:L19-L314 ] anyone::start->close_window [eq|eq|eq] {nizar folds his hands and smiles as if the camp were his audienc}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_personalityclash_response.py:L4-L10 ] plyr::companion_personalityclash_response->close_window [no_conditions] {make it useful. i will hear hard truths, not public feuds.}
+[plyr, "companion_personalityclash_response", [], "Make it useful. I will hear hard truths, not public feuds.", "close_window", [
+        (call_script, "script_sod_companion_shift_approval", "$map_talk_troop", 1),
+        (assign, "$npc_with_personality_clash", 0),
+        (assign, "$npc_map_talk_context", 0),
+    ]],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_personalityclash_response_02.py:L4-L10 ] plyr::companion_personalityclash_response->close_window [no_conditions] {you are right. i should have stepped in sooner. tell me what men}
+[plyr, "companion_personalityclash_response", [], "You are right. I should have stepped in sooner. Tell me what mends this.", "close_window", [
+        (call_script, "script_sod_companion_shift_approval", "$map_talk_troop", 3),
+        (assign, "$npc_with_personality_clash", 0),
+        (assign, "$npc_map_talk_context", 0),
+    ]],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_personalityclash_response_03.py:L4-L10 ] plyr::companion_personalityclash_response->close_window [no_conditions] {drop it. your temper is not command.}
+[plyr, "companion_personalityclash_response", [], "Drop it. Your temper is not command.", "close_window", [
+        (call_script, "script_sod_companion_shift_approval", "$map_talk_troop", -2),
+        (assign, "$npc_with_personality_clash", 0),
+        (assign, "$npc_map_talk_context", 0),
+    ]],
+# [ src/dialogs/ZE01_companions_and_named_npcs/companions_banter_13_16.py:L19-L314 ] anyone::start->close_window [eq|eq|eq] {nizar folds his hands and smiles as if the fire were his audienc}
 [
 		anyone,
 		"start",
@@ -17931,7 +20291,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc14),
 			(eq, "$g_companion_banter_pair_b", trp_npc14),
 		],
-		"Nizar folds his hands and smiles as if the camp were his audience. Lethaldiran is careful, certainly, but he mistakes caution for superiority far too often.",
+		"Nizar folds his hands and smiles as if the fire were his audience. Lethaldiran is careful, certainly, but he mistakes caution for superiority far too often.",
 		"close_window",
 		[],
 	],
@@ -18011,7 +20371,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc13),
 			(eq, "$g_companion_banter_pair_b", trp_npc13),
 		],
-		"He talks enough for the camp to hear the danger before it arrives. That is useful enough that I will not complain twice.",
+		"He talks enough for everyone to hear danger before it arrives. That is useful enough that I will not complain twice.",
 		"close_window",
 		[],
 	],
@@ -18133,7 +20493,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc16),
 			(eq, "$g_companion_banter_pair_b", trp_npc16),
 		],
-		"All right, the old smith has a point. The camp needs someone boring enough to keep the wheels from falling off. I suppose that is a job he can keep.",
+		"All right, the old builder has a point. The camp needs someone boring enough to keep the wheels from falling off. I suppose that is a job he can keep.",
 		"close_window",
 		[],
 	],
@@ -18173,7 +20533,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(eq, "$g_companion_banter_variant", 0),
 			(eq, "$g_talk_troop", trp_npc13),
 		],
-		"Nizar never quite sounds like he is speaking to the fire. He speaks around it, as if every camp ought to be politely impressed.",
+		"Nizar never quite sounds like he is speaking to the fire. He speaks around it, as if every listener ought to be politely impressed.",
 		"close_window",
 		[],
 	],
@@ -18185,7 +20545,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 			(eq, "$g_companion_banter_variant", 1),
 			(eq, "$g_talk_troop", trp_npc14),
 		],
-		"Lethaldiran keeps his face unreadable, but he notices the shape of every camp before anyone else does. That is the sort of caution that keeps people alive.",
+		"Lethaldiran keeps his face unreadable, but he notices the shape of every watch before anyone else does. That is the sort of caution that keeps people alive.",
 		"close_window",
 		[],
 	],
@@ -18213,7 +20573,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 		"close_window",
 		[],
 	],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalitymatch_b.py:L4-L15 ] anyone::event_triggered->companion_personalitymatch_response [eq|store_conversation_troop|eq] {you and i may not share a tongue, but i understand a captain by }
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalitymatch_b.py:L4-L15 ] anyone::event_triggered->companion_personalitymatch_response [eq|store_conversation_troop|eq] {you and i do not always agree, but you take blame and leave room}
 [anyone, "event_triggered", [
         (eq, "$npc_map_talk_context", slot_troop_personalitymatch_state),
         (store_conversation_troop, "$map_talk_troop"),
@@ -18221,11 +20581,16 @@ Laugh if you wish princeling, but know that many failed to get past their format
         (main_party_has_troop, "$map_talk_troop"),
         (troop_get_slot, ":object", "$map_talk_troop", slot_troop_personalitymatch_object),
         (main_party_has_troop, ":object"),
-    ], "You and I may not share a tongue, but I understand a captain by the way he takes blame and by the way he leaves room for other voices. That is a better beginning than most. A camp holds together when men listen before pride hardens into habit.", "companion_personalitymatch_response", [
+    ], "You and I do not always agree, but you take blame and leave room for other voices. That matters.", "companion_personalitymatch_response", [
         (assign, "$npc_with_personality_match", 0),
     ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_personalitymatch_response.py:L5-L7 ] anyone|plyr::companion_personalitymatch_response->close_window [no_conditions] {you are right. we do not have to agree on everything to travel w}
-[anyone|plyr, "companion_personalitymatch_response", [], "You are right. We do not have to agree on everything to travel well together. I will remember that the next time the road makes us both tired and short-tempered.", "close_window", [(troop_set_slot, "$g_talk_troop", slot_troop_personalitymatch_state, 1)]],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_personalitymatch_response.py:L5-L12 ] anyone|plyr::companion_personalitymatch_response->close_window [no_conditions] {agreed. we can disagree and still keep the company whole.}
+[anyone|plyr, "companion_personalitymatch_response", [], "Agreed. We can disagree and still keep the company whole.", "close_window", [
+        (call_script, "script_sod_companion_shift_approval", "$g_talk_troop", 2),
+        (troop_set_slot, "$g_talk_troop", slot_troop_personalitymatch_state, 1),
+        (assign, "$npc_with_personality_match", 0),
+        (assign, "$npc_map_talk_context", 0),
+    ]],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_09.py:L1-L12 ] anyone::event_triggered->companion_home_description [eq|store_conversation_troop|main_party_has_troop] {{var}}
 [anyone, "event_triggered", [
                      (eq, "$npc_map_talk_context", slot_troop_home),
@@ -18237,23 +20602,25 @@ Laugh if you wish princeling, but know that many failed to get past their format
    "{s5}", "companion_home_description", [
                     (troop_set_slot, "$map_talk_troop", slot_troop_home_speech_delivered, 1),
        ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_home_description.py:L1-L5 ] anyone|plyr::companion_home_description->companion_home_description_2 [no_conditions] {tell me more.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_home_description.py:L1-L6 ] anyone|plyr::companion_home_description->companion_home_description_2 [no_conditions] {tell me what home means to you.}
 [anyone|plyr, "companion_home_description", [
-      ],  "Tell me more.", "companion_home_description_2", [
+      ],  "Tell me what home means to you.", "companion_home_description_2", [
+                    (call_script, "script_sod_companion_shift_approval", "$g_talk_troop", 1),
           ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_home_description_02.py:L1-L5 ] anyone|plyr::companion_home_description->close_window [no_conditions] {we don't have time to chat just now.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_home_description_02.py:L1-L5 ] anyone|plyr::companion_home_description->close_window [no_conditions] {not now. we move.}
 [anyone|plyr, "companion_home_description", [
-      ],  "We don't have time to chat just now.", "close_window", [
+      ],  "Not now. We move.", "close_window", [
           ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_home_description_03.py:L1-L6 ] anyone|plyr::companion_home_description->close_window [no_conditions] {i prefer my companions not to bother me with such trivialities.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_home_description_03.py:L1-L7 ] anyone|plyr::companion_home_description->close_window [no_conditions] {homesickness does not change my orders.}
 [anyone|plyr, "companion_home_description", [
-      ],  "I prefer my companions not to bother me with such trivialities.", "close_window", [
+      ],  "Homesickness does not change my orders.", "close_window", [
+                    (call_script, "script_sod_companion_shift_approval", "$g_talk_troop", -2),
                     (assign, "$disable_local_histories", 1),
           ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_home_description_2.py:L4-L6 ] anyone::companion_home_description_2->companion_home_description_3 [no_conditions] {home is not a roof to me. it is a camp that does not lie to my f}
-[anyone, "companion_home_description_2", [], "Home is not a roof to me. It is a camp that does not lie to my face, a fire that still burns in the morning, and comrades who remember my name when the spoils are counted.", "companion_home_description_3", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_home_description_3.py:L4-L6 ] anyone::companion_home_description_3->close_window [no_conditions] {if your camp can be that for me, i will guard it like something }
-[anyone, "companion_home_description_3", [], "If your camp can be that for me, I will guard it like something that matters. If it cannot, then I will still do my duty - but I will not call it home.", "close_window", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_home_description_2.py:L4-L6 ] anyone::companion_home_description_2->companion_home_description_3 [no_conditions] {home is a camp that speaks honestly, keeps the fire lit, and rem}
+[anyone, "companion_home_description_2", [], "Home is a camp that speaks honestly, keeps the fire lit, and remembers names when shares are counted.", "companion_home_description_3", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_home_description_3.py:L4-L6 ] anyone::companion_home_description_3->close_window [no_conditions] {if this camp can be that, i will guard it. if not, i will serve,}
+[anyone, "companion_home_description_3", [], "If this camp can be that, I will guard it. If not, I will serve, but I will not call it home.", "close_window", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_10.py:L1-L19 ] anyone::event_triggered->rebel_thanks_answer [eq|troop_get_slot|str_store_faction_name] {{var}}
 [anyone, "event_triggered", [
     (eq, "$talk_context", tc_rebel_thanks),
@@ -18411,33 +20778,33 @@ Laugh if you wish princeling, but know that many failed to get past their format
 	(neg|troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_nihilistic),
 	(try_begin),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
-		(str_store_string, s0, "@Don't you worry now. I'll put you into a nice cell."),
+		(str_store_string, s68, "@Don't you worry now. I'll put you into a nice cell."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_respectful),
-		(str_store_string, s0, "@For the damage you caused to my people, I will take you into prison."),
+		(str_store_string, s68, "@For the damage you caused to my people, I will take you into prison."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
-		(str_store_string, s0, "@Now it is your turn to bear the shame of defeat. I will take you to prison."),
+		(str_store_string, s68, "@Now it is your turn to bear the shame of defeat. I will take you to prison."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_capitalist),
-		(str_store_string, s0, "@A fitting end for a parasite like you. It's time to put you where you belong - a prison cell."),
+		(str_store_string, s68, "@A fitting end for a parasite like you. It's time to put you where you belong - a prison cell."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_racist),
-		(str_store_string, s0, "@I'll take you prisoner. Soldiers, chain him !"),
+		(str_store_string, s68, "@I'll take you prisoner. Soldiers, chain him !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_crusader),
-		(str_store_string, s0, "@I figure you can't do much harm imprisoned, so that's what I'm going to do to you."),
+		(str_store_string, s68, "@I figure you can't do much harm imprisoned, so that's what I'm going to do to you."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_liberator),
-		(str_store_string, s0, "@There are fates worse than death, Centurion. You'll learn that in my dungeon soon enough."),
+		(str_store_string, s68, "@There are fates worse than death, Centurion. You'll learn that in my dungeon soon enough."),
 	(else_try),
 		is_legate,
-		(str_store_string, s0, "@For your crimes committed against the {s31}, I place you under arrest."),
+		(str_store_string, s68, "@For your crimes committed against the {s31}, I place you under arrest."),
 	(else_try),
-		(str_store_string, s0, "@You are my prisoner now."),
+		(str_store_string, s68, "@You are my prisoner now."),
 	(try_end),
   ],
-   "{s0}", "defeat_lord_answer_1",
+   "{s68}", "defeat_lord_answer_1",
    [
 	(try_begin),
 	 (neg|troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_capitalist),
@@ -18461,35 +20828,35 @@ Laugh if you wish princeling, but know that many failed to get past their format
   is_legate,
   (try_begin),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
-		(str_store_string, s0, "@You know what ? I decided in favor of letting you walk away freely."),
+		(str_store_string, s68, "@You know what ? I decided in favor of letting you walk away freely."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_respectful),
-		(str_store_string, s0, "@You and your men were worthy opponents; I let you go."),
+		(str_store_string, s68, "@You and your men were worthy opponents; I let you go."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
-		(str_store_string, s0, "@Face-to-face, you fought with valor; this time, I grant you the right to leave unharmed."),
+		(str_store_string, s68, "@Face-to-face, you fought with valor; this time, I grant you the right to leave unharmed."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_capitalist),
-		(str_store_string, s0, "@Whining wimp. You've proven to be a disappoinment. Get out of my sight."),
+		(str_store_string, s68, "@Whining wimp. You've proven to be a disappoinment. Get out of my sight."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_racist),
-		(str_store_string, s0, "@Unlike you, I respect my opponents. For your bravery, honor dictates your release."),
+		(str_store_string, s68, "@Unlike you, I respect my opponents. For your bravery, honor dictates your release."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_crusader),
-		(str_store_string, s0, "@Since you're already a ruin of a person, I'll let you walk away freely."),
+		(str_store_string, s68, "@Since you're already a ruin of a person, I'll let you walk away freely."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_liberator),
-		(str_store_string, s0, "@Your death would be a waste of noble blood; I don't want that. Depart in peace."),
+		(str_store_string, s68, "@Your death would be a waste of noble blood; I don't want that. Depart in peace."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_nihilistic),
-		(str_store_string, s0, "@none"),
+		(str_store_string, s68, "@none"),
 	(else_try),
 		is_legate,
-		(str_store_string, s0, "@I've come to realise that you aren't the arch-enemy I have expected you to be. I let you go."),
+		(str_store_string, s68, "@I've come to realise that you aren't the arch-enemy I have expected you to be. I let you go."),
 	(else_try),
-		(str_store_string, s0, "@none"),
+		(str_store_string, s68, "@none"),
 	(try_end),
-  ], "{s0}", "defeat_lord_answer_2", [], ],
+  ], "{s68}", "defeat_lord_answer_2", [], ],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_defeat_lord_answer_04.py:L1-L3 ] anyone|plyr::defeat_lord_answer->legate_execution_1 [no_conditions] {for your crimes committed against the {var}, i will hereby take }
 [anyone|plyr, "defeat_lord_answer", [is_legate], "For your crimes committed against the {s31}, I will hereby take your head.", "legate_execution_1", [(call_script, "script_change_player_honor", -200)]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_legate_execution_1.py:L1-L3 ] anyone::legate_execution_1->legate_execution_2 [no_conditions] {...so be it. but, if i may speak a few last words, let me tell y}
@@ -18627,36 +20994,36 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
 	(try_begin),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
-		(str_store_string, s0, "@{playername}, I'm afraid the time has come for 'that'. The Legate's patience is running out, and so is our chance to come to a peaceful solution to this conflict. As such... as Centurion of the Imperial Legion, I advise you to drop down your weaponry and submit. Resist, and you will face the according consequences. I'm sorry, friend... this is the end."),
+		(str_store_string, s68, "@{playername}, I'm afraid the time has come for 'that'. The Legate's patience is running out, and so is our chance to come to a peaceful solution to this conflict. As such... as Centurion of the Imperial Legion, I advise you to drop down your weaponry and submit. Resist, and you will face the according consequences. I'm sorry, friend... this is the end."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_respectful),
-		(str_store_string, s0, "@{playername}, I have been given instructions to prevent you from continuing your campaign against the Imperial Legion. Judging from your fame, I suspect you aren't too willing to negotiate, even though your surrender would be highly appreciated. So, what shall it be ? The heat of spilled blood, or the cold burden of shame ?"),
+		(str_store_string, s68, "@{playername}, I have been given instructions to prevent you from continuing your campaign against the Imperial Legion. Judging from your fame, I suspect you aren't too willing to negotiate, even though your surrender would be highly appreciated. So, what shall it be ? The heat of spilled blood, or the cold burden of shame ?"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
-		(str_store_string, s0, "@{playername}, the Legate has ordered me to take care of you - the violent way, if necessary. The good of the empire requires that you submit, or die by our hands; either way, worry not for you people. They will make a good addition to the reserves of the Imperial Legion in Calradia, under my careful watch. Still, this decision is on your hands: accept the inevitable, or try to put up a redundant effort to stop our expansion - at the expense of your soldiers' blood."),
+		(str_store_string, s68, "@{playername}, the Legate has ordered me to take care of you - the violent way, if necessary. The good of the empire requires that you submit, or die by our hands; either way, worry not for you people. They will make a good addition to the reserves of the Imperial Legion in Calradia, under my careful watch. Still, this decision is on your hands: accept the inevitable, or try to put up a redundant effort to stop our expansion - at the expense of your soldiers' blood."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_capitalist),
-		(str_store_string, s0, "@Hold your horses, peons ! {playername}, my superiors finally agreed to my pleas to have your worthless presence removed from this grand game ! Sadly enough, the duty of carrying out the deed falls to my shoulders, but I don't mind it. I was growing sick and tired of you interfering in my local affairs anyway. This time, you will DIE !"),
+		(str_store_string, s68, "@Hold your horses, peons ! {playername}, my superiors finally agreed to my pleas to have your worthless presence removed from this grand game ! Sadly enough, the duty of carrying out the deed falls to my shoulders, but I don't mind it. I was growing sick and tired of you interfering in my local affairs anyway. This time, you will DIE !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_racist),
-		(str_store_string, s0, "@My not-quite-respected advesary, I just received orders to erase your presence from this continent. You probably plan on trying to resist your impending doom, or perhaps will you actually decide in favor of the sensible solution for once and surrender ? I doubt you'd choose the latter, but I won't lower myself to your level by not granting the freedom of choice to a foe, regardless of how despicable that foe is. So here are your possibilites, {playername}: dead, or damned. Decide it quick."),
+		(str_store_string, s68, "@My not-quite-respected advesary, I just received orders to erase your presence from this continent. You probably plan on trying to resist your impending doom, or perhaps will you actually decide in favor of the sensible solution for once and surrender ? I doubt you'd choose the latter, but I won't lower myself to your level by not granting the freedom of choice to a foe, regardless of how despicable that foe is. So here are your possibilites, {playername}: dead, or damned. Decide it quick."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_crusader),
-		(str_store_string, s0, "@{playername} ! Destiny finally submitted to my ambitions ! Your skulls are MINE for the taking ! Tremble in terror ! Quake in fear ! These are your final moments, spawns of ruined kingdoms ! Behold as we cover the land with your gore, and heaven itself turns CRIMSON !"),
+		(str_store_string, s68, "@{playername} ! Destiny finally submitted to my ambitions ! Your skulls are MINE for the taking ! Tremble in terror ! Quake in fear ! These are your final moments, spawns of ruined kingdoms ! Behold as we cover the land with your gore, and heaven itself turns CRIMSON !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_liberator),
-		(str_store_string, s0, "@{playername}, your tyranny over the people of Calradia ends today ! By orders from the highest leadership of the Imperial Legion, I am here to make you submit to the might of our glorious empire ! If you do value the lives of your subjects, then kneel and repent for your crimes ! If not, then send forth your goons and lackeys, we shall unleash furious retribution upon you all !"),
+		(str_store_string, s68, "@{playername}, your tyranny over the people of Calradia ends today ! By orders from the highest leadership of the Imperial Legion, I am here to make you submit to the might of our glorious empire ! If you do value the lives of your subjects, then kneel and repent for your crimes ! If not, then send forth your goons and lackeys, we shall unleash furious retribution upon you all !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_nihilistic),
-		(str_store_string, s0, "@Dear {playername}, I'm truly sorry to bother you with my insignificant presence, but... I have to kill you."),
+		(str_store_string, s68, "@Dear {playername}, I'm truly sorry to bother you with my insignificant presence, but... I have to kill you."),
 	(else_try),
 		(eq, "$g_talk_troop", "trp_kingdom_6_lord"),
-		(str_store_string, s0, "@Halt right there, {playername} ! I'm afraid our acquaintance comes to a cruel ending today. As much as I want to delay this battle, the invasion must proceed as planned; as such, you must be removed from the picture. By my authority as a Legate, I order you to lay down arms, ruler of the {s31}, and this conflict may yet end without too much unwanted bloodshed."),
+		(str_store_string, s68, "@Halt right there, {playername} ! I'm afraid our acquaintance comes to a cruel ending today. As much as I want to delay this battle, the invasion must proceed as planned; as such, you must be removed from the picture. By my authority as a Legate, I order you to lay down arms, ruler of the {s31}, and this conflict may yet end without too much unwanted bloodshed."),
 	(else_try),
-		(str_store_string, s0, "@Surrender or die!"),
+		(str_store_string, s68, "@Surrender or die!"),
 	(try_end),
 					],
-   "{s0}", "party_encounter_lord_hostile_attacker_2", [
+   "{s68}", "party_encounter_lord_hostile_attacker_2", [
                     ]],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_54.py:L1-L9 ] anyone::start->party_encounter_lord_hostile_attacker [eq|troop_slot_eq|lt] {{var}!}
 [anyone, "start", [(eq, "$talk_context", tc_party_encounter),
@@ -18697,111 +21064,111 @@ Laugh if you wish princeling, but know that many failed to get past their format
   
 	(try_begin),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
-		(str_store_string, s0, "@We can't fight here, there are civilians in the area ! They shouldn't get involved."),
+		(str_store_string, s68, "@We can't fight here, there are civilians in the area ! They shouldn't get involved."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_respectful),
-		(str_store_string, s0, "@I don't want to fight you. My death or yours, either would be a great loss"),
+		(str_store_string, s68, "@I don't want to fight you. My death or yours, either would be a great loss"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
-		(str_store_string, s0, "@I refuse to engage in battle until I evacuate the civilians from the area."),
+		(str_store_string, s68, "@I refuse to engage in battle until I evacuate the civilians from the area."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_capitalist),
-		(str_store_string, s0, "@I'm sure we could talk this over... over some denars, that is."),
+		(str_store_string, s68, "@I'm sure we could talk this over... over some denars, that is."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_racist),
-		(str_store_string, s0, "@Would you not delay this battle in exchange of some 'tribute' ?"),
+		(str_store_string, s68, "@Would you not delay this battle in exchange of some 'tribute' ?"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_crusader),
-		(str_store_string, s0, "@Could it be at a later date ? I have other things to do today."),
+		(str_store_string, s68, "@Could it be at a later date ? I have other things to do today."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_liberator),
-		(str_store_string, s0, "@If YOU care about the life others, you'll let me evacuate the local civilians."),
+		(str_store_string, s68, "@If YOU care about the life others, you'll let me evacuate the local civilians."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_nihilistic),
-		(str_store_string, s0, "@Must we fight right here and now ? I don't feel like it."),
+		(str_store_string, s68, "@Must we fight right here and now ? I don't feel like it."),
 	(else_try),
 		(eq, "$g_talk_troop", "trp_kingdom_6_lord"),
-		(str_store_string, s0, "@Is there no way to delay this fight ? I think we'd both prefer to face the other in full strength."),
+		(str_store_string, s68, "@Is there no way to delay this fight ? I think we'd both prefer to face the other in full strength."),
 	(else_try),
-		(str_store_string, s0, "@Is there no way to avoid this battle? I don't want to fight with you."),
+		(str_store_string, s68, "@Is there no way to avoid this battle? I don't want to fight with you."),
 	(try_end),
   
                     ],
-   "{s0}", "party_encounter_offer_dont_fight", []],
+   "{s68}", "party_encounter_offer_dont_fight", []],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_party_encounter_lord_hostile_attacker_2_02.py:L1-L38 ] anyone|plyr::party_encounter_lord_hostile_attacker_2->party_encounter_lord_hostile_attacker_2_surrender [try_begin|troop_slot_eq|str_store_string] {{var}}
 [anyone|plyr, "party_encounter_lord_hostile_attacker_2", [
   
   
 	(try_begin),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
-		(str_store_string, s0, "@I don't want to spill blood needlessly. I surrender... for now."),
+		(str_store_string, s68, "@I don't want to spill blood needlessly. I surrender... for now."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_respectful),
-		(str_store_string, s0, "@I surrender. It's a small price to pay to keep my people safe for the time being."),
+		(str_store_string, s68, "@I surrender. It's a small price to pay to keep my people safe for the time being."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
-		(str_store_string, s0, "@My current conditions force me to surrender, but I expect you to treat my men well in return."),
+		(str_store_string, s68, "@My current conditions force me to surrender, but I expect you to treat my men well in return."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_capitalist),
-		(str_store_string, s0, "@I don't want to spill blood this day; for the moment, we'll surrender."),
+		(str_store_string, s68, "@I don't want to spill blood this day; for the moment, we'll surrender."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_racist),
-		(str_store_string, s0, "@My army is inadequate to fight this battle; for this once, I surrender."),
+		(str_store_string, s68, "@My army is inadequate to fight this battle; for this once, I surrender."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_crusader),
-		(str_store_string, s0, "@We aren't interested in meaningless violence. We'll surrender."),
+		(str_store_string, s68, "@We aren't interested in meaningless violence. We'll surrender."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_liberator),
-		(str_store_string, s0, "@I surrender if I must, but you should know that it will not end the war."),
+		(str_store_string, s68, "@I surrender if I must, but you should know that it will not end the war."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_nihilistic),
-		(str_store_string, s0, "@I won't lose men to the likes of you. I'll surrender for now, but spare my soldiers."),
+		(str_store_string, s68, "@I won't lose men to the likes of you. I'll surrender for now, but spare my soldiers."),
 	(else_try),
 		(eq, "$g_talk_troop", "trp_kingdom_6_lord"),
-		(str_store_string, s0, "@I won't sacrifice my soldiers needlessly. Today we surrender, but tomorrow we fight again."),
+		(str_store_string, s68, "@I won't sacrifice my soldiers needlessly. Today we surrender, but tomorrow we fight again."),
 	(else_try),
-		(str_store_string, s0, "@Don't attack! We surrender."),
+		(str_store_string, s68, "@Don't attack! We surrender."),
 	(try_end),
   
                     ],
-   "{s0}", "party_encounter_lord_hostile_attacker_2_surrender", [(assign, "$g_player_surrenders", 1)]],
+   "{s68}", "party_encounter_lord_hostile_attacker_2_surrender", [(assign, "$g_player_surrenders", 1)]],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_party_encounter_lord_hostile_attacker_2_03.py:L1-L38 ] anyone|plyr::party_encounter_lord_hostile_attacker_2->party_encounter_lord_hostile_attacker_2_fight [try_begin|troop_slot_eq|str_store_string] {{var}}
 [anyone|plyr, "party_encounter_lord_hostile_attacker_2", [
   
   
 	(try_begin),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
-		(str_store_string, s0, "@The end ? Pah ! You think a wimp like you could match me ? Why don't YOU surrender ?"),
+		(str_store_string, s68, "@The end ? Pah ! You think a wimp like you could match me ? Why don't YOU surrender ?"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_respectful),
-		(str_store_string, s0, "@If only blood can preserve the independence of my kingdom, I'm willing to spill some."),
+		(str_store_string, s68, "@If only blood can preserve the independence of my kingdom, I'm willing to spill some."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
-		(str_store_string, s0, "@I had enough of you anyway. Now I will show you the power of a true ruler !"),
+		(str_store_string, s68, "@I had enough of you anyway. Now I will show you the power of a true ruler !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_capitalist),
-		(str_store_string, s0, "@I'm not afraid of beating sense into a spoiled moneybag."),
+		(str_store_string, s68, "@I'm not afraid of beating sense into a spoiled moneybag."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_racist),
-		(str_store_string, s0, "@I'll pave the road with your corpses. How about that ?"),
+		(str_store_string, s68, "@I'll pave the road with your corpses. How about that ?"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_crusader),
-		(str_store_string, s0, "@Your zeal is nothing for {s33}. We'll fight and triumph ! "),
+		(str_store_string, s68, "@Your zeal is nothing for {s33}. We'll fight and triumph ! "),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_liberator),
-		(str_store_string, s0, "@Meaningless threats. With such naive idealism, you cannot hope to win."),
+		(str_store_string, s68, "@Meaningless threats. With such naive idealism, you cannot hope to win."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_nihilistic),
-		(str_store_string, s0, "@I had my fill with you scum anyway. I'll destroy your mob and stop this madness !"),
+		(str_store_string, s68, "@I had my fill with you scum anyway. I'll destroy your mob and stop this madness !"),
 	(else_try),
 		(eq, "$g_talk_troop", "trp_kingdom_6_lord"),
-		(str_store_string, s0, "@I won't surrender, Gaius. I am more than prepared to face your army. Face me if you dare !"),
+		(str_store_string, s68, "@I won't surrender, Gaius. I am more than prepared to face your army. Face me if you dare !"),
 	(else_try),
-		(str_store_string, s0, "@We will fight you to the end!"),
+		(str_store_string, s68, "@We will fight you to the end!"),
 	(try_end),
 	
                     ],
-   "{s0}", "party_encounter_lord_hostile_attacker_2_fight", []],
+   "{s68}", "party_encounter_lord_hostile_attacker_2_fight", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_auto_proceed_party_encounter_offer_dont_fight.py:L1-L50 ] anyone|auto_proceed::party_encounter_offer_dont_fight->centurion_avoid_battle [this_or_next|is_between|eq|assign] {none}
 [anyone|auto_proceed, "party_encounter_offer_dont_fight", [
   (this_or_next|is_between, "$g_talk_troop", "trp_knight_6_01", "trp_black_army_leader_1"),
@@ -18867,104 +21234,116 @@ Laugh if you wish princeling, but know that many failed to get past their format
 		(party_ignore_player, "$g_encountered_party", 72),
 		(assign, "$g_leave_encounter", 1)
 	]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_capitalist_avoid_battle_ask_02.py:L1-L4 ] anyone|plyr::capitalist_avoid_battle_ask->close_window [no_conditions] {that's outrageous ! you know what ? i'll just plant a blade into}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_capitalist_avoid_battle_ask_02.py:L1-L8 ] anyone|plyr::capitalist_avoid_battle_ask->close_window [no_conditions] {that's outrageous ! you know what ? i'll just plant a blade into}
 [anyone|plyr, "capitalist_avoid_battle_ask", [
-	], "That's outrageous ! You know what ? I'll just plant a blade into your innards.", "close_window", []],
+	], "That's outrageous ! You know what ? I'll just plant a blade into your innards.", "close_window", [
+      (assign, "$g_enemy_party", "$g_encountered_party"),
+      (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+      (encounter_attack),
+    ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_centurion_avoid_battle_02.py:L1-L20 ] anyone::centurion_avoid_battle->close_window [eq|try_begin|troop_slot_eq] {{var}}
 [anyone, "centurion_avoid_battle", [(eq, "$g_sod_centurion_avoid_battle_agree", 1), 
 	
 	(try_begin),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
-		(str_store_string, s0, "@I know, but... no, you're right. The civilian populace shouldn't be endangered. They will have more than enough trouble coming to them even without us. Very well, I'll let you have it your way {playername}, but remember, we can't keep up this chase for long."),
+		(str_store_string, s68, "@I know, but... no, you're right. The civilian populace shouldn't be endangered. They will have more than enough trouble coming to them even without us. Very well, I'll let you have it your way {playername}, but remember, we can't keep up this chase for long."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_respectful),
-		(str_store_string, s0, "@): I... see. Truth to be told, I don't wish to fight you either. You are the last heir of a once great family of respected rulers; I would rather not have my hands stained by your blood. I'll try to ask my superiors to get others to deal with you. For now, my sword remains in its scabbard."),
+		(str_store_string, s68, "@): I... see. Truth to be told, I don't wish to fight you either. You are the last heir of a once great family of respected rulers; I would rather not have my hands stained by your blood. I'll try to ask my superiors to get others to deal with you. For now, my sword remains in its scabbard."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
-		(str_store_string, s0, "@Hmm... very well, I'll give you the time you need to escort the local civilian populace to safety. But don't delay too long, I wish to put an end to this conflict as soon as possible."),
+		(str_store_string, s68, "@Hmm... very well, I'll give you the time you need to escort the local civilian populace to safety. But don't delay too long, I wish to put an end to this conflict as soon as possible."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_nihilistic),
-		(str_store_string, s0, "@Trust me, I don't feel like it either. Eh... you know what ? Screw it. I'll just tell the others you ran so fast as if the seven-headed warhounds of Marsus were chasing after you. Hm, that sounded poetic... wait, you're still here ? Get lost already ! Boo !"),
+		(str_store_string, s68, "@Trust me, I don't feel like it either. Eh... you know what ? Screw it. I'll just tell the others you ran so fast as if the seven-headed warhounds of Marsus were chasing after you. Hm, that sounded poetic... wait, you're still here ? Get lost already ! Boo !"),
 	(else_try),
-		(str_store_string, s0, "@I'm starting to worry I let you too close to myself. Very well, for this once I'll let you go; but next time we are nigh certain to come to blows. Now go from here."),
+		(str_store_string, s68, "@I'm starting to worry I let you too close to myself. Very well, for this once I'll let you go; but next time we are nigh certain to come to blows. Now go from here."),
 	(try_end),
-	], "{s0}", "close_window", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_centurion_avoid_battle_03.py:L1-L19 ] anyone::centurion_avoid_battle->close_window [assign|try_begin|troop_slot_eq] {{var}}
+	], "{s68}", "close_window", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_centurion_avoid_battle_03.py:L1-L23 ] anyone::centurion_avoid_battle->close_window [assign|try_begin|troop_slot_eq] {{var}}
 [anyone, "centurion_avoid_battle", [
 	(assign, ":enable", 0),
 	(try_begin),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_crusader),
 		(assign, ":enable", 1),
-		(str_store_string, s0, "@Why, {playername}, your time is the last thing I wish to waste. The first is your blood ! It would be definately entertaining to watch your rabble of weaklings scurry away with their tails between their legs, but I had enough of playing 'cat-chasing-mice' with you. Know this: what must come to pass here this day is not 'just' a battle ! It is an enermous sacrifice in the name of Marsus ! War for the warrior god ! All of you heretics, lay down and DIE in his name !"),
+		(str_store_string, s68, "@Why, {playername}, your time is the last thing I wish to waste. The first is your blood ! It would be definitely entertaining to watch your rabble of weaklings scurry away with their tails between their legs, but I had enough of playing 'cat-chasing-mice' with you. Know this: what must come to pass here this day is not 'just' a battle ! It is an enormous sacrifice in the name of Marsus ! War for the warrior god ! All of you heretics, lay down and DIE in his name !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_liberator),
 		(assign, ":enable", 1),
-		(str_store_string, s0, "@To evacuate ? Where ? To slave themselves half-dead in your mines and manors ? No, {playername}, I won't fall for that trick ! And with that said, you wasted your opportunity to submit peacefully ! As my warriors of freedom and justice will be standing upon your broken bodies and raise the banners of victory high, remember: because of you, lies ended lives !"),
+		(str_store_string, s68, "@To evacuate ? Where ? To slave themselves half-dead in your mines and manors ? No, {playername}, I won't fall for that trick ! And with that said, you wasted your opportunity to submit peacefully ! As my warriors of freedom and justice will be standing upon your broken bodies and raise the banners of victory high, remember: because of you, lies ended lives !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_nihilistic),
 		(assign, ":enable", 1),
-		(str_store_string, s0, "@You can trust me when I say that I don't feel like it either. I planned your mutilation for a later date and I'd prefer to stick to my own deadlines. Hm, I like that word... DEAD-lines... eh, screw the calendar ! I feel inspired ! We'll erect statues from your corpses ! It will be an outstanding example of modern fine arts ! To arms, men ! We have a masterpiece of carnage to create !"),
+		(str_store_string, s68, "@You can trust me when I say that I don't feel like it either. I planned your mutilation for a later date and I'd prefer to stick to my own deadlines. Hm, I like that word... DEAD-lines... eh, screw the calendar ! I feel inspired ! We'll erect statues from your corpses ! It will be an outstanding example of modern fine arts ! To arms, men ! We have a masterpiece of carnage to create !"),
 	(try_end),
 	(eq, ":enable", 1),
-   ], "{s0}", "close_window", []],
+   ], "{s68}", "close_window", [
+      (assign, "$g_enemy_party", "$g_encountered_party"),
+      (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+      (encounter_attack),
+   ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_centurion_avoid_battle_04.py:L1-L20 ] anyone::centurion_avoid_battle->centurion_avoid_battle_denied [try_begin|troop_slot_eq|str_store_string] {{var}}
 [anyone, "centurion_avoid_battle", [
 	
 	(try_begin),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
-		(str_store_string, s0, "@(Sigh), that's a good excuse but I can't believe you, even if it's true. It's either your head, or mine. And I suppose we're both very attached to them. I can't help but repeat: surrender, or prepare for battle."),
+		(str_store_string, s68, "@(Sigh), that's a good excuse but I can't believe you, even if it's true. It's either your head, or mine. And I suppose we're both very attached to them. I can't help but repeat: surrender, or prepare for battle."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_respectful),
-		(str_store_string, s0, "@I concur, {playername}, but my oders are very explicit and come from the Legate himself. I cannot withdraw."),
+		(str_store_string, s68, "@I concur, {playername}, but my orders are very explicit and come from the Legate himself. I cannot withdraw."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
-		(str_store_string, s0, "@I must give you credit for your care towads your people, but unfortunately I cannot let you evade me any further. My orders have been given, my objective is clear: to destroy or capture you. Make your choice."),
+		(str_store_string, s68, "@I must give you credit for your care towards your people, but unfortunately I cannot let you evade me any further. My orders have been given, my objective is clear: to destroy or capture you. Make your choice."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_racist),
-		(str_store_string, s0, "@Your offerings leave me cold. If anything, you are lowering my already tiny respect towards you. Show some backbone, {playername} ! Your parents would weep if they saw how pathetic you are now ! Make your decision and deal with the consequences like a good ruler is supposed to !"),
+		(str_store_string, s68, "@Your offerings leave me cold. If anything, you are lowering my already tiny respect towards you. Show some backbone, {playername} ! Your parents would weep if they saw how pathetic you are now ! Make your decision and deal with the consequences like a good ruler is supposed to !"),
 	(else_try),
-		(str_store_string, s0, "@That was a low blow, {playername}. Indeed, I'd prefer some other date for our clash but you need to realize there are forces out there which have already decided instead of us. There is no more place for arguing."),
+		(str_store_string, s68, "@That was a low blow, {playername}. Indeed, I'd prefer some other date for our clash but you need to realize there are forces out there which have already decided instead of us. There is no more place for arguing."),
 	(try_end),
-   ], "{s0}", "centurion_avoid_battle_denied", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_centurion_avoid_battle_denied.py:L1-L19 ] anyone|plyr::centurion_avoid_battle_denied->close_window [try_begin|troop_slot_eq|str_store_string] {{var}}
+   ], "{s68}", "centurion_avoid_battle_denied", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_centurion_avoid_battle_denied.py:L1-L23 ] anyone|plyr::centurion_avoid_battle_denied->close_window [try_begin|troop_slot_eq|str_store_string] {{var}}
 [anyone|plyr, "centurion_avoid_battle_denied", [
 	(try_begin),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
-		(str_store_string, s0, "@Then there are no more options left but senseless slaughter. Fine by me..."),
+		(str_store_string, s68, "@Then there are no more options left but senseless slaughter. Fine by me..."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_respectful),
-		(str_store_string, s0, "@I see. Then I'll make my stand here. We'll fight to the last man if necessary."),
+		(str_store_string, s68, "@I see. Then I'll make my stand here. We'll fight to the last man if necessary."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
-		(str_store_string, s0, "@Then witness the iron resolve of the {s32} refugees ! Attack !"),
+		(str_store_string, s68, "@Then witness the iron resolve of the {s32} refugees ! Attack !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_racist),
-		(str_store_string, s0, "@I have decided. I'll fight tooth and nail ! Come at me ! Your doom awaits !"),
+		(str_store_string, s68, "@I have decided. I'll fight tooth and nail ! Come at me ! Your doom awaits !"),
 	(else_try),
-		(str_store_string, s0, "@Very well. No more arguing. Only death. We'll fight to the last drop of blood !"),
+		(str_store_string, s68, "@Very well. No more arguing. Only death. We'll fight to the last drop of blood !"),
 	(try_end),
-   ], "{s0}", "close_window", []],
+   ], "{s68}", "close_window", [
+      (assign, "$g_enemy_party", "$g_encountered_party"),
+      (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+      (encounter_attack),
+   ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_centurion_avoid_battle_denied_02.py:L1-L19 ] anyone|plyr::centurion_avoid_battle_denied->close_window [try_begin|troop_slot_eq|str_store_string] {{var}}
 [anyone|plyr, "centurion_avoid_battle_denied", [
 	(try_begin),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
-		(str_store_string, s0, "@No more choices left then... I give up. For now, that is."),
+		(str_store_string, s68, "@No more choices left then... I give up. For now, that is."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_respectful),
-		(str_store_string, s0, "@Then I have few choices left. My army is unprepared for battle. I'll surrender."),
+		(str_store_string, s68, "@Then I have few choices left. My army is unprepared for battle. I'll surrender."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
-		(str_store_string, s0, "@I won't sacrifice my subjects in vain. I give up."),
+		(str_store_string, s68, "@I won't sacrifice my subjects in vain. I give up."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_racist),
-		(str_store_string, s0, "@For the lives of my subjects, I'll bear the burden of defeat. I surrender."),
+		(str_store_string, s68, "@For the lives of my subjects, I'll bear the burden of defeat. I surrender."),
 	(else_try),
-		(str_store_string, s0, "@I surrender... for now, that is. The war is not yet over."),
+		(str_store_string, s68, "@I surrender... for now, that is. The war is not yet over."),
 	(try_end),
-   ], "{s0}", "close_window", [(assign, "$g_player_surrenders", 1)]],
+   ], "{s68}", "close_window", [(assign, "$g_player_surrenders", 1)]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_party_encounter_offer_dont_fight.py:L1-L13 ] anyone::party_encounter_offer_dont_fight->close_window [gt] {i owe you a favor, don't i. well... all right then. i will let y}
 [anyone, "party_encounter_offer_dont_fight", [(gt, "$g_talk_troop_relation", 30),
-#TODO: Add adition conditions, lord personalities, battle advantage, etc...
+#TODO: Add additional conditions, lord personalities, battle advantage, etc...
                     ],
    "I owe you a favor, don't I. Well... all right then. I will let you go just this once.", "close_window", [
     (call_script, "script_change_player_relation_with_troop", "$g_talk_troop", -7),
@@ -18974,8 +21353,12 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (party_ignore_player, "$g_encountered_party", 72),
     (assign, "$g_leave_encounter", 1)
        ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_party_encounter_offer_dont_fight_02.py:L1-L3 ] anyone::party_encounter_offer_dont_fight->close_window [no_conditions] {ha-ha. but i want to fight with you.}
-[anyone, "party_encounter_offer_dont_fight", [], "Ha-ha. But I want to fight with you.", "close_window", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_party_encounter_offer_dont_fight_02.py:L1-L7 ] anyone::party_encounter_offer_dont_fight->close_window [no_conditions] {ha-ha. but i want to fight with you.}
+[anyone, "party_encounter_offer_dont_fight", [], "Ha-ha. But I want to fight with you.", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack),
+]],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_56.py:L1-L11 ] anyone::start->pretender_start [is_between|eq|faction_slot_eq] {[our first task is to seize a fortress. then other lords will jo}
 [anyone , "start",
    [
@@ -19264,17 +21647,16 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone|plyr , "lord_meet_neutral", [],  "I am {playername}.", "lord_intro", []],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_meet_neutral_02.py:L1-L3 ] anyone|plyr::lord_meet_neutral->lord_intro [no_conditions] {my name is {var}. at your service sir.}
 [anyone|plyr , "lord_meet_neutral", [],  "My name is {playername}. At your service sir.", "lord_intro", []],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_intro.py:L1-L37 ] anyone::lord_intro->lord_start [no_conditions] {{var}}
-[anyone , "lord_intro", [],
-   "{s11}", "lord_start", [(faction_get_slot, ":faction_leader", "$g_talk_troop_faction", slot_faction_leader),
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_intro.py:L1-L42 ] anyone::lord_intro->lord_start [faction_get_slot|str_store_faction_name|assign] {{var}}
+[anyone , "lord_intro", [(faction_get_slot, ":faction_leader", "$g_talk_troop_faction", slot_faction_leader),
                           (str_store_faction_name, s6, "$g_talk_troop_faction"),
                           (assign, reg4, 0),
                           (call_script, "script_store_troop_name", s4, "$g_talk_troop"),
                           (try_begin),
                             (eq, ":faction_leader", "$g_talk_troop"),
-                            (str_store_string, s9, "@I am {s4}, the ruler of {s6}", 0),
+                            (str_store_string, s9, "@I am {s4}, the ruler of {s6}"),
                           (else_try),
-                            (str_store_string, s9, "@I am {s4}, a vassal of {s6}", 0),
+                            (str_store_string, s9, "@I am {s4}, a vassal of {s6}"),
                           (try_end),
                           (assign, ":num_centers", 0),
                           (str_clear, s8),
@@ -19298,8 +21680,14 @@ Laugh if you wish princeling, but know that many failed to get past their format
                             (val_add, ":num_centers", 1),
                           (try_end),
                           (assign, reg5, ":num_centers"),
-                          (str_store_string, s11, "@{s9}{reg5? and the lord of {s8}.:.", 0),
-                          ]],
+                          (try_begin),
+                            (gt, ":num_centers", 0),
+                            (str_store_string, s11, "@{s9} and the lord of {s8}."),
+                          (else_try),
+                            (str_store_string, s11, "@{s9}."),
+                          (try_end),
+                          ],
+   "{s11}", "lord_start", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_66.py:L1-L10 ] anyone::start->lord_meet_enemy [troop_slot_eq|eq|lt] {{var}}
 [anyone , "start", [(troop_slot_eq, "$g_talk_troop", slot_troop_occupation, slto_kingdom_hero),
                      (eq, "$g_talk_troop_met", 0),
@@ -19530,7 +21918,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
      (call_script, "script_end_quest", "qst_kill_local_merchant"),
      (assign, "$g_leave_encounter", 1)
     ]],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_lord_start_14.py:L1-L24 ] anyone::lord_start->lord_follow_spy_completed [troop_slot_eq|neg|troop_slot_ge|store_partner_quest] {{var}}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_lord_start_14.py:L1-L25 ] anyone::lord_start->lord_follow_spy_completed [troop_slot_eq|neg|troop_slot_ge|store_partner_quest] {{var}}
 [anyone, "lord_start", [#(troop_slot_eq, "$g_talk_troop", slot_troop_is_prisoner, 0),
              (neg|troop_slot_ge, "$g_talk_troop", slot_troop_prisoner_of_party, 0),
                          (store_partner_quest, ":lords_quest"),
@@ -19539,21 +21927,22 @@ Laugh if you wish princeling, but know that many failed to get past their format
                          (party_count_prisoners_of_type, ":num_spies", "p_main_party", "trp_spy"),
                          (party_count_prisoners_of_type, ":num_spy_partners", "p_main_party", "trp_spy_partner"),
                          (gt, ":num_spies", 0),
-                         (gt, ":num_spy_partners", 0)],
-   "{s1}", "lord_follow_spy_completed",
-   [(call_script, "script_sod_quest_dialogue_describe_reaction", "$g_talk_troop"),
-    (call_script, "script_sod_quest_dialogue_describe_stage", "$g_talk_troop"),
-    (str_store_string, s1, "@Beautiful work, {playername}! You captured both the spy and his handler, just as I'd hoped,\
+                         (gt, ":num_spy_partners", 0),
+                         (call_script, "script_sod_quest_dialogue_describe_reaction", "$g_talk_troop"),
+                         (call_script, "script_sod_quest_dialogue_describe_stage", "$g_talk_troop"),
+                         (str_store_string, s68, "@Beautiful work, {playername}! You captured both the spy and his handler, just as I'd hoped,\
  and the pair are now safely ensconced in my dungeon, waiting to be questioned.\
  My torturer shall be busy tonight! Anyway, I'm very pleased with your success, {playername}, and I give you\
- this purse as a token of my appreciation.^{s4}"),
+ this purse as a token of my appreciation.^{s4}")],
+   "{s68}", "lord_follow_spy_completed",
+   [
     (party_remove_prisoners, "p_main_party", "trp_spy", 1),
     (party_remove_prisoners, "p_main_party", "trp_spy_partner", 1),
     (call_script, "script_change_player_relation_with_troop", "$g_talk_troop", 4),
     (call_script, "script_troop_add_gold", "trp_player", 2000),
     (add_xp_as_reward, 4000),
     (call_script, "script_end_quest", "qst_follow_spy")]],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_lord_start_15.py:L1-L21 ] anyone::lord_start->lord_follow_spy_half_completed [neg|troop_slot_ge|store_partner_quest|eq] {{var}}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_lord_start_15.py:L1-L22 ] anyone::lord_start->lord_follow_spy_half_completed [neg|troop_slot_ge|store_partner_quest|eq] {{var}}
 [anyone, "lord_start", [(neg|troop_slot_ge, "$g_talk_troop", slot_troop_prisoner_of_party, 0),
                          (store_partner_quest, ":lords_quest"),
                          (eq, ":lords_quest", "qst_follow_spy"),
@@ -19561,13 +21950,14 @@ Laugh if you wish princeling, but know that many failed to get past their format
                          (party_count_prisoners_of_type, ":num_spies", "p_main_party", "trp_spy"),
                          (party_count_prisoners_of_type, ":num_spy_partners", "p_main_party", "trp_spy_partner"),
                          (gt, ":num_spies", 0),
-                         (eq, ":num_spy_partners", 0), ],
-   "{s1}", "lord_follow_spy_half_completed",
-   [(call_script, "script_sod_quest_dialogue_describe_reaction", "$g_talk_troop"),
-    (call_script, "script_sod_quest_dialogue_describe_stage", "$g_talk_troop"),
-    (str_store_string, s1, "@Blast and damn you! I wanted TWO prisoners, {playername} -- what you've brought me is one step short of\
+                         (eq, ":num_spy_partners", 0),
+                         (call_script, "script_sod_quest_dialogue_describe_reaction", "$g_talk_troop"),
+                         (call_script, "script_sod_quest_dialogue_describe_stage", "$g_talk_troop"),
+                         (str_store_string, s68, "@Blast and damn you! I wanted TWO prisoners, {playername} -- what you've brought me is one step short of\
  useless! I already know everything the spy knows, it was the handler I was after.\
- Here, half a job gets you half a reward. Take it and begone.^{s4}"),
+ Here, half a job gets you half a reward. Take it and begone.^{s4}"), ],
+   "{s68}", "lord_follow_spy_half_completed",
+   [
     (party_remove_prisoners, "p_main_party", "trp_spy", 1),
     (call_script, "script_change_player_relation_with_troop", "$g_talk_troop", -1),
     (call_script, "script_troop_add_gold", "trp_player", 1000),
@@ -19683,11 +22073,17 @@ Laugh if you wish princeling, but know that many failed to get past their format
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_runaway_serf_half_completed_02.py:L1-L4 ] anyone|plyr::lord_runaway_serf_half_completed->lord_pretalk [no_conditions] {bah, this proved to be a waste of my time.}
 [anyone|plyr, "lord_runaway_serf_half_completed", [],
    "Bah, this proved to be a waste of my time.", "lord_pretalk", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_lord_start_21.py:L1-L19 ] anyone::lord_start->lord_deal_with_bandits_completed [store_partner_quest|eq|check_quest_succeeded] {{var}, i was told that you have crushed the bandits at my villag}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_lord_start_21.py:L1-L22 ] anyone::lord_start->lord_deal_with_bandits_completed [store_partner_quest|eq|check_quest_succeeded] {{var}, i was told that you have crushed the bandits at my villag}
 [anyone, "lord_start", [(store_partner_quest, ":lords_quest"),
                          (eq, ":lords_quest", "qst_deal_with_bandits_at_lords_village"),
-                         (check_quest_succeeded, "qst_deal_with_bandits_at_lords_village")],
-   "{playername}, I was told that you have crushed the bandits at my village of {s5}. Please know that I am most grateful to you for that.\
+                         (check_quest_succeeded, "qst_deal_with_bandits_at_lords_village"),
+                         (quest_get_slot, ":village", "qst_deal_with_bandits_at_lords_village", slot_quest_target_center),
+                         (party_is_active, ":village"),
+                         (str_store_party_name, s68, ":village"),
+                         (store_character_level, ":level", "trp_player"),
+                         (store_mul, reg14, ":level", 20),
+                         (val_add, reg14, 300)],
+   "{playername}, I was told that you have crushed the bandits at my village of {s68}. Please know that I am most grateful to you for that.\
  Please, let me pay the expenses of your campaign. Here, I hope these {reg14} denars will be adequate.", "lord_deal_with_bandits_completed",
    [
        (call_script, "script_change_player_relation_with_troop", "$g_talk_troop", 3),
@@ -19697,9 +22093,6 @@ Laugh if you wish princeling, but know that many failed to get past their format
        (call_script, "script_troop_add_gold", "trp_player", ":reward"),
        (add_xp_as_reward, 350),
        (call_script, "script_end_quest", "qst_deal_with_bandits_at_lords_village"),
-       (assign, reg14, ":reward"),
-       (quest_get_slot, ":village", "qst_deal_with_bandits_at_lords_village", slot_quest_target_center),
-       (str_store_party_name, s5, ":village"),
        ]],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_deal_with_bandits_completed.py:L1-L4 ] anyone|plyr::lord_deal_with_bandits_completed->lord_pretalk [no_conditions] {not a problem, {var}.}
 [anyone|plyr, "lord_deal_with_bandits_completed", [],
@@ -19710,17 +22103,18 @@ Laugh if you wish princeling, but know that many failed to get past their format
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_deal_with_bandits_completed_03.py:L1-L4 ] anyone|plyr::lord_deal_with_bandits_completed->lord_pretalk [no_conditions] {it was mere child's play.}
 [anyone|plyr, "lord_deal_with_bandits_completed", [],
    "It was mere child's play.", "lord_pretalk", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_lord_start_22.py:L1-L13 ] anyone::lord_start->lord_pretalk [store_partner_quest|eq|check_quest_concluded] {damn it, {var}. i heard that you were unable to drive off the ba}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_lord_start_22.py:L1-L14 ] anyone::lord_start->lord_pretalk [store_partner_quest|eq|check_quest_concluded] {damn it, {var}. i heard that you were unable to drive off the ba}
 [anyone, "lord_start", [(store_partner_quest, ":lords_quest"),
                          (eq, ":lords_quest", "qst_deal_with_bandits_at_lords_village"),
-                         (check_quest_concluded, "qst_deal_with_bandits_at_lords_village")],
-   "Damn it, {playername}. I heard that you were unable to drive off the bandits from my village of {s5}, and thanks to you, my village now lies in ruins.\
- Everyone said that you were a capable warrior, but appearently, they were wrong.", "lord_pretalk",
+                         (check_quest_concluded, "qst_deal_with_bandits_at_lords_village"),
+                         (quest_get_slot, ":village", "qst_deal_with_bandits_at_lords_village", slot_quest_target_center),
+                         (party_is_active, ":village"),
+                         (str_store_party_name, s68, ":village")],
+   "Damn it, {playername}. I heard that you were unable to drive off the bandits from my village of {s68}, and thanks to you, my village now lies in ruins.\
+ Everyone said that you were a capable warrior, but apparently they were wrong.", "lord_pretalk",
    [
        (call_script, "script_change_player_relation_with_troop", "$g_talk_troop", -5),
        (call_script, "script_end_quest", "qst_deal_with_bandits_at_lords_village"),
-       (quest_get_slot, ":village", "qst_deal_with_bandits_at_lords_village", slot_quest_target_center),
-       (str_store_party_name, s5, ":village"),
        ]],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_lord_start_23.py:L1-L24 ] anyone::lord_start->lord_deliver_cattle_to_army_thank [store_partner_quest|eq|check_quest_succeeded] {ah, {var}. my quartermaster has informed me of your delivery, {v}
 [anyone, "lord_start", [(store_partner_quest, ":lords_quest"),
@@ -20362,7 +22756,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_ask_pardon_after_oath_renounced_02.py:L1-L68 ] anyone::lord_ask_pardon_after_oath_renounced->lord_ask_pardon_terms [assign|try_for_range|store_faction_of_party] {{var}.}
 [anyone, "lord_ask_pardon_after_oath_renounced",
    [
-     (assign, ":num_centers_captured_by_player"),
+     (assign, ":num_centers_captured_by_player", 0),
      (try_for_range, ":cur_center", walled_centers_begin, walled_centers_end),
        (store_faction_of_party, ":cur_center_faction", ":cur_center"),
        (eq, ":cur_center_faction", "fac_player_supporters_faction"),
@@ -20478,13 +22872,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
      (assign, "$player_has_homage", 1),
      (call_script, "script_change_player_relation_with_troop", "$g_talk_troop", 3),
      ]],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_ask_pardon_terms_rejected.py:L1-L9 ] anyone::lord_ask_pardon_terms_rejected->close_window [no_conditions] {then get out of my sight, traitor! begone with you, and do not c}
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_ask_pardon_terms_rejected.py:L1-L11 ] anyone::lord_ask_pardon_terms_rejected->close_window [no_conditions] {then get out of my sight, traitor! begone with you, and do not c}
 [anyone, "lord_ask_pardon_terms_rejected",
    [], "Then get out of my sight, traitor! Begone with you, and do not come back!", "close_window",
    [
      (assign, "$g_leave_encounter", 1),
-     #TODO: Add relation drop. $players_oath_renounced_begin_time can also be reset to current time for worse conditions in the next conversation.
      (call_script, "script_change_player_relation_with_troop", "$g_talk_troop", -5),
+     (store_current_hours, "$players_oath_renounced_begin_time"),
+     (assign, "$players_oath_renounced_given_center", 0),
+     (assign, "$players_oath_renounced_terms_state", 0),
      ]],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_talk_15.py:L1-L29 ] anyone|plyr::lord_talk->lord_ask_pardon [neg|troop_slot_ge|lt|this_or_next|eq] {there has been enough blood between me and {var}. name the road }
 [anyone|plyr, "lord_talk",
@@ -20713,7 +23109,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
    [
      (eq, "$g_talk_troop_faction", "$players_kingdom"),
      (this_or_next|faction_slot_eq, "$players_kingdom", slot_faction_marshall, "trp_player"),
-     (eq, "$g_sod_king"),
+     (eq, "$g_sod_king", 1),
      (neg|troop_slot_ge, "$g_talk_troop", slot_troop_prisoner_of_party, 0),
      ],
    "I have a new task for you.", "lord_give_order_ask", []],
@@ -21171,7 +23567,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone|plyr, "lord_attack_verify_b", [],  "No. Let the insult pass for now. Drawing steel here would serve neither of us.", "lord_attack_verify_cancel", []],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_attack_verify_b_02.py:L1-L3 ] anyone|plyr::lord_attack_verify_b->lord_attack_verify_commit [no_conditions] {i stand my ground. prepare to fight!}
 [anyone|plyr, "lord_attack_verify_b", [],   "I stand my ground. Prepare to fight!", "lord_attack_verify_commit", []],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_attack_verify_commit.py:L1-L10 ] anyone::lord_attack_verify_commit->close_window [no_conditions] {{var}}
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_attack_verify_commit.py:L1-L11 ] anyone::lord_attack_verify_commit->close_window [no_conditions] {{var}}
 [anyone, "lord_attack_verify_commit", [], "{s43}", "close_window",
    [
 	(assign, "$g_enemy_party", "$g_encountered_party"),
@@ -21179,6 +23575,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (call_script, "script_lord_comment_to_s43", "$g_talk_troop", "str_lord_challenged_default"),
     (call_script, "script_make_kingdom_hostile_to_player", "$g_encountered_party_faction", -3),
     (call_script, "script_change_player_relation_with_troop", "$g_talk_troop", -30),
+    (encounter_attack),
     ]],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_demand_02.py:L1-L3 ] anyone|plyr::lord_demand->lord_pretalk [no_conditions] {forgive me. it's nothing.}
 [anyone|plyr, "lord_demand", [], "Forgive me. It's nothing.", "lord_pretalk", []],
@@ -21409,7 +23806,7 @@ Laugh if you wish princeling, but know that many failed to get past their format
             (try_end),
 
     ]],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_join_rebellion_suggest_2_02.py:L1-L17 ] anyone::lord_join_rebellion_suggest_2->lord_join_rebellion_suggest_2 [gt] {{var}}
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_join_rebellion_suggest_2_02.py:L1-L20 ] anyone::lord_join_rebellion_suggest_2->lord_join_rebellion_suggest_2 [gt] {{var}}
 [anyone, "lord_join_rebellion_suggest_2", [
             (gt, "$rival_lord", 0),
       ], "{s43}", "lord_join_rebellion_suggest_2",
@@ -21421,8 +23818,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
 
             (val_sub, "$rebellion_chance", 30),
 
-            (assign, reg7, "$rebellion_chance", debug_color), #diagnostic only
-            (display_message, "@Rebellion chance -30 from rival = {reg7}", debug_color), #diagnostic only
+            (try_begin),
+              (eq, "$g_sod_debug", 1),
+              (assign, reg7, "$rebellion_chance"),
+              (display_message, "@Rebellion chance after rival penalty: {reg7}.", debug_color),
+            (try_end),
 
     ]],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_join_rebellion_suggest_2_03.py:L1-L6 ] anyone::lord_join_rebellion_suggest_2->lord_join_rebellion_suggest_3 [no_conditions] {so tell me. why should i support {var}?}
@@ -22063,8 +24463,8 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone|plyr, "lord_give_oath_3", [],  "I pledge homage to you as lawful ruler of the {s41}.", "lord_give_oath_4", []],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_give_oath_3_02.py:L1-L3 ] anyone|plyr::lord_give_oath_3->lord_give_oath_give_up [no_conditions] {excuse me, {var}. but i feel i need to think about this.}
 [anyone|plyr, "lord_give_oath_3", [],  "Excuse me, {reg65?my lady:sir}. But I feel I need to think about this.", "lord_give_oath_give_up", []],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_give_oath_4.py:L1-L3 ] anyone::lord_give_oath_4->lord_give_oath_5 [no_conditions] {i will remain as your loyal and devoted {var} as long as my brea}
-[anyone, "lord_give_oath_4", [],  "I will remain as your loyal and devoted {man/follower} as long as my breath remains....", "lord_give_oath_5", []],
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_give_oath_4.py:L1-L3 ] anyone::lord_give_oath_4->lord_give_oath_5 [no_conditions] {i will remain your loyal {var} while i have breath.}
+[anyone, "lord_give_oath_4", [],  "I will remain your loyal {man/follower} while I have breath.", "lord_give_oath_5", []],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_give_oath_5.py:L1-L3 ] anyone|plyr::lord_give_oath_5->lord_give_oath_6 [no_conditions] {i will remain as your loyal and devoted {var} as long as my brea}
 [anyone|plyr, "lord_give_oath_5", [],  "I will remain as your loyal and devoted {man/follower} as long as my breath remains...", "lord_give_oath_6", []],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_give_oath_5_02.py:L1-L3 ] anyone|plyr::lord_give_oath_5->lord_give_oath_give_up [no_conditions] {{var}, may i ask for some time to think about this?}
@@ -22083,19 +24483,24 @@ Laugh if you wish princeling, but know that many failed to get past their format
 [anyone|plyr, "lord_give_oath_9", [],  "{reg65?My lady:Sir}, I must have more time to consider this.", "lord_give_oath_give_up", []],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_give_oath_10.py:L1-L3 ] anyone::lord_give_oath_10->lord_give_oath_go_on_2 [no_conditions] {your oath is heard, {var}. from this hour, your courage is no lo}
 [anyone, "lord_give_oath_10", [],  "Your oath is heard, {playername}. From this hour, your courage is no longer only your own; it carries my banner, my enemies, and my judgment.", "lord_give_oath_go_on_2", []],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_give_oath_go_on_2.py:L1-L14 ] anyone::lord_give_oath_go_on_2->lord_give_oath_go_on_3 [assign|try_begin|le] {let it be known that from this day forward, you are my sworn {va}
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_give_oath_go_on_2.py:L1-L19 ] anyone::lord_give_oath_go_on_2->lord_give_oath_go_on_3 [assign|try_begin|le] {{var}}
 [anyone, "lord_give_oath_go_on_2",
    [
      (assign, reg1, 1),
-     (try_begin),
-       (le, "$g_invite_offered_center", 0),
-       (assign, reg1, 0),
+    (try_begin),
+      (le, "$g_invite_offered_center", 0),
+      (assign, reg1, 0),
+    (else_try),
+      (str_store_party_name, s69, "$g_invite_offered_center"),
+    (try_end),
+    (try_begin),
+      (eq, reg1, 1),
+      (str_store_string, s68, "@Let it be known that from this day forward, you are my sworn {man/follower} and vassal.^ I give you my protection and grant you the right to bear arms in my name, and I pledge that I shall not deprive you of your life, liberty or properties except by the lawful judgment of your peers or by the law and custom of the land. Furthermore I give you the fief of {s69} with all its rents and revenues."),
      (else_try),
-       (str_store_party_name, s1, "$g_invite_offered_center"),
+       (str_store_string, s68, "@Let it be known that from this day forward, you are my sworn {man/follower} and vassal.^ I give you my protection and grant you the right to bear arms in my name, and I pledge that I shall not deprive you of your life, liberty or properties except by the lawful judgment of your peers or by the law and custom of the land."),
      (try_end),
      ],
-   "Let it be known that from this day forward, you are my sworn {man/follower} and vassal.\
- I give you my protection and grant you the right to bear arms in my name, and I pledge that I shall not deprive you of your life, liberty or properties except by the lawful judgment of your peers or by the law and custom of the land.{reg1? Furthermore I give you the fief of {s1} with all its rents and revenues.:}", "lord_give_oath_go_on_3", []],
+   "{s68}", "lord_give_oath_go_on_3", []],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_lord_give_oath_go_on_3.py:L1-L3 ] anyone::lord_give_oath_go_on_3->lord_give_conclude [no_conditions] {you have done a wise thing, {var}. serve me well and i promise, }
 [anyone, "lord_give_oath_go_on_3", [], "You have done a wise thing, {playername}. Serve me well and I promise, you will rise high.", "lord_give_conclude", []],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_give_conclude.py:L1-L62 ] anyone|plyr::lord_give_conclude->lord_give_conclude_2 [troop_get_type] {i thank you, {var}.}
@@ -22258,12 +24663,13 @@ Laugh if you wish princeling, but know that many failed to get past their format
     (party_remove_prisoners, "p_main_party", ":quest_target_troop", ":quest_target_amount"),
     (party_add_prisoners, "$g_encountered_party", ":quest_target_troop", ":quest_target_amount"),
     (call_script, "script_finish_quest", "qst_capture_prisoners", 100)]],
-# [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_active_mission_2_02.py:L1-L24 ] anyone|plyr::lord_active_mission_2->capture_enemy_hero_thank [neg|troop_slot_ge|store_partner_quest|eq] {oh, indeed. i've captured a lord from {var} for you.}
+# [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_active_mission_2_02.py:L1-L25 ] anyone|plyr::lord_active_mission_2->capture_enemy_hero_thank [neg|troop_slot_ge|store_partner_quest|eq] {oh, indeed. i've captured a lord from {var} for you.}
 [anyone|plyr, "lord_active_mission_2",
    [
      (neg|troop_slot_ge, "$g_talk_troop", slot_troop_prisoner_of_party, 0),
      (store_partner_quest, ":lords_quest"),
      (eq, ":lords_quest", "qst_capture_enemy_hero"),
+     (check_quest_active, "qst_capture_enemy_hero"),
      (assign, ":has_prisoner", 0),
      (quest_get_slot, ":quest_target_faction", "qst_capture_enemy_hero", slot_quest_target_faction),
      (party_get_num_prisoner_stacks, ":num_stacks", "p_main_party"),
@@ -22281,25 +24687,38 @@ Laugh if you wish princeling, but know that many failed to get past their format
      ],
    "Oh, indeed. I've captured a lord from {s13} for you.", "capture_enemy_hero_thank",
    []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_capture_enemy_hero_thank.py:L1-L21 ] anyone::capture_enemy_hero_thank->capture_enemy_hero_thank_2 [no_conditions] {you brought me more than a prisoner; you brought leverage with a}
-[anyone, "capture_enemy_hero_thank", [],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_capture_enemy_hero_thank.py:L1-L34 ] anyone::capture_enemy_hero_thank->capture_enemy_hero_thank_2 [check_quest_active|quest_get_slot|party_count_prisoners_of_type] {you brought me more than a prisoner; you brought leverage with a}
+[anyone, "capture_enemy_hero_thank", [
+     (check_quest_active, "qst_capture_enemy_hero"),
+     (quest_get_slot, ":quest_target_troop", "qst_capture_enemy_hero", slot_quest_target_troop),
+     (party_count_prisoners_of_type, ":count_prisoners", "p_main_party", ":quest_target_troop"),
+     (ge, ":count_prisoners", 1),
+     (quest_get_slot, reg5, "qst_capture_enemy_hero", slot_quest_gold_reward),
+   ],
    "You brought me more than a prisoner; you brought leverage with a pulse. The bargain can finally move. Take these {reg5} denars, and know that this cell will speak louder than any envoy.", "capture_enemy_hero_thank_2",
    [(quest_get_slot, ":quest_target_troop", "qst_capture_enemy_hero", slot_quest_target_troop),
      (quest_get_slot, ":quest_target_faction", "qst_capture_enemy_hero", slot_quest_target_faction),
-     (party_remove_prisoners, "p_main_party", ":quest_target_troop", 1),
-     (store_relation, ":reln", "$g_encountered_party_faction", ":quest_target_faction"),
      (try_begin),
-       (lt, ":reln", 0),
-       (party_add_prisoners, "$g_encountered_party", ":quest_target_troop", 1), #Adding him to the dungeon
+       (check_quest_active, "qst_capture_enemy_hero"),
+       (party_count_prisoners_of_type, ":count_prisoners", "p_main_party", ":quest_target_troop"),
+       (ge, ":count_prisoners", 1),
+       (party_remove_prisoners, "p_main_party", ":quest_target_troop", 1),
+       (store_relation, ":reln", "$g_encountered_party_faction", ":quest_target_faction"),
+       (try_begin),
+         (lt, ":reln", 0),
+         (party_add_prisoners, "$g_encountered_party", ":quest_target_troop", 1), #Adding him to the dungeon
+       (else_try),
+         #Do not add a non-enemy lord to the dungeon (due to recent diplomatic changes or due to a neutral town/castle)
+         (troop_set_slot, ":quest_target_troop", slot_troop_prisoner_of_party, -1),
+       (try_end),
+       (quest_get_slot, ":reward", "qst_capture_enemy_hero", slot_quest_gold_reward),
+       (call_script, "script_troop_add_gold", "trp_player", ":reward"),
+       (add_xp_as_reward, 2500),
+       (call_script, "script_change_player_relation_with_troop", "$g_talk_troop", 4),
+       (call_script, "script_end_quest", "qst_capture_enemy_hero"),
      (else_try),
-       #Do not add a non-enemy lord to the dungeon (due to recent diplomatic changes or due to a neutral town/castle)
-       (troop_set_slot, ":quest_target_troop", slot_troop_prisoner_of_party, -1),
+       (display_message, "@The captured lord handoff could not be completed because the prisoner was no longer in your party.", 0xFF6666),
      (try_end),
-     (quest_get_slot, ":reward", "qst_capture_enemy_hero", slot_quest_gold_reward),
-     (call_script, "script_troop_add_gold", "trp_player", ":reward"),
-     (add_xp_as_reward, 2500),
-     (call_script, "script_change_player_relation_with_troop", "$g_talk_troop", 4),
-     (call_script, "script_end_quest", "qst_capture_enemy_hero"),
    ]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_capture_enemy_hero_thank_2.py:L1-L4 ] anyone|plyr::capture_enemy_hero_thank_2->lord_pretalk [no_conditions] {certainly, {var}.}
 [anyone|plyr, "capture_enemy_hero_thank_2", [],
@@ -22730,7 +25149,7 @@ Hand over my {reg19} denars, if you please, and end our business together.", "lo
     (faction_get_slot, ":last_offer_time", "$g_talk_troop_faction", slot_faction_last_mercenary_offer_time),
 
     (assign, ":num_enemies", 0),
-    (try_for_range, ":faction_no", kingdoms_begin, kingdoms_end),
+    (try_for_range, ":faction_no", native_kingdoms_begin, native_kingdoms_end),
       (faction_slot_eq, "$g_talk_troop_faction", slot_faction_state, sfs_active),
       (store_relation, ":reln", "$g_talk_troop_faction", ":faction_no"),
       (lt, ":reln", 0),
@@ -23234,9 +25653,14 @@ I will find another hunter, though I had hoped your name would make the fugitive
 [anyone|plyr, "lord_mission_tell_raid_caravan_to_start_war_5", [], "Then I will go and raid those caravans!", "quest_raid_caravan_to_start_war_accepted", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_plyr_lord_mission_tell_raid_caravan_to_start_war_5_02.py:L1-L3 ] anyone|plyr::lord_mission_tell_raid_caravan_to_start_war_5->quest_raid_caravan_to_start_war_rejected_2 [no_conditions] {i don't like this. find yourself someone else to take the blame }
 [anyone|plyr, "lord_mission_tell_raid_caravan_to_start_war_5", [], "I don't like this. Find yourself someone else to take the blame for your schemes.", "quest_raid_caravan_to_start_war_rejected_2", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_quest_raid_caravan_to_start_war_accepted.py:L1-L19 ] anyone::quest_raid_caravan_to_start_war_accepted->close_window [no_conditions] {very good! now, don't forget that you must capture and loot at l}
-[anyone, "quest_raid_caravan_to_start_war_accepted", [], "Very good!\
- Now, don't forget that you must capture and loot at least {reg13} caravans to make sure that those fools in {s13} get really infuriated.\
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_quest_raid_caravan_to_start_war_accepted.py:L1-L24 ] anyone::quest_raid_caravan_to_start_war_accepted->close_window [quest_get_slot|quest_get_slot|str_store_faction_name_link] {very good! now, don't forget that you must capture and loot at l}
+[anyone, "quest_raid_caravan_to_start_war_accepted", [
+     (quest_get_slot, ":quest_target_faction", "$random_quest_no", slot_quest_target_faction),
+     (quest_get_slot, ":quest_target_amount", "$random_quest_no", slot_quest_target_amount),
+     (str_store_faction_name_link, s68, ":quest_target_faction"),
+     (assign, reg13, ":quest_target_amount"),
+   ], "Very good!\
+ Now, don't forget that you must capture and loot at least {reg13} caravans to make sure that those fools in {s68} get really infuriated.\
  Once you do that, return to me and make sure you are not captured by their patrols.\
  If they catch you, our plan will fail without a doubt and you will be facing a long time in prisons.\
  Now, good luck and good hunting to you.", "close_window",
@@ -24238,9 +26662,9 @@ I will find another hunter, though I had hoped your name would make the fugitive
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_74.py:L1-L8 ] anyone::start->siege_won_seneschal_1 [troop_slot_eq|eq|str_store_party_name] {i must congratulate you on your victory, my {var}. welcome to {v}
 [anyone, "start", [(troop_slot_eq, "$g_talk_troop", slot_troop_occupation, slto_kingdom_seneschal),
                     (eq, "$talk_context", tc_siege_won_seneschal),
-                    (str_store_party_name, s1, "$g_encountered_party"),
+                    (str_store_party_name, s68, "$g_encountered_party"),
                     ],
-   "I must congratulate you on your victory, my {lord/lady}. Welcome to {s1}.\
+   "I must congratulate you on your victory, my {lord/lady}. Welcome to {s68}.\
  We, the housekeepers of this castle, are at your service.", "siege_won_seneschal_1", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_siege_won_seneschal_1.py:L1-L3 ] anyone|plyr::siege_won_seneschal_1->siege_won_seneschal_2 [no_conditions] {are you the seneschal?}
 [anyone|plyr, "siege_won_seneschal_1", [], "Are you the seneschal?", "siege_won_seneschal_2", []],
@@ -24287,10 +26711,10 @@ I will find another hunter, though I had hoped your name would make the fugitive
  if at any time you find you have further need of me,\
  I will be in the great hall arranging a smooth handover of the castle to your forces.\
  ", "close_window", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_75.py:L1-L5 ] anyone::start->seneschal_intro_1 [troop_slot_eq|eq|str_store_party_name] {good day, {var}. i do nott believe i've seen you here before. le}
-[anyone, "start", [(troop_slot_eq, "$g_talk_troop", slot_troop_occupation, slto_kingdom_seneschal), (eq, "$g_talk_troop_met", 0), (str_store_party_name, s1, "$g_encountered_party")],
-   "Good day, {sir/madam}. I do nott believe I've seen you here before.\
- Let me extend my welcome to you as the seneschal of {s1}.", "seneschal_intro_1", []],
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_75.py:L1-L5 ] anyone::start->seneschal_intro_1 [troop_slot_eq|eq|str_store_party_name] {good day, {var}. i do not believe i've seen you here before. let}
+[anyone, "start", [(troop_slot_eq, "$g_talk_troop", slot_troop_occupation, slto_kingdom_seneschal), (eq, "$g_talk_troop_met", 0), (str_store_party_name, s68, "$g_encountered_party")],
+   "Good day, {sir/madam}. I do not believe I've seen you here before.\
+ Let me extend my welcome to you as the seneschal of {s68}.", "seneschal_intro_1", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_seneschal_intro_1.py:L1-L3 ] anyone|plyr::seneschal_intro_1->seneschal_intro_1a [no_conditions] {a pleasure to meet you, {var}.}
 [anyone|plyr, "seneschal_intro_1", [],  "A pleasure to meet you, {s65}.", "seneschal_intro_1a", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_seneschal_intro_1a.py:L1-L3 ] anyone::seneschal_intro_1a->seneschal_talk [no_conditions] {how can i help you?}
@@ -24363,6 +26787,17 @@ I will find another hunter, though I had hoped your name would make the fugitive
 [anyone|plyr, "seneschal_ask_about_someone_4", [], "Where does {s1} stand with others?.", "seneschal_ask_about_someone_relation", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_seneschal_ask_about_someone_4_02.py:L1-L3 ] anyone|plyr::seneschal_ask_about_someone_4->seneschal_pretalk [no_conditions] {my thanks, that was helpful.}
 [anyone|plyr, "seneschal_ask_about_someone_4", [], "My thanks, that was helpful.", "seneschal_pretalk", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_seneschal_public_health.py:L1-L7 ] anyone|plyr::seneschal_talk->seneschal_public_health [store_relation|ge|is_between] {open the household health rolls.}
+[anyone|plyr, "seneschal_talk",
+   [(store_relation, ":cur_rel", "fac_player_supporters_faction", "$g_encountered_party_faction"),
+    (ge, ":cur_rel", 0),
+    (is_between, "$g_encountered_party", centers_begin, centers_end)],
+   "Open the household health rolls.", "seneschal_public_health", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_seneschal_public_health.py:L1-L6 ] anyone::seneschal_public_health->seneschal_pretalk [call_script|str_store_string_reg] {{var}}
+[anyone, "seneschal_public_health",
+   [(call_script, "script_sod_center_public_health_describe_to_s0", "$g_encountered_party"),
+    (str_store_string_reg, s68, s0)],
+   "{s68}", "seneschal_pretalk", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_seneschal_talk_03.py:L1-L3 ] anyone|plyr::seneschal_talk->close_window [no_conditions] {close the household books for now. i am done here.}
 [anyone|plyr, "seneschal_talk", [], "Close the household books for now. I am done here.", "close_window", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_seneschal_ask_something.py:L1-L4 ] anyone::seneschal_ask_something->seneschal_ask_something_2 [no_conditions] {i'll do what i can to help, of course. what did you wish to ask?}
@@ -24422,9 +26857,12 @@ I will find another hunter, though I had hoped your name would make the fugitive
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_talk_caravan_escort_02.py:L1-L4 ] anyone|plyr::talk_caravan_escort->talk_caravan_escort_2b [no_conditions] {no sign of trouble, we can breathe easy.}
 [anyone|plyr, "talk_caravan_escort", [],
    "No sign of trouble, we can breathe easy.", "talk_caravan_escort_2b", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_talk_caravan_escort_2b.py:L1-L4 ] anyone::talk_caravan_escort_2b->close_window [no_conditions] {i'll breathe easy when we reach {var} and not a moment sooner. l}
-[anyone, "talk_caravan_escort_2b", [],
-   "I'll breathe easy when we reach {s1} and not a moment sooner. Let's keep moving.", "close_window", [[str_store_party_name, s1, "$caravan_escort_destination_town"], (assign, "$g_leave_encounter", 1)]],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_talk_caravan_escort_2b.py:L1-L7 ] anyone::talk_caravan_escort_2b->close_window [str_store_party_name] {i'll breathe easy when we reach {var} and not a moment sooner. l}
+[anyone, "talk_caravan_escort_2b", [
+   (str_store_party_name, s68, "$caravan_escort_destination_town"),
+   ],
+   "I'll breathe easy when we reach {s68} and not a moment sooner. Let's keep moving.", "close_window", [
+   (assign, "$g_leave_encounter", 1)]],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_79.py:L1-L9 ] anyone::start->merchant_talk [eq|gt|party_is_active] {easy now. your toll was paid less than three days ago, and the i}
 [anyone, "start", [(eq, "$talk_context", tc_party_encounter),
                     (gt, "$g_encountered_party", 0),
@@ -24726,9 +27164,9 @@ I will find another hunter, though I had hoped your name would make the fugitive
    "An escort? We're almost there already! Thank you for the offer, though.", "close_window", [(assign, "$g_leave_encounter", 1)]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_caravan_offer_protection_2_02.py:L1-L7 ] anyone::caravan_offer_protection_2->caravan_offer_protection_3 [get_party_ai_object|str_store_party_name|assign] {we are heading to {var}. i will pay you {var} denars if you esco}
 [anyone, "caravan_offer_protection_2", [(get_party_ai_object, ":caravan_destination", "$g_encountered_party"),
-    (str_store_party_name, 1, ":caravan_destination"),
+    (str_store_party_name, s68, ":caravan_destination"),
     (assign, reg(2), "$caravan_escort_offer")],
-   "We are heading to {s1}. I will pay you {reg2} denars if you escort us there.", "caravan_offer_protection_3",
+   "We are heading to {s68}. I will pay you {reg2} denars if you escort us there.", "caravan_offer_protection_3",
    []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_caravan_offer_protection_3.py:L1-L4 ] anyone|plyr::caravan_offer_protection_3->caravan_offer_protection_4 [no_conditions] {agreed.}
 [anyone|plyr, "caravan_offer_protection_3", [],
@@ -24742,8 +27180,8 @@ I will find another hunter, though I had hoped your name would make the fugitive
    "Don't worry, you can trust me.", "caravan_offer_protection_6", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_caravan_offer_protection_6.py:L1-L12 ] anyone::caravan_offer_protection_6->close_window [get_party_ai_object|str_store_party_name] {good. come and collect your money when we're within sight of {va}
 [anyone, "caravan_offer_protection_6", [(get_party_ai_object, ":caravan_destination", "$g_encountered_party"),
-    (str_store_party_name, 1, ":caravan_destination")],
-   "Good. Come and collect your money when we're within sight of {s1}. For now, let's just get underway.", "close_window",
+    (str_store_party_name, s68, ":caravan_destination")],
+   "Good. Come and collect your money when we're within sight of {s68}. For now, let's just get underway.", "close_window",
    [(get_party_ai_object, ":caravan_destination", "$g_encountered_party"),
     (assign, "$caravan_escort_destination_town", ":caravan_destination"),
     (assign, "$caravan_escort_party_id", "$g_encountered_party"),
@@ -24795,7 +27233,7 @@ I will find another hunter, though I had hoped your name would make the fugitive
    "I want to speak with a prisoner.", "prison_guard_visit_prison", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prison_guard_ask_prisoners.py:L1-L19 ] anyone::prison_guard_ask_prisoners->prison_guard_talk [no_conditions] {currently, {var} {var} imprisoned here.}
 [anyone, "prison_guard_ask_prisoners", [],
-   "Currently, {s51} {reg1?are:is} imprisoned here.", "prison_guard_talk", [(party_clear, "p_temp_party"),
+   "Currently, {s51} {s68} imprisoned here.", "prison_guard_talk", [(party_clear, "p_temp_party"),
                                                                               (assign, ":num_heroes", 0),
                                                                               (party_get_num_prisoner_stacks, ":num_stacks", "$g_encountered_party"),
                                                                               (try_for_range, ":i_stack", 0, ":num_stacks"),
@@ -24807,9 +27245,9 @@ I will find another hunter, though I had hoped your name would make the fugitive
                                                                               (call_script, "script_print_party_members", "p_temp_party"),
                                                                               (try_begin),
                                                                                 (gt, ":num_heroes", 1),
-                                                                                (assign, reg1, 1),
+                                                                                (str_store_string, s68, "@are"),
                                                                               (else_try),
-                                                                                (assign, reg1, 0),
+                                                                                (str_store_string, s68, "@is"),
                                                                               (try_end)]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_prison_guard_visit_prison.py:L1-L7 ] anyone::prison_guard_visit_prison->close_window [this_or_next|faction_slot_eq|this_or_next|party_slot_eq|eq] {of course, {var}. go in.}
 [anyone, "prison_guard_visit_prison", [(this_or_next|faction_slot_eq, "$g_encountered_party_faction", slot_faction_marshall, "trp_player"),
@@ -25002,13 +27440,14 @@ I will find another hunter, though I had hoped your name would make the fugitive
                     (ge, "$g_talk_troop_relation", 17),
                     ],
    "I don't think we have met properly my friend. You just saved my life out there, and I still don't know your name...", "ally_thanks_meet", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_94.py:L1-L8 ] anyone::start->ally_thanks_meet [eq|troop_is_hero|eq] {your help was most welcome stranger. my name is {var}. can i lea}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_94.py:L1-L9 ] anyone::start->ally_thanks_meet [eq|troop_is_hero|eq] {your help was most welcome, stranger. my name is {var}. can i le}
 [anyone, "start", [(eq, "$talk_context", tc_ally_thanks),
                     (troop_is_hero, "$g_talk_troop"),
                     (eq, "$g_talk_troop_met", 0),
                     (ge, "$g_talk_troop_relation", 5),
+                    (call_script, "script_store_troop_name", s68, "$g_talk_troop"),
                     ],
-   "Your help was most welcome stranger. My name is {s1}. Can I learn yours?", "ally_thanks_meet", []],
+   "Your help was most welcome, stranger. My name is {s68}. Can I learn yours?", "ally_thanks_meet", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_95.py:L1-L9 ] anyone::start->ally_thanks_meet [eq|troop_is_hero|eq] {thanks for your help, stranger. we haven't met properly yet, hav}
 [anyone, "start", [(eq, "$talk_context", tc_ally_thanks),
                     (troop_is_hero, "$g_talk_troop"),
@@ -25019,13 +27458,14 @@ I will find another hunter, though I had hoped your name would make the fugitive
    "Thanks for your help, stranger. We haven't met properly yet, have we? What is your name?", "ally_thanks_meet", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_ally_thanks_meet.py:L1-L3 ] anyone|plyr::ally_thanks_meet->ally_thanks_meet_2 [no_conditions] {my name is {var}.}
 [anyone|plyr, "ally_thanks_meet", [], "My name is {playername}.", "ally_thanks_meet_2", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_ally_thanks_meet_2.py:L1-L4 ] anyone::ally_thanks_meet_2->close_window [ge|call_script] {well met indeed {var}. my name is {var} and i am forever in your}
-[anyone, "ally_thanks_meet_2", [(ge, "$g_talk_troop_relation", 15), (call_script, "script_store_troop_name", s1, "$g_talk_troop")],
-   "Well met indeed {playername}. My name is {s1} and I am forever in your debt. If there is ever anything I can help you with, just let me know...", "close_window", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_ally_thanks_meet_2.py:L1-L4 ] anyone::ally_thanks_meet_2->close_window [ge|call_script] {well met indeed, {var}. my name is {var}, and i am forever in yo}
+[anyone, "ally_thanks_meet_2", [(ge, "$g_talk_troop_relation", 15), (call_script, "script_store_troop_name", s68, "$g_talk_troop")],
+   "Well met indeed, {playername}. My name is {s68}, and I am forever in your debt. If there is ever anything I can help with, just let me know.", "close_window", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_ally_thanks_meet_2_02.py:L1-L3 ] anyone::ally_thanks_meet_2->close_window [ge] {well met {var}. i am in your debt for what you just did. i hope }
 [anyone, "ally_thanks_meet_2", [(ge, "$g_talk_troop_relation", 5), ], "Well met {playername}. I am in your debt for what you just did. I hope one day I will find a way to repay it.", "close_window", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_ally_thanks_meet_2_03.py:L1-L3 ] anyone::ally_thanks_meet_2->close_window [no_conditions] {well met {var}. i am {var}. thanks for your help and i hope we m}
-[anyone, "ally_thanks_meet_2", [], "Well met {playername}. I am {s1}. Thanks for your help and I hope we meet again.", "close_window", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_ally_thanks_meet_2_03.py:L1-L4 ] anyone::ally_thanks_meet_2->close_window [call_script] {well met, {var}. i am {var}. thank you for your help; i hope we }
+[anyone, "ally_thanks_meet_2", [(call_script, "script_store_troop_name", s68, "$g_talk_troop")],
+   "Well met, {playername}. I am {s68}. Thank you for your help; I hope we meet again.", "close_window", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_96.py:L1-L15 ] anyone::start->close_window [eq|troop_is_hero|ge] {again you save our necks, {var}! truly, you are the best of frie}
 [anyone, "start", [(eq, "$talk_context", tc_ally_thanks),
                     (troop_is_hero, "$g_talk_troop"),
@@ -25106,16 +27546,20 @@ I will find another hunter, though I had hoped your name would make the fugitive
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_104.py:L1-L4 ] anyone::start->close_window [eq] {thank you for your help, {var}. it was fortunate to have you nea}
 [anyone, "start", [(eq, "$talk_context", tc_ally_thanks)],
    "Thank you for your help, {sir/madam}. It was fortunate to have you nearby.", "close_window", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_105.py:L1-L6 ] anyone::start->kidnapped_girl_liberated_battle [eq|store_conversation_troop|eq] {oh {var}. thank you so much for rescuing me. will you take me to}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_105.py:L1-L8 ] anyone::start->kidnapped_girl_liberated_battle [eq|check_quest_active|neg|check_quest_concluded] {oh {var}. thank you so much for rescuing me. will you take me to}
 [anyone, "start", [(eq, "$talk_context", tc_hero_freed),
+                    (check_quest_active, "qst_kidnapped_girl"),
+                    (neg|check_quest_concluded, "qst_kidnapped_girl"),
                     (store_conversation_troop, ":cur_troop"),
                     (eq, ":cur_troop", "trp_kidnapped_girl"), ],
    "Oh {sir/madam}. Thank you so much for rescuing me. Will you take me to my family now?", "kidnapped_girl_liberated_battle", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_106.py:L1-L6 ] anyone::start->sh_spy_liberated_battle [eq|store_conversation_troop|eq] {thank you for rescuing me {var}. did the serpent host sent you}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_106.py:L1-L8 ] anyone::start->sh_spy_liberated_battle [eq|check_quest_active|neg|check_quest_concluded] {thank you for rescuing me, {var}. did the serpent host send you?}
 [anyone, "start", [(eq, "$talk_context", tc_hero_freed),
+                    (check_quest_active, "qst_serpent_host_free_spy"),
+                    (neg|check_quest_concluded, "qst_serpent_host_free_spy"),
                     (store_conversation_troop, ":cur_troop"),
-                    (eq, ":cur_troop", "trp_kidnapped_girl"), ],
-   "Thank you for rescuing me {sir/madam}. Did the Serpent Host sent you", "sh_spy_liberated_battle", []],
+                    (eq, ":cur_troop", "trp_sh_spy"), ],
+   "Thank you for rescuing me, {sir/madam}. Did the Serpent Host send you?", "sh_spy_liberated_battle", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_107.py:L1-L5 ] anyone::start->freed_hero_answer [eq] {i am in your debt for freeing me friend.}
 [anyone, "start", [(eq, "$talk_context", tc_hero_freed)],
    "I am in your debt for freeing me friend.", "freed_hero_answer",
@@ -25252,30 +27696,45 @@ I will find another hunter, though I had hoped your name would make the fugitive
                           (store_distance_to_party_from_party, ":distance", "p_main_party", ":quest_target_center"),
                           (lt, ":distance", 10),
                           ], "Yes {sir/madam}?", "sacrificed_messenger_1", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_sacrificed_messenger_1.py:L1-L7 ] anyone|plyr::sacrificed_messenger_1->sacrificed_messenger_2 [quest_get_slot|str_store_party_name|quest_get_slot] {take this letter to {var} and give it to {var}.}
-[anyone|plyr, "sacrificed_messenger_1", [(quest_get_slot, ":quest_target_center", "qst_incriminate_loyal_commander", slot_quest_target_center),
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_sacrificed_messenger_1.py:L1-L11 ] anyone|plyr::sacrificed_messenger_1->sacrificed_messenger_2 [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {take this letter to {var}. put it in {var}'s hand, and speak to }
+[anyone|plyr, "sacrificed_messenger_1", [(check_quest_active, "qst_incriminate_loyal_commander"),
+                                          (neg|check_quest_concluded, "qst_incriminate_loyal_commander"),
+                                          (quest_slot_eq, "qst_incriminate_loyal_commander", slot_quest_current_state, 0),
+                                          (quest_get_slot, ":quest_target_center", "qst_incriminate_loyal_commander", slot_quest_target_center),
+                                          (party_is_active, ":quest_target_center"),
                                           (str_store_party_name, s1, ":quest_target_center"),
                                           (quest_get_slot, ":quest_object_troop", "qst_incriminate_loyal_commander", slot_quest_object_troop),
                                           (call_script, "script_store_troop_name", s2, ":quest_object_troop"), ],
-   "Take this letter to {s1} and give it to {s2}.", "sacrificed_messenger_2", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_sacrificed_messenger_1_02.py:L1-L4 ] anyone|plyr::sacrificed_messenger_1->close_window [no_conditions] {nothing. nothing at all.}
+   "Take this letter to {s1}. Put it in {s2}'s hand, and speak to no one else.", "sacrificed_messenger_2", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_sacrificed_messenger_1_02.py:L1-L4 ] anyone|plyr::sacrificed_messenger_1->close_window [no_conditions] {hold here for now.}
 [anyone|plyr, "sacrificed_messenger_1", [],
-   "Nothing. Nothing at all.", "close_window", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_sacrificed_messenger_2.py:L1-L4 ] anyone::sacrificed_messenger_2->sacrificed_messenger_3 [no_conditions] {yes {var}. you can trust me. i will not fail you.}
+   "Hold here for now.", "close_window", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_sacrificed_messenger_2.py:L1-L4 ] anyone::sacrificed_messenger_2->sacrificed_messenger_3 [no_conditions] {understood. i will keep the seal closed and my mouth shut.}
 [anyone, "sacrificed_messenger_2", [],
-   "Yes {sir/madam}. You can trust me. I will not fail you.", "sacrificed_messenger_3", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_sacrificed_messenger_3.py:L1-L20 ] anyone|plyr::sacrificed_messenger_3->close_window [no_conditions] {good. i will not forget your service. you will be rewarded when }
-[anyone|plyr, "sacrificed_messenger_3", [],
-   "Good. I will not forget your service. You will be rewarded when you return.", "close_window", [(set_spawn_radius, 0),
+   "Understood. I will keep the seal closed and my mouth shut.", "sacrificed_messenger_3", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_sacrificed_messenger_3.py:L1-L31 ] anyone|plyr::sacrificed_messenger_3->close_window [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {go. deliver it by your own hand.}
+[anyone|plyr, "sacrificed_messenger_3", [
+   (check_quest_active, "qst_incriminate_loyal_commander"),
+   (neg|check_quest_concluded, "qst_incriminate_loyal_commander"),
+   (quest_slot_eq, "qst_incriminate_loyal_commander", slot_quest_current_state, 0),
+   (quest_get_slot, ":quest_target_center", "qst_incriminate_loyal_commander", slot_quest_target_center),
+   (party_is_active, ":quest_target_center"),
+   (party_count_members_of_type, ":messenger_count", "p_main_party", "$g_talk_troop"),
+   (gt, ":messenger_count", 0),
+],
+   "Go. Deliver it by your own hand.", "close_window", [(quest_get_slot, ":quest_target_center", "qst_incriminate_loyal_commander", slot_quest_target_center),
+                                     (party_count_members_of_type, ":messenger_count", "p_main_party", "$g_talk_troop"),
+                                     (try_begin),
+                                     (party_is_active, ":quest_target_center"),
+                                     (gt, ":messenger_count", 0),
+                                     (set_spawn_radius, 0),
                                      (spawn_around_party, "p_main_party", "pt_sacrificed_messenger"),
                                      (assign, ":new_party", reg0),
-                                     (try_begin),
                                      (gt, ":new_party", 0),
                                      (party_is_active, ":new_party"),
                                      (party_remove_members, "p_main_party", "$g_talk_troop", 1),
                                      (party_add_members, ":new_party", "$g_talk_troop", 1),
                                      (party_set_ai_behavior, ":new_party", ai_bhvr_travel_to_party),
-                                     (quest_get_slot, ":quest_target_center", "qst_incriminate_loyal_commander", slot_quest_target_center),
                                      (party_set_ai_object, ":new_party", ":quest_target_center"),
                                      (party_set_flags, ":new_party", pf_default_behavior, 0),
                                      (quest_set_slot, "qst_incriminate_loyal_commander", slot_quest_current_state, 2),
@@ -25285,50 +27744,75 @@ I will find another hunter, though I had hoped your name would make the fugitive
                                      (try_end)]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_sacrificed_messenger_3_02.py:L1-L3 ] anyone|plyr::sacrificed_messenger_3->sacrificed_messenger_cancel [no_conditions] {no. i will not dress murder as necessity. there has to be anothe}
 [anyone|plyr, "sacrificed_messenger_3", [], "No. I will not dress murder as necessity. There has to be another way.", "sacrificed_messenger_cancel", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_sacrificed_messenger_cancel.py:L1-L3 ] anyone::sacrificed_messenger_cancel->sacrificed_messenger_cancel_2 [no_conditions] {what do you mean {var}}
-[anyone, "sacrificed_messenger_cancel", [], "What do you mean {sir/madam}", "sacrificed_messenger_cancel_2", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_sacrificed_messenger_cancel_2.py:L1-L13 ] anyone|plyr::sacrificed_messenger_cancel_2->sacrificed_messenger_cancel_3 [quest_get_slot|call_script] {there's a trap set up for you in the town. {var} ordered me to s}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_sacrificed_messenger_cancel.py:L1-L3 ] anyone::sacrificed_messenger_cancel->sacrificed_messenger_cancel_2 [no_conditions] {a trap? what are you saying, {var}?}
+[anyone, "sacrificed_messenger_cancel", [], "A trap? What are you saying, {sir/madam}?", "sacrificed_messenger_cancel_2", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_sacrificed_messenger_cancel_2.py:L1-L11 ] anyone|plyr::sacrificed_messenger_cancel_2->sacrificed_messenger_cancel_3 [quest_get_slot|call_script] {the letter is bait. {var} meant to spend your life to fool the t}
 [anyone|plyr, "sacrificed_messenger_cancel_2", [(quest_get_slot, ":quest_giver", "qst_incriminate_loyal_commander", slot_quest_giver_troop),
                                                  (call_script, "script_store_troop_name", s3, ":quest_giver"),
-      ], "There's a trap set up for you in the town.\
- {s3} ordered me to sacrifice one of my chosen warriors to fool the enemy,\
- but he will just need to find another way.", "sacrificed_messenger_cancel_3", [
+      ], "The letter is bait. {s3} meant to spend your life to fool the town. I will not do it.", "sacrificed_messenger_cancel_3", [
      (quest_get_slot, ":quest_giver", "qst_incriminate_loyal_commander", slot_quest_giver_troop),
      (quest_set_slot, "qst_incriminate_loyal_commander", slot_quest_current_state, 1),
      (call_script, "script_change_player_relation_with_troop", ":quest_giver", -5),
      (call_script, "script_change_player_honor", 3),
      (call_script, "script_fail_quest", "qst_incriminate_loyal_commander"),
      ]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_sacrificed_messenger_cancel_3.py:L1-L4 ] anyone::sacrificed_messenger_cancel_3->close_window [no_conditions] {thank you, {var}. i will follow you to the gates of hell. but th}
-[anyone, "sacrificed_messenger_cancel_3", [], "Thank you, {sir/madam}.\
- I will follow you to the gates of hell. But this would not be a good death.", "close_window", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_sacrificed_messenger_start.py:L1-L4 ] party_tpl|pt_sacrificed_messenger::start->close_window [no_conditions] {don't worry, {var}, i'm on my way.}
-[party_tpl|pt_sacrificed_messenger, "start", [],
-   "Don't worry, {sir/madam}, I'm on my way.", "close_window", [(assign, "$g_leave_encounter", 1)]],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_spy_start.py:L1-L3 ] party_tpl|pt_spy::start->follow_spy_talk [no_conditions] {good day {var}. such fine weather don't you think? if you'll exc}
-[party_tpl|pt_spy, "start", [], "Good day {sir/madam}. Such fine weather don't you think? If you'll excuse me now I must go on my way.", "follow_spy_talk", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_follow_spy_talk.py:L1-L8 ] anyone|plyr::follow_spy_talk->follow_spy_talk_2 [quest_get_slot|call_script] {in the name of {var}, you are under arrest!}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_sacrificed_messenger_cancel_3.py:L1-L3 ] anyone::sacrificed_messenger_cancel_3->close_window [no_conditions] {then i owe you more than obedience. i will not forget it.}
+[anyone, "sacrificed_messenger_cancel_3", [], "Then I owe you more than obedience. I will not forget it.", "close_window", []],
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_sacrificed_messenger_start.py:L1-L10 ] party_tpl|pt_sacrificed_messenger::start->close_window [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {i am still carrying the letter. if i stop now, questions will fo}
+[party_tpl|pt_sacrificed_messenger, "start", [
+   (check_quest_active, "qst_incriminate_loyal_commander"),
+   (neg|check_quest_concluded, "qst_incriminate_loyal_commander"),
+   (quest_slot_eq, "qst_incriminate_loyal_commander", slot_quest_current_state, 2),
+   (quest_slot_eq, "qst_incriminate_loyal_commander", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+],
+   "I am still carrying the letter. If I stop now, questions will follow.", "close_window", [(assign, "$g_leave_encounter", 1)]],
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_spy_start.py:L1-L10 ] party_tpl|pt_spy::start->follow_spy_talk [check_quest_active|neg|check_quest_concluded|eq] {good day, {var}. fine weather for the road, is it not? i should }
+[party_tpl|pt_spy, "start", [
+   (check_quest_active, "qst_follow_spy"),
+   (neg|check_quest_concluded, "qst_follow_spy"),
+   (eq, "$qst_follow_spy_no_active_parties", 0),
+   (eq, "$qst_follow_spy_spy_party", "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+],
+   "Good day, {sir/madam}. Fine weather for the road, is it not? I should be moving on.", "follow_spy_talk", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_follow_spy_talk.py:L1-L12 ] anyone|plyr::follow_spy_talk->follow_spy_talk_2 [check_quest_active|neg|check_quest_concluded|eq] {in the name of {var}, you are under arrest!}
 [anyone|plyr, "follow_spy_talk",
    [
+     (check_quest_active, "qst_follow_spy"),
+     (neg|check_quest_concluded, "qst_follow_spy"),
+     (eq, "$qst_follow_spy_spy_party", "$g_encountered_party"),
+     (party_is_active, "$g_encountered_party"),
      (quest_get_slot, ":quest_giver", "qst_follow_spy", slot_quest_giver_troop),
      (call_script, "script_store_troop_name", s1, ":quest_giver"),
      ],
    "In the name of {s1}, you are under arrest!", "follow_spy_talk_2", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_follow_spy_talk_2.py:L1-L3 ] anyone::follow_spy_talk_2->close_window [no_conditions] {you won't get me alive!}
-[anyone, "follow_spy_talk_2", [], "You won't get me alive!", "close_window", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_follow_spy_talk_2.py:L1-L3 ] anyone::follow_spy_talk_2->close_window [no_conditions] {then you will have to catch me breathing or dead.}
+[anyone, "follow_spy_talk_2", [], "Then you will have to catch me breathing or dead.", "close_window", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_follow_spy_talk_02.py:L1-L3 ] anyone|plyr::follow_spy_talk->close_window [no_conditions] {pay me no mind. the road carried me past you, nothing more.}
 [anyone|plyr, "follow_spy_talk", [], "Pay me no mind. The road carried me past you, nothing more.", "close_window", [(assign, "$g_leave_encounter", 1)]],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_spy_partners_start.py:L1-L3 ] party_tpl|pt_spy_partners::start->spy_partners_talk [no_conditions] {greetings.}
-[party_tpl|pt_spy_partners, "start", [], "Greetings.", "spy_partners_talk", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_spy_partners_talk.py:L1-L8 ] anyone|plyr::spy_partners_talk->spy_partners_talk_2 [quest_get_slot|call_script] {in the name of {var} you are under arrest!}
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_spy_partners_start.py:L1-L10 ] party_tpl|pt_spy_partners::start->spy_partners_talk [check_quest_active|neg|check_quest_concluded|eq] {evening, traveler. keep to your own road.}
+[party_tpl|pt_spy_partners, "start", [
+   (check_quest_active, "qst_follow_spy"),
+   (neg|check_quest_concluded, "qst_follow_spy"),
+   (eq, "$qst_follow_spy_no_active_parties", 0),
+   (eq, "$qst_follow_spy_spy_partners_party", "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+],
+   "Evening, traveler. Keep to your own road.", "spy_partners_talk", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_spy_partners_talk.py:L1-L12 ] anyone|plyr::spy_partners_talk->spy_partners_talk_2 [check_quest_active|neg|check_quest_concluded|eq] {in the name of {var}, you are under arrest!}
 [anyone|plyr, "spy_partners_talk",
    [
+     (check_quest_active, "qst_follow_spy"),
+     (neg|check_quest_concluded, "qst_follow_spy"),
+     (eq, "$qst_follow_spy_spy_partners_party", "$g_encountered_party"),
+     (party_is_active, "$g_encountered_party"),
      (quest_get_slot, ":quest_giver", "qst_follow_spy", slot_quest_giver_troop),
      (call_script, "script_store_troop_name", s1, ":quest_giver"),
      ],
-   "In the name of {s1} You are under arrest!", "spy_partners_talk_2", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_spy_partners_talk_2.py:L1-L3 ] anyone::spy_partners_talk_2->close_window [no_conditions] {you will have to fight us first!}
-[anyone, "spy_partners_talk_2", [], "You will have to fight us first!", "close_window", []],
+   "In the name of {s1}, you are under arrest!", "spy_partners_talk_2", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_spy_partners_talk_2.py:L1-L3 ] anyone::spy_partners_talk_2->close_window [no_conditions] {then take us, if your steel is honest.}
+[anyone, "spy_partners_talk_2", [], "Then take us, if your steel is honest.", "close_window", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_spy_partners_talk_02.py:L1-L3 ] anyone|plyr::spy_partners_talk->close_window [no_conditions] {pay me no mind. the road carried me past you, nothing more.}
 [anyone|plyr, "spy_partners_talk", [], "Pay me no mind. The road carried me past you, nothing more.", "close_window", [(assign, "$g_leave_encounter", 1)]],
 # [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_runaway_serfs_start.py:L1-L5 ]
@@ -25425,10 +27909,13 @@ I will find another hunter, though I had hoped your name would make the fugitive
  I want to see that purse full next time I see you.", "close_window", [(assign, "$g_leave_encounter", 1)]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_deserter_paid_talk_02.py:L1-L3 ] anyone|plyr::deserter_paid_talk->deserter_paid_talk_2b [no_conditions] {no. it's your turn to pay me this time.}
 [anyone|plyr, "deserter_paid_talk", [], "No. It's your turn to pay me this time.", "deserter_paid_talk_2b", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_deserter_paid_talk_2b.py:L1-L6 ] anyone::deserter_paid_talk_2b->close_window [no_conditions] {what nonsense are you talking about? you want trouble? you got i}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_deserter_paid_talk_2b.py:L1-L9 ] anyone::deserter_paid_talk_2b->close_window [no_conditions] {what nonsense are you talking about? you want trouble? you got i}
 [anyone, "deserter_paid_talk_2b", [], "What nonsense are you talking about? You want trouble? You got it.", "close_window", [
        (party_set_slot, "$g_encountered_party", slot_party_ignore_player_until, 0),
        (party_ignore_player, "$g_encountered_party", 0),
+       (assign, "$g_enemy_party", "$g_encountered_party"),
+       (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+       (encounter_attack),
     ]],
 # [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_deserters_start_02.py:L1-L6 ] party_tpl|pt_deserters::start->deserter_talk [eq|call_script] {{var}}
 [party_tpl|pt_deserters, "start", [
@@ -25445,8 +27932,12 @@ I will find another hunter, though I had hoped your name would make the fugitive
       (eq, "$talk_context", tc_party_encounter),
       (call_script, "script_sod_store_hostile_greeting"),
                     ], "{s5}", "deserter_talk", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_deserter_talk.py:L1-L3 ] anyone|plyr::deserter_talk->close_window [no_conditions] {when i'm done with you, you'll regret ever leaving your army.}
-[anyone|plyr, "deserter_talk", [], "When I'm done with you, you'll regret ever leaving your army.", "close_window", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_deserter_talk.py:L1-L7 ] anyone|plyr::deserter_talk->close_window [no_conditions] {when i'm done with you, you'll regret ever leaving your army.}
+[anyone|plyr, "deserter_talk", [], "When I'm done with you, you'll regret ever leaving your army.", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack),
+]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_deserter_talk_02.py:L1-L3 ] anyone|plyr::deserter_talk->deserter_barter [no_conditions] {there's no need to fight. i am ready to pay for free passage.}
 [anyone|plyr, "deserter_talk", [], "There's no need to fight. I am ready to pay for free passage.", "deserter_barter", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_deserter_talk_recruit.py:L1-L11 ] anyone|plyr::deserter_talk->deserter_recruit_offer [store_skill_level|store_skill_level|val_add] {lay down your arms. i can use soldiers who know when a battle is}
@@ -25645,8 +28136,10 @@ I will find another hunter, though I had hoped your name would make the fugitive
 [anyone|plyr, "deserter_talk", [
     (lt, "$player_honor", -10),
 ], "You have heard what happens to men who waste my time.", "deserter_dishonorable_response", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_deserter_dishonorable_response.py:L1-L5 ] anyone::deserter_dishonorable_response->close_window [no_conditions] {aye. we heard. better to die armed than kneel to a butcher.}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_deserter_dishonorable_response.py:L1-L7 ] anyone::deserter_dishonorable_response->close_window [no_conditions] {aye. we heard. better to die armed than kneel to a butcher.}
 [anyone, "deserter_dishonorable_response", [], "Aye. We heard. Better to die armed than kneel to a butcher.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
 ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_deserter_talk_lord_intel.py:L1-L3 ] anyone|plyr::deserter_talk->deserter_lord_intel [no_conditions] {what lord armies have you seen on these roads?}
@@ -25713,17 +28206,24 @@ I will find another hunter, though I had hoped your name would make the fugitive
     (call_script, "script_sod_resolve_hostile_party_noncombat", "$g_encountered_party"),
     (display_message, "@The deserters abandon the road as refugees under your protection."),
 ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_deserter_barter.py:L1-L3 ] anyone::deserter_barter->deserter_barter_2 [no_conditions] {good. you are clever. you pay us {var} denars. then you can go.}
-[anyone, "deserter_barter", [], "Good. You are clever. You pay us {reg5} denars. Then you can go.", "deserter_barter_2", [(assign, "$deserter_tribute", 150), (assign, reg(5), "$deserter_tribute")]],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_deserter_barter.py:L1-L6 ] anyone::deserter_barter->deserter_barter_2 [assign|assign] {good. you are clever. you pay us {var} denars. then you can go.}
+[anyone, "deserter_barter", [
+  (assign, "$deserter_tribute", 150),
+  (assign, reg5, "$deserter_tribute"),
+], "Good. You are clever. You pay us {reg5} denars. Then you can go.", "deserter_barter_2", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_deserter_barter_2.py:L1-L4 ] anyone|plyr::deserter_barter_2->deserter_barter_3a [store_troop_gold|2|ge] {all right here's your {var} denars.}
 [anyone|plyr, "deserter_barter_2", [(store_troop_gold, reg(2), "trp_player"), (ge, reg(2), "$deserter_tribute"), (assign, reg(5), "$deserter_tribute")],
    "All right here's your {reg5} denars.", "deserter_barter_3a", [(call_script, "script_sod_player_charge_gold", "$deserter_tribute"), (play_sound, "snd_money_paid"), ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_deserter_barter_2_02.py:L1-L4 ] anyone|plyr::deserter_barter_2->deserter_barter_3b [no_conditions] {i don't have that much money with me}
 [anyone|plyr, "deserter_barter_2", [],
    "I don't have that much money with me", "deserter_barter_3b", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_deserter_barter_3b.py:L1-L4 ] anyone::deserter_barter_3b->close_window [no_conditions] {then we take our pay the ugly way. the slavers can argue over wh}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_deserter_barter_3b.py:L1-L8 ] anyone::deserter_barter_3b->close_window [no_conditions] {then we take our pay the ugly way. the slavers can argue over wh}
 [anyone, "deserter_barter_3b", [],
-   "Then we take our pay the ugly way. The slavers can argue over what is left.", "close_window", []],
+   "Then we take our pay the ugly way. The slavers can argue over what is left.", "close_window", [
+     (assign, "$g_enemy_party", "$g_encountered_party"),
+     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+     (encounter_attack),
+   ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_deserter_barter_3a.py:L1-L12 ] anyone::deserter_barter_3a->close_window [no_conditions] {heh. that wasn't difficult now was it? all right. go now.}
 [anyone, "deserter_barter_3a", [], "Heh. That wasn't difficult now was it? All right. Go now.", "close_window", [
     (store_current_hours, ":protected_until"),
@@ -25837,27 +28337,40 @@ I will find another hunter, though I had hoped your name would make the fugitive
                                      (str_store_item_name, s4, ":quest_target_item"),
                                      ],
    "I was told to deliver you {reg9} units of {s4}.", "tavernkeeper_deliver_wine", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_deliver_wine.py:L1-L23 ] anyone::tavernkeeper_deliver_wine->tavernkeeper_pretalk [no_conditions] {at last! my stock was almost depleted. i had paid the cost of th}
-[anyone, "tavernkeeper_deliver_wine", [],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_deliver_wine.py:L1-L36 ] anyone::tavernkeeper_deliver_wine->tavernkeeper_pretalk [check_quest_active|quest_slot_eq|quest_get_slot] {at last! my stock was almost depleted. i had paid the cost of th}
+[anyone, "tavernkeeper_deliver_wine", [
+    (check_quest_active, "qst_deliver_wine"),
+    (quest_slot_eq, "qst_deliver_wine", slot_quest_target_center, "$g_encountered_party"),
+    (quest_get_slot, ":quest_target_item", "qst_deliver_wine", slot_quest_target_item),
+    (quest_get_slot, ":quest_target_amount", "qst_deliver_wine", slot_quest_target_amount),
+    (quest_get_slot, reg5, "qst_deliver_wine", slot_quest_gold_reward),
+    (quest_get_slot, ":quest_giver_troop", "qst_deliver_wine", slot_quest_giver_troop),
+    (store_item_kind_count, ":item_count", ":quest_target_item"),
+    (ge, ":item_count", ":quest_target_amount"),
+    (str_store_item_name, s4, ":quest_target_item"),
+    (call_script, "script_store_troop_name", s9, ":quest_giver_troop"),
+   ],
    "At last! My stock was almost depleted. I had paid the cost of the {s4} in advance. Here, take these {reg5} denars. That should cover your pay. And give {s9} my regards. I'll put in a good word for you next time I deal with him.",
    "tavernkeeper_pretalk",
    [(quest_get_slot, ":quest_target_item", "qst_deliver_wine", slot_quest_target_item),
     (quest_get_slot, ":quest_target_amount", "qst_deliver_wine", slot_quest_target_amount),
     (quest_get_slot, ":quest_gold_reward", "qst_deliver_wine", slot_quest_gold_reward),
-    (quest_get_slot, ":quest_giver_troop", "qst_deliver_wine", slot_quest_giver_troop),
-    (troop_remove_items, "trp_player", ":quest_target_item", ":quest_target_amount"),
-    (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),
-    (assign, ":xp_reward", ":quest_gold_reward"),
-    (val_mul, ":xp_reward", 4),
-    (add_xp_as_reward, ":xp_reward"),
-    (assign, reg5, ":quest_gold_reward"),
-    (str_store_item_name, s4, ":quest_target_item"),
-    (call_script, "script_store_troop_name", s9, ":quest_giver_troop"),
-
-    (quest_get_slot, ":giver_town", "qst_deliver_wine", slot_quest_giver_center),
-    (call_script, "script_change_player_relation_with_center", ":giver_town", 2),
-    (call_script, "script_change_player_relation_with_center", "$current_town", 1),
-    (call_script, "script_end_quest", "qst_deliver_wine"),
+    (store_item_kind_count, ":item_count", ":quest_target_item"),
+    (try_begin),
+      (check_quest_active, "qst_deliver_wine"),
+      (ge, ":item_count", ":quest_target_amount"),
+      (troop_remove_items, "trp_player", ":quest_target_item", ":quest_target_amount"),
+      (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),
+      (assign, ":xp_reward", ":quest_gold_reward"),
+      (val_mul, ":xp_reward", 4),
+      (add_xp_as_reward, ":xp_reward"),
+      (quest_get_slot, ":giver_town", "qst_deliver_wine", slot_quest_giver_center),
+      (call_script, "script_change_player_relation_with_center", ":giver_town", 2),
+      (call_script, "script_change_player_relation_with_center", "$current_town", 1),
+      (call_script, "script_end_quest", "qst_deliver_wine"),
+    (else_try),
+      (display_message, "@The wine delivery could not be completed because the cargo was no longer in your inventory.", 0xFF6666),
+    (try_end),
     ]],
 # [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_tavernkeeper_talk_02.py:L1-L13 ] anyone|plyr::tavernkeeper_talk->tavernkeeper_deliver_wine_incomplete [check_quest_active|quest_slot_eq|quest_get_slot] {i was told to deliver you {var} units of {var}, but i lost some }
 [anyone|plyr, "tavernkeeper_talk", [(check_quest_active, "qst_deliver_wine"),
@@ -25871,38 +28384,59 @@ I will find another hunter, though I had hoped your name would make the fugitive
                                      (str_store_item_name, s4, ":quest_target_item"),
                                      ],
    "I was told to deliver you {reg9} units of {s4}, but I lost some of the cargo on the way.", "tavernkeeper_deliver_wine_incomplete", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_deliver_wine_incomplete.py:L1-L34 ] anyone::tavernkeeper_deliver_wine_incomplete->tavernkeeper_pretalk [no_conditions] {attacked by bandits eh? you are lucky they left you alive. anywa}
-[anyone, "tavernkeeper_deliver_wine_incomplete", [],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_deliver_wine_incomplete.py:L1-L55 ] anyone::tavernkeeper_deliver_wine_incomplete->tavernkeeper_pretalk [check_quest_active|quest_slot_eq|quest_get_slot] {attacked by bandits eh? you are lucky they left you alive. anywa}
+[anyone, "tavernkeeper_deliver_wine_incomplete", [
+    (check_quest_active, "qst_deliver_wine"),
+    (quest_slot_eq, "qst_deliver_wine", slot_quest_target_center, "$g_encountered_party"),
+    (quest_get_slot, ":quest_target_item", "qst_deliver_wine", slot_quest_target_item),
+    (quest_get_slot, ":quest_target_amount", "qst_deliver_wine", slot_quest_target_amount),
+    (quest_get_slot, ":quest_gold_reward", "qst_deliver_wine", slot_quest_gold_reward),
+    (quest_get_slot, ":quest_giver_troop", "qst_deliver_wine", slot_quest_giver_troop),
+    (store_item_kind_count, ":item_count", ":quest_target_item"),
+    (gt, ":item_count", 0),
+    (lt, ":item_count", ":quest_target_amount"),
+    (val_mul, ":quest_gold_reward", ":item_count"),
+    (try_begin),
+      (gt, ":quest_target_amount", 0),
+      (val_div, ":quest_gold_reward", ":quest_target_amount"),
+    (try_end),
+    (assign, reg5, ":quest_gold_reward"),
+    (call_script, "script_store_troop_name", s1, ":quest_giver_troop"),
+   ],
    "Attacked by bandits eh? You are lucky they left you alive. Anyway, I can pay you no more than {reg5} denars for this. And I will let {s1} know that my order was delivered less than completely, so you will probably be charged for this loss.",
    "tavernkeeper_pretalk",
    [    (quest_get_slot, ":quest_target_item", "qst_deliver_wine", slot_quest_target_item),
     (quest_get_slot, ":quest_target_amount", "qst_deliver_wine", slot_quest_target_amount),
     (quest_get_slot, ":quest_gold_reward", "qst_deliver_wine", slot_quest_gold_reward),
-    (quest_get_slot, ":quest_giver_troop", "qst_deliver_wine", slot_quest_giver_troop),
     (store_item_kind_count, ":item_count", ":quest_target_item"),
-    (troop_remove_items, "trp_player", ":quest_target_item", ":item_count"),
-    (val_mul, ":quest_gold_reward", ":item_count"),
     (try_begin),
-    (gt, ":quest_target_amount", 0),
-    (val_div, ":quest_gold_reward", ":quest_target_amount"),
+      (check_quest_active, "qst_deliver_wine"),
+      (gt, ":item_count", 0),
+      (lt, ":item_count", ":quest_target_amount"),
+      (troop_remove_items, "trp_player", ":quest_target_item", ":item_count"),
+      (val_mul, ":quest_gold_reward", ":item_count"),
+      (try_begin),
+        (gt, ":quest_target_amount", 0),
+        (val_div, ":quest_gold_reward", ":quest_target_amount"),
+      (try_end),
+      (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),
+      (assign, ":xp_reward", ":quest_gold_reward"),
+      (val_mul, ":xp_reward", 4),
+      (add_xp_as_reward, ":xp_reward"),
+      (assign, ":debt", "$qst_deliver_wine_debt"),
+      (store_sub, ":item_left", ":quest_target_amount", ":item_count"),
+      (val_mul, ":debt", ":item_left"),
+      (try_begin),
+        (gt, ":quest_target_amount", 0),
+        (val_div, ":debt", ":quest_target_amount"),
+      (try_end),
+      (val_add, "$debt_to_merchants_guild", ":debt"),
+      (quest_get_slot, ":giver_town", "qst_deliver_wine", slot_quest_giver_center),
+      (call_script, "script_change_player_relation_with_center", ":giver_town", 1),
+      (call_script, "script_end_quest", "qst_deliver_wine"),
+    (else_try),
+      (display_message, "@The partial wine delivery could not be completed because the cargo count changed.", 0xFF6666),
     (try_end),
-    (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),
-    (assign, reg5, ":quest_gold_reward"),
-    (assign, ":xp_reward", ":quest_gold_reward"),
-    (val_mul, ":xp_reward", 4),
-    (add_xp_as_reward, ":xp_reward"),
-    (call_script, "script_store_troop_name", s1, ":quest_giver_troop"),
-    (assign, ":debt", "$qst_deliver_wine_debt"),
-    (store_sub, ":item_left", ":quest_target_amount", ":item_count"),
-    (val_mul, ":debt", ":item_left"),
-    (try_begin),
-    (gt, ":quest_target_amount", 0),
-    (val_div, ":debt", ":quest_target_amount"),
-    (try_end),
-    (val_add, "$debt_to_merchants_guild", ":debt"),
-    (quest_get_slot, ":giver_town", "qst_deliver_wine", slot_quest_giver_center),
-    (call_script, "script_change_player_relation_with_center", ":giver_town", 1),
-    (call_script, "script_end_quest", "qst_deliver_wine"),
     ]],
 # [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_tavernkeeper_talk_03.py:L1-L11 ] anyone|plyr::tavernkeeper_talk->tavernkeeper_deliver_wine_lost [check_quest_active|quest_slot_eq|quest_get_slot] {i was told to deliver you {var} units of {var}, but i lost the c}
 [anyone|plyr, "tavernkeeper_talk", [(check_quest_active, "qst_deliver_wine"),
@@ -25914,15 +28448,28 @@ I will find another hunter, though I had hoped your name would make the fugitive
                                      (str_store_item_name, s4, ":quest_target_item"),
                                      ],
    "I was told to deliver you {reg9} units of {s4}, but I lost the cargo on the way.", "tavernkeeper_deliver_wine_lost", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_deliver_wine_lost.py:L1-L11 ] anyone::tavernkeeper_deliver_wine_lost->tavernkeeper_pretalk [no_conditions] {what? i was waiting for that {var} for weeks! and now you are te}
-[anyone, "tavernkeeper_deliver_wine_lost", [], "What? I was waiting for that {s4} for weeks! And now you are telling me that you lost it? You may rest assured that I will let {s1} know about this.", "tavernkeeper_pretalk",
-   [(add_xp_as_reward, 40),
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavernkeeper_deliver_wine_lost.py:L1-L24 ] anyone::tavernkeeper_deliver_wine_lost->tavernkeeper_pretalk [check_quest_active|quest_slot_eq|quest_get_slot] {what? i was waiting for that {var} for weeks! and now you are te}
+[anyone, "tavernkeeper_deliver_wine_lost", [
+    (check_quest_active, "qst_deliver_wine"),
+    (quest_slot_eq, "qst_deliver_wine", slot_quest_target_center, "$g_encountered_party"),
     (quest_get_slot, ":quest_target_item", "qst_deliver_wine", slot_quest_target_item),
     (quest_get_slot, ":quest_giver_troop", "qst_deliver_wine", slot_quest_giver_troop),
+    (store_item_kind_count, ":item_count", ":quest_target_item"),
+    (eq, ":item_count", 0),
     (str_store_item_name, s4, ":quest_target_item"),
     (call_script, "script_store_troop_name", s1, ":quest_giver_troop"),
-    (val_add, "$debt_to_merchants_guild", "$qst_deliver_wine_debt"),
-    (call_script, "script_end_quest", "qst_deliver_wine"),
+   ], "What? I was waiting for that {s4} for weeks! And now you are telling me that you lost it? You may rest assured that I will let {s1} know about this.", "tavernkeeper_pretalk",
+   [(quest_get_slot, ":quest_target_item", "qst_deliver_wine", slot_quest_target_item),
+    (store_item_kind_count, ":item_count", ":quest_target_item"),
+    (try_begin),
+      (check_quest_active, "qst_deliver_wine"),
+      (eq, ":item_count", 0),
+      (add_xp_as_reward, 40),
+      (val_add, "$debt_to_merchants_guild", "$qst_deliver_wine_debt"),
+      (call_script, "script_end_quest", "qst_deliver_wine"),
+    (else_try),
+      (display_message, "@The lost wine report could not be completed because the cargo state changed.", 0xFF6666),
+    (try_end),
    ]],
 # [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_tavernkeeper_talk_04.py:L1-L9 ] anyone|plyr::tavernkeeper_talk->tavernkeeper_buy_peasants [gt|store_party_size|gt] {i need local hands who can march today. who is looking for pay?}
 [anyone|plyr, "tavernkeeper_talk",
@@ -26158,8 +28705,18 @@ I will find another hunter, though I had hoped your name would make the fugitive
      ],
    "Greetings, {playername}. I saw your companion {s10} at a tavern in {s11} some days ago. I thought you might like to know.", "tavern_traveler_lost_companion_thanks",
    [(assign, "$last_lost_companion", 0)]],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_tavern_traveler_lost_companion_thanks.py:L1-L3 ] anyone|plyr::tavern_traveler_lost_companion_thanks->tavern_traveler_pretalk [troop_get_type] {then that is where i ride. if {var} is there, i will find {var}.}
-[anyone|plyr, "tavern_traveler_lost_companion_thanks", [(troop_get_type, reg3, "$last_lost_companion")], "Then that is where I ride. If {reg3?she:he} is there, I will find {reg3?her:him}.", "tavern_traveler_pretalk", []],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_tavern_traveler_lost_companion_thanks.py:L1-L13 ] anyone|plyr::tavern_traveler_lost_companion_thanks->tavern_traveler_pretalk [troop_get_type|try_begin|eq] {then that is where i ride. if {var} is there, i will find {var}.}
+[anyone|plyr, "tavern_traveler_lost_companion_thanks", [
+    (troop_get_type, reg3, "$last_lost_companion"),
+    (try_begin),
+      (eq, reg3, 1),
+      (str_store_string, s68, "@she"),
+      (str_store_string, s69, "@her"),
+    (else_try),
+      (str_store_string, s68, "@he"),
+      (str_store_string, s69, "@him"),
+    (try_end),
+  ], "Then that is where I ride. If {s68} is there, I will find {s69}.", "tavern_traveler_pretalk", []],
 # [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_tavern_traveler_lost_companion_thanks_02.py:L1-L3 ] anyone|plyr::tavern_traveler_lost_companion_thanks->tavern_traveler_pretalk [no_conditions] {leave it. that trail is not worth my boots today.}
 [anyone|plyr, "tavern_traveler_lost_companion_thanks", [], "Leave it. That trail is not worth my boots today.", "tavern_traveler_pretalk", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_114.py:L1-L5 ] anyone::start->tavern_traveler_talk [is_between] {greetings, {var}.}
@@ -26415,7 +28972,7 @@ I will find another hunter, though I had hoped your name would make the fugitive
                      (check_quest_active, "qst_eliminate_bandits_infesting_village"),
                      ],
    "Thank you for helping us {sir/madam}. Crush those bandits!", "close_window", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_120.py:L1-L24 ] anyone::start->mercenary_tavern_talk [eq|party_get_slot|party_get_slot] {do you have a need for mercenaries, {var}? {var} of my mates:one}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_120.py:L1-L31 ] anyone::start->mercenary_tavern_talk [eq|party_get_slot|party_get_slot] {{var}}
 [anyone, "start", [(eq, "$talk_context", tc_tavern_talk),
                      (party_get_slot, ":mercenary_troop", "$g_encountered_party", slot_center_mercenary_troop_type),
                      (party_get_slot, ":mercenary_amount", "$g_encountered_party", slot_center_mercenary_troop_amount),
@@ -26434,10 +28991,17 @@ I will find another hunter, though I had hoped your name would make the fugitive
                        (val_min, ":mercenary_amount", ":cur_gold"),
                      (try_end),
                      (assign, "$temp", ":mercenary_amount"),
+                     (try_begin),
+                       (le, ":mercenary_amount", 1),
+                       (str_store_string, s68, "@Do you have a need for mercenaries, {sir/madam}?^ I am looking for a master.^ We'll join you for {reg5} denars."),
+                     (else_try),
+                       (eq, ":mercenary_amount", 2),
+                       (str_store_string, s68, "@Do you have a need for mercenaries, {sir/madam}?^ Me and one of my mates are looking for a master.^ We'll join you for {reg5} denars."),
+                     (else_try),
+                       (str_store_string, s68, "@Do you have a need for mercenaries, {sir/madam}?^ Me and {reg3} of my mates are looking for a master.^ We'll join you for {reg5} denars."),
+                     (try_end),
                      ],
-   "Do you have a need for mercenaries, {sir/madam}?\
- {reg3?Me and {reg4?{reg3} of my mates:one of my mates} are:I am} looking for a master.\
- We'll join you for {reg5} denars.", "mercenary_tavern_talk", []],
+   "{s68}", "mercenary_tavern_talk", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_121.py:L1-L4 ] anyone::start->mercenary_after_recruited [eq] {any orders, {var}?}
 [anyone, "start", [(eq, "$talk_context", tc_tavern_talk), ],
    "Any orders, {sir/madam}?", "mercenary_after_recruited", []],
@@ -26588,8 +29152,15 @@ I will find another hunter, though I had hoped your name would make the fugitive
                                           (party_get_free_companions_capacity, ":free_capacity", "p_main_party"),
                                           (ge, ":free_capacity", 1)],
    "Your price is more than my purse can carry today.", "tavern_mercenary_cant_lead", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavern_mercenary_cant_lead.py:L1-L3 ] anyone::tavern_mercenary_cant_lead->close_window [no_conditions] {then {var} keep drinking where the work can find us. come back w}
-[anyone, "tavern_mercenary_cant_lead", [], "Then {reg3?we will:I will} keep drinking where the work can find us. Come back when your purse or your camp has room.", "close_window", []],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_tavern_mercenary_cant_lead.py:L1-L10 ] anyone::tavern_mercenary_cant_lead->close_window [try_begin|gt|str_store_string] {then {var} keep drinking where the work can find us. come back w}
+[anyone, "tavern_mercenary_cant_lead", [
+    (try_begin),
+      (gt, reg3, 0),
+      (str_store_string, s68, "@we will"),
+    (else_try),
+      (str_store_string, s68, "@I will"),
+    (try_end),
+  ], "Then {s68} keep drinking where the work can find us. Come back when your purse or your camp has room.", "close_window", []],
 # [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_mercenary_tavern_talk_04.py:L1-L6 ] anyone|plyr::mercenary_tavern_talk->tavern_mercenary_cant_lead [eq|party_get_free_companions_capacity|eq] {i have no room in the company for more hungry swords.}
 [anyone|plyr, "mercenary_tavern_talk", [(eq, "$temp", 0),
                                           (party_get_free_companions_capacity, ":free_capacity", "p_main_party"),
@@ -26832,20 +29403,20 @@ I will find another hunter, though I had hoped your name would make the fugitive
     (str_store_faction_name, s14, ":quest_target_faction"),
     (str_store_faction_name, s15, ":quest_object_faction"),
     (str_store_party_name, s19, "$current_town"),
-  ],
-  "{s1}", "lord_persuade_lords_to_make_peace_completed",
-  [
+    (quest_get_slot, ":quest_reward", "qst_persuade_lords_to_make_peace", slot_quest_gold_reward),
+    (assign, reg12, ":quest_reward"),
     (call_script, "script_sod_quest_dialogue_describe_reaction", "$g_talk_troop"),
     (call_script, "script_sod_quest_dialogue_describe_stage", "$g_talk_troop"),
-    (str_store_string, s1, "@{playername}, it was an incredible feat to get {s14} and {s15} make peace, and you made it happen.\
+    (str_store_string, s68, "@{playername}, it was an incredible feat to get {s14} and {s15} make peace, and you made it happen.\
 Your involvement has not only saved our town from disaster, but it has also saved thousands of lives, and put an end to all the grief this bitter war has caused.\
 As the townspeople of {s19}, know that we'll be good on our word, and we are ready to pay the {reg12} denars we promised."),
+  ],
+  "{s68}", "lord_persuade_lords_to_make_peace_completed",
+  [
     (quest_get_slot, ":quest_target_faction", "qst_persuade_lords_to_make_peace", slot_quest_target_faction),
     (quest_get_slot, ":quest_object_faction", "qst_persuade_lords_to_make_peace", slot_quest_object_faction),
     (assign, "$g_force_peace_faction_1", ":quest_target_faction"),
     (assign, "$g_force_peace_faction_2", ":quest_object_faction"),
-    (quest_get_slot, ":quest_reward", "qst_persuade_lords_to_make_peace", slot_quest_gold_reward),
-    (assign, reg12, ":quest_reward"),
     (add_xp_as_reward, 4000),
   ]],
 # [ src/dialogs/ZB01_lords_politics_and_family/anyone_plyr_lord_persuade_lords_to_make_peace_completed.py:L1-L4 ] anyone|plyr::lord_persuade_lords_to_make_peace_completed->lord_persuade_lords_to_make_peace_pay [no_conditions] {thank you. let me have the money.}
@@ -27159,6 +29730,15 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 # [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_mayor_talk_04.py:L1-L4 ] anyone|plyr::mayor_talk->merchant_quest_about_job [store_partner_quest|2|ge] {about the job you gave me...}
 [anyone|plyr, "mayor_talk", [(store_partner_quest, reg(2)), (ge, reg(2), 0)],
    "About the job you gave me...", "merchant_quest_about_job", []],
+# [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_mayor_public_health.py:L1-L5 ] anyone|plyr::mayor_talk->mayor_public_health [is_between] {what is the town's public health situation?}
+[anyone|plyr, "mayor_talk",
+   [(is_between, "$current_town", towns_begin, towns_end)],
+   "What is the town's public health situation?", "mayor_public_health", []],
+# [ src/dialogs/ZC01_centers_and_economy/anyone_mayor_public_health.py:L1-L6 ] anyone::mayor_public_health->mayor_pretalk [call_script|str_store_string_reg] {{var}}
+[anyone, "mayor_public_health",
+   [(call_script, "script_sod_center_public_health_describe_to_s0", "$current_town"),
+    (str_store_string_reg, s68, s0)],
+   "{s68}", "mayor_pretalk", []],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_mayor_talk_05.py:L1-L3 ] anyone|plyr::mayor_talk->close_window [no_conditions] {[leave]}
 [anyone|plyr, "mayor_talk", [], "[Leave]", "close_window", []],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_mayor_info_begin.py:L1-L5 ] anyone::mayor_info_begin->mayor_info_talk [str_store_party_name] {i am the guildmaster of {var}. you can say i am the leader of th}
@@ -27369,13 +29949,18 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
                                            (quest_slot_eq, "qst_escort_merchant_caravan", slot_quest_current_state, 2),
                                            ],
    "We can cover the last stretch ourselves. May the road spend its worst luck elsewhere.", "close_window", [(assign, "$g_leave_encounter", 1)]],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_merchant_caravan_start_02.py:L1-L33 ] party_tpl|pt_merchant_caravan::start->close_window [quest_get_slot|eq|quest_get_slot] {we are close enough to {var} to smell the cookfires. the wagons }
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_merchant_caravan_start_02.py:L1-L37 ] party_tpl|pt_merchant_caravan::start->close_window [quest_get_slot|gt|eq] {we are close enough to {var} to smell the cookfires. the wagons }
 [party_tpl|pt_merchant_caravan, "start", [(quest_get_slot, ":quest_target_party", "qst_escort_merchant_caravan", slot_quest_target_party),
+                                           (gt, ":quest_target_party", 0),
                                            (eq, "$g_encountered_party", ":quest_target_party"),
+                                           (party_is_active, ":quest_target_party"),
                                            (quest_get_slot, ":quest_target_center", "qst_escort_merchant_caravan", slot_quest_target_center),
+                                           (party_is_active, ":quest_target_center"),
                                            (store_distance_to_party_from_party, ":dist", ":quest_target_center", ":quest_target_party"),
                                            (lt, ":dist", 4),
                                            (quest_slot_eq, "qst_escort_merchant_caravan", slot_quest_current_state, 1),
+                                           (quest_get_slot, reg14, "qst_escort_merchant_caravan", slot_quest_gold_reward),
+                                           (str_store_party_name, s21, ":quest_target_center"),
                                            ],
    "We are close enough to {s21} to smell the cookfires. The wagons can make the last stretch without you.\
  Here is your pay: {reg14} denars.\
@@ -27386,7 +29971,6 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
                                                        (party_set_ai_behavior, ":quest_target_party", ai_bhvr_travel_to_party),
                                                        (party_set_ai_object, ":quest_target_party", ":quest_target_center"),
                                                        (party_set_flags, ":quest_target_party", pf_default_behavior, 0),
-                                                       (str_store_party_name, s21, ":quest_target_center"),
                                                        (call_script, "script_change_player_relation_with_center", ":quest_giver_center", 1),
                                                        (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_caravan_protection, 3),
                                                        (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_trade_profit, 2),
@@ -27432,32 +30016,66 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_merchant_caravan_world_about.py:L1-L4 ] anyone::merchant_caravan_world_about->merchant_caravan_world_talk [no_conditions] {roads? roads are ledgers with mud on them. a clear road means fa}
 [anyone, "merchant_caravan_world_about", [],
    "Roads? Roads are ledgers with mud on them. A clear road means fair tolls and full markets. A bad road means guards paid twice, cargo sold once, and everyone swearing the loss was someone else's tax.", "merchant_caravan_world_talk", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_merchant_caravan_world_health.py:L1-L5 ] anyone|plyr::merchant_caravan_world_talk->merchant_caravan_world_health_answer [no_conditions] {have you heard of sickness on the road?}
+[anyone|plyr, "merchant_caravan_world_talk", [],
+   "Have you heard of sickness on the road?", "merchant_caravan_world_health_answer",
+   [(call_script, "script_sod_trade_network_describe_caravan_sickness_to_s20", "$g_encountered_party")]],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_merchant_caravan_world_health_answer.py:L1-L4 ] anyone::merchant_caravan_world_health_answer->merchant_caravan_world_talk [no_conditions] {{var}}
+[anyone, "merchant_caravan_world_health_answer", [],
+   "{s20}", "merchant_caravan_world_talk", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_merchant_caravan_world_talk_02.py:L1-L4 ] anyone|plyr::merchant_caravan_world_talk->close_window [no_conditions] {travel on.}
 [anyone|plyr, "merchant_caravan_world_talk", [],
    "Travel on.", "close_window", [(assign, "$g_leave_encounter", 1)]],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_escort_merchant_caravan_talk.py:L1-L3 ] anyone|plyr::escort_merchant_caravan_talk->merchant_caravan_follow_lead [no_conditions] {you follow my lead. i'll take you through a safe route.}
 [anyone|plyr, "escort_merchant_caravan_talk", [], "You follow my lead. I'll take you through a safe route.", "merchant_caravan_follow_lead", []],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_merchant_caravan_follow_lead.py:L1-L4 ] anyone::merchant_caravan_follow_lead->close_window [no_conditions] {we will follow close. keep us clear of bad ground.}
+# [ src/dialogs/ZC01_centers_and_economy/anyone_merchant_caravan_follow_lead.py:L1-L13 ] anyone::merchant_caravan_follow_lead->close_window [no_conditions] {we will follow close. keep us clear of bad ground.}
 [anyone, "merchant_caravan_follow_lead", [], "We will follow close. Keep us clear of bad ground.", "close_window", [(assign, "$escort_merchant_caravan_mode", 0),
+                                                                                                     (quest_get_slot, ":quest_target_party", "qst_escort_merchant_caravan", slot_quest_target_party),
+                                                                                                     (try_begin),
+                                                                                                       (gt, ":quest_target_party", 0),
+                                                                                                       (party_is_active, ":quest_target_party"),
+                                                                                                       (party_set_ai_behavior, ":quest_target_party", ai_bhvr_track_party),
+                                                                                                       (party_set_ai_object, ":quest_target_party", "p_main_party"),
+                                                                                                       (party_set_flags, ":quest_target_party", pf_default_behavior, 0),
+                                                                                                       (quest_set_slot, "qst_escort_merchant_caravan", slot_quest_current_state, 1),
+                                                                                                     (try_end),
                                                                                                      (assign, "$g_leave_encounter", 1)]],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_escort_merchant_caravan_talk_02.py:L1-L3 ] anyone|plyr::escort_merchant_caravan_talk->merchant_caravan_stay_here [no_conditions] {you stay here for a while. i'll go ahead and check the road.}
 [anyone|plyr, "escort_merchant_caravan_talk", [], "You stay here for a while. I'll go ahead and check the road.", "merchant_caravan_stay_here", []],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_merchant_caravan_stay_here.py:L1-L4 ] anyone::merchant_caravan_stay_here->close_window [no_conditions] {we will wait here and keep the wheels ready.}
+# [ src/dialogs/ZC01_centers_and_economy/anyone_merchant_caravan_stay_here.py:L1-L13 ] anyone::merchant_caravan_stay_here->close_window [no_conditions] {we will wait here and keep the wheels ready.}
 [anyone, "merchant_caravan_stay_here", [], "We will wait here and keep the wheels ready.", "close_window", [(assign, "$escort_merchant_caravan_mode", 1),
+                                                                                                       (quest_get_slot, ":quest_target_party", "qst_escort_merchant_caravan", slot_quest_target_party),
+                                                                                                       (try_begin),
+                                                                                                         (gt, ":quest_target_party", 0),
+                                                                                                         (party_is_active, ":quest_target_party"),
+                                                                                                         (party_set_ai_behavior, ":quest_target_party", ai_bhvr_hold),
+                                                                                                         (party_set_ai_object, ":quest_target_party", "p_main_party"),
+                                                                                                         (party_set_flags, ":quest_target_party", pf_default_behavior, 0),
+                                                                                                         (quest_set_slot, "qst_escort_merchant_caravan", slot_quest_current_state, 1),
+                                                                                                       (try_end),
                                                                                                        (assign, "$g_leave_encounter", 1)]],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_slavers_caravan_start.py:L1-L36 ] party_tpl|pt_slavers_caravan::start->close_window [quest_get_slot|store_distance_to_party_from_party|lt] {we are close enough to {var}. the chains and wagons can make the}
-[party_tpl|pt_slavers_caravan, "start", [(quest_get_slot, ":quest_target_center", "qst_slavers_escort_merchant_caravan", slot_quest_target_center),
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_slavers_caravan_start.py:L1-L45 ] party_tpl|pt_slavers_caravan::start->close_window [quest_get_slot|gt|eq] {we are close enough to {var}. the chains and wagons can make the}
+[party_tpl|pt_slavers_caravan, "start", [(quest_get_slot, ":quest_target_party", "qst_slavers_escort_merchant_caravan", slot_quest_target_party),
+                                           (gt, ":quest_target_party", 0),
+                                           (eq, "$g_encountered_party", ":quest_target_party"),
+                                           (party_is_active, ":quest_target_party"),
+                                           (quest_get_slot, ":quest_target_center", "qst_slavers_escort_merchant_caravan", slot_quest_target_center),
+                                           (party_is_active, ":quest_target_center"),
+                                           (quest_slot_eq, "qst_slavers_escort_merchant_caravan", slot_quest_current_state, 1),
                                            (store_distance_to_party_from_party, ":dist", ":quest_target_center", "$g_encountered_party"),
                                            (lt, ":dist", 4),
+                                           (quest_get_slot, reg14, "qst_slavers_escort_merchant_caravan", slot_quest_gold_reward),
+                                           (str_store_party_name, s21, ":quest_target_center"),
                                            ],
    "We are close enough to {s21}. The chains and wagons can make the last stretch without you.\
  Here is your pay: {reg14} denars.\
  Spend it before the road takes it back.", "close_window", [(quest_get_slot, ":quest_target_party", "qst_slavers_escort_merchant_caravan", slot_quest_target_party),
-                                                       (quest_get_slot, ":quest_target_center", "qst_slavers_escort_merchant_caravan", slot_quest_target_center),
                                                        (quest_get_slot, ":quest_giver_troop", "qst_slavers_escort_merchant_caravan", slot_quest_giver_troop),
                                                        (quest_get_slot, ":quest_gold_reward", "qst_slavers_escort_merchant_caravan", slot_quest_gold_reward),
-                                                       (str_store_party_name, s21, ":quest_target_center"),
-                                                       (call_script, "script_change_player_relation_with_troop", ":quest_giver_troop", 3),
+                                                       (try_begin),
+                                                         (is_between, ":quest_giver_troop", 0, "trp_last_troop"),
+                                                         (call_script, "script_change_player_relation_with_troop", ":quest_giver_troop", 3),
+                                                       (try_end),
                                                        (call_script, "script_end_quest", "qst_slavers_escort_merchant_caravan"),
                                                        (quest_set_slot, "qst_slavers_escort_merchant_caravan", slot_quest_current_state, 2),
                                                        (call_script, "script_troop_add_gold", "trp_player", ":quest_gold_reward"),
@@ -27528,11 +30146,9 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc7"),
     (display_message, "@A Slaver pursuer confirms Deshavi's trail. Tracks Through Ash now has a hunter witness.", 0x99CCFF),
   ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_slaver_world_caravan_talk_02.py:L1-L10 ] anyone|plyr::slaver_world_caravan_talk->close_window [no_conditions] {open the cages. this traffic ends here.}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_slaver_world_caravan_talk_02.py:L1-L8 ] anyone|plyr::slaver_world_caravan_talk->close_window [no_conditions] {open the cages. this traffic ends here.}
 [anyone|plyr, "slaver_world_caravan_talk", [
   ], "Open the cages. This traffic ends here.", "close_window", [
-    (call_script, "script_sod_slavers_apply_player_action", sod_slaver_action_hostile, 12),
-    (call_script, "script_sod_companion_apply_player_action", sod_companion_action_free_captives, 3),
     (assign, "$g_enemy_party", "$g_encountered_party"),
     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
@@ -27623,31 +30239,56 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
   ]],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_slavers_escort_merchant_caravan_talk.py:L1-L3 ] anyone|plyr::slavers_escort_merchant_caravan_talk->slavers_merchant_caravan_follow_lead [no_conditions] {you follow my lead. i'll take you through a safe route.}
 [anyone|plyr, "slavers_escort_merchant_caravan_talk", [], "You follow my lead. I'll take you through a safe route.", "slavers_merchant_caravan_follow_lead", []],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_slavers_merchant_caravan_follow_lead.py:L1-L4 ] anyone::slavers_merchant_caravan_follow_lead->close_window [no_conditions] {we will follow. choose the road like our profit depends on it.}
+# [ src/dialogs/ZC01_centers_and_economy/anyone_slavers_merchant_caravan_follow_lead.py:L1-L13 ] anyone::slavers_merchant_caravan_follow_lead->close_window [no_conditions] {we will follow. choose the road like our profit depends on it.}
 [anyone, "slavers_merchant_caravan_follow_lead", [], "We will follow. Choose the road like our profit depends on it.", "close_window", [(assign, "$slavers_escort_merchant_caravan_mode", 0),
+                                                                                                     (quest_get_slot, ":quest_target_party", "qst_slavers_escort_merchant_caravan", slot_quest_target_party),
+                                                                                                     (try_begin),
+                                                                                                       (gt, ":quest_target_party", 0),
+                                                                                                       (party_is_active, ":quest_target_party"),
+                                                                                                       (party_set_ai_behavior, ":quest_target_party", ai_bhvr_track_party),
+                                                                                                       (party_set_ai_object, ":quest_target_party", "p_main_party"),
+                                                                                                       (party_set_flags, ":quest_target_party", pf_default_behavior, 0),
+                                                                                                       (quest_set_slot, "qst_slavers_escort_merchant_caravan", slot_quest_current_state, 1),
+                                                                                                     (try_end),
                                                                                                      (assign, "$g_leave_encounter", 1)]],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_slavers_escort_merchant_caravan_talk_02.py:L1-L3 ] anyone|plyr::slavers_escort_merchant_caravan_talk->slavers_merchant_caravan_stay_here [no_conditions] {you stay here for a while. i'll go ahead and check the road.}
 [anyone|plyr, "slavers_escort_merchant_caravan_talk", [], "You stay here for a while. I'll go ahead and check the road.", "slavers_merchant_caravan_stay_here", []],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_slavers_merchant_caravan_stay_here.py:L1-L4 ] anyone::slavers_merchant_caravan_stay_here->close_window [no_conditions] {we will wait here. do not make us wait long.}
+# [ src/dialogs/ZC01_centers_and_economy/anyone_slavers_merchant_caravan_stay_here.py:L1-L13 ] anyone::slavers_merchant_caravan_stay_here->close_window [no_conditions] {we will wait here. do not make us wait long.}
 [anyone, "slavers_merchant_caravan_stay_here", [], "We will wait here. Do not make us wait long.", "close_window", [(assign, "$slavers_escort_merchant_caravan_mode", 1),
+                                                                                                       (quest_get_slot, ":quest_target_party", "qst_slavers_escort_merchant_caravan", slot_quest_target_party),
+                                                                                                       (try_begin),
+                                                                                                         (gt, ":quest_target_party", 0),
+                                                                                                         (party_is_active, ":quest_target_party"),
+                                                                                                         (party_set_ai_behavior, ":quest_target_party", ai_bhvr_hold),
+                                                                                                         (party_set_ai_object, ":quest_target_party", "p_main_party"),
+                                                                                                         (party_set_flags, ":quest_target_party", pf_default_behavior, 0),
+                                                                                                         (quest_set_slot, "qst_slavers_escort_merchant_caravan", slot_quest_current_state, 1),
+                                                                                                       (try_end),
                                                                                                        (assign, "$g_leave_encounter", 1)]],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_black_army_caravan_start.py:L1-L38 ] party_tpl|pt_black_army_caravan::start->close_window [quest_get_slot|eq|quest_get_slot] {we are close enough to {var} to smell the cookfires. the wagons }
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_black_army_caravan_start.py:L1-L45 ] party_tpl|pt_black_army_caravan::start->close_window [quest_get_slot|gt|eq] {we are close enough to {var} to smell the cookfires. the wagons }
 [party_tpl|pt_black_army_caravan, "start", [(quest_get_slot, ":quest_target_party", "qst_black_army_escort_merchant_caravan", slot_quest_target_party),
+                                           (gt, ":quest_target_party", 0),
                                            (eq, "$g_encountered_party", ":quest_target_party"),
+                                           (party_is_active, ":quest_target_party"),
                                            (quest_get_slot, ":quest_target_center", "qst_black_army_escort_merchant_caravan", slot_quest_target_center),
+                                           (party_is_active, ":quest_target_center"),
 										   (quest_slot_eq, "qst_black_army_escort_merchant_caravan", slot_quest_current_state, 1),
                                            (store_distance_to_party_from_party, ":dist", ":quest_target_center", "p_main_party"),
                                            (lt, ":dist", 4),
+                                           (quest_get_slot, reg14, "qst_black_army_escort_merchant_caravan", slot_quest_gold_reward),
+                                           (str_store_party_name, s21, ":quest_target_center"),
                                            ],
    "We are close enough to {s21} to smell the cookfires. The wagons can make the last stretch without you.\
  Here is your pay: {reg14} denars.\
  May the road show you better manners than it showed us.", "close_window", [(quest_get_slot, ":quest_target_party", "qst_black_army_escort_merchant_caravan", slot_quest_target_party),
-                                                       (quest_get_slot, ":quest_target_center", "qst_black_army_escort_merchant_caravan", slot_quest_target_center),
                                                        (quest_get_slot, ":quest_giver_troop", "qst_black_army_escort_merchant_caravan", slot_quest_giver_troop),
                                                        (quest_get_slot, ":quest_gold_reward", "qst_black_army_escort_merchant_caravan", slot_quest_gold_reward),
-                                                       (str_store_party_name, s21, ":quest_target_center"),
-                                                       (store_troop_faction, ":fac", ":quest_giver_troop"),
-                                                       (call_script, "script_change_player_relation_with_faction", ":fac", 3),
+                                                       (try_begin),
+                                                         (is_between, ":quest_giver_troop", 0, "trp_last_troop"),
+                                                         (store_troop_faction, ":fac", ":quest_giver_troop"),
+                                                         (is_between, ":fac", 0, "fac_factions_end"),
+                                                         (call_script, "script_change_player_relation_with_faction", ":fac", 3),
+                                                       (try_end),
                                                        (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_caravan_protection, 2),
                                                        (call_script, "script_end_quest", "qst_black_army_escort_merchant_caravan"),
                                                        (quest_set_slot, "qst_black_army_escort_merchant_caravan", slot_quest_current_state, 2),
@@ -27675,13 +30316,31 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
    "The wagons are sealed, the ledgers are dry, and the road is still asking questions. Give the word.", "black_army_escort_merchant_caravan_talk", []],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_black_army_escort_merchant_caravan_talk.py:L1-L3 ] anyone|plyr::black_army_escort_merchant_caravan_talk->black_army_merchant_caravan_follow_lead [no_conditions] {you follow my lead. i'll take you through a safe route.}
 [anyone|plyr, "black_army_escort_merchant_caravan_talk", [], "You follow my lead. I'll take you through a safe route.", "black_army_merchant_caravan_follow_lead", []],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_black_army_merchant_caravan_follow_lead.py:L1-L4 ] anyone::black_army_merchant_caravan_follow_lead->close_window [no_conditions] {we will follow your lead. keep the road honest.}
+# [ src/dialogs/ZC01_centers_and_economy/anyone_black_army_merchant_caravan_follow_lead.py:L1-L13 ] anyone::black_army_merchant_caravan_follow_lead->close_window [no_conditions] {we will follow your lead. keep the road honest.}
 [anyone, "black_army_merchant_caravan_follow_lead", [], "We will follow your lead. Keep the road honest.", "close_window", [(assign, "$black_army_escort_merchant_caravan_mode", 0),
+                                                                                                     (quest_get_slot, ":quest_target_party", "qst_black_army_escort_merchant_caravan", slot_quest_target_party),
+                                                                                                     (try_begin),
+                                                                                                       (gt, ":quest_target_party", 0),
+                                                                                                       (party_is_active, ":quest_target_party"),
+                                                                                                       (party_set_ai_behavior, ":quest_target_party", ai_bhvr_track_party),
+                                                                                                       (party_set_ai_object, ":quest_target_party", "p_main_party"),
+                                                                                                       (party_set_flags, ":quest_target_party", pf_default_behavior, 0),
+                                                                                                       (quest_set_slot, "qst_black_army_escort_merchant_caravan", slot_quest_current_state, 1),
+                                                                                                     (try_end),
                                                                                                      (assign, "$g_leave_encounter", 1)]],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_black_army_escort_merchant_caravan_talk_02.py:L1-L3 ] anyone|plyr::black_army_escort_merchant_caravan_talk->black_army_merchant_caravan_stay_here [no_conditions] {you stay here for a while. i'll go ahead and check the road.}
 [anyone|plyr, "black_army_escort_merchant_caravan_talk", [], "You stay here for a while. I'll go ahead and check the road.", "black_army_merchant_caravan_stay_here", []],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_black_army_merchant_caravan_stay_here.py:L1-L4 ] anyone::black_army_merchant_caravan_stay_here->close_window [no_conditions] {we will hold here, wagons tight and guards awake.}
+# [ src/dialogs/ZC01_centers_and_economy/anyone_black_army_merchant_caravan_stay_here.py:L1-L13 ] anyone::black_army_merchant_caravan_stay_here->close_window [no_conditions] {we will hold here, wagons tight and guards awake.}
 [anyone, "black_army_merchant_caravan_stay_here", [], "We will hold here, wagons tight and guards awake.", "close_window", [(assign, "$black_army_escort_merchant_caravan_mode", 1),
+                 (quest_get_slot, ":quest_target_party", "qst_black_army_escort_merchant_caravan", slot_quest_target_party),
+                 (try_begin),
+                   (gt, ":quest_target_party", 0),
+                   (party_is_active, ":quest_target_party"),
+                   (party_set_ai_behavior, ":quest_target_party", ai_bhvr_hold),
+                   (party_set_ai_object, ":quest_target_party", "p_main_party"),
+                   (party_set_flags, ":quest_target_party", pf_default_behavior, 0),
+                   (quest_set_slot, "qst_black_army_escort_merchant_caravan", slot_quest_current_state, 1),
+                 (try_end),
 				 (assign, "$g_leave_encounter", 1)]],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_merchant_quest_requested_04.py:L1-L9 ] anyone::merchant_quest_requested->merchant_quest_brief [eq] {actually, i was looking for an able adventurer like you. there's}
 [anyone, "merchant_quest_requested", [(eq, "$random_merchant_quest_no", "qst_troublesome_bandits")],
@@ -27831,62 +30490,114 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (quest_set_slot, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
     (quest_set_slot, "qst_kidnapped_girl", slot_quest_current_state, 2),
     (assign, "$g_leave_encounter", 1)]],
-# [ src/dialogs/ZA01_startup_and_dispatch/trp_kidnapped_girl_start_02.py:L1-L4 ] trp_kidnapped_girl::start->kidnapped_girl_liberated_map [no_conditions] {oh {var}. thank you so much for rescuing me. will you take me to}
-[trp_kidnapped_girl, "start", [],
+# [ src/dialogs/ZA01_startup_and_dispatch/trp_kidnapped_girl_start_02.py:L1-L8 ] trp_kidnapped_girl::start->kidnapped_girl_liberated_map [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {oh {var}. thank you so much for rescuing me. will you take me to}
+[trp_kidnapped_girl, "start", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 3),
+],
    "Oh {sir/madam}. Thank you so much for rescuing me. Will you take me to my family now?", "kidnapped_girl_liberated_map", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/trp_kidnapped_girl_plyr_kidnapped_girl_liberated_battle.py:L1-L3 ] trp_kidnapped_girl|plyr::kidnapped_girl_liberated_battle->kidnapped_girl_liberated_battle_2a [no_conditions] {yes. come with me. we are going home.}
-[trp_kidnapped_girl|plyr, "kidnapped_girl_liberated_battle", [], "Yes. Come with me. We are going home.", "kidnapped_girl_liberated_battle_2a", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/trp_kidnapped_girl_plyr_kidnapped_girl_liberated_battle.py:L1-L7 ] trp_kidnapped_girl|plyr::kidnapped_girl_liberated_battle->kidnapped_girl_liberated_battle_2a [check_quest_active|neg|check_quest_concluded] {yes. come with me. we are going home.}
+[trp_kidnapped_girl|plyr, "kidnapped_girl_liberated_battle", [
+    (check_quest_active, "qst_kidnapped_girl"),
+    (neg|check_quest_concluded, "qst_kidnapped_girl"),
+    ],
+   "Yes. Come with me. We are going home.", "kidnapped_girl_liberated_battle_2a", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/trp_kidnapped_girl_kidnapped_girl_liberated_battle_2a.py:L1-L3 ] trp_kidnapped_girl::kidnapped_girl_liberated_battle_2a->kidnapped_girl_liberated_battle_2b [neg|hero_can_join] {please do not leave me on this road. if there is no room, make r}
 [trp_kidnapped_girl, "kidnapped_girl_liberated_battle_2a", [(neg|hero_can_join, "p_main_party")], "Please do not leave me on this road. If there is no room, make room, or tell me where to hide until you return.", "kidnapped_girl_liberated_battle_2b", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/trp_kidnapped_girl_kidnapped_girl_liberated_battle_2a_02.py:L1-L6 ] trp_kidnapped_girl::kidnapped_girl_liberated_battle_2a->close_window [no_conditions] {oh really? thank you so much!}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/trp_kidnapped_girl_kidnapped_girl_liberated_battle_2a_02.py:L1-L7 ] trp_kidnapped_girl::kidnapped_girl_liberated_battle_2a->close_window [no_conditions] {oh really? thank you so much!}
 [trp_kidnapped_girl, "kidnapped_girl_liberated_battle_2a", [], "Oh really? Thank you so much!",
    "close_window", [(party_add_members, "p_main_party", "trp_kidnapped_girl", 1),
+                   (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_free_captives, 1),
                    (quest_set_slot, "qst_kidnapped_girl", slot_quest_current_state, 3),
                    ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/trp_kidnapped_girl_plyr_kidnapped_girl_liberated_battle_02.py:L1-L3 ] trp_kidnapped_girl|plyr::kidnapped_girl_liberated_battle->kidnapped_girl_liberated_battle_2b [no_conditions] {wait here a while longer. i'll come back for you.}
-[trp_kidnapped_girl|plyr, "kidnapped_girl_liberated_battle", [], "Wait here a while longer. I'll come back for you.", "kidnapped_girl_liberated_battle_2b", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/trp_kidnapped_girl_kidnapped_girl_liberated_battle_2b.py:L1-L12 ] trp_kidnapped_girl::kidnapped_girl_liberated_battle_2b->close_window [no_conditions] {oh, please {var}, do not leave me here all alone!}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/trp_kidnapped_girl_plyr_kidnapped_girl_liberated_battle_02.py:L1-L7 ] trp_kidnapped_girl|plyr::kidnapped_girl_liberated_battle->kidnapped_girl_liberated_battle_2b [check_quest_active|neg|check_quest_concluded] {hide here. i will come back for you.}
+[trp_kidnapped_girl|plyr, "kidnapped_girl_liberated_battle", [
+    (check_quest_active, "qst_kidnapped_girl"),
+    (neg|check_quest_concluded, "qst_kidnapped_girl"),
+    ],
+   "Hide here. I will come back for you.", "kidnapped_girl_liberated_battle_2b", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/trp_kidnapped_girl_kidnapped_girl_liberated_battle_2b.py:L1-L18 ] trp_kidnapped_girl::kidnapped_girl_liberated_battle_2b->close_window [no_conditions] {oh, please {var}, do not leave me here all alone!}
 [trp_kidnapped_girl, "kidnapped_girl_liberated_battle_2b", [], "Oh, please {sir/madam}, do not leave me here all alone!",
    "close_window", [(set_spawn_radius, 1),
                     (spawn_around_party, "p_main_party", "pt_kidnapped_girl"),
                     (assign, ":girl_party", reg0),
-                    (party_set_icon, ":girl_party", "icon_woman"),
-                    (party_set_ai_behavior, ":girl_party", ai_bhvr_hold),
-                    (party_set_flags, ":girl_party", pf_default_behavior, 0),
-                    (quest_set_slot, "qst_kidnapped_girl", slot_quest_target_party, ":girl_party"),
-                    (quest_set_slot, "qst_kidnapped_girl", slot_quest_current_state, 2),
+                    (try_begin),
+                      (gt, ":girl_party", 0),
+                      (party_is_active, ":girl_party"),
+                      (party_set_icon, ":girl_party", "icon_woman"),
+                      (party_set_ai_behavior, ":girl_party", ai_bhvr_hold),
+                      (party_set_flags, ":girl_party", pf_default_behavior, 0),
+                      (quest_set_slot, "qst_kidnapped_girl", slot_quest_target_party, ":girl_party"),
+                      (quest_set_slot, "qst_kidnapped_girl", slot_quest_current_state, 2),
+                    (else_try),
+                      (display_message, "@The rescued girl could not find a safe place on the map. Make room before leaving the area.", 0xFFCC66),
+                    (try_end),
                     (assign, "$g_leave_encounter", 1)]],
-# [ src/dialogs/ZA01_startup_and_dispatch/trp_kidnapped_girl_start_03.py:L1-L3 ] trp_kidnapped_girl::start->kidnapped_girl_liberated_map [no_conditions] {can i come with you now?}
-[trp_kidnapped_girl, "start", [], "Can I come with you now?", "kidnapped_girl_liberated_map", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_bandits_awaiting_ransom_start.py:L1-L4 ] party_tpl|pt_bandits_awaiting_ransom::start->bandits_awaiting_ransom_intro_1 [quest_slot_eq] {are you the one that brought the ransom? quick, give us the mone}
-[party_tpl|pt_bandits_awaiting_ransom, "start", [(quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 0), ],
-   "Are you the one that brought the ransom? Quick, give us the money now.", "bandits_awaiting_ransom_intro_1", [(quest_set_slot, "qst_kidnapped_girl", slot_quest_current_state, 1), ]],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_bandits_awaiting_ransom_start_02.py:L1-L4 ] party_tpl|pt_bandits_awaiting_ransom::start->bandits_awaiting_ransom_intro_1 [quest_slot_eq] {you came back? quick, give us the money now.}
-[party_tpl|pt_bandits_awaiting_ransom, "start", [(quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 1), ],
-   "You came back? Quick, give us the money now.", "bandits_awaiting_ransom_intro_1", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/party_tpl_pt_bandits_awaiting_ransom_plyr_bandits_awaiting_ransom_intro_1.py:L1-L7 ] party_tpl|pt_bandits_awaiting_ransom|plyr::bandits_awaiting_ransom_intro_1->bandits_awaiting_ransom_pay [store_troop_gold|quest_get_slot|ge] {here, take the money. just set the girl free.}
-[party_tpl|pt_bandits_awaiting_ransom|plyr, "bandits_awaiting_ransom_intro_1", [(store_troop_gold, ":cur_gold", "trp_player"),
-                                                                                  (quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
-                                                                                  (ge, ":cur_gold", ":quest_target_amount")
-                                                                                  ],
-   "Here, take the money. Just set the girl free.", "bandits_awaiting_ransom_pay", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/party_tpl_pt_bandits_awaiting_ransom_bandits_awaiting_ransom_pay.py:L1-L28 ] party_tpl|pt_bandits_awaiting_ransom::bandits_awaiting_ransom_pay->close_window [no_conditions] {heh. you've brought the money all right. you can take the girl n}
-[party_tpl|pt_bandits_awaiting_ransom, "bandits_awaiting_ransom_pay", [],
-   "Heh. You've brought the money all right. You can take the girl now. It was a pleasure doing business with you...", "close_window",
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_bandits_awaiting_ransom_start.py:L1-L12 ] party_tpl|pt_bandits_awaiting_ransom::start->bandits_awaiting_ransom_intro_1 [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {you brought the ransom? hand it over, and quickly.}
+[party_tpl|pt_bandits_awaiting_ransom, "start", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 0),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+   (party_count_prisoners_of_type, ":girl_prisoners", "$g_encountered_party", "trp_kidnapped_girl"),
+   (gt, ":girl_prisoners", 0),
+],
+   "You brought the ransom? Hand it over, and quickly.", "bandits_awaiting_ransom_intro_1", [(quest_set_slot, "qst_kidnapped_girl", slot_quest_current_state, 1), ]],
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_bandits_awaiting_ransom_start_02.py:L1-L12 ] party_tpl|pt_bandits_awaiting_ransom::start->bandits_awaiting_ransom_intro_1 [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {back again? pay, or stop wasting breath.}
+[party_tpl|pt_bandits_awaiting_ransom, "start", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 1),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+   (party_count_prisoners_of_type, ":girl_prisoners", "$g_encountered_party", "trp_kidnapped_girl"),
+   (gt, ":girl_prisoners", 0),
+],
+   "Back again? Pay, or stop wasting breath.", "bandits_awaiting_ransom_intro_1", []],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/party_tpl_pt_bandits_awaiting_ransom_plyr_bandits_awaiting_ransom_intro_1.py:L1-L15 ] party_tpl|pt_bandits_awaiting_ransom|plyr::bandits_awaiting_ransom_intro_1->bandits_awaiting_ransom_pay [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {here is the ransom. release her now.}
+[party_tpl|pt_bandits_awaiting_ransom|plyr, "bandits_awaiting_ransom_intro_1", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 1),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+   (party_count_prisoners_of_type, ":girl_prisoners", "$g_encountered_party", "trp_kidnapped_girl"),
+   (gt, ":girl_prisoners", 0),
+   (store_troop_gold, ":cur_gold", "trp_player"),
+   (quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
+   (ge, ":cur_gold", ":quest_target_amount")
+],
+   "Here is the ransom. Release her now.", "bandits_awaiting_ransom_pay", []],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/party_tpl_pt_bandits_awaiting_ransom_bandits_awaiting_ransom_pay.py:L1-L39 ] party_tpl|pt_bandits_awaiting_ransom::bandits_awaiting_ransom_pay->close_window [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {the coin is good. take her and leave before we regret being reas}
+[party_tpl|pt_bandits_awaiting_ransom, "bandits_awaiting_ransom_pay", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 1),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+],
+   "The coin is good. Take her and leave before we regret being reasonable.", "close_window",
    [(quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
     (quest_get_slot, ":quest_target_party", "qst_kidnapped_girl", slot_quest_target_party),
     (quest_get_slot, ":quest_target_center", "qst_kidnapped_girl", slot_quest_target_center),
-    (set_spawn_radius, 1),
-    (spawn_around_party, ":quest_target_party", "pt_kidnapped_girl"),
-    (assign, ":girl_party", reg0),
     (try_begin),
+      (party_is_active, ":quest_target_party"),
+      (eq, ":quest_target_party", "$g_encountered_party"),
+      (party_count_prisoners_of_type, ":girl_prisoners", ":quest_target_party", "trp_kidnapped_girl"),
+      (gt, ":girl_prisoners", 0),
+      (set_spawn_radius, 1),
+      (spawn_around_party, ":quest_target_party", "pt_kidnapped_girl"),
+      (assign, ":girl_party", reg0),
       (gt, ":girl_party", 0),
       (party_is_active, ":girl_party"),
       (call_script, "script_sod_player_charge_gold", ":quest_target_amount"),
       (play_sound, "snd_money_paid"),
-      (remove_member_from_party, "trp_kidnapped_girl", ":quest_target_party"),
+      (party_remove_prisoners, ":quest_target_party", "trp_kidnapped_girl", 1),
       (party_set_ai_behavior, ":girl_party", ai_bhvr_hold),
       (party_set_flags, ":girl_party", pf_default_behavior, 0),
+      (quest_set_slot, "qst_kidnapped_girl", slot_quest_target_party, ":girl_party"),
       (quest_set_slot, "qst_kidnapped_girl", slot_quest_current_state, 2),
       (party_set_ai_behavior, ":quest_target_party", ai_bhvr_travel_to_party),
       (party_set_ai_object, ":quest_target_party", ":quest_target_center"),
@@ -27897,63 +30608,143 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
       (display_message, "@The kidnapped girl could not be placed on the map. Keep the ransom and try again later.", 0xFFCC66),
     (try_end),
     ]],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_bandits_awaiting_ransom_intro_1.py:L1-L4 ] anyone|plyr::bandits_awaiting_ransom_intro_1->bandits_awaiting_ransom_b [no_conditions] {no way! you release the girl first.}
-[anyone|plyr, "bandits_awaiting_ransom_intro_1", [],
-   "No way! You release the girl first.", "bandits_awaiting_ransom_b", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_bandits_awaiting_ransom_b.py:L1-L4 ] anyone::bandits_awaiting_ransom_b->bandits_awaiting_ransom_b2 [no_conditions] {you fool! stop playing games and give us the money!}
-[anyone, "bandits_awaiting_ransom_b", [],
-   "You fool! Stop playing games and give us the money! ", "bandits_awaiting_ransom_b2", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_bandits_awaiting_ransom_b2.py:L1-L6 ] anyone|plyr::bandits_awaiting_ransom_b2->bandits_awaiting_ransom_pay [store_troop_gold|quest_get_slot|ge] {all right. here's your money. let the girl go now.}
-[anyone|plyr, "bandits_awaiting_ransom_b2", [(store_troop_gold, ":cur_gold", "trp_player"),
-                                               (quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
-                                               (ge, ":cur_gold", ":quest_target_amount")],
-   "All right. Here's your money. Let the girl go now.", "bandits_awaiting_ransom_pay", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_bandits_awaiting_ransom_b2_02.py:L1-L4 ] anyone|plyr::bandits_awaiting_ransom_b2->bandits_awaiting_ransom_no_money [no_conditions] {i had left the money in a safe place. let me go fetch it.}
-[anyone|plyr, "bandits_awaiting_ransom_b2", [],
-   "I had left the money in a safe place. Let me go fetch it.", "bandits_awaiting_ransom_no_money", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_bandits_awaiting_ransom_no_money.py:L1-L4 ] anyone::bandits_awaiting_ransom_no_money->close_window [no_conditions] {are you testing our patience or something? go and bring that mon}
-[anyone, "bandits_awaiting_ransom_no_money", [],
-   "Are you testing our patience or something?  Go and bring that money here quickly.", "close_window", [(assign, "$g_leave_encounter", 1)]],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_bandits_awaiting_ransom_b2_03.py:L1-L4 ] anyone|plyr::bandits_awaiting_ransom_b2->bandits_awaiting_ransom_fight [no_conditions] {i have no intention to pay you anything. i demand that you relea}
-[anyone|plyr, "bandits_awaiting_ransom_b2", [],
-   "I have no intention to pay you anything. I demand that you release the girl now!", "bandits_awaiting_ransom_fight", []],
-# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_bandits_awaiting_ransom_fight.py:L1-L4 ] anyone::bandits_awaiting_ransom_fight->close_window [no_conditions] {you won't be demanding anything when you're dead.}
-[anyone, "bandits_awaiting_ransom_fight", [],
-   "You won't be demanding anything when you're dead.", "close_window", [(encounter_attack), ]],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_bandits_awaiting_ransom_start_03.py:L1-L4 ] party_tpl|pt_bandits_awaiting_ransom::start->bandits_awaiting_remeet [quest_slot_ge] {what's it? you have given us the money. we have no more business}
-[party_tpl|pt_bandits_awaiting_ransom, "start", [(quest_slot_ge, "qst_kidnapped_girl", slot_quest_current_state, 2), ],
-   "What's it? You have given us the money. We have no more business.", "bandits_awaiting_remeet", []],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_bandits_awaiting_ransom_intro_1.py:L1-L10 ] anyone|plyr::bandits_awaiting_ransom_intro_1->bandits_awaiting_ransom_b [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {show me the girl first.}
+[anyone|plyr, "bandits_awaiting_ransom_intro_1", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 1),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+],
+   "Show me the girl first.", "bandits_awaiting_ransom_b", []],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_bandits_awaiting_ransom_b.py:L1-L10 ] anyone::bandits_awaiting_ransom_b->bandits_awaiting_ransom_b2 [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {you saw enough. now pay, or we settle this another way.}
+[anyone, "bandits_awaiting_ransom_b", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 1),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+],
+   "You saw enough. Now pay, or we settle this another way.", "bandits_awaiting_ransom_b2", []],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_bandits_awaiting_ransom_b2.py:L1-L15 ] anyone|plyr::bandits_awaiting_ransom_b2->bandits_awaiting_ransom_pay [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {fine. take the ransom and let her go.}
+[anyone|plyr, "bandits_awaiting_ransom_b2", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 1),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+   (party_count_prisoners_of_type, ":girl_prisoners", "$g_encountered_party", "trp_kidnapped_girl"),
+   (gt, ":girl_prisoners", 0),
+   (store_troop_gold, ":cur_gold", "trp_player"),
+   (quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
+   (ge, ":cur_gold", ":quest_target_amount")
+],
+   "Fine. Take the ransom and let her go.", "bandits_awaiting_ransom_pay", []],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_bandits_awaiting_ransom_b2_02.py:L1-L10 ] anyone|plyr::bandits_awaiting_ransom_b2->bandits_awaiting_ransom_no_money [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {the coin is hidden close by. i will fetch it.}
+[anyone|plyr, "bandits_awaiting_ransom_b2", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 1),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+],
+   "The coin is hidden close by. I will fetch it.", "bandits_awaiting_ransom_no_money", []],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_bandits_awaiting_ransom_no_money.py:L1-L10 ] anyone::bandits_awaiting_ransom_no_money->close_window [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {then move. come back empty-handed and the bargain changes.}
+[anyone, "bandits_awaiting_ransom_no_money", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 1),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+],
+   "Then move. Come back empty-handed and the bargain changes.", "close_window", [(assign, "$g_leave_encounter", 1)]],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_bandits_awaiting_ransom_b2_03.py:L1-L10 ] anyone|plyr::bandits_awaiting_ransom_b2->bandits_awaiting_ransom_fight [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {no ransom. release her, or draw steel.}
+[anyone|plyr, "bandits_awaiting_ransom_b2", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 1),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+],
+   "No ransom. Release her, or draw steel.", "bandits_awaiting_ransom_fight", []],
+# [ src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_bandits_awaiting_ransom_fight.py:L1-L14 ] anyone::bandits_awaiting_ransom_fight->close_window [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {you won't be demanding anything when you're dead.}
+[anyone, "bandits_awaiting_ransom_fight", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 1),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+],
+   "You won't be demanding anything when you're dead.", "close_window", [
+     (assign, "$g_enemy_party", "$g_encountered_party"),
+     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+     (encounter_attack),
+   ]],
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_bandits_awaiting_ransom_start_03.py:L1-L9 ] party_tpl|pt_bandits_awaiting_ransom::start->bandits_awaiting_remeet [check_quest_active|neg|check_quest_concluded|quest_slot_ge] {we are done. take your road before we change our minds.}
+[party_tpl|pt_bandits_awaiting_ransom, "start", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_ge, "qst_kidnapped_girl", slot_quest_current_state, 2),
+   (party_is_active, "$g_encountered_party"),
+],
+   "We are done. Take your road before we change our minds.", "bandits_awaiting_remeet", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_bandits_awaiting_remeet.py:L1-L4 ] anyone|plyr::bandits_awaiting_remeet->close_window [no_conditions] {i have seen enough of this bargain. i am leaving.}
 [anyone|plyr, "bandits_awaiting_remeet", [],
    "I have seen enough of this bargain. I am leaving.", "close_window", [(assign, "$g_leave_encounter", 1)]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_bandits_awaiting_remeet_02.py:L1-L4 ] anyone|plyr::bandits_awaiting_remeet->bandits_awaiting_remeet_2 [no_conditions] {we have one more business. you'll give the money back to me.}
 [anyone|plyr, "bandits_awaiting_remeet", [],
    "We have one more business. You'll give the money back to me.", "bandits_awaiting_remeet_2", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandits_awaiting_remeet_2.py:L1-L4 ] anyone::bandits_awaiting_remeet_2->close_window [no_conditions] {oh, that business! of course. let us get down to it.}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandits_awaiting_remeet_2.py:L1-L8 ] anyone::bandits_awaiting_remeet_2->close_window [no_conditions] {oh, that business! of course. let us get down to it.}
 [anyone, "bandits_awaiting_remeet_2", [],
-   "Oh, that business! Of course. Let us get down to it.", "close_window", [(encounter_attack)]],
-# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_kidnapped_girl_start.py:L1-L4 ] party_tpl|pt_kidnapped_girl::start->kidnapped_girl_encounter_1 [no_conditions] {oh {var}. thank you so much for rescuing me. will you take me to}
-[party_tpl|pt_kidnapped_girl, "start", [],
-   "Oh {sir/madam}. Thank you so much for rescuing me. Will you take me to my family now?", "kidnapped_girl_encounter_1", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_kidnapped_girl_encounter_1.py:L1-L3 ] anyone|plyr::kidnapped_girl_encounter_1->kidnapped_girl_join [no_conditions] {yes. come with me. i'll take you home.}
-[anyone|plyr, "kidnapped_girl_encounter_1", [], "Yes. Come with me. I'll take you home.", "kidnapped_girl_join", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_kidnapped_girl_join.py:L1-L9 ] anyone::kidnapped_girl_join->close_window [neg|party_can_join] {please do not leave me on this road. if there is no room, make r}
-[anyone, "kidnapped_girl_join", [(neg|party_can_join)], "Please do not leave me on this road. If there is no room, make room, or tell me where to hide until you return.", "close_window",
+   "Oh, that business! Of course. Let us get down to it.", "close_window", [
+     (assign, "$g_enemy_party", "$g_encountered_party"),
+     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+     (encounter_attack),
+   ]],
+# [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_kidnapped_girl_start.py:L1-L10 ] party_tpl|pt_kidnapped_girl::start->kidnapped_girl_encounter_1 [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {thank you for getting me away from them. can we go home now?}
+[party_tpl|pt_kidnapped_girl, "start", [
+    (check_quest_active, "qst_kidnapped_girl"),
+    (neg|check_quest_concluded, "qst_kidnapped_girl"),
+    (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 2),
+    (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+    (party_is_active, "$g_encountered_party"),
+    ],
+   "Thank you for getting me away from them. Can we go home now?", "kidnapped_girl_encounter_1", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_kidnapped_girl_encounter_1.py:L1-L10 ] anyone|plyr::kidnapped_girl_encounter_1->kidnapped_girl_join [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {yes. stay close and i will get you home.}
+[anyone|plyr, "kidnapped_girl_encounter_1", [
+    (check_quest_active, "qst_kidnapped_girl"),
+    (neg|check_quest_concluded, "qst_kidnapped_girl"),
+    (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 2),
+    (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+    (party_is_active, "$g_encountered_party"),
+    ],
+   "Yes. Stay close and I will get you home.", "kidnapped_girl_join", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_kidnapped_girl_join.py:L1-L10 ] anyone::kidnapped_girl_join->close_window [neg|party_can_join] {there is no room for me. please do not leave me in the open.}
+[anyone, "kidnapped_girl_join", [(neg|party_can_join)], "There is no room for me. Please do not leave me in the open.",
+   "close_window",
    [(party_set_icon, "$g_encountered_party", "icon_woman"),
     (party_set_ai_behavior, "$g_encountered_party", ai_bhvr_hold),
     (party_set_flags, "$g_encountered_party", pf_default_behavior, 0),
     (quest_set_slot, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
     (quest_set_slot, "qst_kidnapped_girl", slot_quest_current_state, 2),
     (assign, "$g_leave_encounter", 1)]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_kidnapped_girl_join_02.py:L1-L6 ] anyone::kidnapped_girl_join->close_window [no_conditions] {oh, thank you so much!}
-[anyone, "kidnapped_girl_join", [], "Oh, thank you so much!",
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_kidnapped_girl_join_02.py:L1-L7 ] anyone::kidnapped_girl_join->close_window [no_conditions] {thank you. i will stay close.}
+[anyone, "kidnapped_girl_join", [], "Thank you. I will stay close.",
    "close_window", [(party_join),
+                   (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_free_captives, 1),
                    (quest_set_slot, "qst_kidnapped_girl", slot_quest_current_state, 3),
                    (assign, "$g_leave_encounter", 1)]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_kidnapped_girl_encounter_1_02.py:L1-L3 ] anyone|plyr::kidnapped_girl_encounter_1->kidnapped_girl_wait [no_conditions] {wait here a while longer. i'll come back for you.}
-[anyone|plyr, "kidnapped_girl_encounter_1", [], "Wait here a while longer. I'll come back for you.", "kidnapped_girl_wait", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_kidnapped_girl_wait.py:L1-L9 ] anyone::kidnapped_girl_wait->close_window [no_conditions] {oh, please {var}, do not leave me here all alone!}
-[anyone, "kidnapped_girl_wait", [], "Oh, please {sir/madam}, do not leave me here all alone!", "close_window",
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_kidnapped_girl_encounter_1_02.py:L1-L10 ] anyone|plyr::kidnapped_girl_encounter_1->kidnapped_girl_wait [check_quest_active|neg|check_quest_concluded|quest_slot_eq] {hide here. i will come back for you.}
+[anyone|plyr, "kidnapped_girl_encounter_1", [
+    (check_quest_active, "qst_kidnapped_girl"),
+    (neg|check_quest_concluded, "qst_kidnapped_girl"),
+    (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 2),
+    (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+    (party_is_active, "$g_encountered_party"),
+    ],
+   "Hide here. I will come back for you.", "kidnapped_girl_wait", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_kidnapped_girl_wait.py:L1-L9 ] anyone::kidnapped_girl_wait->close_window [no_conditions] {please come back soon. i will stay out of sight.}
+[anyone, "kidnapped_girl_wait", [], "Please come back soon. I will stay out of sight.", "close_window",
    [(party_set_icon, "$g_encountered_party", "icon_woman"),
     (party_set_ai_behavior, "$g_encountered_party", ai_bhvr_hold),
     (party_set_flags, "$g_encountered_party", pf_default_behavior, 0),
@@ -27972,40 +30763,59 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 # [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_lost_kidnapped_girl_2.py:L1-L4 ] anyone|plyr::lost_kidnapped_girl_2->lost_kidnapped_girl_3 [no_conditions] {i'm sorry. i could do nothing about it.}
 [anyone|plyr, "lost_kidnapped_girl_2", [],
    "I'm sorry. I could do nothing about it.", "lost_kidnapped_girl_3", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_lost_kidnapped_girl_3.py:L1-L16 ] anyone::lost_kidnapped_girl_3->lost_kidnapped_girl_4 [no_conditions] {you let me down {var}. i had trusted you. i will let people know}
-[anyone, "lost_kidnapped_girl_3", [],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_lost_kidnapped_girl_3.py:L1-L28 ] anyone::lost_kidnapped_girl_3->lost_kidnapped_girl_4 [check_quest_active|neg|check_quest_concluded|quest_get_slot] {you let me down {var}. i had trusted you. i will let people know}
+[anyone, "lost_kidnapped_girl_3", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_get_slot, reg8, "qst_kidnapped_girl", slot_quest_target_amount),
+],
    "You let me down {playername}. I had trusted you.\
  I will let people know of your incompetence at this task.\
  Also, I want back that {reg8} denars I gave you as the ransom fee.", "lost_kidnapped_girl_4",
-   [(quest_get_slot, reg8, "qst_kidnapped_girl", slot_quest_target_amount),
-    (try_for_parties, ":cur_party"),
-      (party_count_members_of_type, ":num_members", ":cur_party", "trp_kidnapped_girl"),
-      (gt, ":num_members", 0),
-      (party_remove_members, ":cur_party", "trp_kidnapped_girl", 1),
-      (party_remove_prisoners, ":cur_party", "trp_kidnapped_girl", 1),
+   [(quest_get_slot, "$g_sod_lost_rescue_repayment_amount", "qst_kidnapped_girl", slot_quest_target_amount),
+    (try_begin),
+      (check_quest_active, "qst_kidnapped_girl"),
+      (neg|check_quest_concluded, "qst_kidnapped_girl"),
+      (try_for_parties, ":cur_party"),
+        (party_count_members_of_type, ":num_members", ":cur_party", "trp_kidnapped_girl"),
+        (party_count_prisoners_of_type, ":num_prisoners", ":cur_party", "trp_kidnapped_girl"),
+        (val_add, ":num_members", ":num_prisoners"),
+        (gt, ":num_members", 0),
+        (party_remove_members, ":cur_party", "trp_kidnapped_girl", 1),
+        (party_remove_prisoners, ":cur_party", "trp_kidnapped_girl", 1),
+      (try_end),
+      (call_script, "script_end_quest", "qst_kidnapped_girl"),
+      (call_script, "script_change_troop_renown", "trp_player", -5),
+    (else_try),
+      (display_message, "@The lost kidnapped-girl report could not be completed because the quest is no longer active.", 0xFF6666),
     (try_end),
-    (call_script, "script_end_quest", "qst_kidnapped_girl"),
-    (call_script, "script_change_troop_renown", "trp_player", -5),
     ]],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_lost_kidnapped_girl_4.py:L1-L9 ] anyone|plyr::lost_kidnapped_girl_4->merchant_quest_about_job_5a [store_troop_gold|quest_get_slot|ge] {of course. here you are...}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_lost_kidnapped_girl_4.py:L1-L10 ] anyone|plyr::lost_kidnapped_girl_4->merchant_quest_about_job_5a [store_troop_gold|gt|ge] {of course. here you are.}
 [anyone|plyr, "lost_kidnapped_girl_4", [(store_troop_gold, ":gold", "trp_player"),
-                                          (quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
-                                          (ge, ":gold", ":quest_target_amount"),
+                                          (gt, "$g_sod_lost_rescue_repayment_amount", 0),
+                                          (ge, ":gold", "$g_sod_lost_rescue_repayment_amount"),
                                           ],
-   "Of course. Here you are...", "merchant_quest_about_job_5a", [(quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
-                                                                (call_script, "script_sod_player_charge_gold", ":quest_target_amount"), (play_sound, "snd_money_paid"),
+   "Of course. Here you are.", "merchant_quest_about_job_5a", [(call_script, "script_sod_player_charge_gold", "$g_sod_lost_rescue_repayment_amount"),
+                                                                (play_sound, "snd_money_paid"),
+                                                                (assign, "$g_sod_lost_rescue_repayment_amount", 0),
                                                                 ]],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_merchant_quest_about_job_5a.py:L1-L4 ] anyone::merchant_quest_about_job_5a->close_window [no_conditions] {at least you have the decency to return the money.}
 [anyone, "merchant_quest_about_job_5a", [],
    "At least you have the decency to return the money.", "close_window", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_lost_kidnapped_girl_4_02.py:L1-L4 ] anyone|plyr::lost_kidnapped_girl_4->merchant_quest_about_job_5b [no_conditions] {that price is beyond my purse right now.}
-[anyone|plyr, "lost_kidnapped_girl_4", [],
-   "That price is beyond my purse right now.", "merchant_quest_about_job_5b", []],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_merchant_quest_about_job_5b_02.py:L1-L7 ] anyone::merchant_quest_about_job_5b->close_window [no_conditions] {do you expect me to believe that? you are going to pay that rans}
-[anyone, "merchant_quest_about_job_5b", [],
-   "Do you expect me to believe that? You are going to pay that ransom fee back! Go and bring the money now!",
-   "close_window", [(quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
-                   (val_add, "$debt_to_merchants_guild", ":quest_target_amount"),
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_lost_kidnapped_girl_4_02.py:L1-L7 ] anyone|plyr::lost_kidnapped_girl_4->lost_kidnapped_girl_debt [store_troop_gold|gt|lt] {that price is beyond my purse right now.}
+[anyone|plyr, "lost_kidnapped_girl_4", [(store_troop_gold, ":gold", "trp_player"),
+                                          (gt, "$g_sod_lost_rescue_repayment_amount", 0),
+                                          (lt, ":gold", "$g_sod_lost_rescue_repayment_amount"),
+                                          ],
+   "That price is beyond my purse right now.", "lost_kidnapped_girl_debt", []],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_lost_kidnapped_girl_4_03.py:L1-L4 ] anyone|plyr::lost_kidnapped_girl_4->close_window [le] {there is nothing more to settle here.}
+[anyone|plyr, "lost_kidnapped_girl_4", [(le, "$g_sod_lost_rescue_repayment_amount", 0)],
+   "There is nothing more to settle here.", "close_window", []],
+# [ src/dialogs/ZC01_centers_and_economy/anyone_merchant_quest_about_job_5b_02.py:L1-L7 ] anyone::lost_kidnapped_girl_debt->close_window [gt] {then it stays on your account. bring the money when you have it.}
+[anyone, "lost_kidnapped_girl_debt", [(gt, "$g_sod_lost_rescue_repayment_amount", 0)],
+   "Then it stays on your account. Bring the money when you have it.",
+   "close_window", [(val_add, "$debt_to_merchants_guild", "$g_sod_lost_rescue_repayment_amount"),
+                   (assign, "$g_sod_lost_rescue_repayment_amount", 0),
                    ]],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_merchant_quest_requested_06.py:L1-L16 ] anyone::merchant_quest_requested->merchant_quest_persuade_peace_1 [eq|quest_get_slot|quest_get_slot] {this war between {var} and {var} has brought our town to the ver}
 [anyone, "merchant_quest_requested", [(eq, "$random_merchant_quest_no", "qst_persuade_lords_to_make_peace"),
@@ -28528,6 +31338,30 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
    [
      ],
    "Have you seen any enemies around here recently?", "village_elder_ask_enemies", []],
+# [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_village_elder_public_health.py:L1-L16 ] anyone|plyr::village_elder_talk->village_elder_public_health [is_between|call_script|assign] {what does the village need to keep sickness away?}
+[anyone|plyr, "village_elder_talk",
+  [
+    (is_between, "$current_town", villages_begin, villages_end),
+    (call_script, "script_sod_center_public_health_compute_causes", "$current_town"),
+    (assign, ":risk", reg4),
+    (party_get_slot, ":health", "$current_town", slot_center_sod_local_health),
+    (party_get_slot, ":outbreak", "$current_town", slot_center_health_outbreak_type),
+    (party_get_slot, ":aftermath", "$current_town", slot_center_health_recent_aftermath),
+    (this_or_next|gt, ":outbreak", sod_outbreak_none),
+    (this_or_next|gt, ":aftermath", 0),
+    (this_or_next|ge, ":risk", 50),
+    (lt, ":health", 40),
+  ],
+   "What does the village need to keep sickness away?", "village_elder_public_health", []],
+# [ src/dialogs/ZC01_centers_and_economy/anyone_village_elder_public_health.py:L1-L10 ] anyone::village_elder_public_health->village_elder_talk [call_script|str_store_string_reg|call_script] {{var} if you mean to help us, then this is the plain need: {var}}
+[anyone, "village_elder_public_health",
+  [
+    (call_script, "script_sod_center_public_health_brief_to_s0", "$current_town"),
+    (str_store_string_reg, s12, s0),
+    (call_script, "script_sod_center_public_health_recommendation_to_s0", "$current_town"),
+    (str_store_string_reg, s13, s0),
+  ],
+   "{s12} If you mean to help us, then this is the plain need: {s13}", "village_elder_talk", []],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_village_elder_ask_enemies.py:L1-L19 ] anyone::village_elder_ask_enemies->village_elder_pretalk [assign|party_get_slot|store_relation] {i am sorry, {var}. we have neither seen nor heard of any war par}
 [anyone, "village_elder_ask_enemies",
    [
@@ -28553,7 +31387,7 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
    [
      (assign, "$temp", 0),
      ]],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_village_elder_tell_enemies.py:L1-L43 ] anyone::village_elder_tell_enemies->village_elder_tell_enemies [assign|assign|try_for_range] {{var} {var}}
+# [ src/dialogs/ZC01_centers_and_economy/anyone_village_elder_tell_enemies.py:L1-L48 ] anyone::village_elder_tell_enemies->village_elder_tell_enemies [assign|assign|try_for_range] {{var} {var}}
 [anyone, "village_elder_tell_enemies",
    [
      (assign, ":target_hero_index", "$temp"),
@@ -28587,7 +31421,12 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
        (call_script, "script_round_value", ":num_wounded_troops"),
        (assign, reg1, reg0),
        (call_script, "script_round_value", ":num_troops"),
-       (str_store_string, s2, "@He currently commands {reg0} men{reg1?, of which around {reg1} are wounded:}."),
+       (try_begin),
+         (gt, reg1, 0),
+         (str_store_string, s2, "@He currently commands {reg0} men, of which around {reg1} are wounded."),
+       (else_try),
+         (str_store_string, s2, "@He currently commands {reg0} men."),
+       (try_end),
      (try_end),
      (eq, ":end_cond", 0),
      ],
@@ -28794,13 +31633,14 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
       (ge, ":gold", 10),
     ],
    "No. Keep them with their families for now.", "village_elder_pretalk", []],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_village_elder_moneyless.py:L1-L3 ] anyone::village_elder_moneyless->village_elder_pretalk [no_conditions] {ah, how embarrasing for you! perhaps i should buy you a meal?!^h}
-[anyone, "village_elder_moneyless", [], "Ah, how embarrasing for you!  Perhaps I should buy you a meal?!^Ha, ha, me, buy you... a mighty {lord/lady}... a meal!^Oh how I amuse myself!", "village_elder_pretalk", []],
+# [ src/dialogs/ZC01_centers_and_economy/anyone_village_elder_moneyless.py:L1-L3 ] anyone::village_elder_moneyless->village_elder_pretalk [no_conditions] {your purse is too light for this, {var}. come back when coin can}
+[anyone, "village_elder_moneyless", [], "Your purse is too light for this, {sir/madam}. Come back when coin can answer the request.", "village_elder_pretalk", []],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_village_elder_active_mission_1.py:L1-L3 ] anyone::village_elder_active_mission_1->village_elder_active_mission_2 [no_conditions] {yes {var}, have you made any progress on it?}
 [anyone, "village_elder_active_mission_1", [], "Yes {sir/madam}, have you made any progress on it?", "village_elder_active_mission_2", []],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_village_elder_active_mission_2.py:L1-L12 ] anyone|plyr::village_elder_active_mission_2->village_elder_deliver_grain_thank [store_partner_quest|eq|quest_get_slot] {indeed. i brought you {var} packs of wheat.}
+# [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_village_elder_active_mission_2.py:L1-L13 ] anyone|plyr::village_elder_active_mission_2->village_elder_deliver_grain_thank [store_partner_quest|eq|check_quest_active] {indeed. i brought you {var} packs of wheat.}
 [anyone|plyr, "village_elder_active_mission_2", [(store_partner_quest, ":elder_quest"),
                                                  (eq, ":elder_quest", "qst_deliver_grain"),
+                                                 (check_quest_active, "qst_deliver_grain"),
                                                  (quest_get_slot, ":quest_target_amount", "qst_deliver_grain", slot_quest_target_amount),
                                                  (call_script, "script_get_troop_item_amount", "trp_player", "itm_grain"),
                                                  (assign, ":cur_amount", reg0),
@@ -28809,19 +31649,26 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
                                                  ],
    "Indeed. I brought you {reg5} packs of wheat.", "village_elder_deliver_grain_thank",
    []],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_village_elder_deliver_grain_thank.py:L1-L15 ] anyone::village_elder_deliver_grain_thank->village_elder_deliver_grain_thank_2 [str_store_party_name] {my good {var}. you have saved us from hunger and desperation. we}
+# [ src/dialogs/ZC01_centers_and_economy/anyone_village_elder_deliver_grain_thank.py:L1-L22 ] anyone::village_elder_deliver_grain_thank->village_elder_deliver_grain_thank_2 [str_store_party_name] {my good {var}. you have saved us from hunger and desperation. we}
 [anyone, "village_elder_deliver_grain_thank", [(str_store_party_name, s13, "$current_town")],
    "My good {lord/lady}. You have saved us from hunger and desperation. We cannot thank you enough, but you'll always be in our prayers.\
  The village of {s13} will not forget what you have done for us.", "village_elder_deliver_grain_thank_2",
    [(quest_get_slot, ":quest_target_amount", "qst_deliver_grain", slot_quest_target_amount),
-    (troop_remove_items, "trp_player", "itm_grain", ":quest_target_amount"),
-    (add_xp_as_reward, 400),
-    (call_script, "script_change_center_prosperity", "$current_town", 4),
-    (call_script, "script_change_player_relation_with_center", "$current_town", 5),
-    (call_script, "script_end_quest", "qst_deliver_grain"),
+    (call_script, "script_get_troop_item_amount", "trp_player", "itm_grain"),
+    (try_begin),
+      (check_quest_active, "qst_deliver_grain"),
+      (ge, reg0, ":quest_target_amount"),
+      (troop_remove_items, "trp_player", "itm_grain", ":quest_target_amount"),
+      (add_xp_as_reward, 400),
+      (call_script, "script_change_center_prosperity", "$current_town", 4),
+      (call_script, "script_change_player_relation_with_center", "$current_town", 5),
+      (call_script, "script_end_quest", "qst_deliver_grain"),
 #Troop commentaries begin
-    (call_script, "script_add_log_entry", logent_helped_peasants, "trp_player",  "$current_town", -1, -1),
+      (call_script, "script_add_log_entry", logent_helped_peasants, "trp_player",  "$current_town", -1, -1),
 #Troop commentaries end
+    (else_try),
+      (display_message, "@The village grain delivery could not be completed because the required grain was no longer in your inventory.", 0xFF6666),
+    (try_end),
    ]],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_village_elder_deliver_grain_thank_2.py:L1-L4 ] anyone::village_elder_deliver_grain_thank_2->village_elder_talk [no_conditions] {my good {var}, please, is there anything i can do for you?}
 [anyone, "village_elder_deliver_grain_thank_2", [],
@@ -29019,15 +31866,36 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
    [(call_script, "script_get_closest_center", "p_main_party"),
     (assign, ":center_no", reg0),
     (call_script, "script_sod_trade_network_describe_center_identity_to_s23", ":center_no")]],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_goods_merchant_trade_rumor.py:L1-L18 ] anyone::goods_merchant_trade_rumor->goods_merchant_talk [assign|try_begin|is_between] {ask the caravans, captain. they know which roads are bleeding. f}
+# [ src/dialogs/ZC01_centers_and_economy/anyone_goods_merchant_trade_rumor.py:L1-L39 ] anyone::goods_merchant_trade_rumor->goods_merchant_talk [assign|assign|assign] {ask the caravans, captain. they know which roads are bleeding. f}
 [anyone, "goods_merchant_trade_rumor", [
     (assign, ":health", 50),
+    (assign, ":outbreak", sod_outbreak_none),
+    (assign, ":severity", 0),
+    (assign, ":quarantine", 0),
+    (assign, ":aftermath", 0),
     (try_begin),
       (is_between, "$current_town", centers_begin, centers_end),
+      (call_script, "script_sod_center_public_health_compute_causes", "$current_town"),
       (party_get_slot, ":health", "$current_town", slot_center_sod_local_health),
+      (party_get_slot, ":outbreak", "$current_town", slot_center_health_outbreak_type),
+      (party_get_slot, ":severity", "$current_town", slot_center_health_outbreak_severity),
+      (party_get_slot, ":quarantine", "$current_town", slot_center_health_quarantine),
+      (party_get_slot, ":aftermath", "$current_town", slot_center_health_recent_aftermath),
     (try_end),
     (str_store_string, s24, "@The market is open enough, for now."),
     (try_begin),
+      (gt, ":outbreak", sod_outbreak_none),
+      (call_script, "script_sod_center_public_health_outbreak_name_to_s0", ":outbreak"),
+      (str_store_string_reg, s25, s0),
+      (assign, reg25, ":severity"),
+      (str_store_string, s24, "@The market is still open, but {s25} has made every ledger cautious. Severity is spoken of as {reg25}; clean cargo and medicine sell before luxuries."),
+    (else_try),
+      (gt, ":quarantine", 0),
+      (str_store_string, s24, "@Quarantine has slowed the gates. Relief cargo can still pass, but every wagon spends coin on guards, clean handling, and delay."),
+    (else_try),
+      (gt, ":aftermath", 0),
+      (str_store_string, s24, "@The worst sickness has passed, but merchants remember closed doors. Burial coin, clean streets, and steady grain will bring confidence back."),
+    (else_try),
       (lt, ":health", 15),
       (str_store_string, s24, "@Mind the sickness talk. Some merchants are keeping distance from stores they would have touched last season."),
     (else_try),
@@ -29126,9 +31994,9 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
    "Hello. You seem to be new here. Care to share your name?", "arena_master_intro_1", []],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_arena_master_intro_1.py:L1-L3 ] anyone|plyr::arena_master_intro_1->arena_master_intro_2 [no_conditions] {i am {var}.}
 [anyone|plyr, "arena_master_intro_1", [], "I am {playername}.", "arena_master_intro_2", []],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_arena_master_intro_2.py:L1-L4 ] anyone::arena_master_intro_2->arena_master_pre_talk [store_encountered_party|2|str_store_party_name] {well met {var}. i am the master of the tournaments here at {var}}
-[anyone, "arena_master_intro_2", [(store_encountered_party, reg(2)), (str_store_party_name, 1, reg(2))],
-   "Well met {playername}. I am the master of the tournaments here at {s1}. Talk to me if you want to join the fights.", "arena_master_pre_talk", []],
+# [ src/dialogs/ZC01_centers_and_economy/anyone_arena_master_intro_2.py:L1-L4 ] anyone::arena_master_intro_2->arena_master_pre_talk [store_encountered_party|2|str_store_party_name] {well met, {var}. i am the master of the tournaments here at {var}
+[anyone, "arena_master_intro_2", [(store_encountered_party, reg(2)), (str_store_party_name, s68, reg(2))],
+   "Well met, {playername}. I am the master of the tournaments here at {s68}. Talk to me if you want to join the fights.", "arena_master_pre_talk", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_auto_proceed_start_03.py:L1-L8 ] anyone|auto_proceed::start->arena_master_fight_result [store_conversation_troop|1|is_between] {.}
 [anyone|auto_proceed , "start", [(store_conversation_troop, reg(1)), (is_between, reg(1), arena_masters_begin, arena_masters_end),
                      (eq, "$last_training_fight_town", "$current_town"),
@@ -29223,9 +32091,8 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 [anyone|plyr, "arena_master_talk", [(eq, "$arena_tournaments_asked", 0)], "Will there be a tournament in nearby towns soon?", "arena_master_ask_tournaments", [(assign, "$arena_tournaments_asked", 1)]],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_arena_master_talk_03.py:L1-L3 ] anyone|plyr::arena_master_talk->close_window [no_conditions] {enough sand and shouting for now.}
 [anyone|plyr, "arena_master_talk", [], "Enough sand and shouting for now.", "close_window", []],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_arena_master_ask_tournaments.py:L1-L27 ] anyone::arena_master_ask_tournaments->arena_master_talk [no_conditions] {{var} going to be held at {var}.}}
-[anyone, "arena_master_ask_tournaments", [], "{reg2?There won't be any tournaments any time soon.:{reg1?Tournaments are:A tournament is} going to be held at {s15}.}", "arena_master_talk",
-   [
+# [ src/dialogs/ZC01_centers_and_economy/anyone_arena_master_ask_tournaments.py:L1-L36 ] anyone::arena_master_ask_tournaments->arena_master_talk [assign|try_for_range_backwards|party_slot_ge] {{var}}
+[anyone, "arena_master_ask_tournaments", [
        (assign, ":num_tournaments", 0),
        (try_for_range_backwards, ":town_no", towns_begin, towns_end),
          (party_slot_ge, ":town_no", slot_town_has_tournament, 1),
@@ -29248,7 +32115,17 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
          (assign, reg2, 0),
          (store_sub, reg1, ":num_tournaments", 1),
        (try_end),
-   ]],
+       (try_begin),
+         (eq, ":num_tournaments", 0),
+         (str_store_string, s68, "@There won't be any tournaments any time soon."),
+       (else_try),
+         (eq, ":num_tournaments", 1),
+         (str_store_string, s68, "@A tournament is going to be held at {s15}."),
+       (else_try),
+         (str_store_string, s68, "@Tournaments are going to be held at {s15}."),
+       (try_end),
+   ], "{s68}", "arena_master_talk",
+   []],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_arena_master_melee_pretalk.py:L1-L3 ] anyone::arena_master_melee_pretalk->arena_master_melee_talk [no_conditions] {there will be a fight here soon. you can go and jump in if you l}
 [anyone, "arena_master_melee_pretalk", [], "There will be a fight here soon. You can go and jump in if you like.", "arena_master_melee_talk", []],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_arena_master_melee_talk.py:L1-L15 ] anyone|plyr::arena_master_melee_talk->close_window [no_conditions] {good. that's what i am going to do.}
@@ -29295,8 +32172,12 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 [anyone, "bandit_introduce", [
       (call_script, "script_sod_store_hostile_greeting"),
     ], "{s5}", "bandit_talk", [(play_sound, "snd_encounter_bandits")]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_bandit_talk.py:L1-L3 ] anyone|plyr::bandit_talk->close_window [no_conditions] {you want my purse? earn it through my shield.}
-[anyone|plyr, "bandit_talk", [], "You want my purse? Earn it through my shield.", "close_window", [[encounter_attack]]],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_bandit_talk.py:L1-L7 ] anyone|plyr::bandit_talk->close_window [no_conditions] {you want my purse? earn it through my shield.}
+[anyone|plyr, "bandit_talk", [], "You want my purse? Earn it through my shield.", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack),
+]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_bandit_talk_02.py:L1-L3 ] anyone|plyr::bandit_talk->bandit_barter [no_conditions] {name the price for quiet road, and do not mistake payment for fe}
 [anyone|plyr, "bandit_talk", [], "Name the price for quiet road, and do not mistake payment for fear.", "bandit_barter", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_bandit_talk_intimidate.py:L1-L8 ] anyone|plyr::bandit_talk->bandit_intimidate [party_get_num_companions|party_get_num_companions|store_mul] {look at my banner, then count your boots. you still have time to}
@@ -29442,11 +32323,11 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (party_get_template_id, ":template", "$g_encountered_party"),
     (eq, ":template", "pt_mountain_bandits"),
 ], "Name your mountain toll, then.", "mountain_bandit_toll", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_mountain_bandit_toll.py:L1-L6 ] anyone::mountain_bandit_toll->bandit_barter_2 [no_conditions] {roads through stone are ours. pay {var} denars, or the rocks get}
-[anyone, "mountain_bandit_toll", [], "Roads through stone are ours. Pay {reg5} denars, or the rocks get red.", "bandit_barter_2", [
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_mountain_bandit_toll.py:L1-L6 ] anyone::mountain_bandit_toll->bandit_barter_2 [assign|assign] {roads through stone are ours. pay {var} denars, or the rocks get}
+[anyone, "mountain_bandit_toll", [
     (assign, "$bandit_tribute", 220),
     (assign, reg5, "$bandit_tribute"),
-]],
+], "Roads through stone are ours. Pay {reg5} denars, or the rocks get red.", "bandit_barter_2", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_bandit_talk_forest_traps.py:L1-L6 ] anyone|plyr::bandit_talk->forest_bandit_traps [party_get_template_id|eq] {if you wanted an ambush, you should have stayed hidden.}
 [anyone|plyr, "bandit_talk", [
     (party_get_template_id, ":template", "$g_encountered_party"),
@@ -29513,11 +32394,13 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (call_script, "script_sod_note_hostile_reputation", 3),
     (call_script, "script_sod_resolve_hostile_party_noncombat", "$g_encountered_party"),
 ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_job_board_surrender_refuse.py:L1-L8 ] anyone::sod_job_board_surrender_demand->close_window [call_script|eq] {the board can write what it likes. {var} still has to pay in blo}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_job_board_surrender_refuse.py:L1-L10 ] anyone::sod_job_board_surrender_demand->close_window [call_script|eq] {the board can write what it likes. {var} still has to pay in blo}
 [anyone, "sod_job_board_surrender_demand", [
     (call_script, "script_sod_hostile_encounter_profile", "$g_encountered_party"),
     (eq, reg22, 1),
 ], "The board can write what it likes. {s10} still has to pay in blood before it buys our fear.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
 ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_battle_reason_stated_job_board_timing.py:L1-L6 ] anyone|plyr::battle_reason_stated->sod_job_board_timing_line [call_script|eq] {the contract still has time. why stay where hunters can find you}
@@ -29685,8 +32568,10 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (call_script, "script_sod_note_hostile_reputation", 5),
     (call_script, "script_sod_resolve_hostile_party_noncombat", "$g_encountered_party"),
 ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_hostile_faction_bluff_fail.py:L1-L5 ] anyone::hostile_faction_bluff->close_window [no_conditions] {a banner is cloth. men bleed through cloth all the same.}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_hostile_faction_bluff_fail.py:L1-L7 ] anyone::hostile_faction_bluff->close_window [no_conditions] {a banner is cloth. men bleed through cloth all the same.}
 [anyone, "hostile_faction_bluff", [], "A banner is cloth. Men bleed through cloth all the same.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
 ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_bandit_talk_redirect_bribe.py:L1-L14 ] anyone|plyr::bandit_talk->hostile_redirect_bribe_offer [store_troop_gold|ge|party_get_template_id] {six hundred denars if you find another banner to trouble.}
@@ -29714,7 +32599,7 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (call_script, "script_sod_redirect_hostile_party_for_bribe", "$g_encountered_party"),
     (call_script, "script_sod_note_hostile_reputation", 7),
 ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_grudge_revenge_shakedown.py:L1-L11 ] anyone::bandit_talk->close_window [this_or_next|ge|eq|ge] {you are the one making outlaws pay tolls. no bargain today. the }
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_grudge_revenge_shakedown.py:L1-L13 ] anyone::bandit_talk->close_window [this_or_next|ge|eq|ge] {you are the one making outlaws pay tolls. no bargain today. the }
 [anyone, "bandit_talk", [
     (this_or_next|ge, "$g_sod_hostile_shakedown_count", 3),
     (eq, "$g_sod_nemesis_reason", sod_nemesis_reason_robbed),
@@ -29722,9 +32607,11 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (store_random_in_range, ":revenge_roll", 0, 100),
     (lt, ":revenge_roll", 35),
 ], "You are the one making outlaws pay tolls. No bargain today. The roads need to see you bleed.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
 ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_grudge_revenge_intimidation.py:L1-L11 ] anyone::bandit_talk->close_window [this_or_next|ge|eq|ge] {too many crews ran from your banner. we kill you, or we never he}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_grudge_revenge_intimidation.py:L1-L13 ] anyone::bandit_talk->close_window [this_or_next|ge|eq|ge] {too many crews ran from your banner. we kill you, or we never he}
 [anyone, "bandit_talk", [
     (this_or_next|ge, "$g_sod_hostile_intimidation_count", 5),
     (eq, "$g_sod_nemesis_reason", sod_nemesis_reason_humiliation),
@@ -29732,14 +32619,18 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (store_random_in_range, ":revenge_roll", 0, 100),
     (lt, ":revenge_roll", 35),
 ], "Too many crews ran from your banner. We kill you, or we never hear the end of it.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
 ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_barter_reputation_block.py:L1-L9 ] anyone::bandit_barter->close_window [this_or_next|ge|eq|ge] {no. we heard about you turning robbers into taxpayers. this time}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_barter_reputation_block.py:L1-L11 ] anyone::bandit_barter->close_window [this_or_next|ge|eq|ge] {no. we heard about you turning robbers into taxpayers. this time}
 [anyone, "bandit_barter", [
     (this_or_next|ge, "$g_sod_hostile_shakedown_count", 3),
     (eq, "$g_sod_nemesis_reason", sod_nemesis_reason_robbed),
     (ge, "$g_sod_nemesis_state", sod_nemesis_state_watching),
 ], "No. We heard about you turning robbers into taxpayers. This time, steel speaks before silver.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
 ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_barter.py:L1-L11 ] anyone::bandit_barter->bandit_barter_2 [store_relation|ge|store_mul] {silver without blood is the only bargain the road ever keeps. pa}
@@ -29758,12 +32649,20 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_bandit_barter_2_02.py:L1-L4 ] anyone|plyr::bandit_barter_2->bandit_barter_3b [no_conditions] {i don't have that much money with me}
 [anyone|plyr, "bandit_barter_2", [],
    "I don't have that much money with me", "bandit_barter_3b", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_barter_3b.py:L1-L4 ] anyone::bandit_barter_3b->close_window [no_conditions] {then your purse was wiser than your mouth. take {var}, lads, and}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_barter_3b.py:L1-L8 ] anyone::bandit_barter_3b->close_window [no_conditions] {then your purse was wiser than your mouth. take {var}, lads, and}
 [anyone, "bandit_barter_3b", [],
-   "Then your purse was wiser than your mouth. Take {him/her}, lads, and leave the boots for later.", "close_window", [[encounter_attack]]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_barter_02.py:L1-L4 ] anyone::bandit_barter->close_window [no_conditions] {hey, i've heard of you! you slaughter us freebooters like dogs, }
+   "Then your purse was wiser than your mouth. Take {him/her}, lads, and leave the boots for later.", "close_window", [
+     (assign, "$g_enemy_party", "$g_encountered_party"),
+     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+     (encounter_attack),
+   ]],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_barter_02.py:L1-L8 ] anyone::bandit_barter->close_window [no_conditions] {hey, i've heard of you! you slaughter us freebooters like dogs, }
 [anyone, "bandit_barter", [],
-   "Hey, I've heard of you! You slaughter us freebooters like dogs, and now you expect us to let you go for a few stinking coins? Forget it. You gave us no quarter, and you'll get none from us.", "close_window", []],
+   "Hey, I've heard of you! You slaughter us freebooters like dogs, and now you expect us to let you go for a few stinking coins? Forget it. You gave us no quarter, and you'll get none from us.", "close_window", [
+     (assign, "$g_enemy_party", "$g_encountered_party"),
+     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+     (encounter_attack),
+   ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_barter_3a.py:L1-L11 ] anyone::bandit_barter_3a->close_window [no_conditions] {there. coin weighs less than blood. ride on before someone chang}
 [anyone, "bandit_barter_3a", [], "There. Coin weighs less than blood. Ride on before someone changes the price.", "close_window", [
     (store_current_hours, ":protected_until"),
@@ -29786,7 +32685,7 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (party_ignore_player, "$g_encountered_party", 0),
     (party_set_slot, "$g_encountered_party", slot_party_ignore_player_until, 0),
     ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_attack.py:L1-L10 ] anyone::bandit_attack->close_window [store_random_in_range|str_store_string|str_store_string] {{var}}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_attack.py:L1-L14 ] anyone::bandit_attack->close_window [store_random_in_range|str_store_string|str_store_string] {{var}}
 [anyone, "bandit_attack", [
       (store_random_in_range, ":rand", 11, 15),
         (str_store_string, s11, "@Another fool come to throw {him/her}self on my weapon, eh? Fine, let's fight!"),
@@ -29794,14 +32693,22 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
         (str_store_string, s13, "@That was a mistake. Now I'm going to have to make your death long and painful."),
         (str_store_string, s14, "@Brave words. Let's see you back them up with deeds, cur!"),
         (str_store_string_reg, s5, ":rand"),
-      ], "{s5}", "close_window", []],
+      ], "{s5}", "close_window", [
+        (assign, "$g_enemy_party", "$g_encountered_party"),
+        (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+        (encounter_attack),
+      ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_bandit_meet_02.py:L1-L3 ] anyone|plyr::bandit_meet->bandit_recruit [no_conditions] {i spare your life if you join me}
 [anyone|plyr, "bandit_meet", [], "I spare your life if you join me", "bandit_recruit", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_recruit.py:L1-L6 ] anyone::bandit_recruit->close_window [store_random_in_range|gt] {a {var} like you, who could do no misdeeds? heck no. we will sli}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_recruit.py:L1-L10 ] anyone::bandit_recruit->close_window [store_random_in_range|gt] {a {var} like you, who could do no misdeeds? heck no. we will sli}
 [anyone, "bandit_recruit", [
       (store_random_in_range, ":rand", -5, 16),
       (gt, "$player_honor", ":rand"),
-   ], "A {boy/girl} like you, who could do no misdeeds? Heck no. We will slit your throat for your impudence!", "close_window", [encounter_attack]],
+   ], "A {boy/girl} like you, who could do no misdeeds? Heck no. We will slit your throat for your impudence!", "close_window", [
+     (assign, "$g_enemy_party", "$g_encountered_party"),
+     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+     (encounter_attack),
+   ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_bandit_recruit_02.py:L1-L8 ] anyone::bandit_recruit->bandit_recruit_2 [store_encountered_party|store_party_size|store_mul] {for {var} denars, we might pretend your banner was our idea all }
 [anyone, "bandit_recruit", [
       (store_encountered_party, ":party"),
@@ -29845,16 +32752,21 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 [anyone, "boar_clan_introduce", [
     (call_script, "script_sod_boar_clan_prepare_encounter"),
 	], "{s5}", "boar_clan_talk", [(play_sound, "snd_encounter_bandits")]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_boar_clan_talk.py:L1-L5 ] anyone|plyr::boar_clan_talk->close_window [neq] {i warn you, it will be the other way around! ah, why do i even b}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_boar_clan_talk.py:L1-L8 ] anyone|plyr::boar_clan_talk->close_window [neq] {i warn you, it will be the other way around! ah, why do i even b}
 [anyone|plyr, "boar_clan_talk", [
   (neq, "$g_sod_demand_money", "$g_encountered_party"),
-  ], "I warn you, it will be the other way around! Ah, why do I even bother?! Let's get to the action!", "close_window", [(encounter_attack)]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_boar_clan_talk_02.py:L1-L8 ] anyone|plyr::boar_clan_talk->close_window [eq] {your honor is just robbery dressed in clan colors. i'll break th}
+  ], "I warn you, it will be the other way around! Ah, why do I even bother?! Let's get to the action!", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)]],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_boar_clan_talk_02.py:L1-L10 ] anyone|plyr::boar_clan_talk->close_window [eq] {your honor is just robbery dressed in clan colors. i'll break th}
 [anyone|plyr, "boar_clan_talk", [
   (eq, "$g_sod_demand_money", "$g_encountered_party"),
   ], "Your honor is just robbery dressed in clan colors. I'll break this toll myself.", "close_window", [
   (assign, "$g_sod_boar_toll_amount", 0),
   (call_script, "script_sod_boar_clan_apply_player_action", sod_boar_action_defy_toll, 10),
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
   (encounter_attack)]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_boar_clan_talk_03.py:L1-L17 ] anyone|plyr::boar_clan_talk->boar_clan_barter [eq|assign|val_clamp] {fine. take your road tribute.}
 [anyone|plyr, "boar_clan_talk", [
@@ -29905,9 +32817,12 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (call_script, "script_sod_boar_clan_apply_player_action", sod_boar_action_defy_toll, 15),
     (call_script, "script_change_player_relation_with_faction", "fac_sod_merc_guild7", -15),
     ]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_boar_clan_attack.py:L1-L4 ] anyone::boar_clan_attack->close_window [no_conditions] {wha- you rotten son of a...! we'll teach you some manners! come }
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_boar_clan_attack.py:L1-L7 ] anyone::boar_clan_attack->close_window [no_conditions] {wha- you rotten son of a...! we'll teach you some manners! come }
 [anyone, "boar_clan_attack", [
-      ], "Wha- you rotten son of a...! We'll teach you some manners! Come 'ere, lads! I found food for the dogs!", "close_window", [(encounter_attack)]],
+      ], "Wha- you rotten son of a...! We'll teach you some manners! Come 'ere, lads! I found food for the dogs!", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_boar_clan_meet_02.py:L1-L3 ] anyone|plyr::boar_clan_meet->boar_clan_recruit [no_conditions] {my road needs hard fighters. name your price.}
 [anyone|plyr, "boar_clan_meet", [], "My road needs hard fighters. Name your price.", "boar_clan_recruit", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_boar_clan_meet_04.py:L1-L3 ] anyone|plyr::boar_clan_meet->boar_clan_frontier_about [no_conditions] {what are boar clan bands doing on these roads?}
@@ -29939,7 +32854,7 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
    [
       (call_script, "script_sod_boar_clan_prepare_hire_offer"),
    ], "Now that's the spirit I like! Come 'ere lads, this is an offer to consider...! We are ready to follow you for, let's say {reg5} denars.", "boar_clan_recruit_3", [],],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_boar_clan_recruit_3.py:L1-L19 ] anyone|plyr::boar_clan_recruit_3->close_window [assign|val_clamp|assign] {here, {var} denars.}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_boar_clan_recruit_3.py:L1-L22 ] anyone|plyr::boar_clan_recruit_3->close_window [assign|val_clamp|assign] {here, {var} denars.}
 [anyone|plyr, "boar_clan_recruit_3", [
 	(assign, reg5, "$g_sod_boar_hire_cost"),
 	(val_clamp, reg5, 1, 20001),
@@ -29951,11 +32866,14 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 	(val_clamp, reg5, 1, 20001),
 	(assign, "$g_sod_boar_hire_cost", reg5),
 	(assign, ":hire_cost", reg5),
-	(call_script, "script_sod_player_charge_gold", reg5),
 	(call_script, "script_sod_boar_clan_convert_to_player_mercenaries"),
-	(call_script, "script_sod_boar_clan_apply_player_action", sod_boar_action_hire_band, ":hire_cost"),
+	(try_begin),
+	  (eq, reg0, 1),
+	  (call_script, "script_sod_player_charge_gold", ":hire_cost"),
+	  (call_script, "script_sod_boar_clan_apply_player_action", sod_boar_action_hire_band, ":hire_cost"),
+	  (call_script, "script_change_player_relation_with_faction", "fac_sod_merc_guild7", 5),
+	(try_end),
 	(assign, "$g_sod_boar_hire_cost", 0),
-	(call_script, "script_change_player_relation_with_faction", "fac_sod_merc_guild7", 5),
 	]],
 # [ src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_boar_clan_recruit_3_02.py:L1-L6 ] anyone|plyr::boar_clan_recruit_3->close_window [no_conditions] {not this time.}
 [anyone|plyr, "boar_clan_recruit_3", [], "Not this time.", "close_window", [
@@ -29980,9 +32898,13 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
    "troublesome_bandits_intro_2", [(quest_get_slot, ":quest_giver_center", "qst_troublesome_bandits", slot_quest_giver_center),
                                    (str_store_party_name, s1, ":quest_giver_center")
                                    ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_troublesome_bandits_intro_2.py:L1-L4 ] anyone::troublesome_bandits_intro_2->close_window [no_conditions] {a bounty hunter! ... i hate bounty hunters! kill {var}! kill {va}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_troublesome_bandits_intro_2.py:L1-L8 ] anyone::troublesome_bandits_intro_2->close_window [no_conditions] {a bounty hunter! ... i hate bounty hunters! kill {var}! kill {va}
 [anyone, "troublesome_bandits_intro_2", [],
-   "A bounty hunter! ... I hate bounty hunters! Kill {him/her}! Kill {him/her} now!", "close_window", [(encounter_attack)]],
+   "A bounty hunter! ... I hate bounty hunters! Kill {him/her}! Kill {him/her} now!", "close_window", [
+     (assign, "$g_enemy_party", "$g_encountered_party"),
+     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+     (encounter_attack),
+   ]],
 # [ src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_rescued_prisoners_start.py:L1-L3 ] party_tpl|pt_rescued_prisoners::start->disbanded_troop_ask [eq] {do you want us to follow you?}
 [party_tpl|pt_rescued_prisoners, "start", [(eq, "$talk_context", tc_party_encounter)], "Do you want us to follow you?", "disbanded_troop_ask", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_disbanded_troop_ask.py:L1-L3 ] anyone|plyr::disbanded_troop_ask->disbanded_troop_join [no_conditions] {yes. let us ride together.}
@@ -29997,8 +32919,11 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 [party_tpl|pt_enemy, "start", [(eq, "$talk_context", tc_party_encounter)], "You will not capture me again. Not this time.", "enemy_talk_1", []],
 # [ src/dialogs/ZZ99_misc_dialogs/party_tpl_pt_enemy_plyr_enemy_talk_1.py:L1-L3 ] party_tpl|pt_enemy|plyr::enemy_talk_1->enemy_talk_2 [no_conditions] {you don't have a chance against me. give up.}
 [party_tpl|pt_enemy|plyr, "enemy_talk_1", [], "You don't have a chance against me. Give up.", "enemy_talk_2", []],
-# [ src/dialogs/ZZ99_misc_dialogs/party_tpl_pt_enemy_enemy_talk_2.py:L1-L3 ] party_tpl|pt_enemy::enemy_talk_2->close_window [no_conditions] {i will give up when you are dead!}
-[party_tpl|pt_enemy, "enemy_talk_2", [], "I will give up when you are dead!", "close_window", [[encounter_attack]]],
+# [ src/dialogs/ZZ99_misc_dialogs/party_tpl_pt_enemy_enemy_talk_2.py:L1-L6 ] party_tpl|pt_enemy::enemy_talk_2->close_window [no_conditions] {i will give up when you are dead!}
+[party_tpl|pt_enemy, "enemy_talk_2", [], "I will give up when you are dead!", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_sell_prisoner_outlaws.py:L1-L5 ] anyone::sell_prisoner_outlaws->sell_prisoner_outlaws [0|1|0] {hmmm. 10 denars for each looter makes {var} denars for all {var}}
 [anyone, "sell_prisoner_outlaws", [[store_troop_kind_count, 0, "trp_looter"], [ge, reg(0), 1], [assign, reg(1), reg(0)], [val_mul, reg(1), 10], [val_mul, reg(2), reg(0)], [val_mul, reg(2), 10]],
    "Hmmm. 10 denars for each looter makes {reg1} denars for all {reg0} of them.", "sell_prisoner_outlaws",
@@ -30276,7 +33201,7 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 # [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_town_dweller_talk_04.py:L1-L4 ] anyone|plyr::town_dweller_talk->town_dweller_ask_info [party_slot_eq|eq] {what should an outsider know about this town?}
 [anyone|plyr, "town_dweller_talk", [(party_slot_eq, "$current_town", slot_party_type, spt_town),
                                      (eq, "$info_inquired", 0)], "What should an outsider know about this town?", "town_dweller_ask_info", [(assign, "$info_inquired", 1)]],
-# [ src/dialogs/ZC01_centers_and_economy/anyone_town_dweller_ask_info.py:L1-L44 ] anyone::town_dweller_ask_info->close_window [str_store_party_name|assign|try_begin] {{var} {var}}
+# [ src/dialogs/ZC01_centers_and_economy/anyone_town_dweller_ask_info.py:L1-L60 ] anyone::town_dweller_ask_info->close_window [str_store_party_name|assign|try_begin] {{var} {var} {var}}
 [anyone, "town_dweller_ask_info", [(str_store_party_name, s5, "$current_town"),
                                     (assign, reg4, 0),
                                     (try_begin),
@@ -30315,10 +33240,26 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
                                       (try_end),
                                       (val_add, reg20, 1),
                                     (try_end),
-                                    (str_store_string, s11, "@{reg20?We mostly produce {s5} here:We don't produce much here these days}.\
- If you would like to learn more, you can speak with our {reg4?guildmaster:village elder}. He is nearby, right over there."),
+                                    (try_begin),
+                                      (gt, reg20, 0),
+                                      (try_begin),
+                                        (eq, reg4, 1),
+                                        (str_store_string, s11, "@We mostly produce {s5} here. If you would like to learn more, you can speak with our guildmaster. He is nearby, right over there."),
+                                      (else_try),
+                                        (str_store_string, s11, "@We mostly produce {s5} here. If you would like to learn more, you can speak with our village elder. He is nearby, right over there."),
+                                      (try_end),
+                                    (else_try),
+                                      (try_begin),
+                                        (eq, reg4, 1),
+                                        (str_store_string, s11, "@We don't produce much here these days. If you would like to learn more, you can speak with our guildmaster. He is nearby, right over there."),
+                                      (else_try),
+                                        (str_store_string, s11, "@We don't produce much here these days. If you would like to learn more, you can speak with our village elder. He is nearby, right over there."),
+                                      (try_end),
+                                    (try_end),
+                                    (call_script, "script_sod_center_public_health_brief_to_s0", "$current_town"),
+                                    (str_store_string_reg, s12, s0),
                                     ],
-   "{s10} {s11}", "close_window", []],
+   "{s10} {s11} {s12}", "close_window", []],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_plyr_town_dweller_talk_05.py:L1-L4 ] anyone|plyr::town_dweller_talk->town_dweller_ask_situation [party_slot_eq|eq] {how is life here?}
 [anyone|plyr, "town_dweller_talk", [(party_slot_eq, "$current_town", slot_party_type, spt_village),
                                      (eq, "$welfare_inquired", 0)], "How is life here?", "town_dweller_ask_situation", [(assign, "$welfare_inquired", 1)]],
@@ -30366,6 +33307,27 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
                                          (eq, ":walker_type", walkert_needs_money_helped)
                                          ],
    "Thank you for your kindness {sir/madam}. With your help our lives will be better. I will pray for you everyday.", "close_window", []],
+# [ src/dialogs/ZC01_centers_and_economy/anyone_town_dweller_ask_situation_public_health.py:L1-L22 ] anyone::town_dweller_ask_situation->town_dweller_talk [is_between|call_script|assign] {{var} folk say this plainly now: {var}}
+[anyone, "town_dweller_ask_situation",
+  [
+    (is_between, "$current_town", centers_begin, centers_end),
+    (call_script, "script_sod_center_public_health_compute_causes", "$current_town"),
+    (assign, ":risk", reg4),
+    (party_get_slot, ":health", "$current_town", slot_center_sod_local_health),
+    (party_get_slot, ":outbreak", "$current_town", slot_center_health_outbreak_type),
+    (party_get_slot, ":quarantine", "$current_town", slot_center_health_quarantine),
+    (party_get_slot, ":aftermath", "$current_town", slot_center_health_recent_aftermath),
+    (this_or_next|gt, ":outbreak", sod_outbreak_none),
+    (this_or_next|gt, ":quarantine", 0),
+    (this_or_next|gt, ":aftermath", 0),
+    (this_or_next|ge, ":risk", 60),
+    (lt, ":health", 25),
+    (call_script, "script_sod_center_public_health_brief_to_s0", "$current_town"),
+    (str_store_string_reg, s12, s0),
+    (call_script, "script_sod_center_public_health_recommendation_to_s0", "$current_town"),
+    (str_store_string_reg, s13, s0),
+  ],
+   "{s12} Folk say this plainly now: {s13}", "town_dweller_talk", []],
 # [ src/dialogs/ZC01_centers_and_economy/anyone_town_dweller_ask_situation_04.py:L1-L18 ] anyone::town_dweller_ask_situation->town_dweller_talk [party_slot_eq|neg|party_slot_ge] {times are cruel here, {var}. the seed goes into thin soil, the r}
 [anyone, "town_dweller_ask_situation",
   [
@@ -30714,13 +33676,13 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc11"),
     (display_message, "@A camp ledger witness brings Katrin's shortage into the company fires. The Last Coin in Camp now needs a supply watch, not another accounts entry.", 0x99CCFF),
   ]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_regular_member_retinue_command.py:L1-L33 ] anyone|plyr::regular_member_talk->regular_member_retinue_command [is_between|main_party_has_troop] {let's speak about the troops under your command.}
-[anyone|plyr, "regular_member_talk",
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_regular_member_retinue_command.py:L1-L33 ] anyone|plyr::member_talk->regular_member_retinue_command [is_between|main_party_has_troop] {let's review your retinue.}
+[anyone|plyr, "member_talk",
     [
       (is_between, "$g_talk_troop", companions_begin, companions_end),
       (main_party_has_troop, "$g_talk_troop"),
     ],
-    "Let's speak about the troops under your command.", "regular_member_retinue_command",
+    "Let's review your retinue.", "regular_member_retinue_command",
     [
       (assign, "$g_sod_retinue_focus_companion", "$g_talk_troop"),
       (assign, "$g_sod_retinue_selected_troop", 0),
@@ -30736,14 +33698,14 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     []],
 
 [anyone|plyr, "regular_member_retinue_command_choice", [],
-    "Show me your command rolls.", "close_window",
+    "Open your command rolls.", "close_window",
     [
       (jump_to_menu, "mnu_companion_retinue_manage"),
       (finish_mission),
     ]],
 
 [anyone|plyr, "regular_member_retinue_command_choice", [],
-    "That is enough for now.", "regular_member_talk",
+    "That is enough for now.", "member_talk",
     [
     ]],
 # [ src/dialogs/ZZ99_misc_dialogs/trp_diego_companion_plyr_talk_about.py:L1-L4 ] trp_diego_companion|plyr::diego_companion_talk->diego_companion_about [no_conditions] {what do you need from this company, diego?}
@@ -30871,9 +33833,9 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 [anyone|plyr, "regular_member_talk", [], "Show me your skills and service record.", "do_regular_member_view_char", [change_screen_view_character]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_do_regular_member_view_char.py:L1-L3 ] anyone::do_regular_member_view_char->regular_member_talk [no_conditions] {you have seen the measure of me. what else do you require?}
 [anyone, "do_regular_member_view_char", [], "You have seen the measure of me. What else do you require?", "regular_member_talk", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_regular_member_talk_02.py:L1-L3 ] anyone|plyr::regular_member_talk->mate_check_leadership [no_conditions] {become party}
-[anyone|plyr, "regular_member_talk", [], "Become Party", "mate_check_leadership", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_mate_check_leadership.py:L1-L46 ] anyone::mate_check_leadership->close_window [call_script|store_skill_level|troop_get_slot] {very well.}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_regular_member_talk_02.py:L1-L3 ] anyone|plyr::regular_member_talk->mate_check_leadership [no_conditions] {take command of a patrol.}
+[anyone|plyr, "regular_member_talk", [], "Take command of a patrol.", "mate_check_leadership", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_mate_check_leadership.py:L1-L46 ] anyone::mate_check_leadership->close_window [call_script|store_skill_level|troop_get_slot] {i will take a patrol and keep close to the company.}
 [anyone, "mate_check_leadership",
     [
       (call_script, "script_check_for_patrols"),
@@ -30887,7 +33849,7 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
       (try_end),
       (gt, ":max_amount", reg0),
     ],
-    "Very well.", "close_window",
+    "I will take a patrol and keep close to the company.", "close_window",
     [
       (store_conversation_troop, ":soldier"),
       (spawn_around_party, "p_main_party", "pt_player_patrol"),
@@ -30914,12 +33876,12 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
         (party_set_ai_behavior, ":new_patrol", ai_bhvr_escort_party),
         (party_set_ai_object, ":new_patrol", "p_main_party"),
       (else_try),
-        (display_message, "@The patrol could not be placed on the map. Your companion remains with you.", 0xFFCC66),
+        (display_message, "@The patrol could not be placed on the map. Your soldier remains with you.", 0xFFCC66),
       (try_end),
     ]
   ],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_mate_check_leadership_02.py:L1-L3 ] anyone::mate_check_leadership->member_chat [no_conditions] {i am sorry, your leadership needs more experience in order to le}
-[anyone, "mate_check_leadership", [], "I am sorry, your leadership needs more experience in order to lead additional parties.", "member_chat", []],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_mate_check_leadership_02.py:L1-L3 ] anyone::mate_check_leadership->member_chat [no_conditions] {not yet, captain. your command is stretched too thin to field an}
+[anyone, "mate_check_leadership", [], "Not yet, captain. Your command is stretched too thin to field another patrol.", "member_chat", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_regular_member_talk_03.py:L1-L3 ] anyone|plyr::regular_member_talk->close_window [no_conditions] {nothing. keep moving.}
 [anyone|plyr, "regular_member_talk", [], "Nothing. Keep moving.", "close_window", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_151.py:L1-L13 ] anyone::start->mate_chat_talk [gt|party_is_active|store_faction_of_party] {{var}}
@@ -31044,12 +34006,12 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_mate_chat_contract_cancel2_02.py:L1-L4 ] anyone|plyr::mate_chat_contract_cancel2->mate_chat_pre_talk [no_conditions] {nevermind.}
 [anyone|plyr,"mate_chat_contract_cancel2", [
 	], "Nevermind.", "mate_chat_pre_talk",[]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_mate_chat_pre_talk.py:L1-L7 ] anyone::mate_chat_pre_talk->mate_chat_talk [call_script] {{var} the detachment is waiting on your word. what else should b}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_mate_chat_pre_talk.py:L1-L7 ] anyone::mate_chat_pre_talk->mate_chat_talk [call_script] {{var} what else should be settled?}
 [anyone, "mate_chat_pre_talk",
     [
       (call_script, "script_sod_external_party_describe_status_to_s20", "$g_encountered_party"),
     ],
-    "{s20} The detachment is waiting on your word. What else should be settled?", "mate_chat_talk", []],
+    "{s20} What else should be settled?", "mate_chat_talk", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_mate_chat_talk_05.py:L1-L5 ] anyone|plyr::mate_chat_talk->mate_chat_rejoin [neg|party_slot_eq] {bring the detachment back into my company.}
 [anyone|plyr, "mate_chat_talk", [
   (neg|party_slot_eq, "$g_encountered_party", slot_party_type, spt_player_mercenaries),
@@ -31075,82 +34037,86 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 [anyone|plyr, "party_encounter_hostile_attacker", [
                     ],
    "Don't attack! We surrender.", "close_window", [(assign, "$g_player_surrenders", 1)]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_party_encounter_hostile_attacker_02.py:L1-L5 ] anyone|plyr::party_encounter_hostile_attacker->close_window [no_conditions] {we will fight you to the end!}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_party_encounter_hostile_attacker_02.py:L1-L9 ] anyone|plyr::party_encounter_hostile_attacker->close_window [no_conditions] {we will fight you to the end!}
 [anyone|plyr, "party_encounter_hostile_attacker", [
                     ],
-   "We will fight you to the end!", "close_window", []],
+   "We will fight you to the end!", "close_window", [
+     (assign, "$g_enemy_party", "$g_encountered_party"),
+     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+     (encounter_attack),
+   ]],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_153.py:L1-L39 ] anyone::start->party_encounter_hostile_defender [eq|neg|encountered_party_is_attacker|try_begin] {{var}}
 [anyone, "start", [(eq, "$talk_context", tc_party_encounter),
                     (neg|encountered_party_is_attacker),
 				
 	(try_begin),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
-		(str_store_string, s0, "@So we meet again, {playername}. Is it that time already?"),
+		(str_store_string, s68, "@So we meet again, {playername}. Is it that time already?"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_respectful),
-		(str_store_string, s0, "@Your path has crossed mine once again. Is our grand struggle about to take place?"),
+		(str_store_string, s68, "@Your path has crossed mine once again. Is our grand struggle about to take place?"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
-		(str_store_string, s0, "@Yet again, the burden of your presence is mine to bear. Why have you sought me out?"),
+		(str_store_string, s68, "@Yet again, the burden of your presence is mine to bear. Why have you sought me out?"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_capitalist),
-		(str_store_string, s0, "@Ach, not you again, peon! I am starting to grow sick of your persistence."),
+		(str_store_string, s68, "@Ach, not you again, peon! I am starting to grow sick of your persistence."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_racist),
-		(str_store_string, s0, "@You again. Why do you insist on crossing my path? I have no patience left for dull company."),
+		(str_store_string, s68, "@You again. Why do you insist on crossing my path? I have no patience left for dull company."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_crusader),
-		(str_store_string, s0, "@Ah, finally you dare to approach me again. Did courage find you at last?"),
+		(str_store_string, s68, "@Ah, finally you dare to approach me again. Did courage find you at last?"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_liberator),
-		(str_store_string, s0, "@Destiny has drawn our paths together one more time. Is this the hour of our reckoning?"),
+		(str_store_string, s68, "@Destiny has drawn our paths together one more time. Is this the hour of our reckoning?"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_nihilistic),
-		(str_store_string, s0, "@It seems the road still insists on meaning. Speak, then."),
+		(str_store_string, s68, "@It seems the road still insists on meaning. Speak, then."),
 	(else_try),
 		is_legate,
-		(str_store_string, s0, "@Our paths cross yet again. What do you intend to do?"),
+		(str_store_string, s68, "@Our paths cross yet again. What do you intend to do?"),
 	(else_try),
-		(str_store_string, s0, "@You have my attention. Make the reason plain."),
+		(str_store_string, s68, "@You have my attention. Make the reason plain."),
 	(try_end),
 					
                     ],
-   "{s0}", "party_encounter_hostile_defender",
+   "{s68}", "party_encounter_hostile_defender",
    []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_party_encounter_hostile_defender_13.py:L1-L37 ] anyone|plyr::party_encounter_hostile_defender->party_encounter_hostile_ultimatum_surrender [try_begin|troop_slot_eq|str_store_string] {{var}}
 [anyone|plyr, "party_encounter_hostile_defender", [
 	(try_begin),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_sane),
-		(str_store_string, s0, "@{s29}, I say this once, and only once: put down your arms and I'll let you live !"),
+		(str_store_string, s68, "@{s29}, I say this once, and only once: put down your arms and I'll let you live !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_respectful),
-		(str_store_string, s0, "@Our battle begins here and now ! We'll scatter your army to the winds !"),
+		(str_store_string, s68, "@Our battle begins here and now ! We'll scatter your army to the winds !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_imperialist),
-		(str_store_string, s0, "@You have no claim to the smallest patch of earth in Calradia ! Withdraw or die !"),
+		(str_store_string, s68, "@You have no claim to the smallest patch of earth in Calradia ! Withdraw or die !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_capitalist),
-		(str_store_string, s0, "@{s29}, your exploitation of the poor people of Calradia comes to an end today !"),
+		(str_store_string, s68, "@{s29}, your exploitation of the poor people of Calradia comes to an end today !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_racist),
-		(str_store_string, s0, "@The time for battle is now ! Like a tide we shall rise up and wash away your filth !"),
+		(str_store_string, s68, "@The time for battle is now ! Like a tide we shall rise up and wash away your filth !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_crusader),
-		(str_store_string, s0, "@{s29}, your crimes against my people call for vengeance ! Fight me !"),
+		(str_store_string, s68, "@{s29}, your crimes against my people call for vengeance ! Fight me !"),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_liberator),
-		(str_store_string, s0, "@Brace yourself for battle. This time actions must speak louder than words."),
+		(str_store_string, s68, "@Brace yourself for battle. This time actions must speak louder than words."),
 	(else_try),
 		(troop_slot_eq, "$g_talk_troop", slot_troop_centurion_personality, slcp_nihilistic),
-		(str_store_string, s0, "@{s29}, your ravaging comes to an end today ! Surrender or perish !"),
+		(str_store_string, s68, "@{s29}, your ravaging comes to an end today ! Surrender or perish !"),
 	(else_try),
 		is_legate,
-		(str_store_string, s0, "@Gaius, the time has come for war ! Like an unstoppable force, we shall sweep over you !"),
+		(str_store_string, s68, "@Gaius, the time has come for war ! Like an unstoppable force, we shall sweep over you !"),
 	(else_try),
-		(str_store_string, s0, "@Surrender or die!"),
+		(str_store_string, s68, "@Surrender or die!"),
 	(try_end),
   ],
-   "{s0}", "party_encounter_hostile_ultimatum_surrender", [
+   "{s68}", "party_encounter_hostile_ultimatum_surrender", [
 
        ]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_party_encounter_hostile_ultimatum_surrender_02.py:L1-L6 ] anyone::party_encounter_hostile_ultimatum_surrender->close_window [no_conditions] {{var}}
@@ -31168,8 +34134,12 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (party_is_active, "$g_encountered_party"),
     (gt, "$encountered_party_hostile", 0),
   ], "Surrender or die. Make your choice", "battle_reason_stated", []],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_battle_reason_stated.py:L1-L3 ] anyone|plyr::battle_reason_stated->close_window [no_conditions] {i am not afraid of you. i will fight.}
-[anyone|plyr, "battle_reason_stated", [], "I am not afraid of you. I will fight.", "close_window", [[encounter_attack]]],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_battle_reason_stated.py:L1-L7 ] anyone|plyr::battle_reason_stated->close_window [no_conditions] {i am not afraid of you. i will fight.}
+[anyone|plyr, "battle_reason_stated", [], "I am not afraid of you. I will fight.", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack),
+]],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_battle_reason_companion_nizar_charge.py:L1-L11 ] anyone|plyr::plyr_battle_reason->battle_reason_companion_nizar_charge [main_party_has_troop|eq|eq] {nizar, mark the charge before the horns answer for us.}
 [anyone|plyr, "plyr_battle_reason",
   [
@@ -31193,23 +34163,27 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc13"),
     (display_message, "@Nizar sketches the impossible charge before battle. The Impossible Charge now has a field setup.", 0x99CCFF),
   ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_battle_reason_quest_memory.py:L1-L10 ] anyone::plyr_battle_reason->plyr_battle_reason [store_conversation_troop|troop_slot_ge|call_script] {{var}}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_battle_reason_quest_memory.py:L1-L12 ] anyone::plyr_battle_reason->plyr_battle_reason [store_conversation_troop|troop_slot_ge|call_script] {{var}}
 [anyone, "plyr_battle_reason", [
         (store_conversation_troop, "$g_talk_troop"),
         (troop_slot_ge, "$g_talk_troop", slot_troop_sod_quest_memory_quest, 1),
         (call_script, "script_sod_quest_dialogue_read_memory", "$g_talk_troop"),
-    ],
-    "{s1}", "plyr_battle_reason", [
+        (str_store_string_reg, s68, s4),
         (call_script, "script_sod_quest_dialogue_describe_battle_line", "$g_talk_troop"),
-    ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_quest_flavor_battle_reason.py:L1-L9 ] anyone::plyr_battle_reason->plyr_battle_reason [store_conversation_troop|call_script] {{var}}
+        (str_store_string_reg, s97, s68),
+        (str_store_string, s68, "@{s97}^{s4}"),
+    ],
+    "{s68}", "plyr_battle_reason", []],
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_quest_flavor_battle_reason.py:L1-L11 ] anyone::plyr_battle_reason->plyr_battle_reason [store_conversation_troop|call_script|str_store_string_reg] {{var}}
 [anyone, "plyr_battle_reason", [
         (store_conversation_troop, "$g_talk_troop"),
         (call_script, "script_sod_quest_dialogue_read_memory", "$g_talk_troop"),
-    ],
-    "{s1}", "plyr_battle_reason", [
+        (str_store_string_reg, s68, s4),
         (call_script, "script_sod_quest_dialogue_describe_battle_line", "$g_talk_troop"),
-    ]],
+        (str_store_string_reg, s97, s68),
+        (str_store_string, s68, "@{s97}^{s4}"),
+    ],
+    "{s68}", "plyr_battle_reason", []],
 # [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_deserter_talk_duel_challenge.py:L1-L6 ] anyone|plyr::deserter_talk->hostile_leader_duel_challenge [party_get_num_companions|ge] {send your captain forward. one blade can spare the rest of your }
 [anyone|plyr, "deserter_talk", [
     (party_get_num_companions, ":enemy_size", "$g_encountered_party"),
@@ -31240,8 +34214,10 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
     (call_script, "script_sod_note_hostile_reputation", 5),
     (call_script, "script_sod_resolve_hostile_party_noncombat", "$g_encountered_party"),
 ]],
-# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_hostile_leader_duel_accepts.py:L1-L5 ] anyone::hostile_leader_duel_challenge->close_window [no_conditions] {a pretty speech. but i brought a company, not a theatre. kill th}
+# [ src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_hostile_leader_duel_accepts.py:L1-L7 ] anyone::hostile_leader_duel_challenge->close_window [no_conditions] {a pretty speech. but i brought a company, not a theatre. kill th}
 [anyone, "hostile_leader_duel_challenge", [], "A pretty speech. But I brought a company, not a theatre. Kill them all!", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
 ]],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_start_155.py:L1-L3 ] anyone::start->free [no_conditions] {hello. what can i do for you?}
@@ -31256,8 +34232,11 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 [anyone|plyr, "end", [], "[Done]", "close_window", []],
 # [ src/dialogs/ZA01_startup_and_dispatch/anyone_plyr_start.py:L1-L3 ] anyone|plyr::start->threaten_1 [no_conditions] {drop your weapons and surrender if you want to live}
 [anyone|plyr, "start", [], "Drop your weapons and surrender if you want to live", "threaten_1", []],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_threaten_1.py:L1-L3 ] anyone::threaten_1->end [no_conditions] {we will fight you first}
-[anyone, "threaten_1", [], "We will fight you first", "end", [[encounter_attack]]],
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_threaten_1.py:L1-L6 ] anyone::threaten_1->end [no_conditions] {we will fight you first}
+[anyone, "threaten_1", [], "We will fight you first", "end", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)]],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_free_02.py:L1-L3 ] anyone|plyr::free->close_window [no_conditions] {good-bye.}
 [anyone|plyr, "free", [[in_meta_mission]], " Good-bye.", "close_window", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_free_03.py:L1-L3 ] anyone|plyr::free->close_window [no_conditions] {[leave]}
@@ -31266,7 +34245,7 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 [trp_sod_marshal|plyr, "marshal_talk", [ (eq, "$g_sod_deactivate_ai", 0)], "I want to change my nation strategy.", "marshal_ai", []],
 # [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_plyr_marshal_talk_10.py:L1-L3 ] trp_sod_marshal|plyr::marshal_talk->close_window [no_conditions] {that is enough for the field table.}
 [trp_sod_marshal|plyr, "marshal_talk", [], "That is enough for the field table.", "close_window", []],
-# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_ai.py:L1-L45 ] trp_sod_marshal::marshal_ai->marshal_ai_choice [call_script|try_begin|eq] {{var}}
+# [ src/dialogs/ZA02_sod_court_and_strategy/trp_sod_marshal_marshal_ai.py:L1-L52 ] trp_sod_marshal::marshal_ai->marshal_ai_choice [call_script|try_begin|eq] {{var}}
 [trp_sod_marshal, "marshal_ai", 
 	  [ (call_script, "script_get_number_of_factions_at_war_with_faction", "fac_player_supporters_faction"),
 		(try_begin),
@@ -31287,26 +34266,33 @@ As the townspeople of {s19}, know that we'll be good on our word, and we are rea
 	    (faction_slot_ge, "fac_player_supporters_faction", slot_faction_offensive_objective, 1),
 		(faction_get_slot, ":offensive_objective", "fac_player_supporters_faction", slot_faction_offensive_objective),
         (str_store_party_name, s17, ":offensive_objective"),  	
-        (str_store_string, s18, "@{s18} Our current offensive objective is {s17}."),  
+        (str_store_string_reg, s97, s18),
+        (str_store_string, s18, "@{s97} Our current offensive objective is {s17}."),  
         (else_try),
-		(str_store_string, s18, "@{s18} Our offensive objective is not chosen for the moment."),  		
+		(str_store_string_reg, s97, s18),
+		(str_store_string, s18, "@{s97} Our offensive objective is not chosen for the moment."),  		
 		(try_end),
 		(faction_get_slot, ":ambition", "fac_player_supporters_faction", slot_faction_ambition),
 		(assign, reg5, ":ambition"),
 	      (try_begin),
-          (lt, ":ambition", -3),
-		  (str_store_string, s18, "@{s18} Our lords priority is defense (ambition: {reg5})."),
+		  (lt, ":ambition", -3),
+		  (str_store_string_reg, s97, s18),
+		  (str_store_string, s18, "@{s97} Our lords strongly favor defense (ambition: {reg5})."),
 		  (else_try),
 		  (lt, ":ambition", -1),
-		  (str_store_string, s18, "@{s18} Our lords should give priority to defense (ambition: {reg5})."),
+		  (str_store_string_reg, s97, s18),
+		  (str_store_string, s18, "@{s97} Our lords lean toward defense (ambition: {reg5})."),
 		  (else_try),
 		  (lt, ":ambition", 2),
-		  (str_store_string, s18, "@{s18} Our lords may give priority to attack or defense (ambition: {reg5})."),
+		  (str_store_string_reg, s97, s18),
+		  (str_store_string, s18, "@{s97} Our lords are divided between attack and defense (ambition: {reg5})."),
 		  (else_try),
 		  (lt, ":ambition", 4),
-		  (str_store_string, s18, "@{s18} Our lords should give priority to attack (ambition: {reg5})."),
+		  (str_store_string_reg, s97, s18),
+		  (str_store_string, s18, "@{s97} Our lords lean toward attack (ambition: {reg5})."),
 		  (else_try),
-          (str_store_string, s18, "@{s18} Our lords priority is attack (ambition: {reg5})."),
+          (str_store_string_reg, s97, s18),
+          (str_store_string, s18, "@{s97} Our lords strongly favor attack (ambition: {reg5})."),
 		  (try_end),		  
 	  ], 
 	  "{s18}", "marshal_ai_choice", []],

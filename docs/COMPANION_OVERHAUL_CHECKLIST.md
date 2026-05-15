@@ -194,7 +194,7 @@ Current best next passes if we want the fastest movement toward the Dragon Age-s
 - [x] Add approval shifting helper with warning state support.
 - [x] Add trust threshold that unlocks personal quest stage.
 - [x] Add campfire menu.
-- [x] Add campfire warning acknowledgement.
+- [x] Move warning acknowledgement and amends out of campfire bulk actions and into direct companion dialogue.
 - [x] Add company report integration.
 - [x] Add static companion-depth test.
 - [x] Add companion design bible.
@@ -350,7 +350,7 @@ For each companion, prefer:
 - [ ] Optional personal quest files if the campfire menu becomes too crowded.
 - [x] Register each file near the existing member-talk companion entries.
 - [x] Keep direct dialogue available from `member_talk`.
-- [x] Keep campfire quest choices available from `mnu_companion_campfire`.
+- [x] Move companion quest choices out of `mnu_companion_campfire` and into direct companion dialogue.
 
 ## Companion Implementation Template
 
@@ -1181,7 +1181,7 @@ Recommended rationale:
 - [ ] Defeat an IEF lord with Lezalit's quest open and confirm the discipline incident advances.
 - [ ] Defeat an IEF lord with Ymira, Bunduk, and Lezalit present and confirm the triangle report line appears.
 - [ ] Abuse a village with Marnid, Ymira, and Borcha present and confirm all relevant approval drops.
-- [ ] Trigger generic grievance acknowledgement at campfire and confirm warning state clears.
+- [ ] Trigger direct grievance dialogue with a troubled companion and confirm warning state clears.
 - [ ] Talk directly to Borcha through member talk.
 - [ ] Talk directly to Marnid through member talk.
 - [ ] Confirm direct talk can unlock trust stage at high approval.

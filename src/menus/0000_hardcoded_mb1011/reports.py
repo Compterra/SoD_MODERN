@@ -84,31 +84,34 @@ for _name in (
 
 MENUS = [
 ("reports", mnf_enable_hot_keys,
-    "{playername} {s2}^Formerly of the {s1}^^{s3}^Reputation: {s4}^Fame: {s5}^^Company mood: {s6}^Party Size Limit: {reg7}^^Time in Calradia: {s7}.",
+    "{playername} {s69}^Formerly of the {s68}^^{s3}^Reputation: {s4}^Fame: {s5}^^Company mood: {s6}^Party Size Limit: {reg7}^^Time in Calradia: {s7}.",
     "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
 
       # get the name of their homeland faction
       (store_add, reg0, "str_sod_homeland_0", "$g_sod_country"),
-      (str_store_string, s1, reg0),
+      (str_store_string, s68, reg0),
 
       # add a suffix for what their faith is
       (store_add, reg0, "str_sod_faith_suffix_0", "$g_sod_faith"),
-      (str_store_string, s2, reg0),
+      (str_store_string, s69, reg0),
 
       # generate their full title (mercenary, vassal, king...)
       (try_begin),
         (gt, "$players_kingdom", 0),
-        (str_store_faction_name, s8, "$players_kingdom"),
+        (str_store_faction_name, s70, "$players_kingdom"),
         (try_begin),
           (faction_slot_eq, "$players_kingdom", slot_faction_leader, "trp_player"),
-          (str_store_string, s2, "@{s2}^Ruler of the {s8}"),
+          (str_store_string_reg, s97, s69),
+          (str_store_string, s69, "@{s97}^Ruler of the {s70}"),
         (else_try),
           (eq, "$player_has_homage", 1),
-          (str_store_string, s2, "@{s2}^vassal of the {s8}"),
+          (str_store_string_reg, s97, s69),
+          (str_store_string, s69, "@{s97}^vassal of the {s70}"),
         (else_try),
-          (str_store_string, s2, "@{s2}^mercenary for the {s8}"),
+          (str_store_string_reg, s97, s69),
+          (str_store_string, s69, "@{s97}^mercenary for the {s70}"),
         (try_end),
       (try_end),
 
@@ -202,7 +205,11 @@ MENUS = [
 
       ("view_party_reports", [], "Party and company reports...", [(jump_to_menu, "mnu_party_reports")]),
 
-      ("view_company_accounts", [], "Review company accounts.", [(jump_to_menu, "mnu_company_accounts")]),
+      ("view_company_accounts", [], "Review company accounts.",
+        [
+          (assign, "$g_sod_company_accounts_return_menu", "mnu_reports"),
+          (jump_to_menu, "mnu_company_accounts"),
+        ]),
 
       ("view_quest_journal_report", [], "View quest journal.", [(jump_to_menu, "mnu_quest_journal_report")]),
 
@@ -226,7 +233,10 @@ MENUS = [
      
       ("view_fief_reports", [(call_script, "script_get_number_of_hero_centers", "trp_player"), (gt, reg0, 0)], "View fief reports...", [(jump_to_menu, "mnu_fief_reports")]),
 
-      ("view_runtime_sanity_report", [(eq, "$cheat_mode", 1)], "Debug: Runtime Sanity Report.", [(jump_to_menu, "mnu_runtime_sanity_report")]),
+      ("view_runtime_sanity_report", [
+        (this_or_next|eq, "$cheat_mode", 1),
+        (eq, "$g_sod_cheat_mode", 1),
+      ], "Debug: Runtime Sanity Report.", [(jump_to_menu, "mnu_runtime_sanity_report")]),
 
     ]
   ),

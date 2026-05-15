@@ -15,6 +15,10 @@ def assert_contains(raw: str, token: str) -> None:
     assert token in raw, f"missing token: {token}"
 
 
+def assert_not_contains(raw: str, token: str) -> None:
+    assert token not in raw, f"unexpected token: {token}"
+
+
 def assert_before(raw: str, first: str, second: str) -> None:
     assert first in raw, f"missing token: {first}"
     assert second in raw, f"missing token: {second}"
@@ -83,6 +87,11 @@ def test_dispatch_accounting_and_safety_are_conservative() -> None:
 
     assert_contains(party_templates, '("messenger_party","Messenger"')
     assert_contains(party_templates, "merchant_personality,[])")
+    create_start = scripts.index('("cf_sod_create_tax_courier"')
+    create_end = scripts.index('("sod_try_dispatch_player_tax_courier_from_center"', create_start)
+    create_script = scripts[create_start:create_end]
+    assert_before(create_script, '(gt, ":courier_party", 0)', '(party_is_active, ":courier_party")')
+    assert_before(create_script, '(party_is_active, ":courier_party")', '(party_set_faction, ":courier_party", ":origin_faction")')
     assert_contains(scripts, "(faction_get_slot, \":messenger_troop\", \":origin_faction\", slot_faction_messenger_troop)")
     assert_contains(scripts, "(assign, \":messenger_troop\", \"trp_swadian_messenger\")")
     assert_contains(scripts, "(party_add_leader, \":courier_party\", \":messenger_troop\")")
@@ -102,8 +111,12 @@ def test_dispatch_accounting_and_safety_are_conservative() -> None:
     assert_contains(scripts, "(call_script, \"script_cf_sod_tax_courier_destination_safe\", \":new_destination\")")
     assert_contains(scripts, "(assign, \":danger_radius\", 7)")
     assert_contains(scripts, "(party_set_ai_behavior, \":courier_party\", ai_bhvr_travel_to_party)")
-    assert_contains(scripts, "@Your Tax Courier from {s1}")
-    assert_contains(scripts, "@Tax Courier from {s1}")
+    assert_contains(scripts, "@Your Tax Courier from {s68}")
+    assert_contains(scripts, "@Tax Courier from {s68}")
+    assert_contains(scripts, "(party_set_name, \":courier_party\", s69)")
+    assert_not_contains(scripts, "@Your Tax Courier from {s1}")
+    assert_not_contains(scripts, "@Tax Courier from {s1}")
+    assert_not_contains(scripts, "(party_set_name, \":courier_party\", s2)")
     assert_contains(scripts, "script_sod_center_clear_revenue_accounts")
 
 
@@ -227,7 +240,8 @@ def test_nonhostile_courier_coercion_has_reputation_consequences() -> None:
     assert_contains(scripts, '"script_change_player_relation_with_faction", ":courier_faction", -5')
     assert_contains(scripts, '"script_change_player_honor", -2')
     assert_contains(scripts, "sod_diplomacy_memory_caravan_attack")
-    assert_contains(scripts, "Relations with {s3} suffer")
+    assert_contains(scripts, "Relations with {s68} suffer")
+    assert_not_contains(scripts, "Relations with {s3} suffer")
 
 
 def test_tax_courier_social_dialogue_is_wired() -> None:

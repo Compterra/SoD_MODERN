@@ -85,7 +85,8 @@ def _store_description_ops(definition):
                 (assign, ":s1", definition["description_string_id"]),
                 (val_add, ":s1", "$g_sod_faith"),
                 (str_store_string, s1, ":s1"),
-                (str_store_string, s1, "@{s1} %s" % definition["effect_summary"].lstrip("@")),
+                (str_store_string_reg, s97, s1),
+                (str_store_string, s1, "@{s97} %s" % definition["effect_summary"].lstrip("@")),
             ]
         return [(str_store_string, s1, definition["description_string_id"])]
     return [(str_store_string, s1, definition["description_text"])]
@@ -327,10 +328,11 @@ def _build_branching_script(script_name, param_names, output_mode):
 
     ops.extend([
         (else_try,),
+        (assign, reg9, ":building_no"),
         (assign, reg0, 0),
         (assign, reg1, BUILDING_CAN_BUILD_UNKNOWN),
         (assign, reg2, 0),
-        (str_store_string, s0, "@Error: Invalid improvement #{reg0}"),
+        (str_store_string, s0, "@Unknown improvement #{reg9}"),
         (str_store_string_reg, s1, s0),
         (try_end,),
     ])

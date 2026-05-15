@@ -4,17 +4,20 @@ MENUS = [
     "Deadly disease strikes {s1}. There is nothing we can do.",
     "none",
     [
+      (assign, "$temp", -1),
+      (str_store_string, s68, "@one of your fiefs"),
       (assign, ":stop", 9999),
       (try_for_range, ":unused", 0, ":stop"),
         (store_random_party_in_range, "$temp", centers_begin, centers_end),
         (neg|party_slot_eq, "$temp", slot_party_type, spt_castle),
         (party_slot_eq, "$temp", slot_town_lord, "trp_player"),
         (assign, ":stop", ":unused"),
-        (str_store_party_name, s1, "$temp"),
+        (str_store_party_name, s68, "$temp"),
       (try_end),
+      (str_store_string_reg, s1, s68),
     ],
     [
-      ("choice_14_1", [], "That's terrible!",
+      ("choice_14_1", [(is_between, "$temp", centers_begin, centers_end)], "That's terrible.",
         [
           (str_store_party_name_link, s1, "$temp"),
           (call_script, "script_change_center_prosperity", "$temp", -5),
@@ -25,11 +28,11 @@ MENUS = [
           (store_mul, ":population_delta", ":temp_center_population", -1),
           (call_script, "script_sod_center_apply_population_delta", "$temp", ":population_delta"),
           (call_script, "script_sod_center_apply_health_delta", "$temp", -10),
-          (display_message, "@Both population and health of {s1} decreases. Economy of {s1} also suffered. The disease might have spread to other parts of Your kingdom.", quest_fail_color),
+          (display_message, "@Population and health in {s1} decline. The local economy suffers, and the disease may spread further.", quest_fail_color),
           (change_screen_return),
         ]
       ),
-      ("choice_14_2", [], "At least help the survivors. =500 denars=",
+      ("choice_14_2", [(is_between, "$temp", centers_begin, centers_end)], "Help the survivors for 500 denars.",
         [
           (str_store_party_name_link, s1, "$temp"),
           (store_troop_gold, ":gold", "trp_player"),
@@ -44,15 +47,21 @@ MENUS = [
             (ge, ":gold", 500),
             (call_script, "script_sod_player_charge_gold", 500),
             (call_script, "script_change_player_relation_with_center", "$temp", 10),
-            (display_message, "@Both population and health of {s1} decreases. People are grateful for Your help. The disease might have spread to other parts of Your kingdom.", quest_success_color),
+            (display_message, "@Population and health in {s1} still decline, but the people are grateful for your help.", quest_success_color),
           (else_try),
-            (display_message, "@You don't have enough gold. How embarrassing! Population, health and economy of {s1} suffer. The disease might have spread to other parts of your kingdom.", quest_fail_color),
+            (display_message, "@You don't have enough gold. Population, health, and the economy of {s1} suffer.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -2),
             (call_script, "script_change_center_prosperity", "$temp", -5),
           (try_end),
           (change_screen_return),
         ]
        ),
+      ("choice_14_no_center", [(neg|is_between, "$temp", centers_begin, centers_end)], "Continue.",
+        [
+          (display_message, "@No affected fief could be found. The report is dismissed.", quest_fail_color),
+          (change_screen_return),
+        ]
+      ),
       ]
   ),
 ]

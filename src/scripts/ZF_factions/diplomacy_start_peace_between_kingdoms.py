@@ -239,6 +239,7 @@ SCRIPTS = [
                     (eq, "$g_sod_debug", 1),
                     (this_or_next|eq, ":faction_a", "fac_kingdom_6"),
                     (eq, ":faction_b", "fac_kingdom_6"),
+                    (eq, "$g_sod_debug", 1),
                     (str_store_faction_name, s1, ":faction_a"),
                     (str_store_faction_name, s2, ":faction_b"),
                     (display_message, "@Diplomatic dispatch: {s1} and {s2} have paused hostilities for {reg39} days, though the Imperial front remains unstable.", 0x66CCFF),

@@ -13,7 +13,7 @@ MENUS = [
          (call_script, "script_sod_threat_board_generate_offers", "$g_sod_threat_board_context_center"),
          (str_store_party_name, s2, "$g_sod_threat_board_context_center"),
          (call_script, "script_sod_threat_board_describe_center_stakes", "$g_sod_threat_board_context_center"),
-      (str_store_string, s1, "@Job Board - {s2}^^{s8}^^Pick one notice. Accepting it creates a marked warband on the map; defeat it before the deadline and claim the reward here."),
+      (str_store_string, s1, "@Job Board - {s2}^^{s8}^^Each notice lists the expected enemy, tier, recommended force, reward, and deadline. Accepting it creates a marked warband on the map; defeat it before the deadline and claim the reward here."),
       (try_end),
     ],
     [

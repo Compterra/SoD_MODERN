@@ -1,5 +1,6 @@
 DIALOGS = [
-[anyone, "kidnapped_girl_join", [(neg|party_can_join)], "Please do not leave me on this road. If there is no room, make room, or tell me where to hide until you return.", "close_window",
+[anyone, "kidnapped_girl_join", [(neg|party_can_join)], "There is no room for me. Please do not leave me in the open.",
+   "close_window",
    [(party_set_icon, "$g_encountered_party", "icon_woman"),
     (party_set_ai_behavior, "$g_encountered_party", ai_bhvr_hold),
     (party_set_flags, "$g_encountered_party", pf_default_behavior, 0),

@@ -468,7 +468,7 @@ SCRIPTS = [
      (try_end),
      
      (try_begin),
-     (gt, ":relative_strength", 40),  # self confidence make powerful lords more likely to assault castles than in vanilla and poor more prudent but shouldn't be extreme for them	 
+     (gt, ":relative_strength", 40),  # self confidence make powerful lords more likely to assault castles than in vanilla and poor more prudent but shouldn't be extreme for them
      (val_clamp, ":self_confidence", 70, 130), 
      (try_end),	 
 

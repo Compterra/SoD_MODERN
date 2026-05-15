@@ -14,8 +14,9 @@ def main() -> None:
 
     assert_contains(source, '"besiegers_camp_with_allies", mnf_enable_hot_keys,')
     assert_contains(source, '(call_script, "script_party_wound_all_members", "$g_enemy_party")')
-    assert_contains(source, '(leave_encounter)')
-    assert_contains(source, '(change_screen_return)')
+    assert_contains(source, '(party_collect_attachments_to_party, "$g_enemy_party", "p_collective_enemy")')
+    assert_contains(source, '(assign, "$g_next_menu", "mnu_castle_taken_by_friends")')
+    assert_contains(source, '(jump_to_menu, "mnu_total_victory")')
     assert_contains(source, '(assign, "$g_siege_final_menu", "mnu_besiegers_camp_with_allies")')
     assert_contains(source, '(assign, "$g_siege_battle_state", 1)')
     assert_contains(source, '(assign, "$g_next_menu", "mnu_castle_besiege_inner_battle")')
@@ -23,7 +24,6 @@ def main() -> None:
 
     for stale in (
         '##          (assign, "$g_next_menu", -1)',
-        '##          (jump_to_menu, "mnu_total_victory")',
         '##           (assign, "$g_next_menu", "mnu_besiegers_camp_with_allies")',
     ):
         assert stale not in source, stale

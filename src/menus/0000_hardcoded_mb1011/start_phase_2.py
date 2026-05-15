@@ -18,6 +18,9 @@ MENUS = [
          (call_script, "script_get_player_party_morale_values"),
          (party_set_morale, "p_main_party", reg0),
          (assign, "$g_sod_player_world_ready", 1),
+         (assign, "$g_player_party_icon", -1),
+         (assign, "$g_sod_player_map_icon_dirty", 1),
+         (call_script, "script_sod_refresh_player_map_icon"),
          (change_screen_return),
         ]
        ),

@@ -1,3 +1,6 @@
 DIALOGS = [
-[anyone, "cpehus_nihilistic_1", [], "Heh. I have been waiting for this moment for a while by now, {playername}. Climatic battles bring me to a state of pure ecstasy ! And the joy of looting spoils of war from dead bodies ! A great reminder of the vanity of human life ! I dare you, come at me ! Charge my formations ! Assail my flanks ! I shall response with great vigor ! Come ! Let loose a river of blood so great that it will DROWN this wretched world !", "close_window", [(encounter_attack)] ],
+[anyone, "cpehus_nihilistic_1", [], "Heh. I have waited for this moment, {playername}. Climactic battles bring a rare clarity: steel, dust, bodies, and the vanity of every oath men swear before they die. Come at me. Charge my formations. Test my flanks. I will answer with vigor enough to drown this field in blood.", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)] ],
 ]

@@ -59,6 +59,8 @@ def test_black_khergit_prisoners_have_prisoner_and_party_transfer_modes():
     assert_contains(scripts, "(val_max, \":remaining_offer\", \":free_party_capacity\")")
 
     assert_contains(prisoner_mode, "script_sod_black_khergits_buy_prisoners")
+    assert_contains(prisoner_mode, '(gt, "$g_sod_black_khergit_prisoner_buy_count", 0)')
+    assert_contains(prisoner_mode, '(gt, "$g_sod_black_khergit_prisoner_buy_cost", 0)')
     assert_contains(scripts, "(party_add_prisoners, \"p_main_party\", \":prisoner_troop\", \":removed\")")
     assert_contains(scripts, "sod_black_khergits_release_hero_prisoners")
 
@@ -81,4 +83,6 @@ def test_black_khergit_prisoners_have_prisoner_and_party_transfer_modes():
 
     assert_contains(bundle_hire, "(party_get_free_companions_capacity, \":free_capacity\", \"p_main_party\")")
     assert_contains(bundle_hire, "(ge, \":free_capacity\", \":total_hired\")")
+    assert_contains(bundle_hire, '(gt, "$g_sod_black_khergit_hire_cost", 0)')
+    assert_contains(bundle_hire, '(gt, ":total_hired", 0)')
     assert_contains(cannot_hire, "I do not have room in my ranks")

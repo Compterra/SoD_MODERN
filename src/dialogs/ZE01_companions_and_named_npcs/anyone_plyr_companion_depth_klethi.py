@@ -7,7 +7,7 @@ DIALOGS = [
     (eq, "$g_sod_klethi_old_job_pending", 1),
     (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Klethi, tell me whose old work found your knife.", "companion_depth_klethi_knife_pending",
+  "Klethi, whose old work found your knife?", "companion_depth_klethi_knife_pending",
   []],
 
 [anyone|plyr, "member_talk",

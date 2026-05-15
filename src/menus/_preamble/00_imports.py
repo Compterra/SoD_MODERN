@@ -354,7 +354,7 @@ def build_upgrade_troop_selection_option(troop_no):
             (eq, ":can_up2", 1),
             (str_store_troop_name_by_count, s3, troop_no, ":troop_count"),
         ],
-        "Upgrade {s3}.",
+        "Promote {s3}.",
         [
             (assign, "$g_sod_town_upgrade_selected_troop", troop_no),
             (jump_to_menu, "mnu_sod_upgrade_continue"),
@@ -364,22 +364,22 @@ def build_upgrade_troop_selection_option(troop_no):
 
 def generate_upgrade_options():
     result = [build_upgrade_troop_selection_option(troop_no) for troop_no in range(0, trp_last_troop)]
-    result.append(("return", [], "Nevermind.", [(jump_to_menu, "$jump_menu")]))
+    result.append(("return", [], "Leave promotions.", [(jump_to_menu, "$jump_menu")]))
     return result
 
 
-def build_sod_battle_commander_change_option(option_id, return_menu, extra_conditions=None):
+def build_sod_battle_commander_change_option(option_id, commander_return_menu, extra_conditions=None):
     conditions = list(extra_conditions or [])
     conditions.extend([
         (call_script, "script_cf_sod_battle_commander_party_has_available_commander"),
-        (call_script, "script_sod_battle_commander_store_current_name_to_s7"),
+        (call_script, "script_sod_battle_commander_store_current_name_to_s68"),
     ])
     return (
         option_id,
         conditions,
-        "Choose acting commander ({s7}).",
+        "Choose acting commander ({s68}).",
         [
-            (assign, "$g_sod_battle_commander_return_menu", return_menu),
+            (assign, "$g_sod_battle_commander_return_menu", commander_return_menu),
             (jump_to_menu, "mnu_sod_battle_commander_select"),
         ],
     )

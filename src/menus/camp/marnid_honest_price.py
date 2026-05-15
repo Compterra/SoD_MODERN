@@ -22,7 +22,7 @@ MENUS = [
           (main_party_has_troop, "trp_npc2"),
           (ge, "$g_sod_marnid_market_evidence", 1),
           (eq, "$g_sod_marnid_market_confronted", 1),
-        ], "Expose the dirty contract and pay compensation from the seized goods.",
+        ], "Expose the contract; compensate the laborers.",
         [
           (assign, "$g_sod_marnid_market_pending", 0),
           (assign, "$g_sod_marnid_market_result_grade", 3),
@@ -42,7 +42,7 @@ MENUS = [
           (eq, "$g_sod_marnid_market_confronted", 1),
           (store_troop_gold, ":gold", "trp_player"),
           (ge, ":gold", 300),
-        ], "Repay the cheated laborers and keep the clean part of the contract.",
+        ], "Repay the cheated and keep clean terms.",
         [
           (assign, "$g_sod_marnid_market_pending", 0),
           (assign, "$g_sod_marnid_market_result_grade", 2),
@@ -62,7 +62,7 @@ MENUS = [
           (main_party_has_troop, "trp_npc2"),
           (ge, "$g_sod_marnid_market_evidence", 1),
           (eq, "$g_sod_marnid_market_confronted", 1),
-        ], "Use the evidence for leverage and take the discount.",
+        ], "Use the evidence for a discount.",
         [
           (assign, "$g_sod_marnid_market_pending", 0),
           (assign, "$g_sod_marnid_market_result_grade", 1),
@@ -127,7 +127,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_orderly_profit, 2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc2"),
           (display_message, "@Marnid reads the false accounts aloud until the warehouse guard discovers there is no clean answer left.", 0xCCCC66),
-          (jump_to_menu, "mnu_marnid_honest_price"),
+          (start_map_conversation, "trp_npc2"),
         ]
       ),
       ("marnid_warehouse_blackmail", [
@@ -146,10 +146,10 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc2", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc2"),
           (display_message, "@The merchant pays for silence. Marnid writes the number down because ugly accounts still need accuracy.", 0xCC9966),
-          (jump_to_menu, "mnu_marnid_honest_price"),
+          (start_map_conversation, "trp_npc2"),
         ]
       ),
-      ("marnid_warehouse_leave", [], "Return to town.",
+      ("marnid_warehouse_leave", [], "Leave the warehouse for now.",
         [
           (jump_to_menu, "mnu_town"),
         ]
@@ -175,7 +175,7 @@ MENUS = [
     [
       ("marnid_warehouse_after", [], "Speak with Marnid about the contract.",
         [
-          (jump_to_menu, "mnu_marnid_honest_price"),
+          (start_map_conversation, "trp_npc2"),
         ]
       ),
     ]
@@ -195,7 +195,7 @@ MENUS = [
     [
       ("marnid_warehouse_failed_after", [], "Face Marnid's account of the loss.",
         [
-          (jump_to_menu, "mnu_marnid_honest_price"),
+          (start_map_conversation, "trp_npc2"),
         ]
       ),
     ]

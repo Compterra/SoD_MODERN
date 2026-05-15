@@ -53,6 +53,56 @@ def test_follow_spy_acceptance_starts_only_after_both_parties_spawn():
         assert f'(remove_party, "{global_name}")' in raw
 
 
+def test_follow_spy_party_dialogs_require_current_quest_parties():
+    spy_start = read("src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_spy_start.py")
+    partners_start = read("src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_spy_partners_start.py")
+    spy_arrest = read("src/dialogs/ZZ99_misc_dialogs/anyone_plyr_follow_spy_talk.py")
+    partners_arrest = read("src/dialogs/ZZ99_misc_dialogs/anyone_plyr_spy_partners_talk.py")
+
+    for raw in (spy_start, partners_start, spy_arrest, partners_arrest):
+        assert '(check_quest_active, "qst_follow_spy")' in raw
+        assert '(neg|check_quest_concluded, "qst_follow_spy")' in raw
+        assert '(party_is_active, "$g_encountered_party")' in raw
+
+    assert '(eq, "$qst_follow_spy_spy_party", "$g_encountered_party")' in spy_start
+    assert '(eq, "$qst_follow_spy_spy_party", "$g_encountered_party")' in spy_arrest
+    assert '(eq, "$qst_follow_spy_spy_partners_party", "$g_encountered_party")' in partners_start
+    assert '(eq, "$qst_follow_spy_spy_partners_party", "$g_encountered_party")' in partners_arrest
+
+
+def test_follow_spy_legacy_trigger_guards_party_globals_before_distance_checks():
+    raw = read("compile/module_triggers.py")
+    start = raw.index("# Follow Spy quest")
+    end = raw.index("### Raiders quest", start)
+    block = raw[start:end]
+
+    assert '(is_between, ":quest_giver_center", centers_begin, centers_end)' in block
+    assert '(is_between, ":quest_object_center", centers_begin, centers_end)' in block
+    assert '(gt, "$qst_follow_spy_spy_party", 0)' in block
+    assert '(gt, "$qst_follow_spy_spy_partners_party", 0)' in block
+    assert '(assign, ":spy_active", 1)' in block
+    assert '(assign, ":partner_active", 1)' in block
+    assert '(this_or_next|eq, ":spy_active", 0)' in block
+    assert '(eq, ":partner_active", 0)' in block
+    assert '(eq, ":spy_active", 1)' in block
+    assert '(eq, ":partner_active", 1)' in block
+    assert block.index('(gt, "$qst_follow_spy_spy_party", 0)') < block.index('(store_distance_to_party_from_party, ":cur_distance", "p_main_party", "$qst_follow_spy_spy_party")')
+    assert block.index('(gt, "$qst_follow_spy_spy_partners_party", 0)') < block.index('(store_distance_to_party_from_party, ":cur_distance", "$qst_follow_spy_spy_partners_party", "$qst_follow_spy_spy_party")')
+
+
+def test_follow_spy_abort_clears_party_globals():
+    raw = read("src/scripts/ZG_quests/abort_quest.py")
+    start = raw.index('(eq, ":quest_no", "qst_follow_spy")')
+    end = raw.index('(eq, ":quest_no", "qst_capture_enemy_hero")', start)
+    block = raw[start:end]
+
+    assert '(gt, "$qst_follow_spy_spy_party", 0)' in block
+    assert '(gt, "$qst_follow_spy_spy_partners_party", 0)' in block
+    assert '(assign, "$qst_follow_spy_spy_party", 0)' in block
+    assert '(assign, "$qst_follow_spy_spy_partners_party", 0)' in block
+    assert '(assign, "$qst_follow_spy_no_active_parties", 1)' in block
+
+
 def test_runaway_slave_acceptance_cleans_up_partial_spawn_before_starting_quest():
     raw = read("src/dialogs/ZZ99_misc_dialogs/anyone_gm_bring_back_runaway_slaves_accepted.py")
 

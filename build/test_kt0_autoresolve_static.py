@@ -5,7 +5,18 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def read(rel):
-    return (ROOT / rel).read_text(encoding="utf-8")
+    target = ROOT / rel
+    if not target.exists() and rel.startswith("docs/reports/"):
+        matches = sorted((ROOT / "docs" / "reports").rglob(Path(rel).name))
+        if len(matches) == 1:
+            target = matches[0]
+    return target.read_text(encoding="utf-8")
+
+
+def assert_order(raw: str, first: str, second: str) -> None:
+    assert first in raw, f"missing {first}"
+    assert second in raw, f"missing {second}"
+    assert raw.index(first) < raw.index(second), f"{first} must precede {second}"
 
 
 def test_kt0_constants_exist():
@@ -47,6 +58,24 @@ def test_kt0_battle_paths_use_siege_context():
     assert '(assign, ":is_siege_atk", 2)' in order_attack
     assert 'script_kt_party_calculate_strength", "p_main_party", 1, ":is_siege_atk"' in order_attack
     assert 'script_kt_party_calculate_strength", "p_collective_enemy", 0, ":is_siege_def"' in order_attack
+    assert '(assign, ":encountered_party_valid", 0)' in order_attack
+    assert '(party_is_active, "$g_encountered_party")' in order_attack
+    assert '(str_store_string, s9, "@None")' in order_attack
+    assert_order(
+        order_attack,
+        '(eq, ":encountered_party_valid", 1)',
+        '(this_or_next|party_slot_eq, "$g_encountered_party", slot_party_type, spt_castle)',
+    )
+    assert_order(
+        order_attack,
+        '(eq, ":encountered_party_valid", 1)',
+        '(inflict_casualties_to_party_group, "$g_encountered_party", ":player_party_strength", "p_temp_casualties")',
+    )
+    assert_order(
+        order_attack,
+        '(eq, ":encountered_party_valid", 1)',
+        '(party_collect_attachments_to_party, "$g_encountered_party", "p_collective_enemy")',
+    )
 
     assert 'script_kt_party_calculate_strength_with_attachments", "p_main_party", 1, 2' in castle_sim
     assert 'script_kt_party_calculate_strength_with_attachments", "$g_encountered_party", 0, 1' in castle_sim
@@ -54,8 +83,8 @@ def test_kt0_battle_paths_use_siege_context():
 
 
 def test_game_options_preserve_three_modes():
-    text = read("src/menus/camp/game_options_2.py")
-    assert "Kt0's Improved Autoresolve" in text
+    text = read("src/menus/0000_hardcoded_mb1011/game_options_2.py")
+    assert "KT0's Improved Autoresolve" in text
     assert "Blood Bath System" in text
     assert "Native System" in text
     assert '("game_options_autoresolve_1"' in text
@@ -77,7 +106,7 @@ def test_audit_exposes_kt0_report():
 
 
 def test_generated_kt0_report_has_no_structural_failures():
-    report = read("docs/reports/kt0_autoresolve_audit.md")
+    report = read("docs/reports/combat_equipment/kt0_autoresolve_audit.md")
     assert "Combat rows with zero offense: 0" in report
     assert "Armored/shield rows with zero defense: 0" in report
     assert "Horse/type mismatches: 0" in report

@@ -13,6 +13,7 @@ MENUS = [
         [
           (assign, "$g_camp_mode", 1),
           (assign, "$g_player_icon_state", pis_camping),
+          (call_script, "script_sod_refresh_player_map_icon"),
           (rest_for_hours_interactive, 6, 5, 1),
           (change_screen_return),
         ]
@@ -25,6 +26,7 @@ MENUS = [
         [
           (assign, "$g_camp_mode", 1),
           (assign, "$g_player_icon_state", pis_camping),
+          (call_script, "script_sod_refresh_player_map_icon"),
           (call_script, "script_sod_camp_job_start", sod_camp_job_scout_route, 6, "trp_npc1"),
           (try_begin),
             (eq, reg0, 1),
@@ -53,6 +55,7 @@ MENUS = [
         [
           (assign, "$g_camp_mode", 1),
           (assign, "$g_player_icon_state", pis_camping),
+          (call_script, "script_sod_refresh_player_map_icon"),
           (call_script, "script_sod_camp_job_start", sod_camp_job_forage_hunt, 6, "trp_player"),
           (try_begin),
             (eq, reg0, 1),
@@ -72,6 +75,7 @@ MENUS = [
         [
           (assign, "$g_camp_mode", 1),
           (assign, "$g_player_icon_state", pis_camping),
+          (call_script, "script_sod_refresh_player_map_icon"),
           (call_script, "script_sod_camp_job_start", sod_camp_job_ration_stores, 6, "trp_npc2"),
           (try_begin),
             (eq, reg0, 1),
@@ -101,6 +105,7 @@ MENUS = [
         [
           (assign, "$g_camp_mode", 1),
           (assign, "$g_player_icon_state", pis_camping),
+          (call_script, "script_sod_refresh_player_map_icon"),
           (call_script, "script_sod_camp_job_start", sod_camp_job_tend_mounts, 6, "trp_npc5"),
           (try_begin),
             (eq, reg0, 1),
@@ -129,6 +134,7 @@ MENUS = [
         [
           (assign, "$g_camp_mode", 1),
           (assign, "$g_player_icon_state", pis_camping),
+          (call_script, "script_sod_refresh_player_map_icon"),
           (call_script, "script_sod_camp_job_start", sod_camp_job_repair_gear, 6, "trp_player"),
           (try_begin),
             (eq, reg0, 1),

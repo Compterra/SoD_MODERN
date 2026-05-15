@@ -1,7 +1,7 @@
 MENUS = [
 (
     "encounter_retreat_confirm", mnf_enable_hot_keys,
-    "As the party member with the highest tactics skill, ({reg2}), {reg3?you devise:{s3} devises} a plan that will allow you and your men to escape with your lives, but you'll have to leave {reg4} soldiers behind to stop the enemy from giving chase.",
+    "{s68}",
     "none",
     [
       (set_background_mesh, "mesh_pic_retreat"),
@@ -22,9 +22,11 @@ MENUS = [
       (try_begin),
         (eq, ":max_skill_owner", "trp_player"),
         (assign, reg3, 1),
+        (str_store_string, s68, "@As the party member with the highest tactics skill ({reg2}), you devise a plan that will allow you and your men to escape with your lives, but you'll have to leave {reg4} soldiers behind to stop the enemy from giving chase."),
       (else_try),
         (assign, reg3, 0),
         (call_script, "script_store_troop_name", s3, ":max_skill_owner"),
+        (str_store_string, s68, "@As the party member with the highest tactics skill ({reg2}), {s3} devises a plan that will allow you and your men to escape with your lives, but you'll have to leave {reg4} soldiers behind to stop the enemy from giving chase."),
       (try_end),
       ],
     [
@@ -34,6 +36,9 @@ MENUS = [
           (try_for_range, ":unused", 0, ":num_casualties"),
             (call_script, "script_cf_party_remove_random_regular_troop", "p_main_party"),
             (assign, ":lost_troop", reg0),
+            (gt, ":lost_troop", 0),
+            (gt, "$g_encountered_party", 0),
+            (party_is_active, "$g_encountered_party"),
             (store_random_in_range, ":random_no", 0, 100),
             (ge, ":random_no", 30),
             (party_add_prisoners, "$g_encountered_party", ":lost_troop", 1),

@@ -9,23 +9,22 @@ SCRIPTS = [
 
 	(assign, ":best_candidate", 0),
 	(assign, ":best_score", -100000),
-	(try_for_range, ":candidate", kingdoms_begin, kingdoms_end),
-		(neq, ":candidate", "fac_kingdom_6"),
+	(try_for_range, ":candidate", native_kingdoms_begin, native_kingdoms_end),
 		(faction_slot_eq, ":candidate", slot_faction_state, sfs_active),
 		(faction_slot_eq, ":candidate", slot_faction_merc_pact, 0),
 
-		(call_script, "script_sod_merc_market_calculate_kingdom_demand", ":candidate"),
+		(call_script, "script_sod_merc_market_calculate_kingdom_demand", ":candidate", 0, 0, 0, 0),
 		(assign, ":demand_score", reg0),
 		(assign, ":budget", reg1),
 		(assign, ":max_bid", reg2),
 		(assign, ":need_type", reg3),
 		(assign, ":urgency", reg4),
-		(assign, ":preferred_guild", reg5),
+		(faction_get_slot, ":preferred_guild", ":candidate", slot_faction_sod_merc_preferred_guild),
 		(gt, ":demand_score", 0),
 		(gt, ":budget", 0),
 		(neq, ":need_type", sod_merc_contract_role_none),
 
-		(call_script, "script_sod_merc_market_calculate_kingdom_guild_weight", ":candidate", ":guild_no"),
+		(call_script, "script_sod_merc_market_calculate_kingdom_guild_weight", ":candidate", ":guild_no", 0),
 		(assign, ":guild_weight", reg0),
 		(gt, ":guild_weight", -40),
 

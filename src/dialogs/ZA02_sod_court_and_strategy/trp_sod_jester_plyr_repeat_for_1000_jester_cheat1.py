@@ -1,6 +1,8 @@
 DIALOGS = [
 [trp_sod_jester|plyr|repeat_for_1000, "jester_cheat1",
    [
+     (this_or_next|eq, "$cheat_mode", 1),
+     (eq, "$g_sod_cheat_mode", 1),
      (store_repeat_object, ":item_no"),
    (is_between, ":item_no", "itm_sumpter_horse", "itm_items_end"),
      (str_store_item_name, s1, ":item_no")

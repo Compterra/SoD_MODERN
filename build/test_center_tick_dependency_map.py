@@ -78,16 +78,16 @@ def main():
     )
 
     for token in (
-        "script_sod_get_center_population_floor",
-        "script_sod_center_apply_population_delta",
-        "script_sod_center_transfer_population",
-        "script_sod_center_apply_wealth_delta",
-        "script_sod_center_apply_local_prosperity_delta",
-        "script_sod_center_apply_health_delta",
-        "script_sod_center_apply_rents_delta",
-        "script_sod_center_apply_tariffs_delta",
-        "script_sod_center_apply_food_delta",
-        "script_sod_center_apply_cattle_delta",
+        '"sod_get_center_population_floor"',
+        '"sod_center_apply_population_delta"',
+        '"sod_center_transfer_population"',
+        '"sod_center_apply_wealth_delta"',
+        '"sod_center_apply_local_prosperity_delta"',
+        '"sod_center_apply_health_delta"',
+        '"sod_center_apply_rents_delta"',
+        '"sod_center_apply_tariffs_delta"',
+        '"sod_center_apply_food_delta"',
+        '"sod_center_apply_cattle_delta"',
     ):
         assert_contains(pipeline, token, "center simulation pipeline")
 

@@ -21,7 +21,7 @@ SCRIPTS = [
             (eq, ":has_center", 1),
             (neg|faction_slot_eq, "fac_player_supporters_faction", slot_faction_state, sfs_active),
             #MORDACHAI - DEBUG - trying to find why faction_6 keeps reactivating!
-            #(display_message, "@DEBUG: change_troop_faction - activating faction fac_player_supporters_faction", debug_color),
+            #(display_message, "@change_troop_faction: activating faction fac_player_supporters_faction", debug_color),
             (faction_set_slot, "fac_player_supporters_faction", slot_faction_state, sfs_active),
             (faction_set_slot, "fac_player_supporters_faction", slot_faction_leader, "trp_player"),
             #own kingdom start-----------------------------------
@@ -168,7 +168,7 @@ SCRIPTS = [
 				(assign, ":total_badboy_effect", 0),   # SoD Twan Badboy for kingdom formation and other factions reaction 
 			    (assign, ":num_kingdoms", 0),    # here to favor players doing some quests for calradian kings or levelling their honor before funding their kingdoms
 				                                 # also offer a fast method to test badboy wars 
-				(try_for_range, ":kingdom", kingdoms_begin, "fac_kingdom_6"),  # twan new
+				(try_for_range, ":kingdom", pre_invasion_realms_begin, pre_invasion_realms_end),  # twan new
 				(faction_slot_eq, ":kingdom", slot_faction_state, sfs_active),
 				(store_relation, ":rln", ":kingdom", "fac_player_supporters_faction"),
 				(faction_get_slot, ":ruler", ":kingdom", slot_faction_leader),

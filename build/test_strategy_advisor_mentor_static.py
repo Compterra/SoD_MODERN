@@ -17,7 +17,7 @@ def main():
     sa_council = read("src/menus/kingdom/sa_council.py")
     strings = read("compile/module_strings.py")
     order = read("src/dialogs/_order_dialogs.txt")
-    doc = read("docs/STRATEGY_ADVISOR_MENTOR_DESIGN.md")
+    doc = read("docs/systems/STRATEGY_ADVISOR_MENTOR_DESIGN.md")
     troop_tree_return = read("src/menus/other/troop_trees_prsenatation_end.py")
     constants = read("src/constants/module_constants.py")
     game_start = read("src/scripts/ZA_hardcoded_game_scripts/game_start.py")
@@ -32,6 +32,8 @@ def main():
     name_player = read("src/dialogs/ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_plyr_startegy_advisor_continue_mentor_name.py")
     name_answer = read("src/dialogs/ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_sod_sa_mentor_name.py")
     war_room = read("src/dialogs/ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_sod_sa_war_room.py")
+    war_room_priority_player = read("src/dialogs/ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_plyr_sod_sa_war_room_answer_priority.py")
+    war_room_priority = read("src/dialogs/ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_sod_sa_war_room_priority.py")
     war_room_clock = read("src/dialogs/ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_sod_sa_war_room_clock.py")
     war_room_allies = read("src/dialogs/ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_sod_sa_war_room_allies.py")
     war_room_company = read("src/dialogs/ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_sod_sa_war_room_company.py")
@@ -90,6 +92,8 @@ def main():
     assert "Why do some still call you the Strategy Advisor?" in name_player
     assert "Cassian Varro was a dangerous name inside the Legion" in name_answer
     assert "The long table is ready" in war_room
+    assert "Where should I act first?" in war_room_priority_player
+    assert "script_sod_strategy_advisor_describe_next_priority_to_s1" in war_room_priority
     assert "$g_sod_invasion_begin" in war_room_clock
     assert "script_sod_imperial_expedition_calculate_anti_legion_coalition" in war_room_allies
     assert "fund counter-intelligence" in war_room_allies
@@ -138,6 +142,7 @@ def main():
         "sod_strategy_advisor_initialize_mentor",
         "sod_strategy_advisor_get_trust_band_to_reg",
         "sod_strategy_advisor_describe_trust_to_s1",
+        "sod_strategy_advisor_shift_trust",
         "sod_strategy_advisor_apply_player_action",
         "sod_companion_action_defeat_imperials",
         "sod_companion_action_buy_slaves",
@@ -156,10 +161,17 @@ def main():
         "sod_strategy_advisor_note_imperial_diplomacy_exception",
         "sod_strategy_advisor_describe_company_morale_to_s3",
         "sod_strategy_advisor_describe_center_health_to_s4",
-        "Unpaid wages are no longer numbers in a ledger",
-        "noble and faith troops are growing restless",
-        "Threats can silence a complaint",
-        "disciplined, well-supplied campaign",
+        "sod_strategy_advisor_describe_next_priority_to_s1",
+        "script_estimate_faction_situation",
+        "First priority is concentration",
+        "First priority is delay",
+        "First priority is the company",
+        "First priority is closing a front",
+        "First priority is reputation control",
+        "The men are counting missed pay by memory now",
+        "Your noble and faith troops are restless",
+        "Threats can quiet a man for an hour",
+        "The company is sound. The men know",
         "Villages are the economic roots of your realm",
         "A castle is not a town with thicker walls",
         "Starving or diseased towns do not become loyal",
@@ -171,6 +183,9 @@ def main():
         "slot_quest_sod_runtime_last_center",
     ]:
         assert token in mentor_script, f"missing mentor script token: {token}"
+    assert '(call_script, "script_sod_strategy_advisor_shift_trust", ":delta")' in mentor_script
+    assert '(call_script, "script_sod_strategy_advisor_shift_trust", -2)' in mentor_script
+    assert "sod_companion_action_scout_warning, -1" not in mentor_script
     assert "companion_cassian_last_order" in companion_quests
     assert "Cassian Varro: The Last Order" in companion_quests
     assert "The Old Network" in companion_quests
@@ -277,6 +292,8 @@ def main():
         "ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_sod_sa_mentor_name.py",
         "ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_plyr_startegy_advisor_continue_war_room.py",
         "ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_sod_sa_war_room.py",
+        "ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_plyr_sod_sa_war_room_answer_priority.py",
+        "ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_sod_sa_war_room_priority.py",
         "ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_sod_sa_war_room_clock.py",
         "ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_sod_sa_war_room_allies.py",
         "ZA02_sod_court_and_strategy/trp_sod_strategy_advisor_plyr_sod_sa_war_room_answer_company.py",

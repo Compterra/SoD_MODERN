@@ -1,9 +1,10 @@
 DIALOGS = [
 [anyone|plyr, "lost_kidnapped_girl_4", [(store_troop_gold, ":gold", "trp_player"),
-                                          (quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
-                                          (ge, ":gold", ":quest_target_amount"),
+                                          (gt, "$g_sod_lost_rescue_repayment_amount", 0),
+                                          (ge, ":gold", "$g_sod_lost_rescue_repayment_amount"),
                                           ],
-   "Of course. Here you are...", "merchant_quest_about_job_5a", [(quest_get_slot, ":quest_target_amount", "qst_kidnapped_girl", slot_quest_target_amount),
-                                                                (call_script, "script_sod_player_charge_gold", ":quest_target_amount"), (play_sound, "snd_money_paid"),
+   "Of course. Here you are.", "merchant_quest_about_job_5a", [(call_script, "script_sod_player_charge_gold", "$g_sod_lost_rescue_repayment_amount"),
+                                                                (play_sound, "snd_money_paid"),
+                                                                (assign, "$g_sod_lost_rescue_repayment_amount", 0),
                                                                 ]],
 ]

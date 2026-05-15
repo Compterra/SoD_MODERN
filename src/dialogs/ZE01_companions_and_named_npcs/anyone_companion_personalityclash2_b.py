@@ -9,7 +9,7 @@ DIALOGS = [
         (main_party_has_troop, "$map_talk_troop"),
         (troop_get_slot, ":object", "$map_talk_troop", slot_troop_personalityclash2_object),
         (main_party_has_troop, ":object"),
-    ], "I have let this go too many times already. If we are to travel together, then we need more than polite silence and sharper resentment. We need some way to stand in the same camp without drawing blood with our words.", "companion_personalityclash2_response", [
+    ], "I have let this go too many times. If we travel together, we need more than silence and resentment.", "companion_personalityclash2_response", [
         (assign, "$npc_with_personality_clash_2", 0),
     ]],
 ]

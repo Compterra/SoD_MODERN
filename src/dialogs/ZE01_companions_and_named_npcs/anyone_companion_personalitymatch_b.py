@@ -9,7 +9,7 @@ DIALOGS = [
         (main_party_has_troop, "$map_talk_troop"),
         (troop_get_slot, ":object", "$map_talk_troop", slot_troop_personalitymatch_object),
         (main_party_has_troop, ":object"),
-    ], "You and I may not share a tongue, but I understand a captain by the way he takes blame and by the way he leaves room for other voices. That is a better beginning than most. A camp holds together when men listen before pride hardens into habit.", "companion_personalitymatch_response", [
+    ], "You and I do not always agree, but you take blame and leave room for other voices. That matters.", "companion_personalitymatch_response", [
         (assign, "$npc_with_personality_match", 0),
     ]],
 ]

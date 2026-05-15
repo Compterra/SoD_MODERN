@@ -114,7 +114,7 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc13", 3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc13"),
           (display_message, "@Nizar makes a show of being offended by caution, then improves the route until even caution looks dramatic.", 0x99CCFF),
-          (jump_to_menu, "mnu_nizar_impossible_charge"),
+          (start_map_conversation, "trp_npc13"),
         ]
       ),
       ("nizar_lane_ride_it", [
@@ -151,7 +151,7 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc13", -3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc13"),
           (display_message, "@The charge will be remembered. Nizar notices too late that remembering and surviving are different arts.", 0xCC9966),
-          (jump_to_menu, "mnu_nizar_impossible_charge"),
+          (start_map_conversation, "trp_npc13"),
         ]
       ),
       ("nizar_lane_leave", [], "Return to camp.",
@@ -179,7 +179,7 @@ MENUS = [
     [
       ("nizar_charge_lane_after", [], "Settle the charge with Nizar.",
         [
-          (jump_to_menu, "mnu_nizar_impossible_charge"),
+          (start_map_conversation, "trp_npc13"),
         ]
       ),
     ]
@@ -199,7 +199,7 @@ MENUS = [
     [
       ("nizar_charge_lane_failed_after", [], "Face Nizar after the broken charge.",
         [
-          (jump_to_menu, "mnu_nizar_impossible_charge"),
+          (start_map_conversation, "trp_npc13"),
         ]
       ),
     ]

@@ -6,7 +6,7 @@ DIALOGS = [
     (eq, "$g_sod_borcha_road_pending", 1),
     (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Borcha, show me the road before someone else chooses it for us.", "companion_depth_borcha_road_pending",
+  "Borcha, show me the road before it chooses us.", "companion_depth_borcha_road_pending",
   [
     (try_begin),
       (le, "$g_sod_borcha_road_origin_center", 0),

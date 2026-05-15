@@ -41,7 +41,12 @@ def test_capture_pool_uses_wounded_enemy_companions_for_captives():
 def test_village_bandit_attack_not_hidden_by_special_quest_overlap():
     text = read("src/menus/centers/village/recruit_volunteers.py")
     marker = '("village_attack_bandits"'
-    block = text[text.index(marker):text.index('("black_army_attack"', text.index(marker))]
+    block = text[
+        text.index(marker):text.index(
+            'build_sod_battle_commander_change_option(\n        "change_commander_black_army_village"',
+            text.index(marker),
+        )
+    ]
     assert "qst_black_army_aid_warband" not in block
     assert "qst_slavers_deal_with_good_guys" not in block
     assert "qst_jotnar_clan_revenge" not in block

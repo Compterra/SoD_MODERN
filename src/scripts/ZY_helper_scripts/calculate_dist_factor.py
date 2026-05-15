@@ -223,8 +223,11 @@ SCRIPTS = [
 	   (assign, reg1, ":lord_no"),
 	   (str_store_troop_name, s7, ":lord_no"),
 	   (assign, reg2, ":object"),
-	   
-	   (display_log_message, "@Bug : Calculate dist factor invalid call.{s33} Lord number {reg1} {s7} object number {reg2}."),
+
+	   (try_begin),
+	     (eq, "$g_sod_debug", 1),
+	     (display_log_message, "@calculate_dist_factor invalid call: lord {reg1} {s7}, object {reg2}.", debug_color),
+	   (try_end),
    (try_end), #twan new
     ]),
 ]

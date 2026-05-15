@@ -79,6 +79,8 @@ def test_guild_hire_initial_orders_use_named_constants() -> None:
 
 def test_contract_and_rejoin_dialogue_are_polished_and_exact_gold_safe() -> None:
     contract = read("src/dialogs/ZZ99_misc_dialogs/anyone_mate_chat_contract.py")
+    pre_talk = read("src/dialogs/ZZ99_misc_dialogs/anyone_mate_chat_pre_talk.py")
+    status_helper = read("src/scripts/ZC_parties/sod_external_party_describe_status_to_s20.py")
     cancel = read("src/dialogs/ZZ99_misc_dialogs/anyone_plyr_mate_chat_contract_cancel2.py")
     rejoin_prompt = read("src/dialogs/ZZ99_misc_dialogs/anyone_plyr_mate_chat_talk_05.py")
     rejoin_ok = read("src/dialogs/ZZ99_misc_dialogs/anyone_mate_chat_rejoin.py")
@@ -87,6 +89,10 @@ def test_contract_and_rejoin_dialogue_are_polished_and_exact_gold_safe() -> None
     assert_contains(contract, "Our writ has {reg1} days left")
     assert_contains(contract, "script_sod_external_party_describe_status_to_s20")
     assert_not_contains(contract, '"{reg1} days."')
+    assert_contains(pre_talk, "{s20} What else should be settled?")
+    assert_not_contains(pre_talk, "{s20} The detachment is waiting on your word.")
+    assert_not_contains(status_helper, "Guild contract: {reg20} days remain")
+    assert_not_contains(status_helper, "@{s20} Guild contract")
 
     assert_contains(cancel, '(ge, ":gold", ":total_cost")')
     assert_not_contains(cancel, '(gt, ":gold", ":total_cost")')

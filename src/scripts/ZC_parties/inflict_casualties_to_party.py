@@ -7,11 +7,14 @@ SCRIPTS = [
       (assign, ":num_fit", reg(0)), #reg(47) = number of fit regulars.
       (store_script_param_2, ":num_attack_rounds"), #number of attacks
       (try_for_range, ":unused", 0, ":num_attack_rounds"),
+        (gt, ":party", 0),
+        (party_is_active, ":party"),
         (gt, ":num_fit", 0),
         (store_random_in_range, ":attacked_troop_rank", 0 , ":num_fit"), #attack troop with rank reg(46)
         (assign, reg1, ":attacked_troop_rank"),
         (call_script, "script_get_stack_with_rank", ":party", ":attacked_troop_rank"),
         (assign, ":attacked_stack", reg(0)), #reg(53) = stack no to attack.
+        (ge, ":attacked_stack", 0),
         (party_stack_get_troop_id,     ":attacked_troop", ":party", ":attacked_stack"),
         (store_character_level, ":troop_toughness", ":attacked_troop"),
 		                    # twan new make elite better if bloodbath is used and mid level infantry a little tougher than cavalry and archers

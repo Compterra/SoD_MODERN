@@ -120,7 +120,7 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc11", 3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc11"),
           (display_message, "@The camp sees the sums before it tastes the thin broth. Grumbling remains, but suspicion loses its teeth.", 0x99CCFF),
-          (jump_to_menu, "mnu_katrin_last_coin"),
+          (start_map_conversation, "trp_npc11"),
         ]
       ),
       ("katrin_watch_defend_stores", [
@@ -158,7 +158,7 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc11", -3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc11"),
           (display_message, "@The camp smiles for a day because it has not seen the numbers. Katrin has, and writes harder.", 0xCC9966),
-          (jump_to_menu, "mnu_katrin_last_coin"),
+          (start_map_conversation, "trp_npc11"),
         ]
       ),
       ("katrin_watch_leave", [], "Return to camp.",
@@ -186,7 +186,7 @@ MENUS = [
     [
       ("katrin_supply_watch_after", [], "Settle the last coin with Katrin.",
         [
-          (jump_to_menu, "mnu_katrin_last_coin"),
+          (start_map_conversation, "trp_npc11"),
         ]
       ),
     ]
@@ -206,7 +206,7 @@ MENUS = [
     [
       ("katrin_supply_watch_failed_after", [], "Face Katrin after the broken store line.",
         [
-          (jump_to_menu, "mnu_katrin_last_coin"),
+          (start_map_conversation, "trp_npc11"),
         ]
       ),
     ]

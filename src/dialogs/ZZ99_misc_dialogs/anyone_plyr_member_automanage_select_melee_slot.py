@@ -11,9 +11,9 @@ DIALOGS = [
         (else_try),
           (str_store_string, s10, "str_none"),
         (try_end),
-      (str_store_string, s1, ":type")
+      (str_store_string, s68, ":type")
     ],
-    "{s1}",
+    "{s68}",
     "member_automanage_select_melee_2",
     [
       (store_add, ":slot_num", reg1, slot_troop_upgrade_wpn_0),

@@ -18,7 +18,7 @@ SCRIPTS = [
         (val_add, ":walker_troop_id", 4), # select spy troop id
 
         # restore spy inventory
-        (try_for_range, ":item_no", "itm_horse_meat", "itm_wooden_stick"),
+        (try_for_range, ":item_no", armors_begin, armors_end),
           (store_item_kind_count, ":num_items", ":item_no", ":original_walker"),
           (ge, ":num_items", 1),
           (store_item_kind_count, ":num_items", ":item_no", ":walker_troop_id"),
@@ -28,7 +28,7 @@ SCRIPTS = [
         # determine spy recognition item
         (store_random_in_range, ":spy_item_type", itp_type_head_armor, itp_type_hand_armor),
         (assign, ":num", 0),
-        (try_for_range, ":item_no", "itm_horse_meat", "itm_wooden_stick"),
+        (try_for_range, ":item_no", armors_begin, armors_end),
           (store_item_kind_count, ":num_items", ":item_no", ":walker_troop_id"),
           (ge, ":num_items", 1),
           (item_get_type, ":itp", ":item_no"),
@@ -38,7 +38,7 @@ SCRIPTS = [
         (try_end),
         (store_random_in_range, ":random_item", 0, ":num"),
         (assign, ":num", -1),
-        (try_for_range, ":item_no", "itm_horse_meat", "itm_wooden_stick"),
+        (try_for_range, ":item_no", armors_begin, armors_end),
           (store_item_kind_count, ":num_items", ":item_no", ":original_walker"),
           (ge, ":num_items", 1),
           (item_get_type, ":itp", ":item_no"),

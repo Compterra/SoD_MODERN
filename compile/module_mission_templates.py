@@ -52,12 +52,12 @@ common_battle_horse_health = (
     (start_presentation, "prsnt_horse_health"),
     ])
 sod_battle_commander_spawn_player_ally = (
-  0, 0, ti_once, [],
+  0.1, 0, ti_once, [],
   [
     (call_script, "script_sod_battle_commander_spawn_player_ally", 0),
     ])
 sod_battle_commander_spawn_player_ally_dismounted = (
-  0, 0, ti_once, [],
+  0.1, 0, ti_once, [],
   [
     (call_script, "script_sod_battle_commander_spawn_player_ally", 1),
     ])

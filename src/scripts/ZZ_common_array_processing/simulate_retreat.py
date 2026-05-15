@@ -99,6 +99,7 @@ SCRIPTS = [
       (store_add, ":total_casualties", ":ally_casualties", ":enemy_casualties"),
       (try_begin),
         (gt, ":total_casualties", 0),
+        (gt, ":total_allies", 0),
         (store_mul, ":morale_adder", ":ally_casualties", 100),
         (val_div, ":morale_adder", ":total_casualties"),
         (val_mul, ":morale_adder", ":ally_casualties"),

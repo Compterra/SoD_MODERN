@@ -41,7 +41,7 @@ MENUS = [
 			(call_script, "script_sod_troop_get_elite_tier", ":upgrade1"),
 			(try_begin),
 				(eq, reg0, sod_elite_tier_faith),
-				(str_store_string, s4, "@^^Elite doctrine: Faith ascension. This is the highest troop tier and requires chapel or temple support."),
+				(str_store_string, s4, "@^^Elite doctrine: Faith ascension. This is the highest troop tier, requires chapel or temple support, and is performed one soldier at a time."),
 			(else_try),
 				(eq, reg0, sod_elite_tier_noble),
 				(str_store_string, s4, "@^^Elite doctrine: Noble house training. Nobles are the second-best troop tier and require chapter support."),
@@ -51,7 +51,7 @@ MENUS = [
 			(call_script, "script_sod_troop_get_elite_tier", ":upgrade2"),
 			(try_begin),
 				(eq, reg0, sod_elite_tier_faith),
-				(str_store_string, s4, "@^^Elite doctrine: Faith ascension. This is the highest troop tier and requires chapel or temple support."),
+				(str_store_string, s4, "@^^Elite doctrine: Faith ascension. This is the highest troop tier, requires chapel or temple support, and is performed one soldier at a time."),
 			(else_try),
 				(eq, reg0, sod_elite_tier_noble),
 				(str_store_string, s4, "@^^Elite doctrine: Noble house training. Nobles are the second-best troop tier and require chapter support."),
@@ -84,7 +84,13 @@ MENUS = [
 				(str_store_string, s8, "@no charge"),
 			(try_end),
 			(str_store_string_reg, s68, s6),
-			(str_store_string, s6, "@{s68}^^Path: {s7} - {s8}."),
+			(str_store_string_reg, s97, s6),
+			(str_store_string, s6, "@{s97}^^Path: {s7} - {s8}."),
+		(try_end),
+		(try_begin),
+			(eq, "$can_upgrade1", 0),
+			(eq, "$can_upgrade2", 0),
+			(str_store_string, s6, "@^^This promotion is no longer available here. Return and choose another troop."),
 		(try_end),
 		(str_store_string, s1, "@You have {reg4} denars.^^Selected troops: {reg5} {s3}.{s6}{s4}"),
 		(assign, "$g_upgrade_troop", "$g_sod_town_upgrade_selected_troop"),
@@ -106,11 +112,17 @@ MENUS = [
 
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_sod_upgrade_center"),
       (val_mul, reg0, "$upgrade_count"),
+      (try_begin),
+        (gt, reg0, 0),
+        (str_store_string, s68, "@ ({reg0} denars total)"),
+      (else_try),
+        (str_store_string, s68, "@ (no charge)"),
+      (try_end),
 
       (store_troop_gold, ":gold", "trp_player"),
       (ge, ":gold", reg0),
     ],
-    "Promote all {s1} to {s2}{reg0? ({reg0} denars total): (no charge)}",
+    "Promote all {s1} to {s2}{s68}",
     [
       (troop_get_slot, ":upgrade1", "$g_upgrade_troop", slot_troop_sod_upgrade1),
 	  (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_sod_upgrade_center"),
@@ -141,11 +153,17 @@ MENUS = [
 
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_sod_upgrade_center"),
       (val_mul, reg0, 5),
+      (try_begin),
+        (gt, reg0, 0),
+        (str_store_string, s68, "@ ({reg0} denars total)"),
+      (else_try),
+        (str_store_string, s68, "@ (no charge)"),
+      (try_end),
 
       (store_troop_gold, ":gold", "trp_player"),
       (ge, ":gold", reg0),
     ],
-    "Promote five {s1} to {s2}{reg0? ({reg0} denars total): (no charge)}",
+    "Promote five {s1} to {s2}{s68}",
     [
       (troop_get_slot, ":upgrade1", "$g_upgrade_troop", slot_troop_sod_upgrade1),
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_sod_upgrade_center"),
@@ -173,11 +191,17 @@ MENUS = [
       (str_store_troop_name, s2, ":upgrade1"),
 
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_sod_upgrade_center"),
+      (try_begin),
+        (gt, reg0, 0),
+        (str_store_string, s68, "@ ({reg0} denars)"),
+      (else_try),
+        (str_store_string, s68, "@ (no charge)"),
+      (try_end),
 
       (store_troop_gold, ":gold", "trp_player"),
       (ge, ":gold", reg0),
     ],
-    "Promote one {s1} to {s2}{reg0? ({reg0} denars): (no charge)}",
+    "Promote one {s1} to {s2}{s68}",
     [
       (troop_get_slot, ":upgrade1", "$g_upgrade_troop", slot_troop_sod_upgrade1),
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_sod_upgrade_center"),
@@ -193,6 +217,23 @@ MENUS = [
         (eq, reg0, sod_elite_tier_faith),
         (call_script, "script_sod_troop_apply_faith_ascension_cost", 1),
       (try_end),
+      (jump_to_menu, "mnu_sod_upgrade_continue"),
+    ]
+  ),
+
+  ("marshal_upgrade_need_coin1",
+    [
+      (eq, "$can_upgrade1", 1),
+      (troop_get_slot, ":upgrade1", "$g_upgrade_troop", slot_troop_sod_upgrade1),
+      (str_store_troop_name, s1, "$g_upgrade_troop"),
+      (str_store_troop_name, s2, ":upgrade1"),
+      (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_sod_upgrade_center"),
+      (gt, reg0, 0),
+      (store_troop_gold, ":gold", "trp_player"),
+      (lt, ":gold", reg0),
+    ],
+    "Need {reg0} denars to promote one {s1} to {s2}.",
+    [
       (jump_to_menu, "mnu_sod_upgrade_continue"),
     ]
   ),
@@ -213,11 +254,17 @@ MENUS = [
 
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_sod_upgrade_center"),
       (val_mul, reg0, "$upgrade_count"),
+      (try_begin),
+        (gt, reg0, 0),
+        (str_store_string, s68, "@ ({reg0} denars total)"),
+      (else_try),
+        (str_store_string, s68, "@ (no charge)"),
+      (try_end),
 
       (store_troop_gold, ":gold", "trp_player"),
       (ge, ":gold", reg0),
     ],
-    "Promote all {s1} to {s2}{reg0? ({reg0} denars total): (no charge)}",
+    "Promote all {s1} to {s2}{s68}",
     [
       (troop_get_slot, ":upgrade2", "$g_upgrade_troop", slot_troop_sod_upgrade2),
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_sod_upgrade_center"),
@@ -248,11 +295,17 @@ MENUS = [
 
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_sod_upgrade_center"),
       (val_mul, reg0, 5),
+      (try_begin),
+        (gt, reg0, 0),
+        (str_store_string, s68, "@ ({reg0} denars total)"),
+      (else_try),
+        (str_store_string, s68, "@ (no charge)"),
+      (try_end),
 
       (store_troop_gold, ":gold", "trp_player"),
       (ge, ":gold", reg0),
     ],
-    "Promote five {s1} to {s2}{reg0? ({reg0} denars total): (no charge)}",
+    "Promote five {s1} to {s2}{s68}",
     [
       (troop_get_slot, ":upgrade2", "$g_upgrade_troop", slot_troop_sod_upgrade2),
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_sod_upgrade_center"),
@@ -280,11 +333,17 @@ MENUS = [
       (str_store_troop_name, s2, ":upgrade2"),
 
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_sod_upgrade_center"),
+      (try_begin),
+        (gt, reg0, 0),
+        (str_store_string, s68, "@ ({reg0} denars)"),
+      (else_try),
+        (str_store_string, s68, "@ (no charge)"),
+      (try_end),
 
       (store_troop_gold, ":gold", "trp_player"),
       (ge, ":gold", reg0),
     ],
-    "Promote one {s1} to {s2}{reg0? ({reg0} denars): (no charge)}",
+    "Promote one {s1} to {s2}{s68}",
     [
       (troop_get_slot, ":upgrade2", "$g_upgrade_troop", slot_troop_sod_upgrade2),
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_sod_upgrade_center"),
@@ -303,6 +362,38 @@ MENUS = [
       (jump_to_menu, "mnu_sod_upgrade_continue"),
     ]
   ),
-  ("return",[],"Return.",[(jump_to_menu, "$jump_menu"),])
+
+  ("marshal_upgrade_need_coin2",
+    [
+      (eq, "$can_upgrade2", 1),
+      (troop_get_slot, ":upgrade2", "$g_upgrade_troop", slot_troop_sod_upgrade2),
+      (str_store_troop_name, s1, "$g_upgrade_troop"),
+      (str_store_troop_name, s2, ":upgrade2"),
+      (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_sod_upgrade_center"),
+      (gt, reg0, 0),
+      (store_troop_gold, ":gold", "trp_player"),
+      (lt, ":gold", reg0),
+    ],
+    "Need {reg0} denars to promote one {s1} to {s2}.",
+    [
+      (jump_to_menu, "mnu_sod_upgrade_continue"),
+    ]
+  ),
+  ("marshal_upgrade_no_current_path",
+    [
+      (eq, "$can_upgrade1", 0),
+      (eq, "$can_upgrade2", 0),
+    ],
+    "Choose another troop.",
+    [
+      (try_begin),
+        (neq, "$g_encountered_party", -1),
+        (jump_to_menu, "mnu_sod_upgrade"),
+      (else_try),
+        (jump_to_menu, "mnu_sod_upgrade_camp"),
+      (try_end),
+    ]
+  ),
+  ("return",[],"Leave promotions.",[(jump_to_menu, "$jump_menu"),])
 	]),
 ]

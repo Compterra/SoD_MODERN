@@ -18,12 +18,12 @@ DIALOGS = [
 		(ge, "$g_companion_banter_context", 0),
 		(eq, "$g_companion_banter_pair_a", trp_npc9),
 		(eq, "$g_companion_banter_pair_b", trp_npc10),
-	], "And your habit of scowling at every plan does not improve it, Bunduk. Still, a man who watches the roads for traps is worth listening to when the weather turns ugly.", "close_window", []],
+	], "And your habit of scowling at every plan does not improve it, Bunduk. Still, a man who watches the track for traps is worth listening to when weather turns ugly.", "close_window", []],
 	[trp_npc9, "event_triggered", [
 		(ge, "$g_companion_banter_context", 0),
 		(eq, "$g_companion_banter_pair_a", trp_npc10),
 		(eq, "$g_companion_banter_pair_b", trp_npc9),
-	], "He talks like every coin has a sermon attached to it. Fine. Ledgers keep a camp honest, and honesty is easier to trust than charm.", "close_window", []],
+	], "He talks like every coin has a sermon attached to it. Fine. Ledgers keep people honest, and honesty is easier to trust than charm.", "close_window", []],
 	[trp_npc10, "event_triggered", [
 		(ge, "$g_companion_banter_context", 0),
 		(eq, "$g_companion_banter_pair_a", trp_npc10),
@@ -56,25 +56,25 @@ DIALOGS = [
 		(eq, "$g_companion_banter_variant", 0),
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc9),
 		(eq, "$g_companion_banter_pair_b", trp_npc9),
-	], "If we are delayed, I would rather it be by bad weather than by sloppy discipline. The road is cruel enough without us giving it help.", "close_window", []],
+	], "If we are delayed, I would rather it be by bad weather than by sloppy discipline. The march is cruel enough without us giving it help.", "close_window", []],
 	[trp_npc10, "event_triggered", [
 		(eq, "$g_companion_banter_context", 1),
 		(eq, "$g_companion_banter_variant", 0),
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc10),
 		(eq, "$g_companion_banter_pair_b", trp_npc10),
-	], "And I would rather the camp learn to look past your frown and into the actual supplies. Anger is cheaper than repairs, but repairs keep us moving.", "close_window", []],
+	], "And I would rather people learn to look past your frown and into the actual supplies. Anger is cheaper than repairs, but repairs keep us moving.", "close_window", []],
 	[trp_npc11, "event_triggered", [
 		(eq, "$g_companion_banter_context", 1),
 		(eq, "$g_companion_banter_variant", 1),
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc11),
 		(eq, "$g_companion_banter_pair_b", trp_npc11),
-	], "If the camp is restless, then I am restless. We have enough injuries already without inviting more through pride and bad timing.", "close_window", []],
+	], "If everyone is restless, then I am restless. We have enough injuries already without inviting more through pride and bad timing.", "close_window", []],
 	[trp_npc12, "event_triggered", [
 		(eq, "$g_companion_banter_context", 1),
 		(eq, "$g_companion_banter_variant", 1),
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc12),
 		(eq, "$g_companion_banter_pair_b", trp_npc12),
-	], "Then stop pacing and count the straps. A quiet hand does more for a camp than a loud conscience ever will.", "close_window", []],
+	], "Then stop pacing and count the straps. A quiet hand does more useful work than a loud conscience ever will.", "close_window", []],
 
 	[trp_npc9, "event_triggered", [
 		(eq, "$g_companion_banter_context", 2),
@@ -107,7 +107,7 @@ DIALOGS = [
 		(eq, "$g_companion_banter_pair_b", trp_npc9),
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc10),
 		(eq, "$g_companion_banter_pair_b", trp_npc10),
-	], "Let it lie. A camp survives by knowing when to shut its mouth, tie down the tents, and save its temper for the fight that matters.", "close_window", []],
+	], "Let it lie. We survive by knowing when to shut our mouths, tie down the tents, and save temper for the fight that matters.", "close_window", []],
 	[trp_npc10, "event_triggered", [
 		(eq, "$g_companion_banter_context", 3),
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc10),
@@ -128,5 +128,5 @@ DIALOGS = [
 		(eq, "$g_companion_banter_pair_b", trp_npc12),
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc11),
 		(eq, "$g_companion_banter_pair_b", trp_npc11),
-	], "Good. We have spent enough words for now. If the camp wants more peace, it can start by keeping its complaints to itself until dawn.", "close_window", []],
+	], "Good. We have spent enough words for now. If anyone wants more peace, they can start by keeping complaints quiet until dawn.", "close_window", []],
 ]

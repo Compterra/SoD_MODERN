@@ -5,6 +5,7 @@ MENUS = [
     "none",
     [
       (set_background_mesh, "mesh_pic_siege_join"),
+      (call_script, "script_sod_show_party_leader_portrait", "$g_encountered_party_2"),
 
       (select_enemy, 1),
       (assign, "$g_enemy_party", "$g_encountered_party_2"),
@@ -112,7 +113,7 @@ MENUS = [
        [
          (call_script, "script_cf_sod_battle_commander_can_start"),
          ],
-          "Join the battle ({s7} leads).", [
+          "Join the battle ({s68} leads).", [
               (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
               (assign, "$g_battle_result", 0),
               (try_begin),

@@ -1,6 +1,7 @@
 DIALOGS = [
 [anyone, "gm_pact1",[
-   (try_for_range, "$temp_faction", kingdoms_begin, kingdoms_end),
+   (assign, ":is_hired", 0),
+   (try_for_range, "$temp_faction", native_kingdoms_begin, native_kingdoms_end),
 	(faction_get_slot, ":mercenaries", "$temp_faction", slot_faction_merc_pact),
 	(eq, ":mercenaries", "$g_talk_troop_faction"),
 	(assign, ":is_hired", 1),

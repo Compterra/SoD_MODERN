@@ -7,7 +7,7 @@ DIALOGS = [
     (eq, "$g_sod_matheld_no_backward_step_confronted", 1),
     (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Matheld, tell me what the line learned in that fight.", "companion_depth_matheld_step_pending",
+  "Matheld, what did the line learn?", "companion_depth_matheld_step_pending",
   []],
 
 [anyone|plyr, "member_talk",

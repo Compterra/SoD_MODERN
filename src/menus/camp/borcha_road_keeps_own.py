@@ -51,7 +51,7 @@ MENUS = [
           (main_party_has_troop, "trp_npc1"),
           (eq, "$g_sod_borcha_road_witnessed", 1),
           (eq, "$g_sod_borcha_road_confronted", 1),
-        ], "Keep Borcha's counter-ambush standing until the road is clean.",
+        ], "Hold the counter-ambush until the road is clean.",
         [
           (assign, "$g_sod_borcha_road_pending", 0),
           (try_begin),
@@ -72,7 +72,7 @@ MENUS = [
           (main_party_has_troop, "trp_npc1"),
           (eq, "$g_sod_borcha_road_witnessed", 1),
           (eq, "$g_sod_borcha_road_confronted", 1),
-        ], "Use the route for profit before anyone else learns it is safe.",
+        ], "Use the route for profit first.",
         [
           (assign, "$g_sod_borcha_road_pending", 0),
           (assign, "$g_sod_borcha_road_result_grade", 1),
@@ -143,7 +143,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_safe_roadcraft, 2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
           (display_message, "@Borcha walks the caravan around the teeth of the trap. The raiders keep their lives; the road loses its secret.", 0xCCCC66),
-          (jump_to_menu, "mnu_borcha_road_keeps_own"),
+          (start_map_conversation, "trp_npc1"),
         ]
       ),
       ("borcha_counter_ambush_sell_route", [
@@ -161,10 +161,10 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc1", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
           (display_message, "@The warning sells well. Borcha watches the road afterward, counting who was not worth warning.", 0xCC9966),
-          (jump_to_menu, "mnu_borcha_road_keeps_own"),
+          (start_map_conversation, "trp_npc1"),
         ]
       ),
-      ("borcha_counter_ambush_leave", [], "Return to town.",
+      ("borcha_counter_ambush_leave", [], "Leave the side road for now.",
         [
           (jump_to_menu, "mnu_town"),
         ]
@@ -190,7 +190,7 @@ MENUS = [
     [
       ("borcha_road_ambush_after", [], "Speak with Borcha about the road.",
         [
-          (jump_to_menu, "mnu_borcha_road_keeps_own"),
+          (start_map_conversation, "trp_npc1"),
         ]
       ),
     ]
@@ -210,7 +210,7 @@ MENUS = [
     [
       ("borcha_road_failed_after", [], "Face Borcha's road lesson.",
         [
-          (jump_to_menu, "mnu_borcha_road_keeps_own"),
+          (start_map_conversation, "trp_npc1"),
         ]
       ),
     ]

@@ -7,7 +7,7 @@ DIALOGS = [
     (eq, "$g_sod_katrin_last_coin_confronted", 1),
     (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Katrin, put the ledger in my hands. What must be settled?", "companion_depth_katrin_coin_pending",
+  "Katrin, show me the ledger.", "companion_depth_katrin_coin_pending",
   []],
 
 [anyone|plyr, "member_talk",

@@ -1,6 +1,6 @@
 MENUS = [
 ("training_ground_description", 0,
-   "{s0}",
+   "{s68}",
    "none",
    [],
     [

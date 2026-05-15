@@ -1,3 +1,6 @@
 DIALOGS = [
-[party_tpl|pt_enemy, "enemy_talk_2", [], "I will give up when you are dead!", "close_window", [[encounter_attack]]],
+[party_tpl|pt_enemy, "enemy_talk_2", [], "I will give up when you are dead!", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack)]],
 ]

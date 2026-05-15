@@ -46,6 +46,9 @@ def main() -> None:
     assert_contains(scripts, "player_debt_to_faction", "finance report mercenary debt")
     assert_contains(scripts, "$g_player_debt_to_party_members", "finance report company debt")
     assert_contains(scripts, "will not automatically pay wages or guild debts", "finance report debt warning")
+    assert_contains(scripts, "(store_add, reg10, reg5, reg7)", "finance report totals obligations")
+    assert_contains(scripts, "(store_sub, reg11, reg10, reg1)", "finance report computes cash shortfall")
+    assert_contains(scripts, "Withdraw at least {reg11} denars", "finance report gives actionable withdrawal guidance")
 
     assert_contains(town_menu, "\"go_to_bank\"", "town bank entry")
     assert_contains(town_menu, "script_cf_sod_center_has_bank_service", "town bank helper gate")
@@ -58,12 +61,17 @@ def main() -> None:
         "sod_bank_deposit_10000",
         "sod_bank_deposit_100000",
         "sod_bank_deposit_surplus_1000",
+        "sod_bank_withdraw_for_warnings",
         "sod_bank_withdraw_1000",
         "sod_bank_withdraw_10000",
         "sod_bank_withdraw_100000",
         "sod_bank_withdraw_all",
     ):
         assert_contains(bank_menu, option, "bank menu")
+
+    assert_contains(bank_menu, "Outstanding obligations: {reg10} denars", "bank report obligation summary")
+    assert_contains(bank_menu, "Cash shortfall: {reg11} denars", "bank report shortfall summary")
+    assert_contains(bank_menu, "Withdraw {reg12} denars for current warnings.", "bank warning withdrawal option")
 
     assert_contains(menu_order, "centers/town/sod_bank.py", "menu order")
     assert_contains(trigger, "script_sod_bank_apply_weekly_interest", "weekly bank trigger")

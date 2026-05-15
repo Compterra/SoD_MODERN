@@ -1,5 +1,7 @@
 DIALOGS = [
-[anyone|plyr, "serpent_host_world_route_talk", [], "I will break your screen.", "party_encounter_attack", [
-  (call_script, "script_sod_serpent_host_apply_player_action", sod_serpent_action_attack_screen, 20),
+[anyone|plyr, "serpent_host_world_route_talk", [], "I will break your line.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+    (encounter_attack),
 ]],
 ]

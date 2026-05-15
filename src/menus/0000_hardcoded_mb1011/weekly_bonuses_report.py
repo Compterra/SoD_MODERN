@@ -1,6 +1,6 @@
 MENUS = [
 ("weekly_bonuses_report", mnf_enable_hot_keys,
-    "{s1}",
+    "{s68}",
     "none",
     [
 		(set_background_mesh, "mesh_pic_report_screen"),
@@ -83,7 +83,7 @@ MENUS = [
 		(else_try),
 		  (str_store_string, s8, "@the realm's laws do not change your public stature much"),
 		(try_end),
-		(str_store_string, s1, "@Weekly realm law effects...^{s2}.^{s3}.^{s4}.^{s5}.^{s6}.^{s7}.^{s8}.^"),
+		(str_store_string, s68, "@Weekly realm law effects...^{s2}.^{s3}.^{s4}.^{s5}.^{s6}.^{s7}.^{s8}.^"),
     ],
     [
       ("view_lord_other", [], "Let me see a different report...", [(jump_to_menu, "mnu_reports")]),

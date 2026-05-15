@@ -275,7 +275,7 @@ def build_upgrade_troop_selection_option(troop_no):
             (eq, ":can_up2", 1),
             (str_store_troop_name_by_count, s3, troop_no, ":troop_count"),
         ],
-        "Upgrade {s3}.",
+        "Promote {s3}.",
         [
             (assign, "$g_sod_town_upgrade_selected_troop", troop_no),
             (jump_to_menu, "mnu_sod_upgrade_continue"),
@@ -283,20 +283,20 @@ def build_upgrade_troop_selection_option(troop_no):
     )
 def generate_upgrade_options():
     result = [build_upgrade_troop_selection_option(troop_no) for troop_no in range(0, trp_last_troop)]
-    result.append(("return", [], "Nevermind.", [(jump_to_menu, "$jump_menu")]))
+    result.append(("return", [], "Leave promotions.", [(jump_to_menu, "$jump_menu")]))
     return result
-def build_sod_battle_commander_change_option(option_id, return_menu, extra_conditions=None):
+def build_sod_battle_commander_change_option(option_id, commander_return_menu, extra_conditions=None):
     conditions = list(extra_conditions or [])
     conditions.extend([
         (call_script, "script_cf_sod_battle_commander_party_has_available_commander"),
-        (call_script, "script_sod_battle_commander_store_current_name_to_s7"),
+        (call_script, "script_sod_battle_commander_store_current_name_to_s68"),
     ])
     return (
         option_id,
         conditions,
-        "Choose acting commander ({s7}).",
+        "Choose acting commander ({s68}).",
         [
-            (assign, "$g_sod_battle_commander_return_menu", return_menu),
+            (assign, "$g_sod_battle_commander_return_menu", commander_return_menu),
             (jump_to_menu, "mnu_sod_battle_commander_select"),
         ],
     )
@@ -391,7 +391,7 @@ game_menus = [
        ),
       ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/start_phase_2.py:L1-L26 ] start_phase_2
+# [ src/menus/0000_hardcoded_mb1011/start_phase_2.py:L1-L29 ] start_phase_2
 (
     "start_phase_2", mnf_disable_all_keys,
     "You arrive in Calradia, a land torn between rival kingdoms battling for supremacy:"\
@@ -411,6 +411,9 @@ game_menus = [
          (call_script, "script_get_player_party_morale_values"),
          (party_set_morale, "p_main_party", reg0),
          (assign, "$g_sod_player_world_ready", 1),
+         (assign, "$g_player_party_icon", -1),
+         (assign, "$g_sod_player_map_icon_dirty", 1),
+         (call_script, "script_sod_refresh_player_map_icon"),
          (change_screen_return),
         ]
        ),
@@ -554,33 +557,36 @@ game_menus = [
        ),
     ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/reports.py:L85-L233 ] reports
+# [ src/menus/0000_hardcoded_mb1011/reports.py:L85-L243 ] reports
 ("reports", mnf_enable_hot_keys,
-    "{playername} {s2}^Formerly of the {s1}^^{s3}^Reputation: {s4}^Fame: {s5}^^Company mood: {s6}^Party Size Limit: {reg7}^^Time in Calradia: {s7}.",
+    "{playername} {s69}^Formerly of the {s68}^^{s3}^Reputation: {s4}^Fame: {s5}^^Company mood: {s6}^Party Size Limit: {reg7}^^Time in Calradia: {s7}.",
     "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
 
       # get the name of their homeland faction
       (store_add, reg0, "str_sod_homeland_0", "$g_sod_country"),
-      (str_store_string, s1, reg0),
+      (str_store_string, s68, reg0),
 
       # add a suffix for what their faith is
       (store_add, reg0, "str_sod_faith_suffix_0", "$g_sod_faith"),
-      (str_store_string, s2, reg0),
+      (str_store_string, s69, reg0),
 
       # generate their full title (mercenary, vassal, king...)
       (try_begin),
         (gt, "$players_kingdom", 0),
-        (str_store_faction_name, s8, "$players_kingdom"),
+        (str_store_faction_name, s70, "$players_kingdom"),
         (try_begin),
           (faction_slot_eq, "$players_kingdom", slot_faction_leader, "trp_player"),
-          (str_store_string, s2, "@{s2}^Ruler of the {s8}"),
+          (str_store_string_reg, s97, s69),
+          (str_store_string, s69, "@{s97}^Ruler of the {s70}"),
         (else_try),
           (eq, "$player_has_homage", 1),
-          (str_store_string, s2, "@{s2}^vassal of the {s8}"),
+          (str_store_string_reg, s97, s69),
+          (str_store_string, s69, "@{s97}^vassal of the {s70}"),
         (else_try),
-          (str_store_string, s2, "@{s2}^mercenary for the {s8}"),
+          (str_store_string_reg, s97, s69),
+          (str_store_string, s69, "@{s97}^mercenary for the {s70}"),
         (try_end),
       (try_end),
 
@@ -674,7 +680,11 @@ game_menus = [
 
       ("view_party_reports", [], "Party and company reports...", [(jump_to_menu, "mnu_party_reports")]),
 
-      ("view_company_accounts", [], "Review company accounts.", [(jump_to_menu, "mnu_company_accounts")]),
+      ("view_company_accounts", [], "Review company accounts.",
+        [
+          (assign, "$g_sod_company_accounts_return_menu", "mnu_reports"),
+          (jump_to_menu, "mnu_company_accounts"),
+        ]),
 
       ("view_quest_journal_report", [], "View quest journal.", [(jump_to_menu, "mnu_quest_journal_report")]),
 
@@ -698,31 +708,38 @@ game_menus = [
      
       ("view_fief_reports", [(call_script, "script_get_number_of_hero_centers", "trp_player"), (gt, reg0, 0)], "View fief reports...", [(jump_to_menu, "mnu_fief_reports")]),
 
-      ("view_runtime_sanity_report", [(eq, "$cheat_mode", 1)], "Debug: Runtime Sanity Report.", [(jump_to_menu, "mnu_runtime_sanity_report")]),
+      ("view_runtime_sanity_report", [
+        (this_or_next|eq, "$cheat_mode", 1),
+        (eq, "$g_sod_cheat_mode", 1),
+      ], "Debug: Runtime Sanity Report.", [(jump_to_menu, "mnu_runtime_sanity_report")]),
 
     ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/lord_reports.py:L1-L49 ] lord_reports
+# [ src/menus/0000_hardcoded_mb1011/lord_reports.py:L1-L53 ] lord_reports
 ("lord_reports", mnf_enable_hot_keys,
-    "{s1}",
+    "{s98}",
     "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
 
       (try_begin),
         (gt, "$players_kingdom", 0),
-        (str_store_faction_name, s1, "$players_kingdom"),
+        (str_store_faction_name, s68, "$players_kingdom"),
         (faction_get_slot, ":King", "$players_kingdom", slot_faction_leader),
         (try_begin),
           (eq, ":King", "trp_player"),
-          (str_store_string, s1, "@You are the {King/Queen} of the {s1}."),
+          (str_store_string, s98, "@You are the {King/Queen} of the {s68}."),
         (else_try),
-          (call_script, "script_store_troop_name", s2, ":King"),
-          (assign, reg0, "$player_has_homage"),
-          (str_store_string, s1, "@You are a {reg0?vassal of:mercenary for} {s2}, King of the {s1}."),
+          (call_script, "script_store_troop_name", s69, ":King"),
+          (try_begin),
+            (eq, "$player_has_homage", 1),
+            (str_store_string, s98, "@You serve {s69} of the {s68} as a vassal."),
+          (else_try),
+            (str_store_string, s98, "@You are contracted to the {s68}."),
+          (try_end),
         (try_end),
       (else_try),
-        (str_store_string, s1, "@You are a foreigner, without allegience of any kind..."),
+        (str_store_string, s98, "@You owe allegiance to no realm."),
       (try_end),
     ],
     [
@@ -752,7 +769,7 @@ game_menus = [
   ),
 # [ src/menus/0000_hardcoded_mb1011/weekly_bonuses_report.py:L1-L93 ] weekly_bonuses_report
 ("weekly_bonuses_report", mnf_enable_hot_keys,
-    "{s1}",
+    "{s68}",
     "none",
     [
 		(set_background_mesh, "mesh_pic_report_screen"),
@@ -835,36 +852,36 @@ game_menus = [
 		(else_try),
 		  (str_store_string, s8, "@the realm's laws do not change your public stature much"),
 		(try_end),
-		(str_store_string, s1, "@Weekly realm law effects...^{s2}.^{s3}.^{s4}.^{s5}.^{s6}.^{s7}.^{s8}.^"),
+		(str_store_string, s68, "@Weekly realm law effects...^{s2}.^{s3}.^{s4}.^{s5}.^{s6}.^{s7}.^{s8}.^"),
     ],
     [
       ("view_lord_other", [], "Let me see a different report...", [(jump_to_menu, "mnu_reports")]),
       ("view_lord_travel", [], "Resume travelling.", [(change_screen_return)]),
     ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/fief_reports.py:L1-L145 ] fief_reports
+# [ src/menus/0000_hardcoded_mb1011/fief_reports.py:L1-L151 ] fief_reports
 ("fief_reports", mnf_enable_hot_keys,
-    "{s1}",
+    "{s98}",
     "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
 
       (try_begin),
         (gt, "$players_kingdom", 0),
-        (str_store_faction_name, s1, "$players_kingdom"),
+        (str_store_faction_name, s68, "$players_kingdom"),
         (faction_get_slot, ":King", "$players_kingdom", slot_faction_leader),
         (try_begin),
           (eq, ":King", "trp_player"),
-          (str_store_string, s1, "@You are the {King/Queen} of the {s1}."),
+          (str_store_string, s98, "@You are the {King/Queen} of the {s68}."),
         (else_try),
           (eq, "$player_has_homage", 1),
-          (call_script, "script_store_troop_name", s2, ":King"),
-          (str_store_string, s1, "@You are a vassal of {s2}, King of the {s1}."),
+          (call_script, "script_store_troop_name", s69, ":King"),
+          (str_store_string, s98, "@You hold land as a vassal of {s69} of the {s68}."),
         (else_try),
-          (str_store_string, s1, "@You are a mercenary for the {s1}."),
+          (str_store_string, s98, "@You are contracted to the {s68}."),
         (try_end),
       (else_try),
-        (str_store_string, s1, "@You are a foreigner, without allegience of any kind..."),
+        (str_store_string, s98, "@You owe allegiance to no realm."),
       (try_end),
 
       (call_script, "script_get_number_of_hero_centers", "trp_player"),
@@ -879,17 +896,20 @@ game_menus = [
         (else_try),
           (eq, ":i_center", ":last"),
           (str_store_party_name, s7, ":cur_center"),
-          (str_store_string, s8, "@{s8} and {s7}"),
+          (str_store_string_reg, s97, s8),
+          (str_store_string, s8, "@{s97} and {s7}"),
         (else_try),
           (str_store_party_name, s7, ":cur_center"),
-          (str_store_string, s8, "@{s8}, {s7}"),
+          (str_store_string_reg, s97, s8),
+          (str_store_string, s8, "@{s97}, {s7}"),
         (try_end),
       (try_end),
       (try_begin),
         (eq, ":no_centers", 0),
         (str_store_string, s8, "@no estates held in your own name"),
       (try_end),
-      (str_store_string, s1, "@{s1}^^Estates: {s8}."),
+      (str_store_string_reg, s97, s98),
+      (str_store_string, s98, "@{s97}^^Estates: {s8}."),
       # add on the accumulated income / rents
       (assign, ":total_income", 0),
       (try_for_range, ":center_no", centers_begin, centers_end),
@@ -900,12 +920,15 @@ game_menus = [
         (val_add, ":total_income", ":accumulated_tariffs"),
       (try_end),
       (assign, reg1, ":total_income"),
-      (str_store_string, s1, "@{s1}^^Treasury awaiting collection: {reg1} denars."),
+      (str_store_string_reg, s97, s98),
+      (str_store_string, s98, "@{s97}^^Treasury awaiting collection: {reg1} denars."),
       (call_script, "script_sod_describe_player_mercenary_guild_halls_to_s20"),
-      (str_store_string, s1, "@{s1}^^Mercenary Guild Halls:^{s20}"),
+      (str_store_string_reg, s97, s98),
+      (str_store_string, s98, "@{s97}^^Mercenary Guild Halls:^{s20}"),
     ],
     [
       ("view_prosperity_report", [], "View prosperity report.", [(jump_to_menu, "mnu_fief_prosperity_report")]),
+      ("view_public_health_report", [], "View public health report.", [(jump_to_menu, "mnu_center_public_health_report")]),
       ("view_regional_economy_flow_report", [], "View regional economy flow report.", [(jump_to_menu, "mnu_regional_economy_flow_report")]),
       ("view_center_goods_market_report", [], "View center goods market report.", [(jump_to_menu, "mnu_center_goods_market_report")]),
       ("view_trade_pressure_report", [], "View trade pressure report.", [(jump_to_menu, "mnu_fief_trade_pressure_report")]),
@@ -986,98 +1009,122 @@ game_menus = [
       ("view_lord_travel", [], "Resume travelling.", [(change_screen_return)]),
     ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/game_options.py:L1-L123 ] game_options
+# [ src/menus/0000_hardcoded_mb1011/game_options.py:L1-L147 ] game_options
 ("game_options", mnf_enable_hot_keys,
-    "{s1}",
+    "{s68}",
     "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
 
-      (str_clear, s1),
-      (str_store_string, s1, "@Your current settings:"),
+      (str_clear, s68),
+      (str_store_string, s68, "@Your current settings:"),
 
       (try_begin),
         (eq, "$g_sod_hide_messages", 0),
-        (str_store_string, s1, "@{s1}^^Messages: All"),
+        (str_store_string, s69, "@{s68}^^Messages: All"),
+        (str_store_string_reg, s68, s69),
       (else_try),
         (eq, "$g_sod_hide_messages", -1),
-        (str_store_string, s1, "@{s1}^^Messages: Fewer"),
+        (str_store_string, s69, "@{s68}^^Messages: Fewer"),
+        (str_store_string_reg, s68, s69),
       (else_try),
-        (str_store_string, s1, "@{s1}^^Messages: Fewest"),
+        (str_store_string, s69, "@{s68}^^Messages: Fewest"),
+        (str_store_string_reg, s68, s69),
       (try_end),
 
       (try_begin),
         (eq, "$g_disable_formations", 0),
-        (str_store_string, s1, "@{s1}^Tactical Formations: ON"),
+        (str_store_string, s69, "@{s68}^Tactical Formations: ON"),
+        (str_store_string_reg, s68, s69),
       (else_try),
-        (str_store_string, s1, "@{s1}^Tactical Formations: OFF"),
+        (str_store_string, s69, "@{s68}^Tactical Formations: OFF"),
+        (str_store_string_reg, s68, s69),
       (try_end),
 
 	  (try_begin),
         (eq, "$g_disable_morale", 0),
-        (str_store_string, s1, "@{s1}^Battle Morale: ON"),
+        (str_store_string, s69, "@{s68}^Battle Morale: ON"),
+        (str_store_string_reg, s68, s69),
       (else_try),
-        (str_store_string, s1, "@{s1}^Battle Morale: OFF"),
+        (str_store_string, s69, "@{s68}^Battle Morale: OFF"),
+        (str_store_string_reg, s68, s69),
       (try_end),
 
       (try_begin),
         (eq, "$g_sod_debug", 1),
-        (str_store_string, s1, "@{s1}^SoD Debugging: ON"),
+        (str_store_string, s69, "@{s68}^SoD Debugging: ON"),
+        (str_store_string_reg, s68, s69),
       (else_try),
-        (str_store_string, s1, "@{s1}^SoD Debugging: OFF"),
+        (str_store_string, s69, "@{s68}^SoD Debugging: OFF"),
+        (str_store_string_reg, s68, s69),
       (try_end),
 
        (try_begin),
          (eq, "$g_sod_deactivate_forced_rest", 1),
-         (str_store_string, s1, "@{s1}^Forced Rest After Battles : OFF"),
+         (str_store_string, s69, "@{s68}^Forced Rest After Battles: OFF"),
+         (str_store_string_reg, s68, s69),
          (else_try),
          (eq, "$g_sod_deactivate_forced_rest", 0),
-         (str_store_string, s1, "@{s1}^Forced Rest After Battles : ON"),
+         (str_store_string, s69, "@{s68}^Forced Rest After Battles: ON"),
+         (str_store_string_reg, s68, s69),
        (try_end),
 
          (try_begin),
          (eq, "$g_sod_autoresolve", 1),
-         (str_store_string, s1, "@{s1}^Autoresolved Battles : KT0 realistic simulation"),
+         (str_store_string, s69, "@{s68}^Autoresolved Battles: KT0 realistic simulation"),
+         (str_store_string_reg, s68, s69),
          (else_try),
          (eq, "$g_sod_autoresolve", 0),
-         (str_store_string, s1, "@{s1}^Autoresolved Battles : BloodBath System"),
+         (str_store_string, s69, "@{s68}^Autoresolved Battles: Blood Bath System"),
+         (str_store_string_reg, s68, s69),
          (else_try),
-         (str_store_string, s1, "@{s1}^Autoresolved Battles : Native system"),
+         (str_store_string, s69, "@{s68}^Autoresolved Battles: Native System"),
+         (str_store_string_reg, s68, s69),
          (try_end),
 		 
 	(try_begin),
         (eq, "$g_sod_difficulty", -1),
-        (str_store_string, s1, "@{s1}^^Economic Difficulty: Easier"),
+        (str_store_string, s69, "@{s68}^^Economic Difficulty: Easier"),
+        (str_store_string_reg, s68, s69),
       (else_try),
         (eq, "$g_sod_difficulty", 0),
-        (str_store_string, s1, "@{s1}^^Economic Difficulty: Normal"),
+        (str_store_string, s69, "@{s68}^^Economic Difficulty: Normal"),
+        (str_store_string_reg, s68, s69),
       (else_try),
         (eq, "$g_sod_difficulty", 1),
-        (str_store_string, s1, "@{s1}^^Economic Difficulty: Harder"),
+        (str_store_string, s69, "@{s68}^^Economic Difficulty: Harder"),
+        (str_store_string_reg, s68, s69),
       (try_end),
 	  
 	  (try_begin),
 	    (eq, "$g_sod_cheat_mode", 1),
-		(str_store_string, s1, "@{s1}^SoD Cheat Mode: ON"),
+		(str_store_string, s69, "@{s68}^SoD Cheat Mode: ON"),
+		(str_store_string_reg, s68, s69),
 		(else_try),
-		(str_store_string, s1, "@{s1}^SoD Cheat Mode: OFF"),
+		(str_store_string, s69, "@{s68}^SoD Cheat Mode: OFF"),
+		(str_store_string_reg, s68, s69),
 	  (try_end),
 
 	  (try_begin),
         (eq, "$g_sod_diplomatic_difficulty", -2),
-        (str_store_string, s1, "@{s1}^Diplomatic Difficulty: Easiest"),
+        (str_store_string, s69, "@{s68}^Diplomatic Difficulty: Easiest"),
+        (str_store_string_reg, s68, s69),
       (else_try),
         (eq, "$g_sod_diplomatic_difficulty", -1),
-        (str_store_string, s1, "@{s1}^Diplomatic Difficulty: Easier"),
+        (str_store_string, s69, "@{s68}^Diplomatic Difficulty: Easier"),
+        (str_store_string_reg, s68, s69),
       (else_try),
         (eq, "$g_sod_diplomatic_difficulty", 0),
-        (str_store_string, s1, "@{s1}^Diplomatic Difficulty: Normal"),
+        (str_store_string, s69, "@{s68}^Diplomatic Difficulty: Normal"),
+        (str_store_string_reg, s68, s69),
 	  (else_try),
         (eq, "$g_sod_diplomatic_difficulty", 1),
-        (str_store_string, s1, "@{s1}^Diplomatic Difficulty: Hard"),
+        (str_store_string, s69, "@{s68}^Diplomatic Difficulty: Hard"),
+        (str_store_string_reg, s68, s69),
       (else_try),
         (eq, "$g_sod_diplomatic_difficulty", 2),
-        (str_store_string, s1, "@{s1}^Diplomatic Difficulty: Hardest"),	
+        (str_store_string, s69, "@{s68}^Diplomatic Difficulty: Hardest"),
+        (str_store_string_reg, s68, s69),
       (try_end),
 	  
 	  
@@ -1093,7 +1140,7 @@ game_menus = [
           (try_end),
           (jump_to_menu, "mnu_game_options"),
         ]),
-	  ("game_options_difficulty", [], "Change Diplomatic Difficulty.",
+	  ("game_options_diplomatic_difficulty", [], "Change Diplomatic Difficulty.",
         [
           (val_add, "$g_sod_diplomatic_difficulty", 1),
           (try_begin),
@@ -1108,52 +1155,63 @@ game_menus = [
       ("game_options_other", [], "View other reports...", [(jump_to_menu, "mnu_reports")]),
       ("game_options_travel", [], "Resume travelling.", [(change_screen_return)]),
     ]),
-# [ src/menus/0000_hardcoded_mb1011/game_options_2.py:L1-L63 ] game_options_2
+# [ src/menus/0000_hardcoded_mb1011/game_options_2.py:L1-L74 ] game_options_2
 ("game_options_2", mnf_enable_hot_keys,
-    "{s1}",
+    "{s68}",
     "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
-      (str_clear, s1),
-      (str_store_string, s1, "@Battles settings :"),
+      (str_clear, s68),
+      (str_store_string, s68, "@Battle settings:"),
 
       (try_begin),
         (eq, "$g_disable_formations", 0),
-        (str_store_string, s1, "@{s1}^^Tactical Formations: ON (AIs will use formations as well)"),
+        (str_store_string, s69, "@{s68}^^Tactical Formations: ON (AI commanders may use formations)"),
+        (str_store_string_reg, s68, s69),
       (else_try),
-        (str_store_string, s1, "@{s1}^^Tactical Formations: OFF (AIs won't use formations as well)"),
+        (str_store_string, s69, "@{s68}^^Tactical Formations: OFF"),
+        (str_store_string_reg, s68, s69),
       (try_end),
 
 	  (try_begin),
         (eq, "$g_disable_formations_dismount", 0),
-        (str_store_string, s1, "@{s1}^Auto Dismount: ON (if mounted units are few they start battles dismounted)"),
+        (str_store_string, s69, "@{s68}^Auto Dismount: ON (small mounted groups may fight dismounted)"),
+        (str_store_string_reg, s68, s69),
       (else_try),
-        (str_store_string, s1, "@{s1}^Auto Dismount: OFF"),
+        (str_store_string, s69, "@{s68}^Auto Dismount: OFF"),
+        (str_store_string_reg, s68, s69),
       (try_end),
 
 	  (try_begin),
         (eq, "$g_disable_morale", 0),
-        (str_store_string, s1, "@{s1}^Routing when Morale is low: ON"),
+        (str_store_string, s69, "@{s68}^Low Morale Routing: ON"),
+        (str_store_string_reg, s68, s69),
       (else_try),
-        (str_store_string, s1, "@{s1}^Routing when Morale is low: OFF"),
+        (str_store_string, s69, "@{s68}^Low Morale Routing: OFF"),
+        (str_store_string_reg, s68, s69),
       (try_end),
 
        (try_begin),
          (eq, "$g_sod_deactivate_forced_rest", 1),
-         (str_store_string, s1, "@{s1}^Forced Rest After Battles: OFF"),
+         (str_store_string, s69, "@{s68}^Forced Rest After Battles: OFF"),
+         (str_store_string_reg, s68, s69),
          (else_try),
          (eq, "$g_sod_deactivate_forced_rest", 0),
-         (str_store_string, s1, "@{s1}^Forced Rest After Battles: ON (after a win you may have to wait for a duration based upon morale and battle size)"),
+         (str_store_string, s69, "@{s68}^Forced Rest After Battles: ON (recovery depends on morale and battle size)"),
+         (str_store_string_reg, s68, s69),
        (try_end),
 
          (try_begin),
          (eq, "$g_sod_autoresolve", 1),
-         (str_store_string, s1, "@{s1}^Autoresolved Battles: Kt0's Improved Autoresolve (recommended realistic mode; troop equipment, roles, and siege context matter)"),
+         (str_store_string, s69, "@{s68}^Autoresolved Battles: KT0's Improved Autoresolve (equipment, role, and siege context matter)"),
+         (str_store_string_reg, s68, s69),
          (else_try),
          (eq, "$g_sod_autoresolve", 0),
-         (str_store_string, s1, "@{s1}^Autoresolved Battles: Blood Bath System (fast AIvsAI battles, troop types matter)"),
+         (str_store_string, s69, "@{s68}^Autoresolved Battles: Blood Bath System (fast AI battles; troop types matter)"),
+         (str_store_string_reg, s68, s69),
          (else_try),
-         (str_store_string, s1, "@{s1}^Autoresolved Battles: Native System (slow AI vs AI battles, only based on level)"),
+         (str_store_string, s69, "@{s68}^Autoresolved Battles: Native System (level-based AI battles)"),
+         (str_store_string_reg, s68, s69),
          (try_end),
       # Sod Twan
     ],
@@ -1170,90 +1228,107 @@ game_menus = [
       ("game_options_autoresilve_3", [(eq, "$g_sod_autoresolve", -1)], "Use Bloodbath for Autoresolved Battles", [(assign, "$g_sod_autoresolve", 0), (jump_to_menu, "mnu_game_options_2")]),
       ("game_options_return", [], "Back to Options...", [(jump_to_menu, "mnu_game_options")]),
     ] ),
-# [ src/menus/0000_hardcoded_mb1011/game_options_3.py:L1-L120 ] game_options_3
+# [ src/menus/0000_hardcoded_mb1011/game_options_3.py:L1-L137 ] game_options_3
 ("game_options_3", mnf_enable_hot_keys,
-    "{s1}",
+    "{s98}",
     "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
 
-      (str_clear, s1),
-      (str_store_string, s1, "@Other settings:"),
+      (str_clear, s98),
+      (str_store_string, s98, "@Other settings:"),
 
       (try_begin),
         (eq, "$g_sod_hide_messages", 0),
-        (str_store_string, s1, "@{s1}^^Messages: All"),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^^Messages: All"),
       (else_try),
         (eq, "$g_sod_hide_messages", -1),
-        (str_store_string, s1, "@{s1}^^Messages: Fewer"),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^^Messages: Fewer"),
       (else_try),
-        (str_store_string, s1, "@{s1}^^Messages: Fewest"),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^^Messages: Fewest"),
       (try_end),
 
 	  # (try_begin),
 	    # (eq, "$g_sod_anti_pursuit", 0),
-		# (str_store_string, s1, "@{s1}^Anti Pursuit System: ON"),
+	    # Anti Pursuit System display removed.
 	  # (else_try),
-		# (str_store_string, s1, "@{s1}^Anti Pursuit System: OFF"),
+		# Anti Pursuit System display removed.
 	  # (try_end),
 
       (try_begin),
         (eq, "$g_sod_debug", 1),
-        (str_store_string, s1, "@{s1}^SoD Debugging: ON"),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^SoD debugging: ON"),
       (else_try),
-        (str_store_string, s1, "@{s1}^SoD Debugging: OFF"),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^SoD debugging: OFF"),
       (try_end),
 
 	  (try_begin),
         (eq, "$g_sod_horse_health_bar_on", 1),
-        (str_store_string, s1, "@{s1}^Horse Health Bar: ON"),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^Horse health bar: ON"),
       (else_try),
-        (str_store_string, s1, "@{s1}^Horse Health Bar: OFF"),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^Horse health bar: OFF"),
       (try_end),
 
       (try_begin),
         (eq, "$g_sod_deactivate_ai", 0),
         (eq, "$g_sod_deactivate_lords_ai", 0),
-        (str_store_string, s1, "@{s1}^Strategic AI Changes : FULL (including lord ai)"),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^Strategic AI: Full, including lord decisions"),
       (else_try),
         (eq, "$g_sod_deactivate_ai", 0),
-        (str_store_string, s1, "@{s1}^Strategic AI Changes : Factions AI Only"),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^Strategic AI: Faction decisions only"),
       (else_try),
-        (str_store_string, s1, "@{s1}^Strategic AI : Native"),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^Strategic AI: Native"),
        (try_end),
 
 	   	(try_begin),  #twan454
 		 (eq, "$g_sod_deactivate_ai", 0),
 		 (faction_slot_eq, "fac_player_faction", slot_faction_center_transfer_option, 0),
-		 (str_store_string, s1, "@{s1}^Troop transfer System : Lords take/deposit troops in centers, centers recruit some prisoners every week."),
+		 (str_store_string_reg, s97, s98),
+		 (str_store_string, s98, "@{s97}^Troop transfers: Lords move troops between centers; centers recruit some prisoners weekly."),
 		 (else_try),
 		 (eq, "$g_sod_deactivate_ai", 0),
 		 (faction_slot_eq, "fac_player_faction", slot_faction_center_transfer_option, 1),
-		 (str_store_string, s1, "@{s1}^Troop transfer System : AI lords only take/deposit troops in centers, their centers recruit prisoners."),
+		 (str_store_string_reg, s97, s98),
+		 (str_store_string, s98, "@{s97}^Troop transfers: AI lords move troops; their centers recruit prisoners."),
 		 (else_try),
 		 (eq, "$g_sod_deactivate_ai", 0),
 		 (faction_slot_eq, "fac_player_faction", slot_faction_center_transfer_option, 2),
-		 (str_store_string, s1, "@{s1}^Troop transfer System : Lords take/deposit troops in centers, centers don't recruit prisoners."),
+		 (str_store_string_reg, s97, s98),
+		 (str_store_string, s98, "@{s97}^Troop transfers: Lords move troops; prisoner recruitment is disabled."),
 		 (else_try),
 		 (eq, "$g_sod_deactivate_ai", 0),
 		 (faction_slot_eq, "fac_player_faction", slot_faction_center_transfer_option, 3),
-		 (str_store_string, s1, "@{s1}^Troop_transfer System : AI lords take/deposit troops in centers, centers don't recruit prisoners."),
+		 (str_store_string_reg, s97, s98),
+		 (str_store_string, s98, "@{s97}^Troop transfers: AI lords move troops; prisoner recruitment is disabled."),
 		 (else_try),
-		 (eq, "$g_sod_deactivate_ai", 0),
 		 (this_or_next|eq, "$g_sod_deactivate_ai", 1),
 		 (faction_slot_eq, "fac_player_faction", slot_faction_center_transfer_option, 4),
-		 (str_store_string, s1, "@{s1}^Troop_transfer System : Deactivated."),
+		 (str_store_string_reg, s97, s98),
+		 (str_store_string, s98, "@{s97}^Troop transfers: Disabled."),
          (try_end), #twan454
 	  
 	  (try_begin), #twan456
 		 (eq, "$g_sod_badboy_cheat", 1),
-		 (str_store_string, s1, "@{s1}^Badboy Gain Disabled."),
+		 (str_store_string_reg, s97, s98),
+		 (str_store_string, s98, "@{s97}^Badboy gain: Disabled"),
 	  (try_end),
 	  (try_begin),
 	    (eq, "$g_sod_parental_advisory", 1),
-		(str_store_string, s1, "@{s1}^SoD Parental Nanny: ON"),
+		(str_store_string_reg, s97, s98),
+		(str_store_string, s98, "@{s97}^Adult events filter: ON"),
 		(else_try),
-		(str_store_string, s1, "@{s1}^SoD Parental Nanny: OFF"),
+		(str_store_string_reg, s97, s98),
+		(str_store_string, s98, "@{s97}^Adult events filter: OFF"),
 	  (try_end),
 
 ],
@@ -1263,14 +1338,14 @@ game_menus = [
       ("game_options_all", [(eq, "$g_sod_hide_messages", -2)], "Show all messages.", [(assign, "$g_sod_hide_messages", 0), (jump_to_menu, "mnu_game_options_3")]),
       # ("game_options_anti_pursuit_1", [(eq, "$g_sod_anti_pursuit", 1)], "Enable Anti Pursuit System", [(assign, "$g_sod_anti_pursuit", 0), (jump_to_menu, "mnu_game_options_3")]),
       # ("game_options_anti_pursuit_2", [(eq, "$g_sod_anti_pursuit", 0)], "Disable Anti Pursuit System", [(assign, "$g_sod_anti_pursuit", 1), (jump_to_menu, "mnu_game_options_3")]),
-      ("game_options_enable_ai", [(eq, "$g_sod_deactivate_ai", 1)], "Use Experimental Strategic AI", [(assign, "$g_sod_deactivate_ai", 0), (assign, "$g_sod_deactivate_lords_ai", 0),(jump_to_menu, "mnu_game_options_3")]),   # Sod Twan new options
-      ("game_options_disable_lordsai", [(eq, "$g_sod_deactivate_ai", 0), (eq, "$g_sod_deactivate_lords_ai", 0)], "Disable Lords Specific AI", [(assign, "$g_sod_deactivate_lords_ai", 1), (jump_to_menu, "mnu_game_options_3")]),
-      ("game_options_disable_ai", [(eq, "$g_sod_deactivate_ai", 0), (eq, "$g_sod_deactivate_lords_ai", 1)], "Disable all Strategic AI changes", [(assign, "$g_sod_deactivate_ai", 1), (jump_to_menu, "mnu_game_options_3")]),
+      ("game_options_enable_ai", [(eq, "$g_sod_deactivate_ai", 1)], "Use full Strategic AI", [(assign, "$g_sod_deactivate_ai", 0), (assign, "$g_sod_deactivate_lords_ai", 0),(jump_to_menu, "mnu_game_options_3")]),   # Sod Twan new options
+      ("game_options_disable_lordsai", [(eq, "$g_sod_deactivate_ai", 0), (eq, "$g_sod_deactivate_lords_ai", 0)], "Limit Strategic AI to faction decisions", [(assign, "$g_sod_deactivate_lords_ai", 1), (jump_to_menu, "mnu_game_options_3")]),
+      ("game_options_disable_ai", [(eq, "$g_sod_deactivate_ai", 0), (eq, "$g_sod_deactivate_lords_ai", 1)], "Use Native strategic AI", [(assign, "$g_sod_deactivate_ai", 1), (jump_to_menu, "mnu_game_options_3")]),
       ("game_options_enable_hhb", [(eq, "$g_sod_horse_health_bar_on", 0)], "Enable horse health bar", [(assign, "$g_sod_horse_health_bar_on", 1), (jump_to_menu, "mnu_game_options_3")]),
       ("game_options_disable_hhb", [(eq, "$g_sod_horse_health_bar_on", 1)], "Disable horse health bar", [(assign, "$g_sod_horse_health_bar_on", 0), (jump_to_menu, "mnu_game_options_3")]),
       ("game_options_enable_debug", [(eq, "$g_sod_debug", 0)], "Enable debugging menus & messages", [(assign, "$g_sod_debug", 1), (jump_to_menu, "mnu_game_options_3")]),
       ("game_options_disable_debug", [(eq, "$g_sod_debug", 1)], "Disable debugging menus & messages", [(assign, "$g_sod_debug", 0), (jump_to_menu, "mnu_game_options_3")]),
-	  ("game_options_transfer_system", [(eq, "$g_sod_deactivate_ai", 0)], "Change Troop Transfer System.",
+	  ("game_options_transfer_system", [(eq, "$g_sod_deactivate_ai", 0)], "Change troop transfer rules.",
         [
           (faction_get_slot, ":transfer_system", "fac_player_faction", slot_faction_center_transfer_option),
           (try_begin),
@@ -1282,11 +1357,11 @@ game_menus = [
 		  (faction_set_slot, "fac_player_faction", slot_faction_center_transfer_option, ":transfer_system"),
           (jump_to_menu, "mnu_game_options_3"),
         ]),	                   #twan454 end
-	 ("deactivate_badboy", [(eq, "$g_sod_cheat_mode", 1), (eq, "$g_sod_debug", 1)], "Deactivate Badboy Gain",  [ (assign, "$g_sod_badboy_cheat", 1), (val_add, "$g_sod_cheat_mode_used", 1), #twan456
+	 ("deactivate_badboy", [(eq, "$g_sod_cheat_mode", 1), (eq, "$g_sod_debug", 1)], "Disable badboy gain",  [ (assign, "$g_sod_badboy_cheat", 1), (val_add, "$g_sod_cheat_mode_used", 1), #twan456
 	 (jump_to_menu, "mnu_game_options_3")]),
-    ("reactivate_badboy", [(eq, "$g_sod_badboy_cheat", 1)], "Re-activate Badboy Gain", [(assign, "$g_sod_badboy_cheat", 0), (jump_to_menu, "mnu_game_options_3")]), #twan456
-	  ("advisory_1", [(eq, "$g_sod_parental_advisory", 0)], "Enable Parental Nanny (no sex related events)", [(assign, "$g_sod_parental_advisory", 1), (jump_to_menu, "mnu_game_options_3")]),    #twan456
-	  ("advisory_2", [(eq, "$g_sod_parental_advisory", 1)], "Disable Parental Nanny", [(assign, "$g_sod_parental_advisory", 0), (jump_to_menu, "mnu_game_options_3")]),
+    ("reactivate_badboy", [(eq, "$g_sod_badboy_cheat", 1)], "Enable badboy gain", [(assign, "$g_sod_badboy_cheat", 0), (jump_to_menu, "mnu_game_options_3")]), #twan456
+	  ("advisory_1", [(eq, "$g_sod_parental_advisory", 0)], "Enable adult events filter", [(assign, "$g_sod_parental_advisory", 1), (jump_to_menu, "mnu_game_options_3")]),    #twan456
+	  ("advisory_2", [(eq, "$g_sod_parental_advisory", 1)], "Disable adult events filter", [(assign, "$g_sod_parental_advisory", 0), (jump_to_menu, "mnu_game_options_3")]),
       ("game_options_return", [], "Back to Options...", [(jump_to_menu, "mnu_game_options")]),
 ]),
 # [ src/menus/0000_hardcoded_mb1011/custom_battle_2.py:L1-L233 ] custom_battle_2
@@ -2257,9 +2332,9 @@ game_menus = [
      ),
     ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/party_size_report.py:L1-L112 ] party_size_report
+# [ src/menus/0000_hardcoded_mb1011/party_size_report.py:L1-L114 ] party_size_report
 ("party_size_report", mnf_enable_hot_keys,
-   "{s1}",
+   "{s98}",
    "none",
    [
     (set_background_mesh, "mesh_pic_report_screen"),
@@ -2306,7 +2381,7 @@ game_menus = [
     (assign, reg1, ":leadership"),
     (assign, reg2, ":charisma"),
     (assign, reg3, ":renown"),
-    (str_store_string, s1, "@Current party size limit is {reg5}.^Current party size modifiers are:^^Base size:  +10^Leadership: {s2}{reg1}^Charisma: {s3}{reg2}^Renown: {s4}{reg3}^TOTAL:  {reg5}"),
+    (str_store_string, s98, "@Current party size limit is {reg5}.^Current party size modifiers are:^^Base size:  +10^Leadership: {s2}{reg1}^Charisma: {s3}{reg2}^Renown: {s4}{reg3}^TOTAL:  {reg5}"),
 
     (try_begin),
       (gt, "$players_kingdom", 0),
@@ -2355,9 +2430,11 @@ game_menus = [
       (try_end),
       (try_begin),
         (faction_slot_eq, "$players_kingdom", slot_faction_leader, "trp_player"),
-        (str_store_string, s1, "@{s1}^^Realm military law:^Authority: {s10}.^Levy system: {s11}.^Host balance: {s12}.^Political mood: {s13}.^^As ruler, centralization concentrates military support around your own host. Decentralization strengthens your vassals' estate armies."),
+        (str_store_string, s99, "@{s98}^^Realm military law:^Authority: {s10}.^Levy system: {s11}.^Host balance: {s12}.^Political mood: {s13}.^^As ruler, centralization concentrates military support around your own host. Decentralization strengthens your vassals' estate armies."),
+        (str_store_string_reg, s98, s99),
       (else_try),
-        (str_store_string, s1, "@{s1}^^Realm military law:^Authority: {s10}.^Levy system: {s11}.^Host balance: {s12}.^Political mood: {s13}.^^As a vassal, centralization pulls military support toward the crown. Decentralization gives landed nobles more room to raise estate armies."),
+        (str_store_string, s99, "@{s98}^^Realm military law:^Authority: {s10}.^Levy system: {s11}.^Host balance: {s12}.^Political mood: {s13}.^^As a vassal, centralization pulls military support toward the crown. Decentralization gives landed nobles more room to raise estate armies."),
+        (str_store_string_reg, s98, s99),
       (try_end),
     (try_end),
     ],
@@ -2368,23 +2445,24 @@ game_menus = [
        ),
       ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/faction_relations_report.py:L1-L48 ] faction_relations_report
+# [ src/menus/0000_hardcoded_mb1011/faction_relations_report.py:L1-L50 ] faction_relations_report
 ("faction_relations_report", mnf_enable_hot_keys,
-   "{s1}",
+   "{s98}",
    "none",
    [
     (set_background_mesh, "mesh_pic_report_screen"),
-    (str_clear, s2),
+    (str_clear, s97),
     (try_for_range, ":cur_kingdom", kingdoms_begin, kingdoms_end),
       (faction_slot_eq, ":cur_kingdom", slot_faction_state, sfs_active),
       (neq, ":cur_kingdom", "fac_player_supporters_faction"),
       (store_relation, ":cur_relation", "fac_player_supporters_faction", ":cur_kingdom"),
       (call_script, "script_get_realtion_name_s3", ":cur_relation"),
-      (str_store_faction_name, s4, ":cur_kingdom"),
-      (str_store_string, s2, "@{s2}^{s4}: {s3}"),
+      (str_store_faction_name, s68, ":cur_kingdom"),
+      (str_store_string_reg, s96, s97),
+      (str_store_string, s97, "@{s96}^{s68}: {s3}"),
     (try_end),
 	
-	(str_clear, s5), # SoD Twan display truces
+	(str_clear, s96), # SoD Twan display truces
     (store_current_day, ":cur_day"),
 		(try_for_range, ":slot_no", faction_truce_slots_begin, faction_truce_slots_end),                                 
 		(faction_get_slot, ":truce_day", "fac_player_supporters_faction", ":slot_no"),
@@ -2393,20 +2471,21 @@ game_menus = [
 		(store_sub, ":truce_days_remaining", ":truce_day", ":cur_day"),
 		(store_sub, ":kingdom_no", ":slot_no", faction_truce_slots_begin),
 		(val_add, ":kingdom_no", "fac_player_supporters_faction"),
-		(str_store_faction_name, s6, ":kingdom_no"),
+		(str_store_faction_name, s68, ":kingdom_no"),
     (try_begin),
       (lt, ":truce_days_remaining", 7),
-      (str_store_string, s7, "@nearly expired"),
+      (str_store_string, s69, "@nearly expired"),
     (else_try),
       (lt, ":truce_days_remaining", 21),
-      (str_store_string, s7, "@still recent"),
+      (str_store_string, s69, "@still recent"),
     (else_try),
-      (str_store_string, s7, "@secure for now"),
+      (str_store_string, s69, "@secure for now"),
     (try_end),
-		(str_store_string, s5, "@{s5}You have a peace agreement with {s6}; it is {s7}.^"),
+		(str_store_string_reg, s95, s96),
+		(str_store_string, s96, "@{s95}You have a peace agreement with {s68}; it is {s69}.^"),
 		(try_end),
 		(try_end),
-    (str_store_string, s1, "@Your relation with the factions are:^{s2}^^{s5}"),                           # SoD twan end
+    (str_store_string, s98, "@Your relations with the realms are:^{s97}^^{s96}"),                           # SoD twan end
     ],
     [
       ("continue", [], "Continue...",
@@ -2415,27 +2494,28 @@ game_menus = [
        ),
       ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/guilds_relations_report.py:L1-L30 ] guilds_relations_report
+# [ src/menus/0000_hardcoded_mb1011/guilds_relations_report.py:L1-L31 ] guilds_relations_report
 ("guilds_relations_report", mnf_enable_hot_keys,
-   "{s1}",
+   "{s98}",
    "none",
    [
     (set_background_mesh, "mesh_pic_report_screen"),
     (store_relation, ":cur_relation", "fac_player_supporters_faction", "fac_commoners"),
     (call_script, "script_get_realtion_name_s3", ":cur_relation"),
     (assign, reg1, ":cur_relation"),
-    (str_store_string, s2, "@^The Commoners: {reg1} ({s3})"),
+    (str_store_string, s97, "@^The Commoners: {reg1} ({s3})"),
     (try_for_range, ":cur_kingdom", guilds_begin, guilds_end),
       (store_relation, ":cur_relation", "fac_player_supporters_faction", ":cur_kingdom"),
       (call_script, "script_get_realtion_name_s3", ":cur_relation"),
-      (str_store_faction_name, s4, ":cur_kingdom"),
+      (str_store_faction_name, s68, ":cur_kingdom"),
       (call_script, "script_merc_describe_guild_progression", ":cur_kingdom"),
       (call_script, "script_sod_merc_guild_describe_ledger_to_s20", ":cur_kingdom"),
       (assign, reg1, ":cur_relation"),
-      (str_store_string, s2, "@{s2}^{s4}: {reg1} ({s3}) - {s64} {s65} {s66}^{s20}"),
+      (str_store_string_reg, s96, s97),
+      (str_store_string, s97, "@{s96}^{s68}: {reg1} ({s3}) - {s64} {s65} {s66}^{s20}"),
     (try_end),
 
-    (str_store_string, s1, "@A tally of your standing with the guilds:^^Progression guide: promotion at 10, elite access by guild, special service at 30, trusted favor at 40.^{s2}"),                           # SoD twan end
+    (str_store_string, s98, "@A tally of your standing with the guilds:^^Progression guide: promotion at 10, elite access by guild, special service at 30, trusted favor at 40.^{s97}"),                           # SoD twan end
     ],
     [
       ("continue", [], "Return to the reports...",
@@ -2444,12 +2524,14 @@ game_menus = [
        ),
       ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/kingdom_management.py:L1-L114 ] kingdom_management
+# [ src/menus/0000_hardcoded_mb1011/kingdom_management.py:L1-L116 ] kingdom_management
 ("kingdom_management", mnf_scale_picture|mnf_enable_hot_keys,
    "What do you want to do?",
    "none",
    [
      (assign, "$g_player_icon_state", pis_normal),
+     (assign, "$g_sod_player_map_icon_dirty", 1),
+     (call_script, "script_sod_refresh_player_map_icon"),
      (set_background_mesh, "mesh_pic_camp"),
     ],
     [
@@ -2557,12 +2639,14 @@ game_menus = [
       ("resume_travelling", [], "Back.", [(jump_to_menu, "mnu_camp"), ]),
 	  
 	 ]),
-# [ src/menus/0000_hardcoded_mb1011/party_management.py:L1-L69 ] party_management
+# [ src/menus/0000_hardcoded_mb1011/party_management.py:L1-L71 ] party_management
 ("party_management", mnf_scale_picture|mnf_enable_hot_keys,
    "What do you want to do?",
    "none",
    [
      (assign, "$g_player_icon_state", pis_normal),
+     (assign, "$g_sod_player_map_icon_dirty", 1),
+     (call_script, "script_sod_refresh_player_map_icon"),
      (set_background_mesh, "mesh_pic_camp"),
     ],
     [
@@ -2674,7 +2758,7 @@ game_menus = [
          (change_screen_return),
        ]), ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/camp_action.py:L1-L559 ] camp_action
+# [ src/menus/0000_hardcoded_mb1011/camp_action.py:L1-L303 ] camp_action
 ("camp_action", mnf_scale_picture|mnf_enable_hot_keys,
    "Choose an action:",
    "none",
@@ -2684,18 +2768,21 @@ game_menus = [
     [
       ("camp_company_accounts", [], "Settle company accounts.",
         [
+          (assign, "$g_sod_company_accounts_return_menu", "mnu_camp_action"),
           (jump_to_menu, "mnu_company_accounts"),
         ]
       ),
 
       ("camp_company_rations", [], "Set ration policy.",
         [
+          (assign, "$g_sod_company_accounts_return_menu", "mnu_camp_action"),
           (jump_to_menu, "mnu_company_rations"),
         ]
       ),
 
       ("camp_company_recreation", [], "Arrange company relief.",
         [
+          (assign, "$g_sod_company_accounts_return_menu", "mnu_camp_action"),
           (jump_to_menu, "mnu_company_recreation"),
         ]
       ),
@@ -2766,299 +2853,35 @@ game_menus = [
         ]
       ),
 
-      ("camp_ymira_mercy_under_arms", [
-          (main_party_has_troop, "trp_npc3"),
-          (this_or_next|troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (party_count_members_of_type, ":male_slaves", "p_main_party", "trp_slave"),
-          (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
-          (store_add, ":slave_count", ":male_slaves", ":female_slaves"),
-          (ge, ":slave_count", 3),
-        ], "Speak with Ymira about the captives.",
-        [
-          (jump_to_menu, "mnu_ymira_mercy_under_arms"),
-        ]
-      ),
-      ("camp_borcha_road_keeps_own", [
-          (main_party_has_troop, "trp_npc1"),
-          (eq, "$g_sod_borcha_road_pending", 1),
-          (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Borcha about the hidden road.",
-        [
-          (jump_to_menu, "mnu_borcha_road_keeps_own"),
-        ]
-      ),
-      ("camp_marnid_honest_price", [
-          (main_party_has_troop, "trp_npc2"),
-          (eq, "$g_sod_marnid_market_pending", 1),
-          (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Marnid about the suspect contract.",
-        [
-          (jump_to_menu, "mnu_marnid_honest_price"),
-        ]
-      ),
-
-      ("camp_lezalit_discipline_without_chains", [
-          (main_party_has_troop, "trp_npc14"),
-          (eq, "$g_sod_lezalit_ief_discipline_pending", 1),
-          (eq, "$g_sod_lezalit_ief_discipline_confronted", 1),
-          (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Lezalit about the captured Imperial drill.",
-        [
-          (jump_to_menu, "mnu_lezalit_discipline_without_chains"),
-        ]
-      ),
-      ("camp_lezalit_drill_trial", [
-          (main_party_has_troop, "trp_npc14"),
-          (eq, "$g_sod_lezalit_ief_discipline_pending", 1),
-          (eq, "$g_sod_lezalit_ief_discipline_witnessed", 1),
-          (eq, "$g_sod_lezalit_ief_discipline_confronted", 0),
-          (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Run Lezalit's captured drill trial.",
-        [
-          (jump_to_menu, "mnu_lezalit_drill_trial"),
-        ]
-      ),
-
-      ("camp_bunduk_men_hold_line", [
-          (main_party_has_troop, "trp_npc10"),
-          (eq, "$g_sod_bunduk_line_pending", 1),
-          (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Bunduk about the line's grievance.",
-        [
-          (jump_to_menu, "mnu_bunduk_men_hold_line"),
-        ]
-      ),
-      ("camp_bunduk_line_test", [
-          (main_party_has_troop, "trp_npc10"),
-          (eq, "$g_sod_bunduk_line_pending", 1),
-          (eq, "$g_sod_bunduk_line_witnessed", 1),
-          (eq, "$g_sod_bunduk_line_confronted", 0),
-          (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Run Bunduk's watch-line test.",
-        [
-          (jump_to_menu, "mnu_bunduk_line_test"),
-        ]
-      ),
-
-      ("camp_jeremus_hands_triage", [
-          (main_party_has_troop, "trp_npc12"),
-          (eq, "$g_sod_jeremus_triage_pending", 1),
-          (eq, "$g_sod_jeremus_triage_confronted", 1),
-          (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Jeremus among the wounded.",
-        [
-          (jump_to_menu, "mnu_jeremus_hands_triage"),
-        ]
-      ),
-      ("camp_jeremus_infirmary_crisis", [
-          (main_party_has_troop, "trp_npc12"),
-          (eq, "$g_sod_jeremus_triage_pending", 1),
-          (eq, "$g_sod_jeremus_triage_witnessed", 1),
-          (eq, "$g_sod_jeremus_triage_confronted", 0),
-          (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Face Jeremus' infirmary crisis.",
-        [
-          (jump_to_menu, "mnu_jeremus_triage_infirmary"),
-        ]
-      ),
-
-      ("camp_firentis_debt_restitution", [
-          (main_party_has_troop, "trp_npc6"),
-          (eq, "$g_sod_firentis_restitution_pending", 1),
-          (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Firentis about restitution.",
-        [
-          (jump_to_menu, "mnu_firentis_debt_restitution"),
-        ]
-      ),
-
-      ("camp_katrin_last_coin", [
-          (main_party_has_troop, "trp_npc11"),
-          (eq, "$g_sod_katrin_last_coin_pending", 1),
-          (eq, "$g_sod_katrin_last_coin_confronted", 1),
-          (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Katrin about the last coin.",
-        [
-          (jump_to_menu, "mnu_katrin_last_coin"),
-        ]
-      ),
-      ("camp_katrin_supply_watch", [
-          (main_party_has_troop, "trp_npc11"),
-          (eq, "$g_sod_katrin_last_coin_pending", 1),
-          (eq, "$g_sod_katrin_last_coin_witnessed", 1),
-          (eq, "$g_sod_katrin_last_coin_confronted", 0),
-          (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Run Katrin's supply watch.",
-        [
-          (jump_to_menu, "mnu_katrin_supply_watch"),
-        ]
-      ),
-
-      ("camp_deshavi_tracks_through_ash", [
-          (main_party_has_troop, "trp_npc7"),
-          (eq, "$g_sod_deshavi_trail_warning_pending", 1),
-          (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Deshavi about the trail warning.",
-        [
-          (jump_to_menu, "mnu_deshavi_tracks_through_ash"),
-        ]
-      ),
-
-      ("camp_klethi_knife_with_name", [
-          (main_party_has_troop, "trp_npc16"),
-          (eq, "$g_sod_klethi_old_job_pending", 1),
-          (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Klethi about the old job.",
-        [
-          (jump_to_menu, "mnu_klethi_knife_with_name"),
-        ]
-      ),
-
-      ("camp_rolf_name_worth_wearing", [
-          (main_party_has_troop, "trp_npc4"),
-          (eq, "$g_sod_rolf_name_challenge_pending", 1),
-          (eq, "$g_sod_rolf_name_challenge_confronted", 1),
-          (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Rolf about the public challenge.",
-        [
-          (jump_to_menu, "mnu_rolf_name_worth_wearing"),
-        ]
-      ),
-      ("camp_rolf_public_proof", [
-          (main_party_has_troop, "trp_npc4"),
-          (eq, "$g_sod_rolf_name_challenge_pending", 1),
-          (eq, "$g_sod_rolf_name_challenge_witnessed", 1),
-          (eq, "$g_sod_rolf_name_challenge_confronted", 0),
-          (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Stage Rolf's public proof.",
-        [
-          (jump_to_menu, "mnu_rolf_public_proof"),
-        ]
-      ),
-
-      ("camp_alayen_standard_self", [
-          (main_party_has_troop, "trp_npc9"),
-          (eq, "$g_sod_alayen_standard_pending", 1),
-          (eq, "$g_sod_alayen_standard_confronted", 1),
-          (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Alayen about the standard oath.",
-        [
-          (jump_to_menu, "mnu_alayen_standard_self"),
-        ]
-      ),
-      ("camp_alayen_standard_test", [
-          (main_party_has_troop, "trp_npc9"),
-          (eq, "$g_sod_alayen_standard_pending", 1),
-          (eq, "$g_sod_alayen_standard_witnessed", 1),
-          (eq, "$g_sod_alayen_standard_confronted", 0),
-          (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Stand Alayen's public standard test.",
-        [
-          (jump_to_menu, "mnu_alayen_standard_test"),
-        ]
-      ),
-
-      ("camp_nizar_impossible_charge", [
-          (main_party_has_troop, "trp_npc13"),
-          (eq, "$g_sod_nizar_charge_pending", 1),
-          (eq, "$g_sod_nizar_charge_confronted", 1),
-          (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Nizar about the impossible charge.",
-        [
-          (jump_to_menu, "mnu_nizar_impossible_charge"),
-        ]
-      ),
-      ("camp_nizar_charge_lane_test", [
-          (main_party_has_troop, "trp_npc13"),
-          (eq, "$g_sod_nizar_charge_pending", 1),
-          (eq, "$g_sod_nizar_charge_witnessed", 1),
-          (eq, "$g_sod_nizar_charge_confronted", 0),
-          (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Run Nizar's charge-lane test.",
-        [
-          (jump_to_menu, "mnu_nizar_charge_lane_test"),
-        ]
-      ),
-
-      ("camp_baheshtur_unbroken_saddle", [
-          (main_party_has_troop, "trp_npc5"),
-          (eq, "$g_sod_baheshtur_saddle_pending", 1),
-          (eq, "$g_sod_baheshtur_saddle_confronted", 1),
-          (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Baheshtur about the saddle oath.",
-        [
-          (jump_to_menu, "mnu_baheshtur_unbroken_saddle"),
-        ]
-      ),
-      ("camp_baheshtur_rider_oath_trial", [
-          (main_party_has_troop, "trp_npc5"),
-          (eq, "$g_sod_baheshtur_saddle_pending", 1),
-          (eq, "$g_sod_baheshtur_saddle_witnessed", 1),
-          (eq, "$g_sod_baheshtur_saddle_confronted", 0),
-          (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Run Baheshtur's rider-oath trial.",
-        [
-          (jump_to_menu, "mnu_baheshtur_rider_oath_trial"),
-        ]
-      ),
-
-      ("camp_matheld_no_backward_step", [
-          (main_party_has_troop, "trp_npc8"),
-          (eq, "$g_sod_matheld_no_backward_step_pending", 1),
-          (eq, "$g_sod_matheld_no_backward_step_confronted", 1),
-          (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Matheld about the shield challenge.",
-        [
-          (jump_to_menu, "mnu_matheld_no_backward_step"),
-        ]
-      ),
-      ("camp_matheld_shield_line_test", [
-          (main_party_has_troop, "trp_npc8"),
-          (eq, "$g_sod_matheld_no_backward_step_pending", 1),
-          (eq, "$g_sod_matheld_no_backward_step_witnessed", 1),
-          (eq, "$g_sod_matheld_no_backward_step_confronted", 0),
-          (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Run Matheld's shield-line test.",
-        [
-          (jump_to_menu, "mnu_matheld_shield_line_test"),
-        ]
-      ),
-
-      ("camp_artimenner_siege_that_should", [
-          (main_party_has_troop, "trp_npc15"),
-          (eq, "$g_sod_artimenner_siege_pending", 1),
-          (eq, "$g_sod_artimenner_siege_confronted", 1),
-          (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Speak with Artimenner about the siege design.",
-        [
-          (jump_to_menu, "mnu_artimenner_siege_that_should"),
-        ]
-      ),
-      ("camp_artimenner_repair_watch", [
-          (main_party_has_troop, "trp_npc15"),
-          (eq, "$g_sod_artimenner_siege_pending", 1),
-          (eq, "$g_sod_artimenner_siege_witnessed", 1),
-          (eq, "$g_sod_artimenner_siege_confronted", 0),
-          (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Guard Artimenner's repair watch.",
-        [
-          (jump_to_menu, "mnu_artimenner_repair_watch"),
-        ]
-      ),
-
       ("camp_companion_campfire", [
-          (party_get_num_companion_stacks, ":num_stacks", "p_main_party"),
-          (gt, ":num_stacks", 1),
+          (assign, ":has_companion", 0),
+          (try_for_range, ":companion", companions_begin, companions_end),
+            (main_party_has_troop, ":companion"),
+            (assign, ":has_companion", 1),
+          (try_end),
+          (try_for_range, ":companion", special_companions_begin, special_companions_end),
+            (main_party_has_troop, ":companion"),
+            (assign, ":has_companion", 1),
+          (try_end),
+          (eq, ":has_companion", 1),
         ], "Gather your companions by the fire.",
         [
+          (assign, "$g_sod_companion_campfire_return_menu", "mnu_camp_action"),
           (jump_to_menu, "mnu_companion_campfire"),
         ]
       ),
 
       ("camp_companion_depth_report", [
-          (party_get_num_companion_stacks, ":num_stacks", "p_main_party"),
-          (gt, ":num_stacks", 1),
+          (assign, ":has_companion", 0),
+          (try_for_range, ":companion", companions_begin, companions_end),
+            (main_party_has_troop, ":companion"),
+            (assign, ":has_companion", 1),
+          (try_end),
+          (try_for_range, ":companion", special_companions_begin, special_companions_end),
+            (main_party_has_troop, ":companion"),
+            (assign, ":has_companion", 1),
+          (try_end),
+          (eq, ":has_companion", 1),
         ], "Review companion depth report.",
         [
           (jump_to_menu, "mnu_companion_depth_report"),
@@ -3066,8 +2889,12 @@ game_menus = [
       ),
 
       ("camp_companion_retinue_report", [
-          (party_get_num_companion_stacks, ":num_stacks", "p_main_party"),
-          (gt, ":num_stacks", 1),
+          (assign, ":has_companion", 0),
+          (try_for_range, ":companion", companions_begin, companions_end),
+            (main_party_has_troop, ":companion"),
+            (assign, ":has_companion", 1),
+          (try_end),
+          (eq, ":has_companion", 1),
         ], "Review companion retinues.",
         [
           (jump_to_menu, "mnu_companion_retinue_report"),
@@ -3220,6 +3047,7 @@ game_menus = [
             (display_message, "@No duplicates found! :)", green),
             (assign, "$g_fix_dup_troops", 1),
           (else_try),
+            (eq, "$g_sod_debug", 1),
             (display_message, "@Fixed {reg0} duplicates", debug_color),
           (try_end),
         ]
@@ -3614,9 +3442,9 @@ game_menus = [
       ),
     ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/quick_start.py:L1-L50 ] quick_start
+# [ src/menus/0000_hardcoded_mb1011/quick_start.py:L1-L52 ] quick_start
 ("quick_start", mnf_scale_picture|mnf_enable_hot_keys,
-   "You are currently level {reg8}.  You have {reg5} renown, {reg3} honor, and {reg4} denars.^You have used {reg6} cheats in this game.^^{s1}",
+   "You are currently level {reg8}.  You have {reg5} renown, {reg3} honor, and {reg4} denars.^You have used {reg6} cheats in this game.^^{s98}",
    "none",
    [
     (set_background_mesh, "mesh_pic_payment"),
@@ -3625,27 +3453,29 @@ game_menus = [
     # generate a list of your hero companions and their current levels.
     (party_get_num_companion_stacks, ":i", "p_main_party"),
     (assign, ":count", 0),
-    (str_store_string, s2, "@Nobody"),
+    (str_store_string, s69, "@Nobody"),
     (try_for_range, ":stack_no", 0, ":i"),
       (party_stack_get_troop_id, ":troop_id", "p_main_party", ":stack_no"),
       (is_between, ":troop_id", companions_begin, companions_end),
       # get the companion's name and level
-      (call_script, "script_store_troop_name", s1, ":troop_id"),
+      (call_script, "script_store_troop_name", s68, ":troop_id"),
       (store_character_level, reg1, ":troop_id"),
-      (str_store_string, s1, "@{s1} (lvl {reg1})"),
+      (str_store_string, s70, "@{s68} (lvl {reg1})"),
       # build up the list from right to left
       (try_begin),
         (eq, ":count", 0),
-        (str_store_string, s2, "@{s1}"),
+        (str_store_string_reg, s69, s70),
       (else_try),
         (eq, ":count", 1),
-        (str_store_string, s2, "@{s1} and {s2}"),
+        (str_store_string, s97, "@{s70} and {s69}"),
+        (str_store_string_reg, s69, s97),
       (else_try),
-        (str_store_string, s2, "@{s1}, {s2}"),
+        (str_store_string, s97, "@{s70}, {s69}"),
+        (str_store_string_reg, s69, s97),
       (try_end),
       (val_add, ":count", 1),
     (try_end),
-    (str_store_string, s1, "@You are travelling with: {s2}"),
+    (str_store_string, s98, "@You are travelling with: {s69}"),
     (troop_get_slot, reg5, "trp_player", slot_troop_renown),
     (assign, reg3, "$player_honor"),
     (store_troop_gold, reg4, "trp_player"),
@@ -3710,33 +3540,34 @@ game_menus = [
       "I knew that!", [(jump_to_menu, "mnu_quick_start")]),
    ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/add_companions.py:L1-L137 ] add_companions
+# [ src/menus/0000_hardcoded_mb1011/add_companions.py:L1-L145 ] add_companions
 ("add_companions", mnf_scale_picture|mnf_enable_hot_keys,
-   "{s1}.^^Who would you like to add?",
+   "{s98}.^^Who would you like to add?",
    "none",
     [
       (set_background_mesh, "mesh_pic_payment"),
       # generate a list of your hero companions and their current levels.
       (party_get_num_companion_stacks, ":i", "p_main_party"),
       (assign, ":count", 0),
-      (str_store_string, s2, "@Nobody"),
+      (str_store_string, s69, "@Nobody"),
       (try_for_range, ":stack_no", 0, ":i"),
         (party_stack_get_troop_id, ":troop_id", "p_main_party", ":stack_no"),
         (is_between, ":troop_id", companions_begin, companions_end),
         # get the companion's name and level
-        (call_script, "script_store_troop_name", s1, ":troop_id"),
+        (call_script, "script_store_troop_name", s68, ":troop_id"),
         (store_character_level, reg1, ":troop_id"),
-        (str_store_string, s1, "@{s1} (lvl {reg1})"),
+        (str_store_string, s70, "@{s68} (lvl {reg1})"),
         # build up the list from right to left
         (try_begin),
           (eq, ":count", 0),
-          (str_store_string, s2, "@{s1}"),
+          (str_store_string_reg, s69, s70),
         (else_try),
-          (str_store_string, s2, "@{s1}^{s2}"),
+          (str_store_string, s97, "@{s70}^{s69}"),
+          (str_store_string_reg, s69, s97),
         (try_end),
         (val_add, ":count", 1),
       (try_end),
-      (str_store_string, s1, "@You are travelling with:^{s2}"),
+      (str_store_string, s98, "@You are travelling with:^{s69}"),
 
       # generate the list of heros that aren't currently in your party, and let the player select them
       # concept & basic code ripped from - Fisheye's Autoloot -
@@ -3801,10 +3632,17 @@ game_menus = [
       (try_end),
       # reg10 now contains total num of heroes available to interact with (not yet in party)
 
-      (store_add, reg1, "$inventory_menu_offset", 1),
-      (store_add, reg2, "$inventory_menu_offset", 6),
-      (val_min, reg2, reg10),
-      (str_store_string, s1, "@{s1}^^(showing {reg1} through {reg2} of {reg10})"),
+      (try_begin),
+        (gt, reg10, 0),
+        (store_add, reg1, "$inventory_menu_offset", 1),
+        (store_add, reg2, "$inventory_menu_offset", 6),
+        (val_min, reg2, reg10),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^^(showing {reg1} through {reg2} of {reg10})"),
+      (else_try),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^^No unjoined companions are currently available."),
+      (try_end),
     ],
     [
       ("npc_1", [(gt, reg11, 0)], "{s11}", [(call_script, "script_setup_troop_meeting", reg11, 0)]),
@@ -3848,7 +3686,7 @@ game_menus = [
   ),
 # [ src/menus/0000_hardcoded_mb1011/end_game.py:L1-L14 ] end_game
 ("end_game", 0,
-   "The decision is made, and you resolve to give up your adventurer's life and settle down. You sell off your weapons and armour, gather up all your money, and ride off into the sunset....",
+   "The decision is made. You give up the adventurer's life, sell your arms, gather your coin, and ride off into the sunset.",
    "none",
    [],
     [
@@ -3859,7 +3697,7 @@ game_menus = [
        ),
       ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/pay_day.py:L1-L208 ] pay_day
+# [ src/menus/0000_hardcoded_mb1011/pay_day.py:L1-L267 ] pay_day
 (
     "pay_day", mnf_scale_picture|mnf_disable_all_keys,
     "{s10}",
@@ -3879,18 +3717,56 @@ game_menus = [
           (assign, reg0, "$g_sod_weekly_troops_hired"),
           (assign, reg1, "$g_sod_weekly_troops_upgraded"),
           (assign, reg2, "$g_sod_weekly_construction"),
-          (str_store_string, s10, "@Over the past week you have spent {reg0?{reg0} hiring new troops, :}{reg1?{reg1} upgrading troops, :}{reg2?{reg2} for construction projects,:}"),
+          (str_store_string, s10, "@Over the past week you recorded"),
+          (assign, ":weekly_expense_entries", 0),
+          (try_begin),
+            (gt, reg0, 0),
+            (str_store_string_reg, s97, s10),
+            (str_store_string, s10, "@{s97} {reg0} denars spent hiring new troops"),
+            (val_add, ":weekly_expense_entries", 1),
+          (try_end),
+          (try_begin),
+            (gt, reg1, 0),
+            (try_begin),
+              (eq, ":weekly_expense_entries", 0),
+              (str_store_string_reg, s97, s10),
+              (str_store_string, s10, "@{s97} {reg1} denars spent upgrading troops"),
+            (else_try),
+              (str_store_string_reg, s97, s10),
+              (str_store_string, s10, "@{s97}, {reg1} denars spent upgrading troops"),
+            (try_end),
+            (val_add, ":weekly_expense_entries", 1),
+          (try_end),
+          (try_begin),
+            (gt, reg2, 0),
+            (try_begin),
+              (eq, ":weekly_expense_entries", 0),
+              (str_store_string_reg, s97, s10),
+              (str_store_string, s10, "@{s97} {reg2} denars spent on construction projects"),
+            (else_try),
+              (str_store_string_reg, s97, s10),
+              (str_store_string, s10, "@{s97}, {reg2} denars spent on construction projects"),
+            (try_end),
+            (val_add, ":weekly_expense_entries", 1),
+          (try_end),
+          (try_begin),
+            (eq, ":weekly_expense_entries", 0),
+            (str_store_string, s10, "@Over the past week you recorded no hiring, upgrade, or construction spending"),
+          (try_end),
           (store_sub, reg3, ":original_wealth", "$g_sod_weekly_starting_cash"),
           (try_begin),
             (gt, reg3, 0),
-            (str_store_string, s10, "@{s10} but you gained {reg3} denars during your week's exploits."),
+            (str_store_string_reg, s97, s10),
+            (str_store_string, s10, "@{s97} but you gained {reg3} denars during your week's exploits."),
           (else_try),
             (lt, reg3, 0),
             (val_abs, reg3),
-            (str_store_string, s10, "@{s10} and another {reg3} on everything else."),
+            (str_store_string_reg, s97, s10),
+            (str_store_string, s10, "@{s97} and another {reg3} on everything else."),
           (else_try),
             (eq, reg3, 0),
-            (str_store_string, s10, "@{s10} but you broke even on everything else."),
+            (str_store_string_reg, s97, s10),
+            (str_store_string, s10, "@{s97} but you broke even on everything else."),
           (try_end),
 
           # collect all taxes at once
@@ -3932,7 +3808,9 @@ game_menus = [
           # Safety: income should never go negative (can break later wage math).
           (val_max, ":total_income", 0),
 
-          (str_store_string, s10, "@{s10}^^Today you receive the accumulated rents and taxes of your fiefs, amounting to {reg1} denars. "),
+          (str_store_string_reg, s97, s10),
+
+          (str_store_string, s10, "@{s97}^^Today you receive the accumulated rents and taxes of your fiefs, amounting to {reg1} denars. "),
           (str_store_string, s20, "@Tax Income: {reg1} denars^{s20}"),
         (else_try),
           (assign, ":total_income", 0),
@@ -3969,7 +3847,23 @@ game_menus = [
           (val_sub, ":total_wages", reg10),
           (val_add, ":total_wages", reg12),
           (val_max, ":total_wages", 0),
-          (str_store_string, s20, "@{s20}Companion command cost: {reg10} denars^{reg9?Command purses paid {reg9} denars^:}{reg12?Retinue shortages covered by this wage bill: {reg12} denars^:}{reg13?Unpaid retinue shortages: {reg13} denars^:}"),
+          (str_store_string_reg, s97, s20),
+          (str_store_string, s20, "@{s97}Companion command cost: {reg10} denars^"),
+          (try_begin),
+            (gt, reg9, 0),
+            (str_store_string_reg, s97, s20),
+            (str_store_string, s20, "@{s97}Command purses paid {reg9} denars^"),
+          (try_end),
+          (try_begin),
+            (gt, reg12, 0),
+            (str_store_string_reg, s97, s20),
+            (str_store_string, s20, "@{s97}Retinue shortages covered by this wage bill: {reg12} denars^"),
+          (try_end),
+          (try_begin),
+            (gt, reg13, 0),
+            (str_store_string_reg, s97, s20),
+            (str_store_string, s20, "@{s97}Unpaid retinue shortages: {reg13} denars^"),
+          (try_end),
         (try_end),
 
         # determine total debt to troops
@@ -4002,7 +3896,8 @@ game_menus = [
           # check if we're in the black
           (ge, ":player_wealth", 0),
           (assign, "$g_player_debt_to_party_members", 0),
-          (str_store_string, s10, "@{s10}You paid {reg3} of your {reg4} denars to your men. You have {reg5} denars left.^^"),
+          (str_store_string_reg, s97, s10),
+          (str_store_string, s10, "@{s97}You paid {reg3} of your {reg4} denars to your men. You have {reg5} denars left.^^"),
           # add or subtract the net amount
           (try_begin),
             (gt, ":net_change", 0),
@@ -4023,7 +3918,8 @@ game_menus = [
           (val_max, ":unpaid", 0),
           (val_min, ":unpaid", 2000000),
           (assign, reg8, ":unpaid"),
-          (str_store_string, s10, "@{s10}Your debt to your men amounted to {reg3} denars, however you only had {reg4}. Unpaid sum of {reg8} denars is added as debt. Your party loses morale.^^"),
+          (str_store_string_reg, s97, s10),
+          (str_store_string, s10, "@{s97}Your debt to your men amounted to {reg3} denars, however you only had {reg4}. Unpaid sum of {reg8} denars is added as debt. Your party loses morale.^^"),
           (assign, "$g_player_debt_to_party_members", ":unpaid"),
           (store_div, ":unpaid_weight", ":unpaid", 500),
           (val_add, ":unpaid_weight", 1),
@@ -4037,14 +3933,15 @@ game_menus = [
         # reg0 = was a net gain (1), or loss (0)
         (try_begin),
           (ge, ":net_change", 0),
-          (assign, reg0, 1),
+          (str_store_string, s68, "@Net income"),
         (else_try),
-          (assign, reg0, 0),
+          (str_store_string, s68, "@Total payment"),
         (try_end),
 
         # give them the details
         (assign, reg8, ":original_wealth"),
-        (str_store_string, s10, "@{s10}Previous wealth: {reg8} denars^{s20}This week's wages: {reg6} denars^Earlier debts: {reg2} denars^{reg0?Net income:Total payment}: {reg7} denars^Current wealth: {reg5} denars"),
+        (str_store_string_reg, s97, s10),
+        (str_store_string, s10, "@{s97}Previous wealth: {reg8} denars^{s20}This week's wages: {reg6} denars^Earlier debts: {reg2} denars^{s68}: {reg7} denars^Current wealth: {reg5} denars"),
 
         (try_begin),
           (eq, "$g_sod_king", 1),
@@ -4349,7 +4246,7 @@ game_menus = [
         (eq, "$encountered_party_friendly", 0),
         (call_script, "script_cf_sod_battle_commander_can_start"),
       ],
-      "Charge the enemy ({s7} leads).", [
+      "Charge the enemy ({s68} leads).", [
         (assign, "$g_battle_result", 0),
         (assign, "$g_engaged_enemy", 1),
         (call_script, "script_calculate_renown_value"),
@@ -4515,10 +4412,10 @@ game_menus = [
 	  (assign, "$g_player_surrenders", 1)]),
     ]
   ),
-# [ src/menus/prisoners/leave_behind.py:L1-L48 ] encounter_retreat_confirm
+# [ src/menus/prisoners/leave_behind.py:L1-L53 ] encounter_retreat_confirm
 (
     "encounter_retreat_confirm", mnf_enable_hot_keys,
-    "As the party member with the highest tactics skill, ({reg2}), {reg3?you devise:{s3} devises} a plan that will allow you and your men to escape with your lives, but you'll have to leave {reg4} soldiers behind to stop the enemy from giving chase.",
+    "{s68}",
     "none",
     [
       (set_background_mesh, "mesh_pic_retreat"),
@@ -4539,9 +4436,11 @@ game_menus = [
       (try_begin),
         (eq, ":max_skill_owner", "trp_player"),
         (assign, reg3, 1),
+        (str_store_string, s68, "@As the party member with the highest tactics skill ({reg2}), you devise a plan that will allow you and your men to escape with your lives, but you'll have to leave {reg4} soldiers behind to stop the enemy from giving chase."),
       (else_try),
         (assign, reg3, 0),
         (call_script, "script_store_troop_name", s3, ":max_skill_owner"),
+        (str_store_string, s68, "@As the party member with the highest tactics skill ({reg2}), {s3} devises a plan that will allow you and your men to escape with your lives, but you'll have to leave {reg4} soldiers behind to stop the enemy from giving chase."),
       (try_end),
       ],
     [
@@ -4551,6 +4450,9 @@ game_menus = [
           (try_for_range, ":unused", 0, ":num_casualties"),
             (call_script, "script_cf_party_remove_random_regular_troop", "p_main_party"),
             (assign, ":lost_troop", reg0),
+            (gt, ":lost_troop", 0),
+            (gt, "$g_encountered_party", 0),
+            (party_is_active, "$g_encountered_party"),
             (store_random_in_range, ":random_no", 0, 100),
             (ge, ":random_no", 30),
             (party_add_prisoners, "$g_encountered_party", ":lost_troop", 1),
@@ -4602,12 +4504,22 @@ game_menus = [
       ("call_back", [], "Call them back.", [(jump_to_menu, "mnu_simple_encounter")]),
     ]
   ),
-# [ src/menus/encounter/order_attack_continue.py:L1-L146 ] order_attack_2
+# [ src/menus/encounter/order_attack_continue.py:L1-L166 ] order_attack_2
 (
       "order_attack_2",mnf_disable_all_keys,
       "{s4}^^Your casualties: {s8}^^Enemy casualties: {s9}^^Allied line: {s10}^Enemy line: {s11}",
       "none",
-      [  (try_begin),
+      [
+         (assign, ":encountered_party_valid", 0),
+         (try_begin),
+            (gt, "$g_encountered_party", 0),
+            (party_is_active, "$g_encountered_party"),
+            (assign, ":encountered_party_valid", 1),
+         (else_try),
+            (party_clear, "p_collective_enemy"),
+         (try_end),
+
+         (try_begin),
          (eq, "$g_sod_autoresolve", 1),
          # kt0:  heavily modified to use the new strength calculation stuff.
          # Antigravity: Fixed massive auto-resolve exploit! Automatically detect if the player is assaulting a Town/Castle.
@@ -4615,6 +4527,7 @@ game_menus = [
          (assign, ":is_siege_atk", 0),
          (assign, ":is_siege_def", 0),
          (try_begin),
+            (eq, ":encountered_party_valid", 1),
             (this_or_next|party_slot_eq, "$g_encountered_party", slot_party_type, spt_castle),
             (party_slot_eq, "$g_encountered_party", slot_party_type, spt_town),
             (assign, ":is_siege_atk", 2),
@@ -4646,11 +4559,16 @@ game_menus = [
          (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
          (str_store_string_reg, s8, s0),
 
-         (inflict_casualties_to_party_group, "$g_encountered_party", ":player_party_strength", "p_temp_casualties"),
-         (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
-         (str_store_string_reg, s9, s0),
+         (try_begin),
+            (eq, ":encountered_party_valid", 1),
+            (inflict_casualties_to_party_group, "$g_encountered_party", ":player_party_strength", "p_temp_casualties"),
+            (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
+            (str_store_string_reg, s9, s0),
+            (party_collect_attachments_to_party, "$g_encountered_party", "p_collective_enemy"),  # KT0 IMPROVED AUTORESOLVE ENDS
+         (else_try),
+            (str_store_string, s9, "@None"),
+         (try_end),
 
-         (party_collect_attachments_to_party, "$g_encountered_party", "p_collective_enemy"),  # KT0 IMPROVED AUTORESOLVE ENDS
            
          (else_try),   # native/native improved autoresolve are the same here
 
@@ -4667,11 +4585,15 @@ game_menus = [
         (str_store_string_reg, s8, s0),
                                     
 ####                                    (call_script,"script_inflict_casualties_to_party", "$g_encountered_party", ":player_party_strength"),
-        (inflict_casualties_to_party_group, "$g_encountered_party", ":player_party_strength", "p_temp_casualties"),
-        (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
-        (str_store_string_reg, s9, s0),
-
-        (party_collect_attachments_to_party, "$g_encountered_party", "p_collective_enemy"),
+        (try_begin),
+          (eq, ":encountered_party_valid", 1),
+          (inflict_casualties_to_party_group, "$g_encountered_party", ":player_party_strength", "p_temp_casualties"),
+          (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
+          (str_store_string_reg, s9, s0),
+          (party_collect_attachments_to_party, "$g_encountered_party", "p_collective_enemy"),
+        (else_try),
+          (str_store_string, s9, "@None"),
+        (try_end),
 
          (try_end),   # autoresolves end
 
@@ -4747,7 +4669,7 @@ game_menus = [
           ]),
     ]
   ),
-# [ src/menus/other/continue_05.py:L1-L148 ] battle_debrief
+# [ src/menus/other/continue_05.py:L1-L149 ] battle_debrief
 (
     "battle_debrief", mnf_disable_all_keys,
     "{s11}^^Your Casualties:{s8}{s10}^^Enemy Casualties:{s9}^^Fit to continue: your side {reg10}, enemy side {reg11}.",
@@ -4887,7 +4809,8 @@ game_menus = [
      (try_begin),
        (eq, "$any_allies_at_the_last_battle", 1),
        (call_script, "script_print_casualties_to_s0", "p_ally_casualties", 0),
-       (str_store_string, s10, "@^^Ally Casualties:{s0}"),
+       (str_store_string_reg, s68, s0),
+       (str_store_string, s10, "@^^Ally Casualties:{s68}"),
      (try_end),
      ],
     [
@@ -4991,7 +4914,7 @@ game_menus = [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_total_victory")]),
     ]
   ),
-# [ src/menus/other/total_defeat.py:L1-L83 ] total_defeat
+# [ src/menus/other/total_defeat.py:L1-L102 ] total_defeat
 (
     "total_defeat", 0,
     "You shouldn't be reading this...",
@@ -4999,6 +4922,14 @@ game_menus = [
     [
         (play_track, "track_captured", 1),
           (call_script, "script_sod_company_accounts_record_battle_defeat"),
+          (assign, ":defeat_enemy_valid", 0),
+          (try_begin),
+            (gt, "$g_enemy_party", 0),
+            (party_is_active, "$g_enemy_party"),
+            (assign, ":defeat_enemy_valid", 1),
+          (else_try),
+            (assign, "$g_enemy_party", -1),
+          (try_end),
            # Free prisoners
           (party_get_num_prisoner_stacks, ":num_prisoner_stacks", "p_main_party"),
           (try_for_range, ":stack_no", 0, ":num_prisoner_stacks"),
@@ -5008,25 +4939,35 @@ game_menus = [
           (try_end),
 
           (try_begin),
+            (eq, ":defeat_enemy_valid", 1),
+            (party_get_num_companion_stacks, ":num_enemy_stacks", "$g_enemy_party"),
+            (gt, ":num_enemy_stacks", 0),
             (party_stack_get_troop_id, ":captor_troop", "$g_enemy_party", 0),
             (is_between, ":captor_troop", kingdom_heroes_begin, kingdom_heroes_end),
             (call_script, "script_sod_artifact_capture_spoils", ":captor_troop", "trp_player"),
           (try_end),
 
           (try_begin),
-            (gt, "$g_enemy_party", 0),
-            (party_is_active, "$g_enemy_party"),
+            (eq, ":defeat_enemy_valid", 1),
             (party_slot_ge, "$g_enemy_party", slot_party_sod_looter_raid_state, sod_looter_raid_state_moving_to_target),
             (call_script, "script_sod_looter_handle_player_defeat_near_village_raid", "$g_enemy_party"),
           (try_end),
 
-          (call_script, "script_loot_player_items", "$g_enemy_party"),
+          (try_begin),
+            (eq, ":defeat_enemy_valid", 1),
+            (call_script, "script_loot_player_items", "$g_enemy_party"),
+          (try_end),
 
           (assign, "$g_move_heroes", 0),
           (party_clear, "p_temp_party"),
           (call_script, "script_party_add_party_prisoners", "p_temp_party", "p_main_party"),
           (call_script, "script_party_prisoners_add_party_companions", "p_temp_party", "p_main_party"),
-          (distribute_party_among_party_group, "p_temp_party", "$g_enemy_party"),
+          (try_begin),
+            (eq, ":defeat_enemy_valid", 1),
+            (distribute_party_among_party_group, "p_temp_party", "$g_enemy_party"),
+          (else_try),
+            (party_clear, "p_temp_party"),
+          (try_end),
 
           (call_script, "script_sod_companion_retinue_handle_player_defeat"),
           (call_script, "script_party_remove_all_companions", "p_main_party"),
@@ -5057,6 +4998,7 @@ game_menus = [
           (try_end),
           (try_begin),
             (gt, "$g_ally_party", 0),
+            (party_is_active, "$g_ally_party"),
             (call_script, "script_party_wound_all_members", "$g_ally_party"),
           (try_end),
 
@@ -5076,7 +5018,7 @@ game_menus = [
 # [ src/menus/other/s0.py:L1-L81 ] permanent_damage
 (
     "permanent_damage", mnf_disable_all_keys,
-    "{s0}",
+    "{s68}",
     "none",
     [
       (assign, ":end_cond", 1),
@@ -5088,16 +5030,16 @@ game_menus = [
           (neq, ":random_attribute", ca_charisma),
           (try_begin),
             (eq, ":random_attribute", ca_strength),
-            (str_store_string, s0, "@Some of your tendons have been damaged in the battle. You lose 1 strength."),
+            (str_store_string, s68, "@Some of your tendons have been damaged in the battle. You lose 1 strength."),
           (else_try),
             (eq, ":random_attribute", ca_agility),
-            (str_store_string, s0, "@You took a nasty wound which will cause you to limp slightly even after it heals. Your lose 1 agility."),
+            (str_store_string, s68, "@You took a nasty wound which will cause you to limp slightly even after it heals. Your lose 1 agility."),
 ##          (else_try),
 ##            (eq, ":random_attribute", ca_charisma),
-##            (str_store_string, s0, "@After the battle you are aghast to find that one of the terrible blows you suffered has left a deep, disfiguring scar on your face, horrifying those around you. Your charisma is reduced by 1."),
+##            (str_store_string, s68, "@After the battle you are aghast to find that one of the terrible blows you suffered has left a deep, disfiguring scar on your face, horrifying those around you. Your charisma is reduced by 1."),
           (else_try),
 ##            (eq, ":random_attribute", ca_intelligence),
-            (str_store_string, s0, "@You have trouble thinking straight after the battle, perhaps from a particularly hard hit to your head, and frequent headaches now plague your existence. Your intelligence is reduced by 1."),
+            (str_store_string, s68, "@You have trouble thinking straight after the battle, perhaps from a particularly hard hit to your head, and frequent headaches now plague your existence. Your intelligence is reduced by 1."),
           (try_end),
         (else_try),
           (lt, ":end_cond", 200),
@@ -5118,30 +5060,30 @@ game_menus = [
       (try_end),
       ],
     [
-      ("s0",
+      ("permanent_damage_accept",
        [
          (store_random_in_range, ":random_no", 0, 4),
          (try_begin),
            (eq, ":random_no", 0),
-           (str_store_string, s0, "@Perhaps I'm getting unlucky..."),
+           (str_store_string, s68, "@Perhaps I'm getting unlucky..."),
          (else_try),
            (eq, ":random_no", 1),
-           (str_store_string, s0, "@Retirement is starting to sound better and better."),
+           (str_store_string, s68, "@Retirement is starting to sound better and better."),
          (else_try),
            (eq, ":random_no", 2),
-           (str_store_string, s0, "@No matter! I will persevere!"),
+           (str_store_string, s68, "@No matter! I will persevere!"),
          (else_try),
            (eq, ":random_no", 3),
            (troop_get_type, ":is_female", "trp_player"),
            (try_begin),
              (eq, ":is_female", 1),
-             (str_store_string, s0, "@What did I do to deserve this?"),
+             (str_store_string, s68, "@What did I do to deserve this?"),
            (else_try),
-             (str_store_string, s0, "@I suppose it'll make for a good story, at least..."),
+             (str_store_string, s68, "@I suppose it'll make for a good story, at least..."),
            (try_end),
          (try_end),
          ],
-       "{s0}",
+       "{s68}",
        [
          (try_begin),
            (eq, "$g_next_menu", -1),
@@ -5153,26 +5095,40 @@ game_menus = [
          ]),
       ]
   ),
-# [ src/menus/encounter/pre_join_help_attackers.py:L1-L60 ] pre_join
+# [ src/menus/encounter/pre_join_help_attackers.py:L1-L78 ] pre_join
 (
     "pre_join", mnf_enable_hot_keys,
-    "You come across a battle between:^^{s2} and {s1}.^^You decide to...",
+    "You come across a battle between:^^{s70} and {s73}.^^You decide to...",
     "none",
     [
       (set_background_mesh, "mesh_pic_involve"),
 
-      (store_faction_of_party, ":attackers_faction", "$g_encountered_party_2"),
-      (store_faction_of_party, ":defender_faction", "$g_encountered_party"),
-      (str_store_party_name, s2, "$g_encountered_party_2"),
-      (str_store_faction_name, s4, ":attackers_faction"),
-      (str_store_string, s2, "@{s2} of the {s4}"),
-      (str_store_party_name, s1, "$g_encountered_party"),
-      (str_store_faction_name, s3, ":defender_faction"),
-      (str_store_string, s1, "@{s1} of the {s3}"),
+      (str_store_string, s70, "@an attacking force"),
+      (try_begin),
+        (gt, "$g_encountered_party_2", 0),
+        (party_is_active, "$g_encountered_party_2"),
+        (store_faction_of_party, ":attackers_faction", "$g_encountered_party_2"),
+        (str_store_party_name, s68, "$g_encountered_party_2"),
+        (str_store_faction_name, s69, ":attackers_faction"),
+        (str_store_string, s70, "@{s68} of the {s69}"),
+      (try_end),
+      (str_store_string, s73, "@the defenders"),
+      (try_begin),
+        (gt, "$g_encountered_party", 0),
+        (party_is_active, "$g_encountered_party"),
+        (store_faction_of_party, ":defender_faction", "$g_encountered_party"),
+        (str_store_party_name, s71, "$g_encountered_party"),
+        (str_store_faction_name, s72, ":defender_faction"),
+        (str_store_string, s73, "@{s71} of the {s72}"),
+      (try_end),
     ],
     [
       ("pre_join_help_attackers",
       [
+        (gt, "$g_encountered_party_2", 0),
+        (party_is_active, "$g_encountered_party_2"),
+        (gt, "$g_encountered_party", 0),
+        (party_is_active, "$g_encountered_party"),
         (store_faction_of_party, ":attacker_faction", "$g_encountered_party_2"),
         (store_relation, ":attacker_relation", ":attacker_faction", "fac_player_supporters_faction"),
         (ge, ":attacker_relation", 0),
@@ -5182,7 +5138,7 @@ game_menus = [
         #(store_relation, ":defender_relation", ":defender_faction", "fac_player_supporters_faction"),
         #(lt, ":defender_relation", 0),
       ],
-      "Move in to help {s2}.", [
+      "Move in to help {s70}.", [
         (select_enemy, 0),
         (assign, "$g_enemy_party", "$g_encountered_party"),
         (assign, "$g_ally_party", "$g_encountered_party_2"),
@@ -5192,6 +5148,10 @@ game_menus = [
 
       ("pre_join_help_defenders",
       [
+        (gt, "$g_encountered_party", 0),
+        (party_is_active, "$g_encountered_party"),
+        (gt, "$g_encountered_party_2", 0),
+        (party_is_active, "$g_encountered_party_2"),
         (store_faction_of_party, ":defender_faction", "$g_encountered_party"),
         (store_relation, ":defender_relation", ":defender_faction", "fac_player_supporters_faction"),
         (ge, ":defender_relation", 0),
@@ -5201,7 +5161,7 @@ game_menus = [
         #(store_relation, ":attacker_relation", ":attacker_faction", "fac_player_supporters_faction"),
         #(lt, ":attacker_relation", 0),
       ],
-      "Rush to the aid of {s1}.", [
+      "Rush to the aid of {s73}.", [
         (select_enemy, 1),
         (assign, "$g_enemy_party", "$g_encountered_party_2"),
         (assign, "$g_ally_party", "$g_encountered_party"),
@@ -5212,16 +5172,26 @@ game_menus = [
       ("pre_join_leave", [], "Don't get involved.", [(leave_encounter), (change_screen_return)]),
     ]
   ),
-# [ src/menus/encounter/join_attack.py:L1-L149 ] join_battle
+# [ src/menus/encounter/join_attack.py:L1-L162 ] join_battle
 (
     "join_battle", mnf_enable_hot_keys,
-    "You are helping {s2} against {s1}. Your side looks {s10}; the enemy line looks {s11}.",
+    "You are helping {s73} against {s72}. Your side looks {s74}; the enemy line looks {s75}.",
     "none",
     [
       (set_background_mesh, "mesh_pic_involve"),
 
-      (str_store_party_name, 1, "$g_enemy_party"),
-      (str_store_party_name, 2, "$g_ally_party"),
+      (str_store_string, s72, "@the enemy"),
+      (try_begin),
+        (gt, "$g_enemy_party", 0),
+        (party_is_active, "$g_enemy_party"),
+        (str_store_party_name, s72, "$g_enemy_party"),
+      (try_end),
+      (str_store_string, s73, "@your allies"),
+      (try_begin),
+        (gt, "$g_ally_party", 0),
+        (party_is_active, "$g_ally_party"),
+        (str_store_party_name, s73, "$g_ally_party"),
+      (try_end),
       # MORDACHAI - use faction names instead of party names
       #(store_faction_of_party, ":enemy_faction", "$g_enemy_party"),
       #(store_faction_of_party, ":ally_faction", "$g_ally_party"),
@@ -5231,27 +5201,27 @@ game_menus = [
       (call_script, "script_encounter_calculate_fit"),
       (try_begin),
         (le, "$g_friend_fit_for_battle", 0),
-        (str_store_string, s10, "@spent"),
+        (str_store_string, s74, "@spent"),
       (else_try),
         (lt, "$g_friend_fit_for_battle", 10),
-        (str_store_string, s10, "@thin"),
+        (str_store_string, s74, "@thin"),
       (else_try),
         (lt, "$g_friend_fit_for_battle", 30),
-        (str_store_string, s10, "@ready but not numerous"),
+        (str_store_string, s74, "@ready but not numerous"),
       (else_try),
-        (str_store_string, s10, "@strong"),
+        (str_store_string, s74, "@strong"),
       (try_end),
       (try_begin),
         (le, "$g_enemy_fit_for_battle", 0),
-        (str_store_string, s11, "@broken"),
+        (str_store_string, s75, "@broken"),
       (else_try),
         (lt, "$g_enemy_fit_for_battle", 10),
-        (str_store_string, s11, "@thin"),
+        (str_store_string, s75, "@thin"),
       (else_try),
         (lt, "$g_enemy_fit_for_battle", 30),
-        (str_store_string, s11, "@bloodied but ready"),
+        (str_store_string, s75, "@bloodied but ready"),
       (else_try),
-        (str_store_string, s11, "@strong"),
+        (str_store_string, s75, "@strong"),
       (try_end),
 
       (try_begin),
@@ -5315,7 +5285,7 @@ game_menus = [
         ("join_attack", [
           (call_script, "script_cf_sod_battle_commander_can_start"),
         ],
-        "Charge the enemy ({s7} leads).", [
+        "Charge the enemy ({s68} leads).", [
           (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
           (assign, "$g_battle_result", 0),
           (call_script, "script_calculate_renown_value"),
@@ -5350,9 +5320,12 @@ game_menus = [
         (try_begin),
            (neg|troop_is_wounded, "trp_player"),
            (call_script, "script_objectionable_action", tmt_aristocratic, "str_flee_battle"),
+           (gt, "$g_enemy_party", 0),
+           (party_is_active, "$g_enemy_party"),
+           (party_get_num_companion_stacks, ":num_enemy_stacks", "$g_enemy_party"),
+           (gt, ":num_enemy_stacks", 0),
            (party_stack_get_troop_id, ":enemy_leader", "$g_enemy_party", 0),
            (call_script, "script_add_log_entry", logent_player_retreated_from_lord, "trp_player", -1, ":enemy_leader", -1),
-           (display_message, "@Player retreats from battle", debug_color),
         (try_end),
         (assign, "$g_sod_joined_ongoing_ai_battle", 0),
         (leave_encounter),
@@ -5360,7 +5333,7 @@ game_menus = [
       ]),
     ]
   ),
-# [ src/menus/other/continue_08.py:L1-L62 ] join_order_attack
+# [ src/menus/other/continue_08.py:L1-L75 ] join_order_attack
 (
     "join_order_attack", mnf_disable_all_keys,
     "{s4}^^Your casualties: {s8}^^Allies' casualties: {s9}^^Enemy casualties: {s10}",
@@ -5374,6 +5347,7 @@ game_menus = [
       (call_script, "script_party_calculate_strength", "p_collective_friends", 0),
       (assign, ":friend_party_strength", reg0),
       (val_div, ":friend_party_strength", 5),
+      (val_max, ":friend_party_strength", 1),
 
       (call_script, "script_party_calculate_strength", "p_collective_enemy", 0),
       (assign, ":enemy_party_strength", reg0),
@@ -5388,17 +5362,29 @@ game_menus = [
       (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
       (str_store_string_reg, s8, s0),
 
-      (inflict_casualties_to_party_group, "$g_enemy_party", ":friend_party_strength", "p_temp_casualties"),
-      (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
-      (str_store_string_reg, s10, s0),
+      (try_begin),
+        (gt, "$g_enemy_party", 0),
+        (party_is_active, "$g_enemy_party"),
+        (inflict_casualties_to_party_group, "$g_enemy_party", ":friend_party_strength", "p_temp_casualties"),
+        (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
+        (str_store_string_reg, s10, s0),
+        (party_collect_attachments_to_party, "$g_enemy_party", "p_collective_enemy"),
+      (else_try),
+        (str_store_string, s10, "@None"),
+      (try_end),
 
       (call_script, "script_collect_friendly_parties"),
 #      (party_collect_attachments_to_party, "$g_ally_party", "p_collective_ally"),
 
-      (inflict_casualties_to_party_group, "$g_ally_party", ":enemy_party_strength", "p_temp_casualties"),
-      (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
-      (str_store_string_reg, s9, s0),
-      (party_collect_attachments_to_party, "$g_enemy_party", "p_collective_enemy"),
+      (try_begin),
+        (gt, "$g_ally_party", 0),
+        (party_is_active, "$g_ally_party"),
+        (inflict_casualties_to_party_group, "$g_ally_party", ":enemy_party_strength", "p_temp_casualties"),
+        (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
+        (str_store_string_reg, s9, s0),
+      (else_try),
+        (str_store_string, s9, "@None"),
+      (try_end),
 
 #      (assign, "$cant_leave_encounter", 0),
       (assign, "$no_soldiers_left", 0),
@@ -5506,15 +5492,26 @@ game_menus = [
       ("leave", [], "Leave.", [(leave_encounter), (change_screen_return)]),
     ]
   ),
-# [ src/menus/centers/castle/approach_besiegers.py:L1-L39 ] join_siege_outside
+# [ src/menus/centers/castle/approach_besiegers.py:L1-L56 ] join_siege_outside
 (
     "join_siege_outside", mnf_enable_hot_keys, #mnf_scale_picture|
-    "{s1} has come under siege by {s2}.",
+    "{s72} has come under siege by {s73}.",
     "none",
     [
       (set_background_mesh, "mesh_pic_siege_join"),
-      (str_store_party_name, s1, "$g_encountered_party"),
-      (str_store_party_name, s2, "$g_encountered_party_2"),
+      (call_script, "script_sod_show_party_leader_portrait", "$g_encountered_party_2"),
+      (str_store_string, s72, "@The center"),
+      (try_begin),
+        (gt, "$g_encountered_party", 0),
+        (party_is_active, "$g_encountered_party"),
+        (str_store_party_name, s72, "$g_encountered_party"),
+      (try_end),
+      (str_store_string, s73, "@the besiegers"),
+      (try_begin),
+        (gt, "$g_encountered_party_2", 0),
+        (party_is_active, "$g_encountered_party_2"),
+        (str_store_party_name, s73, "$g_encountered_party_2"),
+      (try_end),
 #      (troop_get_type, ":is_female", "trp_player"),
 #      (try_begin),
 #        (eq, ":is_female", 1),
@@ -5524,7 +5521,11 @@ game_menus = [
 #      (try_end),
     ],
     [
-      ("approach_besiegers", [(store_faction_of_party, ":faction_no", "$g_encountered_party_2"),
+      ("approach_besiegers", [(gt, "$g_encountered_party_2", 0),
+                             (party_is_active, "$g_encountered_party_2"),
+                             (gt, "$g_encountered_party", 0),
+                             (party_is_active, "$g_encountered_party"),
+                             (store_faction_of_party, ":faction_no", "$g_encountered_party_2"),
                              (store_relation, ":relation", ":faction_no", "fac_player_supporters_faction"),
                              (ge, ":relation", 0),
                              (store_faction_of_party, ":faction_no", "$g_encountered_party"),
@@ -5533,10 +5534,12 @@ game_menus = [
                              ], "Approach the siege camp.", [
           (jump_to_menu, "mnu_besiegers_camp_with_allies"),
                                 ]),
-      ("pass_through_siege", [(store_faction_of_party, ":faction_no", "$g_encountered_party"),
+      ("pass_through_siege", [(gt, "$g_encountered_party", 0),
+                             (party_is_active, "$g_encountered_party"),
+                             (store_faction_of_party, ":faction_no", "$g_encountered_party"),
                              (store_relation, ":relation", ":faction_no", "fac_player_supporters_faction"),
                              (ge, ":relation", 0),
-                             ], "Pass through the siege lines and enter {s1}.",
+                             ], "Pass through the siege lines and enter {s72}.",
        [
             (jump_to_menu, "mnu_cut_siege_without_fight"),
           ]),
@@ -5569,13 +5572,14 @@ game_menus = [
                                  (try_end)]),
       ]
   ),
-# [ src/menus/centers/castle/talk_to_siege_commander.py:L1-L142 ] besiegers_camp_with_allies
+# [ src/menus/centers/castle/talk_to_siege_commander.py:L1-L175 ] besiegers_camp_with_allies
 (
     "besiegers_camp_with_allies", mnf_enable_hot_keys,
-    "{s1} remains under siege. The banners of {s2} fly above the camp of the besiegers, where you and your men are welcomed.",
+    "{s72} remains under siege. The banners of {s73} fly above the camp of the besiegers, where you and your men are welcomed.",
     "none",
     [
       (set_background_mesh, "mesh_pic_siege_join"),
+      (call_script, "script_sod_show_party_leader_portrait", "$g_encountered_party_2"),
 
 #      (try_begin),
 #        (troop_get_type, ":is_female", "trp_player"),
@@ -5585,10 +5589,30 @@ game_menus = [
 #        (set_background_mesh, "mesh_pic_siege_join_sighted"),
 #      (try_end),
 
-      (str_store_party_name, s1, "$g_encountered_party"),
-      (str_store_party_name, s2, "$g_encountered_party_2"),
-      (assign, "$g_enemy_party", "$g_encountered_party"),
-      (assign, "$g_ally_party", "$g_encountered_party_2"),
+      (str_store_string, s72, "@The center"),
+      (try_begin),
+        (gt, "$g_encountered_party", 0),
+        (party_is_active, "$g_encountered_party"),
+        (str_store_party_name, s72, "$g_encountered_party"),
+      (try_end),
+      (str_store_string, s73, "@the allied host"),
+      (try_begin),
+        (gt, "$g_encountered_party_2", 0),
+        (party_is_active, "$g_encountered_party_2"),
+        (str_store_party_name, s73, "$g_encountered_party_2"),
+      (try_end),
+      (assign, "$g_enemy_party", -1),
+      (try_begin),
+        (gt, "$g_encountered_party", 0),
+        (party_is_active, "$g_encountered_party"),
+        (assign, "$g_enemy_party", "$g_encountered_party"),
+      (try_end),
+      (assign, "$g_ally_party", -1),
+      (try_begin),
+        (gt, "$g_encountered_party_2", 0),
+        (party_is_active, "$g_encountered_party_2"),
+        (assign, "$g_ally_party", "$g_encountered_party_2"),
+      (try_end),
       (select_enemy, 0),
       (call_script, "script_encounter_calculate_fit"),
       (try_begin),
@@ -5604,17 +5628,24 @@ game_menus = [
         (assign, ":enemy_finished", 0),
         (try_begin),
           (eq, "$g_battle_result", 1),
+          (gt, "$g_enemy_party", 0),
+          (party_is_active, "$g_enemy_party"),
           (assign, ":enemy_finished", 1),
         (else_try),
+          (gt, "$g_enemy_party", 0),
+          (party_is_active, "$g_enemy_party"),
           (le, "$g_enemy_fit_for_battle", 0),
           (ge, "$g_friend_fit_for_battle", 1),
           (assign, ":enemy_finished", 1),
         (try_end),
         (this_or_next|eq, ":enemy_finished", 1),
         (eq, "$g_enemy_surrenders", 1),
+        (gt, "$g_enemy_party", 0),
+        (party_is_active, "$g_enemy_party"),
         (call_script, "script_party_wound_all_members", "$g_enemy_party"),
-        (leave_encounter),
-        (change_screen_return),
+        (party_collect_attachments_to_party, "$g_enemy_party", "p_collective_enemy"),
+        (assign, "$g_next_menu", "mnu_castle_taken_by_friends"),
+        (jump_to_menu, "mnu_total_victory"),
       (else_try),
         (call_script, "script_party_count_members_with_full_health", "p_collective_friends"),
         (assign, ":ally_num_soldiers", reg0),
@@ -5625,7 +5656,12 @@ game_menus = [
       (try_end),
     ],
     [
-      ("talk_to_siege_commander", [], " Request a meeting with the commander.", [
+      ("talk_to_siege_commander", [
+        (gt, "$g_encountered_party_2", 0),
+        (party_is_active, "$g_encountered_party_2"),
+        (party_get_num_companion_stacks, ":num_siege_leader_stacks", "$g_encountered_party_2"),
+        (gt, ":num_siege_leader_stacks", 0),
+      ], " Request a meeting with the commander.", [
         (modify_visitors_at_site, "scn_conversation_scene"), (reset_visitors),
         (set_visitor, 0, "trp_player"),
         (party_stack_get_troop_id, ":siege_leader_id", "$g_encountered_party_2", 0),
@@ -5641,7 +5677,7 @@ game_menus = [
         "mnu_besiegers_camp_with_allies",
       ),
 
-      ("join_siege_with_allies", [(call_script, "script_cf_sod_battle_commander_can_start")], "Join the next assault ({s7} leads).", [
+      ("join_siege_with_allies", [(call_script, "script_cf_sod_battle_commander_can_start")], "Join the next assault ({s68} leads).", [
         (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
         (try_begin),
           (check_quest_active, "qst_join_siege_with_army"),
@@ -5710,7 +5746,7 @@ game_menus = [
       ("leave", [], "Leave.", [(leave_encounter), (change_screen_return)]),
     ]
   ),
-# [ src/menus/centers/common/approach_gates.py:L1-L319 ] castle_outside
+# [ src/menus/centers/common/approach_gates.py:L1-L318 ] castle_outside
 (
     "castle_outside", mnf_enable_hot_keys,
     "You are outside {s2}.{s11} {s3} {s4}",
@@ -5834,12 +5870,15 @@ game_menus = [
         (store_div, ":food_days", ":town_food_store", ":food_consumption"),
         (try_begin),
           (le, ":food_days", 3),
-          (str_store_string, s3, "@{s3} Its food stores look dangerously thin."),
+          (str_store_string_reg, s97, s3),
+          (str_store_string, s3, "@{s97} Its food stores look dangerously thin."),
         (else_try),
           (le, ":food_days", 10),
-          (str_store_string, s3, "@{s3} Its food stores look strained."),
+          (str_store_string_reg, s97, s3),
+          (str_store_string, s3, "@{s97} Its food stores look strained."),
         (else_try),
-          (str_store_string, s3, "@{s3} Its food stores look ready for a siege."),
+          (str_store_string_reg, s97, s3),
+          (str_store_string, s3, "@{s97} Its food stores look ready for a siege."),
         (try_end),
       (try_end),
 
@@ -5954,7 +5993,7 @@ game_menus = [
            (assign, "$g_last_defeated_bandits_town", 0),
            (assign, "$sneaked_into_town", 1),
            (assign, "$town_entered", 1),
-           (jump_to_menu, "mnu_sneak_into_town_suceeded"),
+           (jump_to_menu, "mnu_sneak_into_town_succeeded"),
          (else_try),
            (jump_to_menu, "mnu_sneak_into_town_caught"),
          (try_end)
@@ -5988,10 +6027,6 @@ game_menus = [
 
          (try_end),
          (eq, ":can_siege", 1),
-
-         #MORDACHAI - allow sieges against what what a neutral or friendly faction (acts as a declaration of war)
-         #(store_relation, ":reln", "$g_encountered_party_faction", "fac_player_supporters_faction"),
-         #(lt, ":reln", 0),
 
          #MORDACHAI - but also disallow you from attacking your own kingdom's centers!
          (store_faction_of_party, ":center_faction", "$g_encountered_party"),
@@ -6138,11 +6173,11 @@ game_menus = [
     [
       ("guard_meet_s5", [(gt, "$num_castle_meeting_troops", 0), (troop_get_slot, ":troop_no", "trp_temp_array_a", 0), (call_script, "script_store_troop_name", s5, ":troop_no")],
        "{s5}.", [(troop_get_slot, "$castle_meeting_selected_troop", "trp_temp_array_a", 0), (jump_to_menu, "mnu_castle_meeting_selected")]),
-      ("guard_meet_s5", [(gt, "$num_castle_meeting_troops", 1), (troop_get_slot, ":troop_no", "trp_temp_array_a", 1), (call_script, "script_store_troop_name", s5, ":troop_no")],
+      ("guard_meet_s5_2", [(gt, "$num_castle_meeting_troops", 1), (troop_get_slot, ":troop_no", "trp_temp_array_a", 1), (call_script, "script_store_troop_name", s5, ":troop_no")],
        "{s5}.", [(troop_get_slot, "$castle_meeting_selected_troop", "trp_temp_array_a", 1), (jump_to_menu, "mnu_castle_meeting_selected")]),
-      ("guard_meet_s5", [(gt, "$num_castle_meeting_troops", 2), (troop_get_slot, ":troop_no", "trp_temp_array_a", 2), (call_script, "script_store_troop_name", s5, ":troop_no")],
+      ("guard_meet_s5_3", [(gt, "$num_castle_meeting_troops", 2), (troop_get_slot, ":troop_no", "trp_temp_array_a", 2), (call_script, "script_store_troop_name", s5, ":troop_no")],
        "{s5}.", [(troop_get_slot, "$castle_meeting_selected_troop", "trp_temp_array_a", 2), (jump_to_menu, "mnu_castle_meeting_selected")]),
-      ("guard_meet_s5", [(gt, "$num_castle_meeting_troops", 3), (troop_get_slot, ":troop_no", "trp_temp_array_a", 3), (call_script, "script_store_troop_name", s5, ":troop_no")],
+      ("guard_meet_s5_4", [(gt, "$num_castle_meeting_troops", 3), (troop_get_slot, ":troop_no", "trp_temp_array_a", 3), (call_script, "script_store_troop_name", s5, ":troop_no")],
        "{s5}.", [(troop_get_slot, "$castle_meeting_selected_troop", "trp_temp_array_a", 3), (jump_to_menu, "mnu_castle_meeting_selected")]),
 
       ("forget_it", [],
@@ -6174,13 +6209,14 @@ game_menus = [
        ),
     ]
   ),
-# [ src/menus/centers/castle/siege_request_meeting.py:L1-L283 ] castle_besiege
+# [ src/menus/centers/castle/siege_request_meeting.py:L1-L291 ] castle_besiege
 (
     "castle_besiege",mnf_enable_hot_keys, #mnf_scale_picture|
     "You are laying siege to {s1}. {s2} {s3}",
     "none",
     [
       (set_background_mesh, "mesh_pic_siege_join"),
+      (call_script, "script_sod_show_center_owner_portrait", "$g_encountered_party"),
 #        (troop_get_type, ":is_female", "trp_player"),
 #        (try_begin),
 #          (eq, ":is_female", 1),
@@ -6217,29 +6253,29 @@ game_menus = [
 
         (try_begin),
           (party_slot_eq, "$g_encountered_party", slot_party_type, spt_town),
-          (assign, reg6, 1),
+          (str_store_string, s68, "@town's"),
         (else_try),
-          (assign, reg6, 0),
+          (str_store_string, s68, "@castle's"),
         (try_end),
 
         (try_begin),
           (gt, ":food_days", 0),
           (try_begin),
             (le, ":food_days", 3),
-            (str_store_string, s2, "@The {reg6?town's:castle's} food stores are nearly exhausted."),
+            (str_store_string, s2, "@The {s68} food stores are nearly exhausted."),
           (else_try),
             (le, ":food_days", 10),
-            (str_store_string, s2, "@The {reg6?town's:castle's} food stores are under strain."),
+            (str_store_string, s2, "@The {s68} food stores are under strain."),
           (else_try),
-            (str_store_string, s2, "@The {reg6?town's:castle's} food stores can still support resistance."),
+            (str_store_string, s2, "@The {s68} food stores can still support resistance."),
           (try_end),
         (else_try),
           (le, ":town_food_store", 0),
           (ge, ":siege_days", 30),
           (assign, "$g_enemy_surrenders", 1),
-          (str_store_string, s2, "@The {reg6?town's:castle's} food stores have run out, the defenders are starving, and after weeks of famine they can no longer refuse terms."),
+          (str_store_string, s2, "@The {s68} food stores have run out, the defenders are starving, and after weeks of famine they can no longer refuse terms."),
         (else_try),
-          (str_store_string, s2, "@The {reg6?town's:castle's} food stores have run out and the defenders are starving."),
+          (str_store_string, s2, "@The {s68} food stores have run out and the defenders are starving."),
         (try_end),
 
         (str_store_string, s3, "str_empty_string"),
@@ -6390,7 +6426,7 @@ game_menus = [
          (store_current_hours, ":cur_hours"),
          (ge, ":cur_hours", "$g_siege_method_finish_hours"),
        ],
-       "Lead your soldiers in an assault ({s7} leads).",
+       "Lead your soldiers in an assault ({s68} leads).",
        [
            (try_begin),
              (party_slot_eq, "$g_encountered_party", slot_party_type, spt_town),
@@ -6403,6 +6439,7 @@ game_menus = [
            (val_mul, ":battle_advantage", 2),
            (val_div, ":battle_advantage", 3), #scale down the advantage a bit in sieges.
            (set_battle_advantage, ":battle_advantage"),
+           (call_script, "script_encounter_init_variables"),
            (call_script, "script_sod_companion_retinue_join_current_battle"),
            (set_party_battle_mode),
            (assign, "$g_siege_battle_state", 1),
@@ -6440,7 +6477,13 @@ game_menus = [
          (store_current_hours, ":cur_hours"),
          (ge, ":cur_hours", "$g_siege_method_finish_hours"),
          ],
-       "Order your soldiers to attack while you stay back...", [(assign, "$cant_talk_to_enemy", 0), (call_script, "script_sod_battle_commander_reset"), (jump_to_menu, "mnu_castle_attack_walls_simulate")]),
+       "Order your soldiers to attack while you stay back...",
+       [
+          (assign, "$cant_talk_to_enemy", 0),
+          (call_script, "script_sod_battle_commander_reset"),
+          (call_script, "script_encounter_init_variables"),
+          (jump_to_menu, "mnu_castle_attack_walls_simulate"),
+       ]),
 
       ("build_ladders", [(party_slot_eq, "$current_town", slot_center_siege_with_belfry, 0), (eq, "$g_siege_method", 0)],
        "Prepare ladders to attack the walls.", [(jump_to_menu, "mnu_construct_ladders")]),
@@ -6559,10 +6602,10 @@ game_menus = [
        ]),
     ]
   ),
-# [ src/menus/centers/common/build_ladders_cont.py:L1-L65 ] construct_ladders
+# [ src/menus/centers/common/build_ladders_cont.py:L1-L67 ] construct_ladders
 (
     "construct_ladders", mnf_enable_hot_keys,
-    "As the party member with the highest Engineer skill ({reg2}), {reg3?you estimate:{s3} estimates} that it will take {reg4} hours to build enough scaling ladders for the assault.",
+    "{s68}",
     "none",
     [
       (set_background_mesh, "mesh_pic_construction"),
@@ -6580,9 +6623,11 @@ game_menus = [
      (try_begin),
        (eq, ":max_skill_owner", "trp_player"),
        (assign, reg3, 1),
+       (str_store_string, s68, "@As the party member with the highest Engineer skill ({reg2}), you estimate that it will take {reg4} hours to build enough scaling ladders for the assault."),
      (else_try),
        (assign, reg3, 0),
        (call_script, "script_store_troop_name", s3, ":max_skill_owner"),
+       (str_store_string, s68, "@As the party member with the highest Engineer skill ({reg2}), {s3} estimates that it will take {reg4} hours to build enough scaling ladders for the assault."),
      (try_end),
     ],
     [
@@ -6623,10 +6668,10 @@ game_menus = [
        "Go back.", [(jump_to_menu, "mnu_castle_besiege")]),
         ],
   ),
-# [ src/menus/centers/castle/build_siege_tower_cont.py:L1-L63 ] construct_siege_tower
+# [ src/menus/centers/castle/build_siege_tower_cont.py:L1-L65 ] construct_siege_tower
 (
     "construct_siege_tower", mnf_enable_hot_keys,
-    "As the party member with the highest Engineer skill ({reg2}), {reg3?you estimate:{s3} estimates} that building a siege tower will take {reg4} hours.",
+    "{s68}",
     "none",
     [
       (set_background_mesh, "mesh_pic_construction"),
@@ -6643,9 +6688,11 @@ game_menus = [
       (try_begin),
         (eq, ":max_skill_owner", "trp_player"),
         (assign, reg3, 1),
+        (str_store_string, s68, "@As the party member with the highest Engineer skill ({reg2}), you estimate that building a siege tower will take {reg4} hours."),
       (else_try),
         (assign, reg3, 0),
         (call_script, "script_store_troop_name", s3, ":max_skill_owner"),
+        (str_store_string, s68, "@As the party member with the highest Engineer skill ({reg2}), {s3} estimates that building a siege tower will take {reg4} hours."),
       (try_end),
     ],
     [
@@ -6782,7 +6829,7 @@ game_menus = [
    [
    ("continue",[],"Continue...",[(jump_to_menu,"mnu_castle_besiege")]),
    ]),
-# [ src/menus/other/continue_16.py:L1-L70 ] castle_attack_walls_with_allies_simulate
+# [ src/menus/other/continue_16.py:L1-L81 ] castle_attack_walls_with_allies_simulate
 (
     "castle_attack_walls_with_allies_simulate", mnf_disable_all_keys,#mnf_scale_picture|
     "{s4}^^Your casualties: {s8}^^Allies' casualties: {s9}^^Enemy casualties: {s10}",
@@ -6819,17 +6866,28 @@ game_menus = [
       (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
       (str_store_string_reg, s8, s0),
 
-      (inflict_casualties_to_party_group, "$g_enemy_party", ":friend_party_strength", "p_temp_casualties"),
-      (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
-      (str_store_string_reg, s10, s0),
+      (try_begin),
+        (gt, "$g_enemy_party", 0),
+        (party_is_active, "$g_enemy_party"),
+        (inflict_casualties_to_party_group, "$g_enemy_party", ":friend_party_strength", "p_temp_casualties"),
+        (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
+        (str_store_string_reg, s10, s0),
+        (party_collect_attachments_to_party, "$g_enemy_party", "p_collective_enemy"),
+      (else_try),
+        (str_store_string, s10, "@None"),
+      (try_end),
 
       (call_script, "script_collect_friendly_parties"),
 
-      (inflict_casualties_to_party_group, "$g_ally_party", ":enemy_party_strength", "p_temp_casualties"),
-      (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
-      (str_store_string_reg, s9, s0),
-
-      (party_collect_attachments_to_party, "$g_enemy_party", "p_collective_enemy"),
+      (try_begin),
+        (gt, "$g_ally_party", 0),
+        (party_is_active, "$g_ally_party"),
+        (inflict_casualties_to_party_group, "$g_ally_party", ":enemy_party_strength", "p_temp_casualties"),
+        (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
+        (str_store_string_reg, s9, s0),
+      (else_try),
+        (str_store_string, s9, "@None"),
+      (try_end),
 
       (assign, "$no_soldiers_left", 0),
       (try_begin),
@@ -6851,61 +6909,205 @@ game_menus = [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_besiegers_camp_with_allies")]),
     ]
   ),
-# [ src/menus/other/continue_17.py:L1-L60 ] castle_taken
+# [ src/menus/centers/castle/castle_taken_by_friends.py:L1-L95 ] castle_taken_by_friends
 (
-    "castle_taken", mnf_enable_hot_keys,
-    "{s3} has fallen to your troops, and you now have full control of the {reg2?town:castle}.",
+    "castle_taken_by_friends", mnf_disable_all_keys,
+    "{s3} has fallen to the besieging army. The banners of {s9} now fly over the {s68}.",
     "none",
     [
-      (party_clear, "$g_encountered_party"),
-      (call_script, "script_lift_siege", "$g_encountered_party", 0),
-      (assign, "$g_player_besiege_town", -1),
-      (call_script, "script_add_log_entry", logent_castle_captured_by_player, "trp_player", "$g_encountered_party", 0, "$g_encountered_party_faction"),
-      (party_set_slot, "$g_encountered_party", slot_center_last_taken_by_troop, "trp_player"),
-      #Reduce prosperity of the center by 5
-      (call_script, "script_change_center_prosperity", "$g_encountered_party", -5),
-      #MORDACHAI - greatly increase the renown value of capturing places
       (try_begin),
-        (is_between, "$g_encountered_party", castles_begin, castles_end),
-        (call_script, "script_change_troop_renown", "trp_player", 25),
+        (neg|is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end),
+        (is_between, "$g_enemy_party", walled_centers_begin, walled_centers_end),
+        (assign, "$g_encountered_party", "$g_enemy_party"),
+        (assign, "$current_town", "$g_enemy_party"),
       (else_try),
-        (call_script, "script_change_troop_renown", "trp_player", 50),
+        (neg|is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end),
+        (is_between, "$g_player_besiege_town", walled_centers_begin, walled_centers_end),
+        (assign, "$g_encountered_party", "$g_player_besiege_town"),
+        (assign, "$current_town", "$g_player_besiege_town"),
+      (else_try),
+        (neg|is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end),
+        (is_between, "$current_town", walled_centers_begin, walled_centers_end),
+        (assign, "$g_encountered_party", "$current_town"),
       (try_end),
-      (call_script, "script_add_log_entry", logent_castle_captured_by_player, "trp_player", "$g_encountered_party", -1, "$g_encountered_party_faction"),
-
       (try_begin),
-        # handle the case where the player is a vassal of a kingdom
+        (is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end),
+        (assign, "$current_town", "$g_encountered_party"),
+      (try_end),
+
+      (assign, ":winner_faction", -1),
+      (assign, ":leader_troop", -1),
+      (try_begin),
+        (gt, "$g_encountered_party_2", 0),
+        (party_is_active, "$g_encountered_party_2"),
+        (store_faction_of_party, ":winner_faction", "$g_encountered_party_2"),
+        (party_get_num_companion_stacks, ":num_ally_stacks", "$g_encountered_party_2"),
+        (gt, ":num_ally_stacks", 0),
+        (party_stack_get_troop_id, ":leader_troop", "$g_encountered_party_2", 0),
+      (try_end),
+      (try_begin),
+        (neg|is_between, ":winner_faction", kingdoms_begin, kingdoms_end),
         (is_between, "$players_kingdom", kingdoms_begin, kingdoms_end),
-        (neq, "$players_kingdom", "fac_player_supporters_faction"),
-        (call_script, "script_give_center_to_faction", "$g_encountered_party", "$players_kingdom"),
-        (call_script, "script_order_best_besieger_party_to_guard_center", "$g_encountered_party", "$players_kingdom"),
-        (jump_to_menu, "mnu_castle_taken_2"),
-      (else_try),
-        # handle the case where the player is either their own King, or is working for a pretender
-        (call_script, "script_give_center_to_faction", "$g_encountered_party", "fac_player_supporters_faction"),
-        (call_script, "script_order_best_besieger_party_to_guard_center", "$g_encountered_party", "fac_player_supporters_faction"),
-        (str_store_party_name, s3, "$g_encountered_party"),
-		
-		    (try_begin),                    # Sod Twan Badboy effect
-            (party_slot_eq, "$g_encountered_party", slot_party_type, spt_town),
-            (call_script, "script_change_badboy_rating", 10),
-            (else_try),
-            (call_script, "script_change_badboy_rating", 4),
-            (try_end),                       # Twan Badboy effect ends
-		
-        #MORDACHAI - removed reg1 stuff from here - we don't use it anymore...
+        (assign, ":winner_faction", "$players_kingdom"),
+      (try_end),
+      (try_begin),
+        (neg|is_between, ":winner_faction", kingdoms_begin, kingdoms_end),
+        (assign, ":winner_faction", "fac_player_supporters_faction"),
       (try_end),
 
-      (assign, reg2, 0),
+      (str_store_string, s3, "@the captured center"),
+      (str_store_faction_name, s9, ":winner_faction"),
       (try_begin),
         (is_between, "$g_encountered_party", towns_begin, towns_end),
-        (assign, reg2, 1),
+        (str_store_string, s68, "@town"),
+      (else_try),
+        (str_store_string, s68, "@castle"),
+      (try_end),
+
+      (try_begin),
+        (is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end),
+        (store_faction_of_party, "$g_encountered_party_faction", "$g_encountered_party"),
+        (try_begin),
+          (neq, "$g_encountered_party_faction", ":winner_faction"),
+          (str_store_party_name, s3, "$g_encountered_party"),
+          (party_clear, "$g_encountered_party"),
+          (call_script, "script_lift_siege", "$g_encountered_party", 0),
+          (assign, "$g_player_besiege_town", -1),
+          (try_begin),
+            (is_between, ":leader_troop", kingdom_heroes_begin, kingdom_heroes_end),
+            (party_set_slot, "$g_encountered_party", slot_center_last_taken_by_troop, ":leader_troop"),
+          (else_try),
+            (party_set_slot, "$g_encountered_party", slot_center_last_taken_by_troop, -1),
+          (try_end),
+          (call_script, "script_change_center_prosperity", "$g_encountered_party", -5),
+          (call_script, "script_give_center_to_faction", "$g_encountered_party", ":winner_faction"),
+          (call_script, "script_order_best_besieger_party_to_guard_center", "$g_encountered_party", ":winner_faction"),
+          (call_script, "script_add_log_entry", logent_player_participated_in_siege, "trp_player", "$g_encountered_party", 0, "$g_encountered_party_faction"),
+          (try_begin),
+            (eq, ":winner_faction", "fac_player_supporters_faction"),
+            (party_slot_eq, "$g_encountered_party", slot_party_type, spt_town),
+            (call_script, "script_change_badboy_rating", 10),
+          (else_try),
+            (eq, ":winner_faction", "fac_player_supporters_faction"),
+            (call_script, "script_change_badboy_rating", 4),
+          (try_end),
+        (try_end),
+      (else_try),
+        (display_message, "@Siege result warning: captured center could not be resolved.", red),
       (try_end),
     ],
     [
       ("continue", [], "Continue...",
        [
-          (assign, "$auto_enter_town", "$g_encountered_party"),
+          (change_screen_return),
+        ]),
+    ],
+  ),
+# [ src/menus/other/continue_17.py:L1-L110 ] castle_taken
+(
+    "castle_taken", mnf_enable_hot_keys,
+    "{s3} has fallen to your troops, and you now have full control of the {s68}.",
+    "none",
+    [
+      (try_begin),
+        (neg|is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end),
+        (is_between, "$g_enemy_party", walled_centers_begin, walled_centers_end),
+        (assign, "$g_encountered_party", "$g_enemy_party"),
+        (assign, "$current_town", "$g_enemy_party"),
+      (else_try),
+        (neg|is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end),
+        (is_between, "$g_player_besiege_town", walled_centers_begin, walled_centers_end),
+        (assign, "$g_encountered_party", "$g_player_besiege_town"),
+        (assign, "$current_town", "$g_player_besiege_town"),
+      (else_try),
+        (neg|is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end),
+        (is_between, "$current_town", walled_centers_begin, walled_centers_end),
+        (assign, "$g_encountered_party", "$current_town"),
+      (try_end),
+      (try_begin),
+        (is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end),
+        (assign, "$current_town", "$g_encountered_party"),
+      (try_end),
+      (try_begin),
+        (is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end),
+        (str_store_party_name, s3, "$g_encountered_party"),
+      (else_try),
+        (str_store_string, s3, "@the captured center"),
+      (try_end),
+
+      (try_begin),
+        (is_between, "$g_encountered_party", towns_begin, towns_end),
+        (str_store_string, s68, "@town"),
+      (else_try),
+        (str_store_string, s68, "@castle"),
+      (try_end),
+
+      (try_begin),
+        (is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end),
+        (store_faction_of_party, "$g_encountered_party_faction", "$g_encountered_party"),
+        (try_begin),
+          # handle the case where the player is a vassal of a kingdom
+          (is_between, "$players_kingdom", kingdoms_begin, kingdoms_end),
+          (neq, "$players_kingdom", "fac_player_supporters_faction"),
+          (assign, ":winner_faction", "$players_kingdom"),
+        (else_try),
+          # handle the case where the player is either their own King, or is working for a pretender
+          (assign, ":winner_faction", "fac_player_supporters_faction"),
+        (try_end),
+
+        (try_begin),
+          (neq, "$g_encountered_party_faction", ":winner_faction"),
+          (party_clear, "$g_encountered_party"),
+          (call_script, "script_lift_siege", "$g_encountered_party", 0),
+          (assign, "$g_player_besiege_town", -1),
+          (call_script, "script_add_log_entry", logent_castle_captured_by_player, "trp_player", "$g_encountered_party", 0, "$g_encountered_party_faction"),
+          (party_set_slot, "$g_encountered_party", slot_center_last_taken_by_troop, "trp_player"),
+          #Reduce prosperity of the center by 5
+          (call_script, "script_change_center_prosperity", "$g_encountered_party", -5),
+          #MORDACHAI - greatly increase the renown value of capturing places
+          (try_begin),
+            (is_between, "$g_encountered_party", castles_begin, castles_end),
+            (call_script, "script_change_troop_renown", "trp_player", 25),
+          (else_try),
+            (call_script, "script_change_troop_renown", "trp_player", 50),
+          (try_end),
+          (call_script, "script_add_log_entry", logent_castle_captured_by_player, "trp_player", "$g_encountered_party", -1, "$g_encountered_party_faction"),
+
+          # handle the case where the player is a vassal of a kingdom
+          (is_between, "$players_kingdom", kingdoms_begin, kingdoms_end),
+          (neq, "$players_kingdom", "fac_player_supporters_faction"),
+          (call_script, "script_give_center_to_faction", "$g_encountered_party", "$players_kingdom"),
+          (call_script, "script_order_best_besieger_party_to_guard_center", "$g_encountered_party", "$players_kingdom"),
+          (jump_to_menu, "mnu_castle_taken_2"),
+        (else_try),
+          (neq, "$g_encountered_party_faction", ":winner_faction"),
+          # handle the case where the player is either their own King, or is working for a pretender
+          (call_script, "script_give_center_to_faction", "$g_encountered_party", "fac_player_supporters_faction"),
+          (call_script, "script_order_best_besieger_party_to_guard_center", "$g_encountered_party", "fac_player_supporters_faction"),
+
+          (try_begin),                    # Sod Twan Badboy effect
+            (party_slot_eq, "$g_encountered_party", slot_party_type, spt_town),
+            (call_script, "script_change_badboy_rating", 10),
+          (else_try),
+            (call_script, "script_change_badboy_rating", 4),
+          (try_end),                       # Twan Badboy effect ends
+
+          #MORDACHAI - removed reg1 stuff from here - we don't use it anymore...
+        (try_end),
+      (else_try),
+        (assign, "$auto_enter_town", -1),
+        (display_message, "@Siege result warning: captured center could not be resolved.", red),
+      (try_end),
+    ],
+    [
+      ("continue", [], "Continue...",
+       [
+          (try_begin),
+            (is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end),
+            (assign, "$auto_enter_town", "$g_encountered_party"),
+          (else_try),
+            (assign, "$auto_enter_town", -1),
+          (try_end),
           (change_screen_return),
         ]),
     ],
@@ -6922,15 +7124,18 @@ game_menus = [
 ("camp_no_prisoners", 0, "You have no prisoners to recruit from.", "none", [], [
     ("continue", [], "Continue.", [(jump_to_menu, "mnu_camp_action")]),
   ]),
-# [ src/menus/centers/castle/castle_castle.py:L1-L1021 ] town
+# [ src/menus/centers/castle/castle_castle.py:L1-L1039 ] town
 (
     "town", mnf_enable_hot_keys,
-    "{s10}{s11}{s17}{s15}{s16}{s12}{s21}{s13}{s40}",
+    "{s10}{s11}{s23}{s17}{s15}{s16}{s12}{s21}{s13}{s40}",
     "none",
     [
       (store_encountered_party, "$current_town"),
+      (call_script, "script_sod_center_public_health_apply_player_visit_exposure", "$current_town"),
       (call_script, "script_update_center_recon_notes", "$current_town"),
       (assign, "$g_sod_town_background", "mesh_pic_town_1_aerial"),
+      (call_script, "script_sod_show_center_owner_portrait", "$current_town"),
+      (call_script, "script_sod_center_store_identity_line_to_s23", "$current_town"),
       (try_begin),
         (eq, "$sneaked_into_town", 1),
         (call_script, "script_music_set_situation_with_culture", mtf_sit_town_infiltrate),
@@ -7023,7 +7228,8 @@ game_menus = [
       (try_begin),
         (party_slot_eq, "$current_town", slot_party_type, spt_town),
         (call_script, "script_describe_center_prosperity", s10, "$current_town"),
-        (str_store_string, s10, "@{s10} "),
+        (str_store_string_reg, s97, s10),
+        (str_store_string, s10, "@{s97} "),
       (else_try),
         (str_store_string, s10, "@You are at {s2}. "),
       (try_end),
@@ -7101,7 +7307,8 @@ game_menus = [
         (party_slot_ge, "$current_town", slot_town_has_tournament, 1),
         (neg|is_currently_night),
         (party_set_slot, "$current_town", slot_town_has_tournament, 1),
-        (str_store_string, s13, "@{s13} A tournament will be held here soon."),
+        (str_store_string_reg, s97, s13),
+        (str_store_string, s13, "@{s97} A tournament will be held here soon."),
       (try_end),
 
       (assign, "$castle_undefended", 0),
@@ -7653,12 +7860,18 @@ game_menus = [
             # more left to do
             (try_begin),
               (party_slot_eq, "$current_town", slot_party_type, spt_town),
-              (assign, reg0, 1),
+              (str_store_string, s69, "@town"),
             (else_try),
-              (assign, reg0, 0),
+              (str_store_string, s69, "@castle"),
             (try_end),
             (party_get_slot, reg1, "$current_town", slot_center_current_improvement),
-            (str_store_string, s1, "@{reg1?Oversee the current:Commission a new} building project at this {reg0?town:castle}."),
+            (try_begin),
+              (gt, reg1, 0),
+              (str_store_string, s68, "@Oversee the current"),
+            (else_try),
+              (str_store_string, s68, "@Commission a new"),
+            (try_end),
+            (str_store_string, s1, "@{s68} building project at this {s69}."),
 
             # can't start construction while under siege
             (try_begin),
@@ -7747,8 +7960,14 @@ game_menus = [
           (quest_get_slot, ":quest_giver_troop", "qst_collect_taxes", slot_quest_giver_troop),
           (call_script, "script_store_troop_name", s1, ":quest_giver_troop"),
           (quest_get_slot, reg5, "qst_collect_taxes", slot_quest_current_state),
+          (try_begin),
+            (gt, reg5, 0),
+            (str_store_string, s68, "@Continue collecting taxes"),
+          (else_try),
+            (str_store_string, s68, "@Collect taxes"),
+          (try_end),
         ],
-        "{reg5?Continue collecting taxes:Collect taxes} due to {s1}.",
+        "{s68} due to {s1}.",
         [
           (jump_to_menu, "mnu_collect_taxes"),
         ]
@@ -7865,6 +8084,7 @@ game_menus = [
         [
           (assign, "$g_player_icon_state", pis_ship),
           (party_set_flags, "p_main_party", pf_is_ship, 1),
+          (call_script, "script_sod_refresh_player_map_icon"),
           (party_get_position, pos1, "p_main_party"),
           (map_get_water_position_around_position, pos2, pos1, 6),
           (party_set_position, "p_main_party", pos2),
@@ -7942,12 +8162,14 @@ game_menus = [
       ("castle_passage_return_15", [], "_", [(call_script, "script_enter_town_center_from_passage")], "Leave Area."),
     ]
   ),
-# [ src/menus/centers/castle/castle_mercenary_guild_hall.py:L1-L116 ] castle_mercenary_guild_hall
+# [ src/menus/centers/castle/castle_mercenary_guild_hall.py:L1-L118 ] castle_mercenary_guild_hall
 ("castle_mercenary_guild_hall", mnf_enable_hot_keys,
    "{s20}",
    "none",
    [
      (call_script, "script_sod_center_refresh_mercenary_guild_hall_stock", "$current_town"),
+     (party_get_slot, ":guild", "$current_town", slot_center_sod_merc_hall_guild),
+     (call_script, "script_sod_show_guild_contact_portrait", ":guild"),
      (call_script, "script_sod_center_describe_mercenary_guild_hall_to_s20", "$current_town"),
    ],
    [
@@ -8085,7 +8307,7 @@ game_menus = [
         (eq, reg0, 1),
         (store_faction_of_party, ":castle_faction", "$current_town"),
         (assign, ":at_war", 0),
-        (try_for_range, ":faction_no", kingdoms_begin, kingdoms_end),
+        (try_for_range, ":faction_no", native_kingdoms_begin, native_kingdoms_end),
           (store_relation, ":relation", ":castle_faction", ":faction_no"),
           (lt, ":relation", 0),
           (assign, ":at_war", 1),
@@ -8138,20 +8360,20 @@ game_menus = [
 # [ src/menus/centers/castle/castle_taken_claim.py:L1-L37 ] castle_taken_2
 (
     "castle_taken_2", mnf_disable_all_keys,
-    "{s3} has fallen to your troops, and you now have full control of the castle. It is time to send word to {s9} about your victory. {s5}",
+    "{s3} has fallen to your troops, and you now have full control of the {reg8?town:castle}. It is time to send word to {s9} about your victory. {s5}",
     "none",
     [
       (str_store_party_name, s3, "$g_encountered_party"),
       (str_clear, s5),
+      (assign, reg8, 0),
+      (try_begin),
+        (party_slot_eq, "$g_encountered_party", slot_party_type, spt_town),
+        (assign, reg8, 1),
+      (try_end),
       (faction_get_slot, ":faction_leader", "$players_kingdom", slot_faction_leader),
       (call_script, "script_store_troop_name", s9, ":faction_leader"),
       (try_begin),
         (eq, "$player_has_homage", 0),
-        (assign, reg8, 0),
-        (try_begin),
-          (party_slot_eq, "$g_encountered_party", spt_town),
-          (assign, reg8, 1),
-        (try_end),
         (str_store_string, s5, "@However, since you are not a sworn {man/follower} of {s9}, there is no chance he would recognize you as the {lord/lady} of this {reg8?town:castle}."),
       (try_end),
     ],
@@ -8171,13 +8393,14 @@ game_menus = [
        ]),
     ],
   ),
-# [ src/menus/centers/castle/siege_defender_join_battle.py:L1-L154 ] siege_started_defender
+# [ src/menus/centers/castle/siege_defender_join_battle.py:L1-L155 ] siege_started_defender
 (
     "siege_started_defender", 0,
     "{s1} is launching an assault against the walls of {s2}. You have {reg10} troops fit for battle against the enemy's {reg11}. You decide to...",
     "none",
     [
       (set_background_mesh, "mesh_pic_siege_join"),
+      (call_script, "script_sod_show_party_leader_portrait", "$g_encountered_party_2"),
 
       (select_enemy, 1),
       (assign, "$g_enemy_party", "$g_encountered_party_2"),
@@ -8285,7 +8508,7 @@ game_menus = [
        [
          (call_script, "script_cf_sod_battle_commander_can_start"),
          ],
-          "Join the battle ({s7} leads).", [
+          "Join the battle ({s68} leads).", [
               (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
               (assign, "$g_battle_result", 0),
               (try_begin),
@@ -8338,7 +8561,7 @@ game_menus = [
         "mnu_train_peasants_against_bandits_attack",
       ),
 
-      ("peasants_against_bandits_attack_resist", [(call_script, "script_cf_sod_battle_commander_can_start")], "Prepare for a fight ({s7} leads)!",
+      ("peasants_against_bandits_attack_resist", [(call_script, "script_cf_sod_battle_commander_can_start")], "Prepare for a fight ({s68} leads)!",
        [
         (store_random_in_range, ":random_no", 0, 3),
         (try_begin),
@@ -8422,22 +8645,44 @@ game_menus = [
       ("sneak_caught_surrender", [], "Surrender.", [ (jump_to_menu, "mnu_captivity_start_castle_surrender"), ]),
     ]
   ),
-# [ src/menus/other/accept_decision.py:L1-L31 ] requested_castle_granted_to_another
+# [ src/menus/other/accept_decision.py:L1-L53 ] requested_castle_granted_to_another
 (
     "requested_castle_granted_to_another", mnf_scale_picture,
-    "You receive a message from your monarch, {s3}.^^"\
-    "'I was most pleased to hear of your valiant efforts in the capture of {s2}. Your victory has gladdened all our hearts."\
-    " You also requested me to give you ownership of the castle, but that is a favour which I fear I cannot grant,"\
-    " as you already hold significant estates in my realm."\
-    " Instead I have sent you {reg6} denars to cover the expenses of your campaign, but {s2} I give to {s5}.'",
+    "{s68}",
     "none",
     [(set_background_mesh, "mesh_pic_messenger"),
-     (faction_get_slot, ":faction_leader", "$players_kingdom", slot_faction_leader),
-     (call_script, "script_store_troop_name", s3, ":faction_leader"),
-     (str_store_party_name, s2, "$g_center_to_give_to_player"),
-     (party_get_slot, ":new_owner", "$g_center_to_give_to_player", slot_town_lord),
-     (call_script, "script_store_troop_name", s5, ":new_owner"),
-     (assign, reg6, 900),
+     (str_store_string, s3, "@your monarch"),
+     (str_store_string, s2, "@the disputed fief"),
+     (str_store_string, s5, "@another lord"),
+     (str_store_string, s69, "@fief"),
+     (assign, reg6, 0),
+     (str_store_string, s68, "@You receive a confused message from your monarch. The fief named in the decision can no longer be resolved, so no compensation is applied."),
+     (try_begin),
+       (is_between, "$players_kingdom", kingdoms_begin, kingdoms_end),
+       (faction_get_slot, ":faction_leader", "$players_kingdom", slot_faction_leader),
+       (try_begin),
+         (is_between, ":faction_leader", kingdom_heroes_begin, kingdom_heroes_end),
+         (call_script, "script_store_troop_name", s3, ":faction_leader"),
+       (try_end),
+     (try_end),
+     (try_begin),
+       (is_between, "$g_center_to_give_to_player", centers_begin, centers_end),
+       (assign, reg6, 900),
+       (str_store_party_name, s2, "$g_center_to_give_to_player"),
+       (try_begin),
+         (party_slot_eq, "$g_center_to_give_to_player", slot_party_type, spt_town),
+         (str_store_string, s69, "@town"),
+       (else_try),
+         (party_slot_eq, "$g_center_to_give_to_player", slot_party_type, spt_castle),
+         (str_store_string, s69, "@castle"),
+       (try_end),
+       (party_get_slot, ":new_owner", "$g_center_to_give_to_player", slot_town_lord),
+       (try_begin),
+         (is_between, ":new_owner", kingdom_heroes_begin, kingdom_heroes_end),
+         (call_script, "script_store_troop_name", s5, ":new_owner"),
+       (try_end),
+       (str_store_string, s68, "@You receive a message from your monarch, {s3}.^^'I was most pleased to hear of your valiant efforts in the capture of {s2}. Your victory has gladdened all our hearts. You also requested me to give you ownership of the {s69}, but that is a favour which I fear I cannot grant, as you already hold significant estates in my realm. Instead I have sent you {reg6} denars to cover the expenses of your campaign, but {s2} I give to {s5}.'"),
+     (try_end),
     ],
     [
       ("accept_decision", [], "Accept the decision.",
@@ -8445,7 +8690,7 @@ game_menus = [
        (call_script, "script_troop_add_gold", "trp_player", reg6),
        (change_screen_return),
         ]),
-      ("leave_faction", [], "You have been wronged! Renounce you oath to your liege! ",
+      ("leave_faction", [(is_between, "$g_center_to_give_to_player", centers_begin, centers_end)], "You have been wronged! Renounce your oath to your liege!",
        [
          (jump_to_menu, "mnu_leave_faction"),
          (call_script, "script_troop_add_gold", "trp_player", reg6),
@@ -8580,7 +8825,7 @@ game_menus = [
     ],
     []
   ),
-# [ src/menus/captivity/captivity_end_ransom_accept.py:L1-L46 ] captivity_end_propose_ransom
+# [ src/menus/captivity/captivity_end_ransom_accept.py:L1-L47 ] captivity_end_propose_ransom
 (
     "captivity_end_propose_ransom", 0,
     "You spend long hours in the sunless dank of the dungeon, more than you can count. Suddenly one of your captors enters your cell with an offer. He proposes to free you in return for {reg5} denars of your hidden wealth. You decide to...",
@@ -8611,6 +8856,7 @@ game_menus = [
            (call_script, "script_sod_sanitize_encounter_globals"),
            (call_script, "script_set_parties_around_player_ignore_player", 2, 6),
            (assign, "$g_player_icon_state", pis_normal),
+           (call_script, "script_sod_refresh_player_map_icon"),
            (set_camera_follow_party, "p_main_party"),
            (rest_for_hours, 0, 0, 0), #stop resting
            (change_screen_return),
@@ -8881,15 +9127,18 @@ game_menus = [
         ]),
     ]
   ),
-# [ src/menus/centers/village/recruit_volunteers.py:L1-L649 ] village
+# [ src/menus/centers/village/recruit_volunteers.py:L1-L664 ] village
 (
     "village", mnf_enable_hot_keys,
-    "{s10}{s11}{s17}{s15}{s16}{s6}{s7}{s21}{s20}",
+    "{s10}{s11}{s23}{s17}{s15}{s16}{s6}{s7}{s21}{s20}",
     "none",
     [
         (assign, "$current_town", "$g_encountered_party"),
+        (call_script, "script_sod_center_public_health_apply_player_visit_exposure", "$current_town"),
         (call_script, "script_update_center_recon_notes", "$current_town"),
         (assign, "$g_sod_town_background", "mesh_pic_village_p"),
+        (call_script, "script_sod_show_center_owner_portrait", "$current_town"),
+        (call_script, "script_sod_center_store_identity_line_to_s23", "$current_town"),
 
         (assign, "$g_defending_against_siege", 0), #required for bandit check
         (assign, "$g_battle_result", 0),
@@ -8941,7 +9190,8 @@ game_menus = [
         (try_begin),
           (neg|party_slot_eq, "$current_town", slot_village_state, svs_looted),
           (call_script, "script_describe_center_prosperity", s10, "$current_town"),
-          (str_store_string, s10, "@{s10} "),
+          (str_store_string_reg, s97, s10),
+          (str_store_string, s10, "@{s97} "),
         (try_end),
 
         (str_clear, s11),
@@ -9078,7 +9328,6 @@ game_menus = [
 
         (try_begin),
           (eq, "$g_player_raid_complete", 1),
-          (assign, "$g_player_raid_complete", 0),
           (jump_to_menu, "mnu_village_loot_complete"),
         (else_try),
           (party_get_slot, ":raider_party", "$current_town", slot_village_raided_by),
@@ -9274,7 +9523,7 @@ game_menus = [
       ("village_attack_bandits", [
 	  (party_slot_ge, "$current_town", slot_village_infested_by_bandits, 1),
         (call_script, "script_cf_sod_battle_commander_can_start"), ],
-       "Attack the bandits ({s7} leads).",
+       "Attack the bandits ({s68} leads).",
        [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
         (party_get_slot, ":scene_to_use", "$current_town", slot_castle_exterior),
         (modify_visitors_at_site, ":scene_to_use"),
@@ -9311,7 +9560,7 @@ game_menus = [
 		(quest_slot_eq, "qst_black_army_aid_warband", slot_quest_target_center, "$current_town"),
         (call_script, "script_cf_sod_battle_commander_can_start"),
 		],
-       "Attack the enemy forces ({s7} leads).",
+       "Attack the enemy forces ({s68} leads).",
        [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
         (party_get_slot, ":scene_to_use", "$current_town", slot_castle_exterior),
 		(try_begin),
@@ -9360,7 +9609,7 @@ game_menus = [
 		(quest_slot_eq, "qst_jotnar_clan_revenge", slot_quest_target_center, "$current_town"),
         (call_script, "script_cf_sod_battle_commander_can_start"),
 		],
-       "Attack them ({s7} leads).",
+       "Attack them ({s68} leads).",
        [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
         (party_get_slot, ":scene_to_use", "$current_town", slot_castle_exterior),
         (modify_visitors_at_site, ":scene_to_use"),
@@ -9406,9 +9655,9 @@ game_menus = [
 		(quest_slot_eq, "qst_slavers_deal_with_good_guys", slot_quest_target_center, "$current_town"),
         (call_script, "script_cf_sod_battle_commander_can_start"),
 		],
-       "Attack the band of self-proclaimed heroes ({s7} leads).",
+       "Attack the armed villagers ({s68} leads).",
        [
-		(call_script, "script_change_player_relation_with_center", "$g_encountered_party", -10),
+		(call_script, "script_change_player_relation_with_center", "$current_town", -10),
 		(call_script, "script_change_player_honor", -10),
 		(party_get_slot, ":scene_to_use", "$current_town", slot_castle_exterior),
 		(party_get_slot, ":population", "$current_town", slot_center_sod_local_population),
@@ -9461,7 +9710,13 @@ game_menus = [
                             (neg|quest_slot_eq, "qst_collect_taxes", slot_quest_current_state, 4),
                             (call_script, "script_store_troop_name", s1, ":quest_giver_troop"),
                             (quest_get_slot, reg5, "qst_collect_taxes", slot_quest_current_state),
-                            ], "{reg5?Continue collecting taxes:Collect taxes} due to {s1}.",
+                            (try_begin),
+                              (gt, reg5, 0),
+                              (str_store_string, s68, "@Continue collecting taxes"),
+                            (else_try),
+                              (str_store_string, s68, "@Collect taxes"),
+                            (try_end),
+                            ], "{s68} due to {s1}.",
        [(jump_to_menu, "mnu_collect_taxes"), ]),
 
       ("train_peasants_against_bandits_qst",
@@ -9499,7 +9754,13 @@ game_menus = [
           (else_try),
             # more left to do
             (party_get_slot, reg1, "$current_town", slot_center_current_improvement),
-            (str_store_string, s1, "@{reg1?Oversee the current:Commission a new} building project at this village."),
+            (try_begin),
+              (gt, reg1, 0),
+              (str_store_string, s68, "@Oversee the current"),
+            (else_try),
+              (str_store_string, s68, "@Commission a new"),
+            (try_end),
+            (str_store_string, s1, "@{s68} building project at this village."),
           (try_end),
         ]
         , "{s1}",
@@ -9560,8 +9821,8 @@ game_menus = [
     [
       ("continue", [(eq, reg5, 0)], "Continue...", [(party_set_slot, "$current_town", slot_center_volunteer_troop_amount, -1), (jump_to_menu, "mnu_village")]),
       ("recruit_them", [(gt, reg5, 0)], "Recruit them as native recruits. ({reg6} denars)", [(call_script, "script_village_recruit_volunteers_recruit", 0), (jump_to_menu, "mnu_village"), ]),
-      ("recruit_them", [(gt, reg5, 0)], "Recruit them as mercenaries. ({reg6} denars)", [(call_script, "script_village_recruit_volunteers_recruit", 1), (jump_to_menu, "mnu_village"), ]),
-      ("recruit_them", [(gt, reg5, 0), 
+      ("recruit_mercenaries", [(gt, reg5, 0)], "Recruit them as mercenaries. ({reg6} denars)", [(call_script, "script_village_recruit_volunteers_recruit", 1), (jump_to_menu, "mnu_village"), ]),
+      ("recruit_special", [(gt, reg5, 0), 
 	  (call_script, "script_village_recruit_volunteers_get_params", 2),
       (str_store_troop_name_by_count, s3, reg0, 2),
 	  ], "Recruit them as {s3}. ({reg6} denars)", [(call_script, "script_village_recruit_volunteers_recruit", 2), (jump_to_menu, "mnu_village"), ]),
@@ -9580,7 +9841,7 @@ game_menus = [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_village"), ]),
     ],
   ),
-# [ src/menus/other/continue_23.py:L1-L38 ] village_infest_bandits_result
+# [ src/menus/other/continue_23.py:L1-L41 ] village_infest_bandits_result
 (
     "village_infest_bandits_result", mnf_scale_picture,
     "{s9}",
@@ -9597,27 +9858,30 @@ game_menus = [
     ],
     [
       ("continue", [(neq, "$g_battle_result", 1)], "Continue...",
-       [(party_set_slot, "$current_town", slot_village_infested_by_bandits, 0),
-        (call_script, "script_village_set_state", "$current_town", svs_looted),
-        (party_set_slot, "$current_town", slot_village_raid_progress, 0),
-        (party_set_slot, "$current_town", slot_village_recover_progress, 0),
-        (try_begin),
-          (check_quest_active, "qst_eliminate_bandits_infesting_village"),
-          (quest_slot_eq, "qst_eliminate_bandits_infesting_village", slot_quest_target_center, "$current_town"),
-          (call_script, "script_change_player_relation_with_center", "$current_town", -5),
-          (call_script, "script_fail_quest", "qst_eliminate_bandits_infesting_village"),
-        (else_try),
-          (check_quest_active, "qst_deal_with_bandits_at_lords_village"),
-          (quest_slot_eq, "qst_deal_with_bandits_at_lords_village", slot_quest_target_center, "$current_town"),
-          (call_script, "script_change_player_relation_with_center", "$current_town", -4),
-          (call_script, "script_fail_quest", "qst_deal_with_bandits_at_lords_village"),
-        (else_try),
-          (call_script, "script_change_player_relation_with_center", "$current_town", -3),
+       [(try_begin),
+          (neg|party_slot_eq, "$current_town", slot_village_state, svs_looted),
+          (party_set_slot, "$current_town", slot_village_infested_by_bandits, 0),
+          (call_script, "script_village_set_state", "$current_town", svs_looted),
+          (party_set_slot, "$current_town", slot_village_raid_progress, 0),
+          (party_set_slot, "$current_town", slot_village_recover_progress, 0),
+          (try_begin),
+            (check_quest_active, "qst_eliminate_bandits_infesting_village"),
+            (quest_slot_eq, "qst_eliminate_bandits_infesting_village", slot_quest_target_center, "$current_town"),
+            (call_script, "script_change_player_relation_with_center", "$current_town", -5),
+            (call_script, "script_fail_quest", "qst_eliminate_bandits_infesting_village"),
+          (else_try),
+            (check_quest_active, "qst_deal_with_bandits_at_lords_village"),
+            (quest_slot_eq, "qst_deal_with_bandits_at_lords_village", slot_quest_target_center, "$current_town"),
+            (call_script, "script_change_player_relation_with_center", "$current_town", -4),
+            (call_script, "script_fail_quest", "qst_deal_with_bandits_at_lords_village"),
+          (else_try),
+            (call_script, "script_change_player_relation_with_center", "$current_town", -3),
+          (try_end),
         (try_end),
         (jump_to_menu, "mnu_village"), ]),
     ],
   ),
-# [ src/menus/other/continue_24.py:L1-L25 ] village_black_army_result
+# [ src/menus/other/continue_24.py:L1-L29 ] village_black_army_result
 (
     "village_black_army_result", mnf_scale_picture,
     "{s9}",
@@ -9632,16 +9896,20 @@ game_menus = [
     ],
     [
       ("continue", [(neq, "$g_battle_result", 1)], "Continue...",
-       [(party_set_slot, "$current_town", slot_village_infested_by_bandits, 0),
-        (call_script, "script_village_set_state", "$current_town", svs_looted),
-        (party_set_slot, "$current_town", slot_village_raid_progress, 0),
-        (party_set_slot, "$current_town", slot_village_recover_progress, 0),
+       [(try_begin),
+          (neg|party_slot_eq, "$current_town", slot_village_state, svs_looted),
+          (party_set_slot, "$current_town", slot_village_infested_by_bandits, 0),
+          (call_script, "script_village_set_state", "$current_town", svs_looted),
+          (party_set_slot, "$current_town", slot_village_raid_progress, 0),
+          (party_set_slot, "$current_town", slot_village_recover_progress, 0),
+          (check_quest_active, "qst_black_army_aid_warband"),
           (call_script, "script_fail_quest", "qst_black_army_aid_warband"),
           (call_script, "script_change_player_relation_with_center", "$current_town", -3),
+        (try_end),
         (jump_to_menu, "mnu_village"), ]),
     ],
   ),
-# [ src/menus/other/continue_25.py:L1-L25 ] village_revenge_result
+# [ src/menus/other/continue_25.py:L1-L29 ] village_revenge_result
 (
     "village_revenge_result", mnf_scale_picture,
     "{s9}",
@@ -9656,100 +9924,128 @@ game_menus = [
     ],
     [
       ("continue", [(neq, "$g_battle_result", 1)], "Continue...",
-       [(party_set_slot, "$current_town", slot_village_infested_by_bandits, 0),
-        (call_script, "script_village_set_state", "$current_town", svs_looted),
-        (party_set_slot, "$current_town", slot_village_raid_progress, 0),
-        (party_set_slot, "$current_town", slot_village_recover_progress, 0),
+       [(try_begin),
+          (neg|party_slot_eq, "$current_town", slot_village_state, svs_looted),
+          (party_set_slot, "$current_town", slot_village_infested_by_bandits, 0),
+          (call_script, "script_village_set_state", "$current_town", svs_looted),
+          (party_set_slot, "$current_town", slot_village_raid_progress, 0),
+          (party_set_slot, "$current_town", slot_village_recover_progress, 0),
+          (check_quest_active, "qst_jotnar_clan_revenge"),
           (call_script, "script_fail_quest", "qst_jotnar_clan_revenge"),
           (call_script, "script_change_player_relation_with_center", "$current_town", -3),
+        (try_end),
         (jump_to_menu, "mnu_village"), ]),
     ],
   ),
-# [ src/menus/other/continue_26.py:L1-L20 ] village_jotnar_clan_result
+# [ src/menus/other/continue_26.py:L1-L29 ] village_jotnar_clan_result
 (
     "village_jotnar_clan_result", mnf_scale_picture,
     "{s9}",
     "none",
     [(try_begin),
        (eq, "$g_battle_result", 1),
-       (call_script, "script_succeed_quest", "qst_jotnar_clan_aid_warband"),
-	   (change_screen_map),
+       (str_store_string, s9, "@The enemy breaks. The Jotnar warriors hold the field, and word spreads that your company stood with them."),
      (else_try),
        (str_store_string, s9, "@Try as you might, you could not defeat the enemy."),
      (try_end),
     ],
     [
       ("continue", [], "Continue...",
-       [(call_script, "script_fail_quest", "qst_jotnar_clan_aid_warband"),
-        (change_screen_map), ]),
+       [(try_begin),
+          (check_quest_active, "qst_jotnar_clan_aid_warband"),
+          (eq, "$g_battle_result", 1),
+          (call_script, "script_succeed_quest", "qst_jotnar_clan_aid_warband"),
+          (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_jotnar_support, 2),
+        (else_try),
+          (check_quest_active, "qst_jotnar_clan_aid_warband"),
+          (call_script, "script_fail_quest", "qst_jotnar_clan_aid_warband"),
+          (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_retreat_or_fail, 1),
+        (try_end),
+        (change_screen_map),
+        ]),
     ],
   ),
-# [ src/menus/other/continue_27.py:L1-L37 ] good_guys_result
+# [ src/menus/other/continue_27.py:L1-L42 ] good_guys_result
 (
     "good_guys_result", mnf_scale_picture,
     "{s9}",
     "none",
     [(try_begin),
        (eq, "$g_battle_result", 1),
-       (str_store_string, s9, "@Your soldiers, excited by the slaughter raped all peasant women and razed the village to the ground."),
+       (str_store_string, s9, "@Your company breaks the self-styled heroes and burns out the village's defenses. Smoke trails behind you as the frightened survivors scatter."),
        (set_background_mesh, "mesh_pic_looted_village"),
-	   (party_get_slot, ":population", "$current_town", slot_center_sod_local_population),
-		(store_div, ":population_loss", ":population", 10),
-		(val_mul, ":population_loss", 3),
-		(call_script, "script_sod_apply_center_raid_resistance", "$current_town", ":population_loss"),
-		(store_mul, ":population_delta", reg0, -1),
-		(call_script, "script_sod_center_apply_population_delta", "$current_town", ":population_delta"),
      (else_try),
        (jump_to_menu, "mnu_defeated_by_peasants"),
      (try_end),
     ],
     [
-      ("continue", [(neq, "$g_battle_result", 1)], "Continue...",
-       [(party_set_slot, "$current_town", slot_village_infested_by_bandits, 0),
-        (call_script, "script_village_set_state", "$current_town", svs_looted),
-        (party_set_slot, "$current_town", slot_village_raid_progress, 0),
-        (party_set_slot, "$current_town", slot_village_recover_progress, 0),
-        (try_begin),
-          (check_quest_active, "qst_slavers_deal_with_good_guys"),
-          (quest_slot_eq, "qst_slavers_deal_with_good_guys", slot_quest_target_center, "$g_encountered_party"),
-          (call_script, "script_succeed_quest", "qst_slavers_deal_with_good_guys"),
-		(try_end),
-		(call_script, "script_sod_apply_center_raid_resistance", "$current_town", 15),
-		(store_mul, ":population_delta", reg0, -1),
-		(call_script, "script_sod_center_apply_population_delta", "$current_town", ":population_delta"),
+      ("continue", [(eq, "$g_battle_result", 1)], "Continue...",
+       [(try_begin),
+          (neg|party_slot_eq, "$current_town", slot_village_state, svs_looted),
+          (party_set_slot, "$current_town", slot_village_infested_by_bandits, 0),
+          (call_script, "script_village_set_state", "$current_town", svs_looted),
+          (party_set_slot, "$current_town", slot_village_raid_progress, 0),
+          (party_set_slot, "$current_town", slot_village_recover_progress, 0),
+          (try_begin),
+            (check_quest_active, "qst_slavers_deal_with_good_guys"),
+            (quest_slot_eq, "qst_slavers_deal_with_good_guys", slot_quest_target_center, "$current_town"),
+            (call_script, "script_succeed_quest", "qst_slavers_deal_with_good_guys"),
+		  (try_end),
+          (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_abuse_village, 3),
+          (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_dirty_profit, 2),
+		  (party_get_slot, ":population", "$current_town", slot_center_sod_local_population),
+		  (store_div, ":population_loss", ":population", 10),
+		  (val_mul, ":population_loss", 3),
+		  (call_script, "script_sod_apply_center_raid_resistance", "$current_town", ":population_loss"),
+		  (store_mul, ":population_delta", reg0, -1),
+		  (call_script, "script_sod_center_apply_population_delta", "$current_town", ":population_delta"),
+		  (call_script, "script_sod_apply_center_raid_resistance", "$current_town", 15),
+		  (store_mul, ":population_delta", reg0, -1),
+		  (call_script, "script_sod_center_apply_population_delta", "$current_town", ":population_delta"),
+        (try_end),
         (jump_to_menu, "mnu_village"), ]),
     ],
   ),
-# [ src/menus/other/continue_30.py:L1-L40 ] village_steal_cattle
+# [ src/menus/other/continue_30.py:L1-L50 ] village_steal_cattle
 (
     "village_steal_cattle", mnf_disable_all_keys,
     "{s1}",
     "none",
     [
-      (call_script, "script_calculate_amount_of_cattle_can_be_stolen", "$current_town"),
-      (assign, ":max_value", reg0),
-      (val_add, ":max_value", 1),
-      (store_random_in_range, ":random_value", 0, ":max_value"),
-      (party_set_slot, "$current_town", slot_village_player_can_not_steal_cattle, 1),
-      (party_get_slot, ":lord", "$current_town", slot_town_lord),
       (try_begin),
-        (le, ":random_value", 0),
-        (call_script, "script_change_player_relation_with_center", "$current_town", -3),
-        (str_store_string, s1, "@You fail to steal any cattle."),
-      (else_try),
-        (store_mul, ":cattle_delta", ":random_value", -1),
-        (call_script, "script_sod_center_apply_cattle_delta", "$current_town", ":cattle_delta"),
-        (store_mul, ":actual_stolen", reg1, -1),
-        (gt, ":actual_stolen", 0),
-        (assign, reg17, ":actual_stolen"),
-        (store_sub, reg12, ":actual_stolen", 1),
+        (party_slot_eq, "$current_town", slot_village_player_can_not_steal_cattle, 0),
+        (call_script, "script_calculate_amount_of_cattle_can_be_stolen", "$current_town"),
+        (assign, ":max_value", reg0),
+        (val_add, ":max_value", 1),
+        (store_random_in_range, ":random_value", 0, ":max_value"),
+        (party_set_slot, "$current_town", slot_village_player_can_not_steal_cattle, 1),
+        (party_get_slot, ":lord", "$current_town", slot_town_lord),
         (try_begin),
-          (gt, ":lord", 0),
-          (call_script, "script_change_player_relation_with_troop", ":lord", -3),
+          (le, ":random_value", 0),
+          (call_script, "script_change_player_relation_with_center", "$current_town", -3),
+          (str_store_string, s1, "@You fail to steal any cattle."),
+        (else_try),
+          (store_mul, ":cattle_delta", ":random_value", -1),
+          (call_script, "script_sod_center_apply_cattle_delta", "$current_town", ":cattle_delta"),
+          (store_mul, ":actual_stolen", reg1, -1),
+          (gt, ":actual_stolen", 0),
+          (assign, reg17, ":actual_stolen"),
+          (try_begin),
+            (eq, ":actual_stolen", 1),
+            (str_store_string, s68, "@head"),
+          (else_try),
+            (str_store_string, s68, "@heads"),
+          (try_end),
+          (try_begin),
+            (gt, ":lord", 0),
+            (call_script, "script_change_player_relation_with_troop", ":lord", -3),
+          (try_end),
+          (call_script, "script_change_player_relation_with_center", "$current_town", -5),
+          (str_store_string, s1, "@You drive away {reg17} {s68} of cattle from the village's herd."),
+          (call_script, "script_create_cattle_herd", "$current_town", ":actual_stolen"),
         (try_end),
-        (call_script, "script_change_player_relation_with_center", "$current_town", -5),
-        (str_store_string, s1, "@You drive away {reg17} {reg12?heads:head} of cattle from the village's herd."),
-        (call_script, "script_create_cattle_herd", "$current_town", ":actual_stolen"),
+      (else_try),
+        (str_store_string, s1, "@There are no more loose animals to drive off today."),
       (try_end),
     ],
     [
@@ -9759,12 +10055,15 @@ game_menus = [
          ]),
     ],
   ),
-# [ src/menus/other/continue_31.py:L1-L58 ] village_loot_complete
+# [ src/menus/other/continue_31.py:L1-L67 ] village_loot_complete
 (
     "village_loot_complete", mnf_disable_all_keys,
     "On your orders your troops sack the village, pillaging everything of any value, and then put the buildings to the torch. From the coins and valuables that are found, you get your share of {reg1} denars.",
     "none",
     [
+        (assign, reg1, 0),
+        (try_begin),
+        (eq, "$g_player_raid_complete", 1),
         (party_get_slot, ":village_lord", "$current_town", slot_town_lord),
         (try_begin),
           (gt, ":village_lord", 0),
@@ -9787,26 +10086,32 @@ game_menus = [
 #NPC companion changes begin
         (call_script, "script_objectionable_action", tmt_humanitarian, "str_loot_village"),
 #NPC companion changes end
+        (assign, "$g_player_raid_complete", 2),
+        (try_end),
       ],
     [
       ("continue", [], "Continue...",
        [
           (jump_to_menu, "mnu_close"),
-          (call_script, "script_calculate_amount_of_cattle_can_be_stolen", "$current_town"),
-          (assign, ":max_cattle", reg0),
-          (val_mul, ":max_cattle", 3),
-          (val_div, ":max_cattle", 2),
-          (party_get_slot, ":num_cattle", "$current_town", slot_village_number_of_cattle),
-          (val_min, ":max_cattle", ":num_cattle"),
-          (val_add, ":max_cattle", 1),
-          (store_random_in_range, ":random_value", 0, ":max_cattle"),
           (try_begin),
-            (gt, ":random_value", 0),
-            (store_mul, ":cattle_delta", ":random_value", -1),
-            (call_script, "script_sod_center_apply_cattle_delta", "$current_town", ":cattle_delta"),
-            (store_mul, ":actual_stolen", reg1, -1),
-            (gt, ":actual_stolen", 0),
-            (call_script, "script_create_cattle_herd", "$current_town", ":actual_stolen"),
+            (eq, "$g_player_raid_complete", 2),
+            (call_script, "script_calculate_amount_of_cattle_can_be_stolen", "$current_town"),
+            (assign, ":max_cattle", reg0),
+            (val_mul, ":max_cattle", 3),
+            (val_div, ":max_cattle", 2),
+            (party_get_slot, ":num_cattle", "$current_town", slot_village_number_of_cattle),
+            (val_min, ":max_cattle", ":num_cattle"),
+            (val_add, ":max_cattle", 1),
+            (store_random_in_range, ":random_value", 0, ":max_cattle"),
+            (try_begin),
+              (gt, ":random_value", 0),
+              (store_mul, ":cattle_delta", ":random_value", -1),
+              (call_script, "script_sod_center_apply_cattle_delta", "$current_town", ":cattle_delta"),
+              (store_mul, ":actual_stolen", reg1, -1),
+              (gt, ":actual_stolen", 0),
+              (call_script, "script_create_cattle_herd", "$current_town", ":actual_stolen"),
+            (try_end),
+            (assign, "$g_player_raid_complete", 0),
           (try_end),
           (troop_clear_inventory, "trp_temp_troop"),
           (reset_item_probabilities, 100),
@@ -9844,80 +10149,95 @@ game_menus = [
          (change_screen_return)]),
     ],
   ),
-# [ src/menus/centers/village/village_bandits_defeated_accept.py:L1-L25 ] ba_village_infestation_removed
+# [ src/menus/centers/village/village_bandits_defeated_accept.py:L1-L31 ] ba_village_infestation_removed
 (
     "ba_village_infestation_removed", mnf_disable_all_keys,
     "In a battle worthy of song, you and your men drive the enemy out of the village.",
     "none",
     [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
-     (party_set_slot, "$current_town", slot_village_infested_by_bandits, 0),
-     (party_clear, "p_temp_party"),
-     (party_add_members, "p_temp_party", ":bandit_troop", "$qst_eliminate_bandits_infesting_village_num_bandits"),
-     (assign, "$g_strength_contribution_of_player", 50),
-     (call_script, "script_party_give_xp_and_gold", "p_temp_party"),
-     (call_script, "script_succeed_quest", "qst_black_army_aid_warband"),
-     (call_script, "script_change_player_relation_with_center", "$current_town", 3),
-     (call_script, "script_sod_companion_apply_player_action", sod_companion_action_help_village, 3),
-     (call_script, "script_sod_companion_try_firentis_restitution_incident", 2),
-     (call_script, "script_sod_companion_try_alayen_standard_incident", 1, 2),
+     (try_begin),
+       (gt, ":bandit_troop", 0),
+       (assign, "$g_sod_village_bandit_loot_troop", ":bandit_troop"),
+       (party_set_slot, "$current_town", slot_village_infested_by_bandits, 0),
+       (party_clear, "p_temp_party"),
+       (party_add_members, "p_temp_party", ":bandit_troop", "$qst_eliminate_bandits_infesting_village_num_bandits"),
+       (assign, "$g_strength_contribution_of_player", 50),
+       (call_script, "script_party_give_xp_and_gold", "p_temp_party"),
+       (try_begin),
+         (check_quest_active, "qst_black_army_aid_warband"),
+         (call_script, "script_succeed_quest", "qst_black_army_aid_warband"),
+         (call_script, "script_change_player_relation_with_center", "$current_town", 3),
+       (try_end),
+       (call_script, "script_sod_companion_apply_player_action", sod_companion_action_help_village, 3),
+       (call_script, "script_sod_companion_try_firentis_restitution_incident", 2),
+       (call_script, "script_sod_companion_try_alayen_standard_incident", 1, 2),
+     (try_end),
     ],
     [
       ("village_bandits_defeated_accept", [], "Continue...", [(jump_to_menu, "mnu_village"),
-																		(party_get_slot, ":bandit_troop", "$g_encountered_party", slot_village_infested_by_bandits),
-                                                                         (change_screen_loot, ":bandit_troop"),
+                                                                         (change_screen_loot, "$g_sod_village_bandit_loot_troop"),
                                                                        ]),
     ],
   ),
-# [ src/menus/centers/village/village_bandits_defeated_accept_02.py:L1-L19 ] village_revenge_succeded
+# [ src/menus/centers/village/village_bandits_defeated_accept_02.py:L1-L25 ] village_revenge_succeded
 (
     "village_revenge_succeded", mnf_disable_all_keys,
     "In a battle worthy of song, you and your men drive the enemy out of the village.",
     "none",
     [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
-     (party_set_slot, "$current_town", slot_village_infested_by_bandits, 0),
-     (party_clear, "p_temp_party"),
-     (party_add_members, "p_temp_party", ":bandit_troop", "$qst_eliminate_bandits_infesting_village_num_bandits"),
-     (assign, "$g_strength_contribution_of_player", 50),
-     (call_script, "script_party_give_xp_and_gold", "p_temp_party"),
-       (call_script, "script_succeed_quest", "qst_jotnar_clan_revenge"),
-       (call_script, "script_change_player_relation_with_center", "$current_town", 3),
+     (try_begin),
+       (gt, ":bandit_troop", 0),
+       (party_set_slot, "$current_town", slot_village_infested_by_bandits, 0),
+       (party_clear, "p_temp_party"),
+       (party_add_members, "p_temp_party", ":bandit_troop", "$qst_eliminate_bandits_infesting_village_num_bandits"),
+       (assign, "$g_strength_contribution_of_player", 50),
+       (call_script, "script_party_give_xp_and_gold", "p_temp_party"),
+       (try_begin),
+         (check_quest_active, "qst_jotnar_clan_revenge"),
+         (call_script, "script_succeed_quest", "qst_jotnar_clan_revenge"),
+         (call_script, "script_change_player_relation_with_center", "$current_town", 3),
+       (try_end),
+     (try_end),
     ],
     [
       ("village_bandits_defeated_accept", [], "Continue...", [(jump_to_menu, "mnu_village")]),
     ],
   ),
-# [ src/menus/centers/village/village_bandits_defeated_accept_03.py:L1-L45 ] village_infestation_removed
+# [ src/menus/centers/village/village_bandits_defeated_accept_03.py:L1-L48 ] village_infestation_removed
 (
     "village_infestation_removed", mnf_disable_all_keys,
     "In a battle worthy of song, you and your men drive the bandits out of the village, making it safe once more. The villagers have little left in the way of wealth after their ordeal, but they offer you all they can find.",
     "none",
     [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
-     (party_set_slot, "$current_town", slot_village_infested_by_bandits, 0),
-     (party_clear, "p_temp_party"),
-     (party_add_members, "p_temp_party", ":bandit_troop", "$qst_eliminate_bandits_infesting_village_num_bandits"),
-     (assign, "$g_strength_contribution_of_player", 50),
-     (call_script, "script_party_give_xp_and_gold", "p_temp_party"),
      (try_begin),
-       (check_quest_active, "qst_eliminate_bandits_infesting_village"),
-       (quest_slot_eq, "qst_eliminate_bandits_infesting_village", slot_quest_target_center, "$current_town"),
-       (call_script, "script_end_quest", "qst_eliminate_bandits_infesting_village"),
-       #Add quest reward
-       (call_script, "script_change_player_relation_with_center", "$current_town", 5),
-     (else_try),
-       (check_quest_active, "qst_deal_with_bandits_at_lords_village"),
-       (quest_slot_eq, "qst_deal_with_bandits_at_lords_village", slot_quest_target_center, "$current_town"),
-       (call_script, "script_succeed_quest", "qst_deal_with_bandits_at_lords_village"),
-       (call_script, "script_change_player_relation_with_center", "$current_town", 3),
-     (else_try),
-     #Add normal reward
-       (call_script, "script_change_player_relation_with_center", "$current_town", 4),
-     (try_end),
+       (gt, ":bandit_troop", 0),
+       (party_set_slot, "$current_town", slot_village_infested_by_bandits, 0),
+       (party_clear, "p_temp_party"),
+       (party_add_members, "p_temp_party", ":bandit_troop", "$qst_eliminate_bandits_infesting_village_num_bandits"),
+       (assign, "$g_strength_contribution_of_player", 50),
+       (call_script, "script_party_give_xp_and_gold", "p_temp_party"),
+       (try_begin),
+         (check_quest_active, "qst_eliminate_bandits_infesting_village"),
+         (quest_slot_eq, "qst_eliminate_bandits_infesting_village", slot_quest_target_center, "$current_town"),
+         (call_script, "script_end_quest", "qst_eliminate_bandits_infesting_village"),
+         #Add quest reward
+         (call_script, "script_change_player_relation_with_center", "$current_town", 5),
+       (else_try),
+         (check_quest_active, "qst_deal_with_bandits_at_lords_village"),
+         (quest_slot_eq, "qst_deal_with_bandits_at_lords_village", slot_quest_target_center, "$current_town"),
+         (call_script, "script_succeed_quest", "qst_deal_with_bandits_at_lords_village"),
+         (call_script, "script_change_player_relation_with_center", "$current_town", 3),
+       (else_try),
+       #Add normal reward
+         (call_script, "script_change_player_relation_with_center", "$current_town", 4),
+       (try_end),
 
-     (party_get_slot, ":merchant_troop", "$current_town", slot_town_elder),
-     (try_for_range, ":slot_no", num_equipment_kinds , max_inventory_items + num_equipment_kinds),
-        (store_random_in_range, ":rand", 0, 100),
-        (lt, ":rand", 70),
-        (troop_set_inventory_slot, ":merchant_troop", ":slot_no", -1),
+       (party_get_slot, ":merchant_troop", "$current_town", slot_town_elder),
+       (try_for_range, ":slot_no", num_equipment_kinds , max_inventory_items + num_equipment_kinds),
+          (store_random_in_range, ":rand", 0, 100),
+          (lt, ":rand", 70),
+          (troop_set_inventory_slot, ":merchant_troop", ":slot_no", -1),
+       (try_end),
      (try_end),
     ],
     [
@@ -9930,12 +10250,14 @@ game_menus = [
                                                                                                             (jump_to_menu, "mnu_village")]),
     ],
   ),
-# [ src/menus/centers/village/village_bandits_defeated_accept_04.py:L1-L29 ] train_peasants_against_bandits_success
+# [ src/menus/centers/village/village_bandits_defeated_accept_04.py:L1-L32 ] train_peasants_against_bandits_success
 (
     "train_peasants_against_bandits_success", mnf_disable_all_keys,
-    "The bandits are broken! Those few who remain run off with their tails between their legs, terrified of the peasants and their new champion. The villagers have little left in the way of wealth after their ordeal, but they offer you all they can find to show their gratitude.",
+    "The bandits break. Those still standing flee the lanes, suddenly less eager to test the village militia. The villagers have little left after their ordeal, but they offer what they can in gratitude.",
     "none",
-    [(party_clear, "p_temp_party"),
+    [(try_begin),
+     (check_quest_active, "qst_train_peasants_against_bandits"),
+     (party_clear, "p_temp_party"),
      (call_script, "script_end_quest", "qst_train_peasants_against_bandits"),
      (call_script, "script_change_player_relation_with_center", "$current_town", 4),
 
@@ -9946,6 +10268,7 @@ game_menus = [
         (troop_set_inventory_slot, ":merchant_troop", ":slot_no", -1),
      (try_end),
      (call_script, "script_add_log_entry", logent_helped_peasants, "trp_player", "$current_town", -1, -1),
+     (try_end),
     ],
     [
       ("village_bandits_defeated_accept", [], "Take it as your just due.", [(jump_to_menu, "mnu_auto_return_to_map"),
@@ -10037,7 +10360,7 @@ game_menus = [
         "mnu_village_start_attack",
       ),
 
-      ("village_raid_attack", [(call_script, "script_cf_sod_battle_commander_can_start")], "Charge them ({s7} leads).", [
+      ("village_raid_attack", [(call_script, "script_cf_sod_battle_commander_can_start")], "Charge them ({s68} leads).", [
           (store_random_in_range, ":enmity", -10, -5),
           (call_script, "script_change_player_relation_with_center", "$current_town", ":enmity"),
           (try_begin),
@@ -10067,10 +10390,10 @@ game_menus = [
       ("village_raid_leave", [], "Leave this village alone.", [(change_screen_return)]),
     ],
   ),
-# [ src/menus/centers/village/village_steal_cattle_confirm.py:L1-L30 ] village_steal_cattle_confirm
+# [ src/menus/centers/village/village_steal_cattle_confirm.py:L1-L32 ] village_steal_cattle_confirm
 (
     "village_steal_cattle_confirm", 0,
-    "{reg3?You reckon:{s1} reckons} the herd can be driven off, though confusion, darkness, and frightened villagers will decide how much you truly get away with.",
+    "{s68}",
     "none",
     [
       (call_script, "script_get_max_skill_of_player_party", "skl_looting"),
@@ -10079,9 +10402,11 @@ game_menus = [
       (try_begin),
         (eq, ":max_skill_owner", "trp_player"),
         (assign, reg3, 1),
+        (str_store_string, s68, "@You reckon the herd can be driven off, though confusion, darkness, and frightened villagers will decide how much you truly get away with."),
       (else_try),
         (assign, reg3, 0),
         (call_script, "script_store_troop_name", s1, ":max_skill_owner"),
+        (str_store_string, s68, "@{s1} reckons the herd can be driven off, though confusion, darkness, and frightened villagers will decide how much you truly get away with."),
       (try_end),
       (call_script, "script_calculate_amount_of_cattle_can_be_stolen", "$current_town"),
       (assign, reg4, reg0),
@@ -10182,7 +10507,7 @@ game_menus = [
           (change_screen_return),
         ]
        ),
-      ("choice_01_2", [], "Reward him with 200 denars. Let his song be played across the land.",
+      ("choice_01_2", [], "Reward him with 200 denars and spread the song.",
        [
        (store_troop_gold, ":gold", "trp_player"),
        (try_begin),
@@ -10190,13 +10515,13 @@ game_menus = [
         (call_script, "script_change_troop_renown", "trp_player", 20),
         (call_script, "script_sod_player_charge_gold", 200),
        (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold. The minstrel leaves disappointed.", quest_fail_color),
         (call_script, "script_change_troop_renown", "trp_player", -5),
        (try_end),
        (change_screen_return),
        ]
        ),
-      ("choice_01_3", [], "Noble deeds? A song? Bring me this fool's head!",
+      ("choice_01_3", [], "I want no songs about me. Have him punished.",
        [
        (call_script, "script_change_player_honor", -5),
        (change_screen_return),
@@ -10213,7 +10538,7 @@ game_menus = [
 
     ],
     [
-      ("choice_02_1", [], "Beatus qui prodest cui potest. Allocate 200 denars for alms found.",
+      ("choice_02_1", [], "Set aside 200 denars for alms.",
        [
           (store_troop_gold, ":gold", "trp_player"),
        (try_begin),
@@ -10222,7 +10547,7 @@ game_menus = [
         (call_script, "script_change_troop_renown", "trp_player", 10),
         (call_script, "script_sod_player_charge_gold", 200),
         (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold for alms. The crowd leaves disappointed.", quest_fail_color),
         (call_script, "script_change_troop_renown", "trp_player", -5),
         (try_end),
         (change_screen_return),
@@ -10235,7 +10560,7 @@ game_menus = [
         (change_screen_return),
         ]
        ),
-      ("choice_02_3", [], "Beggars huh? Release the hounds!",
+      ("choice_02_3", [], "Drive them away.",
        [
        (call_script, "script_change_player_honor", -4),
        (change_screen_return),
@@ -10246,13 +10571,13 @@ game_menus = [
 # [ src/menus/events/choice_03_1.py:L1-L54 ] event_03
 (
     "event_03", mnf_disable_all_keys,
-    "Young noble spreads rumors about one of the ladies from your court. Accusations of working in the world's oldest job are the most delicate ones.",
+    "A young noble has been spreading foul rumors about one of the ladies of your court. The accusation is crude, public, and dangerous enough to demand an answer.",
     "none",
     [
 
     ],
     [
-      ("choice_03_1", [], "Challenge him for a duel!",
+      ("choice_03_1", [], "Challenge him to a duel.",
        [
     (assign, ":arena_scene", "scn_random_scene"),
     (try_begin),
@@ -10283,12 +10608,12 @@ game_menus = [
   #  (try_end),
         ]
        ),
-      ("choice_03_2", [], "I'm not a nanny for God's sake! It's none of my business.",
+      ("choice_03_2", [], "This is a court quarrel. I will not intervene.",
        [
         (change_screen_return),
         ]
        ),
-      ("choice_03_3", [(eq, "$character_gender", tf_male), (eq, "$g_sod_parental_advisory", 0)], "Make sure he accidentaly encounters a loose falling brick. And call the lady to my room, she forgot her suspenders yesterday.",
+      ("choice_03_3", [(eq, "$character_gender", tf_male), (eq, "$g_sod_parental_advisory", 0)], "Arrange for him to meet with an accident.",
        [
        (call_script, "script_change_player_honor", -3),
        (change_screen_return),
@@ -10299,8 +10624,8 @@ game_menus = [
 # [ src/menus/events/choice_04_1.py:L1-L71 ] event_04
 (
     "event_04", mnf_disable_all_keys,
-    "Your men have catched a beautiful country woman who was trying to steal some food in your baggage. She is in need and begs you to let her go with something for her brothers.\
-<< Harvest was poor and can't feed the whole family. You are our only chance to survive my lord... >> she begs you when most of your men, showing no pity, look at her with brilliant eyes.",
+    "Your men have caught a country woman stealing food from your baggage. She begs you to spare her and send something back for her brothers.\
+<< The harvest failed, my lord. My family will starve without help. >> Most of your men show little pity.",
     "none",
     [
       (call_script, "script_get_closest_village", "p_main_party"),
@@ -10311,7 +10636,7 @@ game_menus = [
       (try_end),
     ],
     [
-      ("choice_04_1", [], "This can't be! Here take 100 denars.",
+      ("choice_04_1", [], "Let her go, and give her 100 denars for her family.",
        [
        (store_troop_gold, ":gold", "trp_player"),
        (try_begin),
@@ -10320,7 +10645,7 @@ game_menus = [
         (call_script, "script_sod_player_charge_gold", 100),
 	    (call_script, "script_change_player_relation_with_center", "$sod_event_relation_center", 5),
         (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold to help her family.", quest_fail_color),
         (call_script, "script_change_troop_renown", "trp_player", -5),
 		(try_end),
 	    (call_script, "script_change_player_party_morale", -5),
@@ -10334,14 +10659,14 @@ game_menus = [
         (change_screen_return),
         ]
        ),
-	  ("choice_04_3", [], "My law suffer no exception, execute her.",
+	  ("choice_04_3", [], "The law allows no exception. Execute her.",
        [
 	    (call_script, "script_change_player_honor", -2),
 		(call_script, "script_change_player_relation_with_center", "$sod_event_relation_center", -10),
         (change_screen_return),
         ]
        ),
-      ("choice_04_4", [(eq, "$g_sod_parental_advisory", 0)], "Why starve when my army could use services of such a pretty young girl?",
+      ("choice_04_4", [(eq, "$g_sod_parental_advisory", 0)], "Hand her over to the camp followers.",
        [
        (call_script, "script_change_player_honor", -3),
        (call_script, "script_change_player_party_morale", 10),
@@ -10350,7 +10675,7 @@ game_menus = [
         ]
        ),
 
-	   ("choice_04_5", [(eq, "$character_gender", tf_male), (eq, "$g_sod_parental_advisory", 0)], "I'll give you 50 denars after some time in my tent.",
+	   ("choice_04_5", [(eq, "$character_gender", tf_male), (eq, "$g_sod_parental_advisory", 0)], "Offer her 50 denars for private company.",
        [
        (call_script, "script_change_player_honor", -1),
 	   (store_troop_gold, ":gold", "trp_player"),
@@ -10358,7 +10683,7 @@ game_menus = [
         (ge, ":gold", 50),
         (call_script, "script_sod_player_charge_gold", 50),
         (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold to pay her.", quest_fail_color),
         (call_script, "script_change_troop_renown", "trp_player", -5),
 		(try_end),
        (change_screen_return),
@@ -10369,13 +10694,13 @@ game_menus = [
 # [ src/menus/events/choice_04a_1.py:L1-L77 ] event_04a
 (
     "event_04a", mnf_disable_all_keys,
-    "You encounter the child of one of your soldiers. He explains you that his mother is ill and begs you to release his father from the contract. Harvest was poor and his wages can't feed the whole family. If he could come back and work on the field they might survive.",
+    "You encounter the child of one of your soldiers. His mother is ill, the harvest was poor, and his father's wages no longer feed the family. He begs you to release his father from the contract so he can return to the fields.",
     "none",
     [
 
     ],
     [
-      ("choice_04a_1", [], "This can't be! Here take 100 denars.",
+      ("choice_04a_1", [], "Give the family 100 denars.",
        [
        (store_troop_gold, ":gold", "trp_player"),
        (try_begin),
@@ -10383,14 +10708,14 @@ game_menus = [
         (call_script, "script_change_player_honor", 1),
         (call_script, "script_sod_player_charge_gold", 100),
         (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold to help the family.", quest_fail_color),
         (call_script, "script_change_troop_renown", "trp_player", -5),
         (try_end),
           (change_screen_return),
         ]
        ),
 
-      ("choice_04a_2", [], "Pacta sunt servanda!",
+      ("choice_04a_2", [], "A contract is a contract.",
        [(call_script, "script_change_player_honor", -1),
         (change_screen_return),
         ]
@@ -10445,7 +10770,7 @@ game_menus = [
 # [ src/menus/events/choice_04b_1.py:L1-L49 ] event_04b
 (
     "event_04b", mnf_disable_all_keys,
-    "Your scouts have catched a fat merchant who was travelling without escort. He presents himself as a citizen of {s1} and ask you to let him go.",
+    "Your scouts have caught a wealthy merchant travelling without escort. He presents himself as a citizen of {s1} and asks you to let him go.",
     "none",
     [  (call_script, "script_get_closest_town", "p_main_party"),
        (assign, "$sod_event_relation_center", reg0),
@@ -10470,7 +10795,7 @@ game_menus = [
         (change_screen_return),
         ]
        ),
-	  ("choice_04b_2", [], "Steal his money and abandon him.",
+	  ("choice_04b_3", [], "Steal his money and abandon him.",
        [
        (call_script, "script_change_player_relation_with_center", "$sod_event_relation_center", -10),
        (store_random_in_range, ":rnd", 500, 1000),
@@ -10479,7 +10804,7 @@ game_menus = [
         (change_screen_return),
         ]
        ),
-      ("choice_04b_3", [], "Take his money and execute him.",
+      ("choice_04b_4", [], "Take his money and execute him.",
        [
        (call_script, "script_change_player_honor", -5),
        (store_random_in_range, ":rnd", 500, 1000),
@@ -10493,12 +10818,12 @@ game_menus = [
 # [ src/menus/events/choice_04c_1.py:L1-L64 ] event_04c
 (
     "event_04c", mnf_disable_all_keys,
-    "You encounter the widow of one of the soldiers who died at your service, she explains you that their family is starving without his wages.",
+    "You encounter the widow of one of your fallen soldiers. She says her family is starving without his wages.",
     "none",
     [
     ],
     [
-      ("choice_04c_1", [], "He was a good soldier, but not good enough I guess.",
+      ("choice_04c_1", [], "His service is over. I owe the family nothing.",
        [
         (call_script, "script_change_player_honor", -2),
         (call_script, "script_change_player_party_morale", -5),
@@ -10507,13 +10832,13 @@ game_menus = [
        ),
 
 
-	  ("choice_04c_2", [], "Here are 50 denars now stop complaining.",
+	  ("choice_04c_2", [], "Give her 50 denars and send her away.",
        [(store_troop_gold, ":gold", "trp_player"),
         (try_begin),
         (ge, ":gold", 50),
         (call_script, "script_sod_player_charge_gold", 50),
         (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold to pay her.", quest_fail_color),
         (call_script, "script_change_troop_renown", "trp_player", -5),
 		(try_end),
         (change_screen_return),
@@ -10521,7 +10846,7 @@ game_menus = [
        ),
 
 
-      ("choice_04c_3", [], "Here are 500 denars to compensate the loss of your husband.",
+      ("choice_04c_3", [], "Give her 500 denars in compensation.",
        [(store_troop_gold, ":gold", "trp_player"),
         (try_begin),
         (ge, ":gold", 500),
@@ -10529,7 +10854,7 @@ game_menus = [
         (call_script, "script_sod_player_charge_gold", 500),
 	    (call_script, "script_change_player_party_morale", 10),
         (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold to compensate her.", quest_fail_color),
         (call_script, "script_change_troop_renown", "trp_player", -5),
 		(try_end),
         (change_screen_return),
@@ -10545,7 +10870,7 @@ game_menus = [
         (ge, ":gold", 50),
         (call_script, "script_sod_player_charge_gold", 50),
         (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold to pay her.", quest_fail_color),
         (call_script, "script_change_troop_renown", "trp_player", -5),
 		(try_end),
        (change_screen_return),
@@ -10598,23 +10923,23 @@ game_menus = [
 # [ src/menus/events/choice_04e_1.py:L1-L39 ] event_04e
 (
     "event_04e", mnf_disable_all_keys,
-    "Your soldiers have catched a girl with foxy hair and accuse her to be a witch.",
+    "Your soldiers have caught a red-haired girl and accuse her of witchcraft.",
     "none",
     [
     ],
     [
-      ("choice_04e_1", [], "Gather some wood and burn her, foxy hair are a sure sign of her demonic pact !",
+      ("choice_04e_1", [], "Gather wood and burn her. Red hair is proof enough for fools.",
        [
         (call_script, "script_change_player_honor", -4),
         (call_script, "script_change_player_party_morale", 5),  
         (rest_for_hours, 2, 1, 1),
-		(display_message, "@Gathering wood take 2 hours."),
+		(display_message, "@Gathering wood takes 2 hours."),
 		(change_screen_return),
         ]
        ),
 
 
-	  ("choice_04e_2", [], "Free her, witches are just a legend.",
+	  ("choice_04e_2", [], "Free her. Witch stories are tavern smoke.",
        [
         (call_script, "script_change_player_honor", 2),
         (call_script, "script_change_player_party_morale", -5),
@@ -10635,7 +10960,7 @@ game_menus = [
        ),
 # [ src/menus/events/choice_04f_1.py:L1-L62 ] event_04f
 ( "event_04f", mnf_disable_all_keys,
-    "A rich merchant from {s1} come to you and offer {reg1} denars to free his daughter. You discover that some of your soldiers had kidnapped her and asked for ransom.",
+    "A rich merchant from {s1} comes to you and offers {reg1} denars to free his daughter. You discover that some of your soldiers kidnapped her and demanded ransom.",
     "none",
     [  	    (call_script, "script_get_closest_town", "p_main_party"),
             (assign, "$sod_event_relation_center", reg0),
@@ -10648,7 +10973,7 @@ game_menus = [
 			(val_mul, reg1, 100),
     ],
     [
-      ("choice_04f_1", [], "Whip the guilties and free her.",
+      ("choice_04f_1", [], "Punish the guilty men and free her.",
        [
         (call_script, "script_change_player_honor", 4),
 		(assign, "$g_whiped_for_example", 1),
@@ -10666,7 +10991,7 @@ game_menus = [
         ]
        ),
 
-	  ("choice_04f_3", [], "Take the ransom for you, free her and punish your men.",
+	  ("choice_04f_3", [], "Take the ransom, free her, and punish your men.",
        [(troop_add_gold, "trp_player", reg1),
 	    (call_script, "script_change_player_honor", -4),
 	    (call_script, "script_change_player_party_morale", -10),
@@ -10676,7 +11001,7 @@ game_menus = [
         ]
        ),
 
-	  ("choice_04f_3", [], "Just take the ransom and free her.",
+	  ("choice_04f_4", [], "Just take the ransom and free her.",
        [(troop_add_gold, "trp_player", reg1),
 	    (call_script, "script_change_player_honor", -5),
 	    (call_script, "script_change_player_relation_with_center", "$sod_event_relation_center", -5),
@@ -10684,7 +11009,7 @@ game_menus = [
         ]
        ),
 
-	  ("choice_04f_4", [], "Let your men have the ransom.",
+	  ("choice_04f_5", [], "Let your men have the ransom.",
        [(call_script, "script_change_player_honor", -4),
 	   	(call_script, "script_change_player_party_morale", 10),
 	    (call_script, "script_change_player_relation_with_center", "$sod_event_relation_center", -5),
@@ -10761,10 +11086,10 @@ game_menus = [
         (try_begin),
 		(eq, reg3, 1),
 	    (str_store_troop_name, s1, reg2),
-        (str_store_string, s2, "@One of your soldiers wish to end their contract, a {s1} ask you if they can go home and return to civil life."),
+        (str_store_string, s2, "@One of your soldiers wants out of the contract. A {s1} asks to go home and return to civilian life."),
 	    (else_try),
         (str_store_troop_name_plural, s1, reg2),
-        (str_store_string, s2, "@Some of your soldiers wish to end their contract, {reg3} {s1} ask you if they can go home and return to civil life."),
+        (str_store_string, s2, "@Some of your soldiers want out of the contract. {reg3} {s1} ask to go home and return to civilian life."),
         (try_end),
     ],
     [
@@ -10780,7 +11105,7 @@ game_menus = [
         (call_script, "script_sod_player_charge_gold", ":cost"),
 	    (call_script, "script_change_player_party_morale", 10),
         (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold to send them home with pay.", quest_fail_color),
         (call_script, "script_change_troop_renown", "trp_player", -5),
         (try_end),
 		(party_remove_members, "p_main_party", reg2, reg3),
@@ -10814,7 +11139,7 @@ game_menus = [
         ]
        ),
 
-	  ("choice_04g_5", [  ], "You will be whiped for asking this !",
+	  ("choice_04g_5", [  ], "You will be whipped for asking.",
        [
         (call_script, "script_change_player_party_morale", -15),
 		(call_script, "script_change_player_honor", -2),
@@ -10827,7 +11152,7 @@ game_menus = [
   ),
 # [ src/menus/events/choice_04h_1.py:L1-L82 ] event_04h
 (  "event_04h", mnf_disable_all_keys,
-    "Some of your scouts have catched a country girl from {s1} and abused her.",
+    "Some of your scouts have caught and abused a country girl from {s1}.",
     "none",
     [  	    (call_script, "script_get_closest_village", "p_main_party"),
             (assign, "$sod_event_relation_center", reg0),
@@ -10838,7 +11163,7 @@ game_menus = [
 	        (str_store_party_name, s1, "$sod_event_relation_center"),
     ],
     [
-      ("choice_04h_1", [], "Whip the guilties and give her 300 denars to forget.",
+      ("choice_04h_1", [], "Punish the guilty men and give her 300 denars.",
        [
         (call_script, "script_change_player_honor", 2),
 		(assign, "$g_whiped_for_example", 1),
@@ -10850,14 +11175,14 @@ game_menus = [
         (call_script, "script_sod_player_charge_gold", 300),
 	    (call_script, "script_change_player_relation_with_center", "$sod_event_relation_center", 2),
         (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold to pay compensation.", quest_fail_color),
         (call_script, "script_change_troop_renown", "trp_player", -5),
 		(try_end),
 		(change_screen_return),
         ]
        ),
 
-	  ("choice_04h_2", [], "Whip the guilties but don't give her money.",
+	  ("choice_04h_2", [], "Punish the guilty men, but pay her nothing.",
        [
         (call_script, "script_change_player_honor", 2),
 		(assign, "$g_whiped_for_example", 1),
@@ -10874,21 +11199,21 @@ game_menus = [
         (call_script, "script_change_player_honor", 2),
         (call_script, "script_sod_player_charge_gold", 300),
         (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold to pay compensation.", quest_fail_color),
         (call_script, "script_change_troop_renown", "trp_player", -5),
 		(try_end),
         (change_screen_return),
         ]
        ),
 
-	  ("choice_04h_4", [], "No money for her, no whip for your men.",
+	  ("choice_04h_4", [], "No money for her, no punishment for your men.",
        [(call_script, "script_change_player_honor", -3),
 	    (call_script, "script_change_player_relation_with_center", "$sod_event_relation_center", -4),
         (change_screen_return),
         ]
        ),
 
-      ("choice_04h_5", [], "Let your other soldiers play with her.",
+      ("choice_04h_5", [], "Hand her over to the rest of the camp.",
        [(call_script, "script_change_player_honor", -4),
 	    (call_script, "script_change_player_relation_with_center", "$sod_event_relation_center", -8),
 	    (call_script, "script_change_player_party_morale", 10),
@@ -10896,7 +11221,7 @@ game_menus = [
         ]
        ),
 
-	   ("choice_04h_6", [], "This, also cut her tongue so she can't tell her tale and whip the scouts for not sharing with the party.",
+	   ("choice_04h_6", [], "Silence her and punish the scouts for hiding it from the company.",
        [(call_script, "script_change_player_honor", -10),
 	    (assign, "$g_whiped_for_example", 1),
 	    (call_script, "script_change_player_party_morale", 5),
@@ -10908,7 +11233,7 @@ game_menus = [
        ),
 # [ src/menus/events/choice_04h_1_02.py:L1-L53 ] event_04i
 (  "event_04i", mnf_disable_all_keys,
-    "Some professionnal girls approach your party and offer their services to your men.",
+    "Camp followers from a nearby town approach your party and offer paid company to your men.",
     "none",
     [  	(call_script, "script_get_closest_town", "p_main_party"),
         (assign, "$sod_event_relation_center", reg0),
@@ -10920,7 +11245,7 @@ game_menus = [
         (val_mul, reg0, 15),
     ],
     [
-      ("choice_04h_1", [], "Offer all your men some pleasure for {reg0} denars.",
+      ("choice_04h_1", [], "Pay {reg0} denars for the men who want company.",
        [
 		(store_troop_gold, ":gold", "trp_player"),
         (try_begin),
@@ -10928,14 +11253,14 @@ game_menus = [
         (call_script, "script_change_player_party_morale", 15),
         (call_script, "script_sod_player_charge_gold", reg0),
         (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold to pay for the men.", quest_fail_color),
         (call_script, "script_change_troop_renown", "trp_player", -5),
 		(try_end),
 		(change_screen_return),
         ]
        ),
 
-	  ("choice_04i_2", [], "Let the girls do their job if your men can pay.",
+	  ("choice_04i_2", [], "Let them work if the men pay for themselves.",
        [
 	    (call_script, "script_change_player_party_morale", 5),
 	    (call_script, "script_change_player_relation_with_center", "$sod_event_relation_center", -2),
@@ -10943,14 +11268,14 @@ game_menus = [
         ]
        ),
 
-	  ("choice_04i_3", [], "Let all your men take some pleasure without paying.",
+	  ("choice_04i_3", [], "Let the men take what they want without paying.",
        [(call_script, "script_change_player_party_morale", 10),
 		(call_script, "script_change_player_honor", -3),
         (change_screen_return),
         ]
        ),
 
-	  ("choice_04i_4", [], "Refuse the offer and sermon your men about prostitution.",
+	  ("choice_04i_4", [], "Refuse the offer and lecture your men about discipline.",
        [(call_script, "script_change_player_honor", 2),
 	    (call_script, "script_change_player_party_morale", -10),
         (change_screen_return),
@@ -10958,16 +11283,16 @@ game_menus = [
        ),
         ]
        ),
-# [ src/menus/events/choice_05_1.py:L1-L56 ] event_05
+# [ src/menus/events/choice_05_1.py:L1-L64 ] event_05
 (
     "event_05", mnf_disable_all_keys,
-    "A local naysayer is spreading false rumors about you. While most of the stories are just pure nonsense, they may offer other nations reasons to attack you.",
+    "A local agitator is spreading false rumors about you. Most are nonsense, but enough people believe them that rival courts may use the stories against you.",
     "none",
     [
 
     ],
     [
-      ("choice_05_1", [], "Let him speak what he wants. Every man has his rights.",
+      ("choice_05_1", [], "Let him speak. A ruler should not fear every loose tongue.",
        [
           (call_script, "script_change_badboy_rating", 3), 
     	  (call_script, "script_change_player_honor", 2),
@@ -10975,36 +11300,44 @@ game_menus = [
           (change_screen_return),
         ]
        ),
-      ("choice_05_2", [ (store_troop_gold, ":gold", "trp_player"),(ge, ":gold", 300)], 
-	  "Tell royal scribe to spread opposite rumors to counter his lies. It will cost 300 denars.",
+      ("choice_05_2", [], 
+	  "Pay a royal scribe 300 denars to counter the rumors.",
        [
-        (call_script, "script_change_player_honor", 2), 
-        (call_script, "script_change_troop_renown", "trp_player", 25),
-        (call_script, "script_sod_player_charge_gold", 300),
+        (store_troop_gold, ":gold", "trp_player"),
+        (try_begin),
+          (ge, ":gold", 300),
+          (call_script, "script_change_player_honor", 2), 
+          (call_script, "script_change_troop_renown", "trp_player", 25),
+          (call_script, "script_sod_player_charge_gold", 300),
+        (else_try),
+          (display_message, "@You don't have enough gold. The rumors continue to spread.", quest_fail_color),
+          (call_script, "script_change_badboy_rating", 2),
+          (call_script, "script_change_troop_renown", "trp_player", -5),
+        (try_end),
         (change_screen_return),
         ]
        ),
-      ("choice_05_3", [], "Ask him to stop. 100 denars might help him to forget what he said.",
+      ("choice_05_3", [], "Offer him 100 denars to stop talking.",
        [
         (store_troop_gold, ":gold", "trp_player"),
         (try_begin),
         (ge, ":gold", 100),
         (call_script, "script_sod_player_charge_gold", 100),
         (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold. He keeps talking.", quest_fail_color),
         (call_script, "script_change_badboy_rating", 3), 
         (call_script, "script_change_troop_renown", "trp_player", -7),
         (try_end),
        (change_screen_return),
         ]
        ),
-       ("choice_05_4", [], "Throw him into the dungeon. Insulting the King is a crime.",
+       ("choice_05_4", [], "Throw him into the dungeon. Insulting the crown is a crime.",
        [
        (call_script, "script_change_player_honor", -5),
        (change_screen_return),
         ]
        ),
-       ("choice_05_5", [], "Silence him permanently and seize his house and properties.",
+       ("choice_05_5", [], "Silence him permanently and seize his property.",
        [
        (call_script, "script_change_player_honor", -10),
        (troop_add_gold, "trp_player", 1000),
@@ -11013,12 +11346,14 @@ game_menus = [
        ),
       ]
   ),
-# [ src/menus/events/choice_06_1.py:L1-L50 ] event_06
+# [ src/menus/events/choice_06_1.py:L1-L59 ] event_06
 (
     "event_06", mnf_disable_all_keys,
     "A mob of angry {s1} dwellers are complaining about corrupt tax collectors. They demand justice. The situation is getting worse by the minute. It looks like a riot is about to begin unless you do something.",
     "none",
     [
+      (assign, "$temp", -1),
+      (str_store_string, s68, "@one of your fiefs"),
       (assign, ":stop", 0),
       (try_for_range, ":unused", 0, 9999),
         (eq, ":stop", 0),
@@ -11026,11 +11361,12 @@ game_menus = [
         (neg|party_slot_eq, "$temp", slot_party_type, spt_castle),
         (party_slot_eq, "$temp", slot_town_lord, "trp_player"),
         (assign, ":stop", 1),
-        (str_store_party_name, s1, "$temp"),
+        (str_store_party_name, s68, "$temp"),
       (try_end),
+      (str_store_string_reg, s1, s68),
       ],
     [
-      ("choice_06_1", [], "Begin an investigation and compensate the peasants for their loss.",
+      ("choice_06_1", [(is_between, "$temp", centers_begin, centers_end)], "Begin an investigation and compensate the peasants for their loss.",
         [
           (store_troop_gold, ":gold", "trp_player"),
           (try_begin),
@@ -11038,20 +11374,20 @@ game_menus = [
             (call_script, "script_change_player_relation_with_center", "$temp", 2),
             (call_script, "script_sod_player_charge_gold", 300),
             (else_try),
-            (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+            (display_message, "@You don't have enough gold to compensate the victims.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -5),
             (call_script, "script_change_player_relation_with_center", "$temp", -5),
           (try_end),
           (change_screen_return),
         ]
       ),
-      ("choice_06_2", [], "Rush the town guards to control the mob from spreading and turning into a riot.",
+      ("choice_06_2", [(is_between, "$temp", centers_begin, centers_end)], "Send guards to contain the riot before it spreads.",
         [
           (call_script, "script_change_player_relation_with_center", "$temp", -5),
           (change_screen_return),
         ]
       ),
-      ("choice_06_3", [], "Put the peasants back to their place and collect their overdue taxes.",
+      ("choice_06_3", [(is_between, "$temp", centers_begin, centers_end)], "Break the mob and collect the overdue taxes.",
         [
           (call_script, "script_change_player_honor", -3),
           (call_script, "script_change_player_relation_with_center", "$temp", -10),
@@ -11060,14 +11396,22 @@ game_menus = [
           (change_screen_return),
         ]
       ),
+      ("choice_06_no_center", [(neg|is_between, "$temp", centers_begin, centers_end)], "Continue.",
+        [
+          (display_message, "@No affected fief could be found. The report is dismissed.", quest_fail_color),
+          (change_screen_return),
+        ]
+      ),
     ]
   ),
-# [ src/menus/events/choice_07_1.py:L1-L63 ] event_07
+# [ src/menus/events/choice_07_1.py:L1-L72 ] event_07
 (
     "event_07", mnf_disable_all_keys,
-    "A single rider, looking poor and unarmed, approaches your party. Intercepted by your men he presents himself as a troubadour from {s1} and requests your permission to compose an ode about your magnificency and generosity. Your men exchange glances and then look at you waiting for an answer. You...",
+    "A poor, unarmed rider approaches your party. Your men stop him, and he presents himself as a troubadour from {s1}. He asks leave to compose an ode to your generosity. Your men exchange glances, then look to you for an answer.",
     "none",
     [
+      (assign, "$temp", -1),
+      (str_store_string, s68, "@one of your fiefs"),
       (assign, ":stop", 0),
       (try_for_range, ":unused", 0, 9999),
         (eq, ":stop", 0),
@@ -11075,11 +11419,12 @@ game_menus = [
         (neg|party_slot_eq, "$temp", slot_party_type, spt_castle),
         (party_slot_eq, "$temp", slot_town_lord, "trp_player"),
         (assign, ":stop", 1),
-        (str_store_party_name, s1, "$temp"),
+        (str_store_party_name, s68, "$temp"),
       (try_end),
+      (str_store_string_reg, s1, s68),
     ],
     [
-      ("choice_07_1", [], "Grant such permission to the troubadour and cover the man with gold -300 denars-.",
+      ("choice_07_1", [(is_between, "$temp", centers_begin, centers_end)], "Let him compose the ode and give him 300 denars.",
         [
           (store_troop_gold, ":gold", "trp_player"),
           (try_begin),
@@ -11089,13 +11434,13 @@ game_menus = [
             (call_script, "script_change_player_relation_with_center", "$temp", 5),
             (call_script, "script_sod_player_charge_gold", 300),
             (else_try),
-            (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+            (display_message, "@You don't have enough gold to reward the troubadour.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -2),
           (try_end),
           (change_screen_return),
         ]
       ),
-      ("choice_07_2", [], "Grant permission and hand a purse with 100 denars to the man.",
+      ("choice_07_2", [(is_between, "$temp", centers_begin, centers_end)], "Let him compose the ode and give him 100 denars.",
         [
           (store_troop_gold, ":gold", "trp_player"),
           (try_begin),
@@ -11103,13 +11448,13 @@ game_menus = [
             (call_script, "script_change_player_relation_with_center", "$temp", 2),
             (call_script, "script_sod_player_charge_gold", 100),
             (else_try),
-            (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+            (display_message, "@You don't have enough gold to reward the troubadour.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -2),
           (try_end),
           (change_screen_return),
         ]
       ),
-      ("choice_07_3", [], "Allow the troubadour to compose the ode but offer him no payment.",
+      ("choice_07_3", [(is_between, "$temp", centers_begin, centers_end)], "Allow the ode, but offer no payment.",
         [
           (store_random_in_range, ":rand_no", -2, 2),
           (call_script, "script_change_player_relation_with_center", "$temp", ":rand_no"),
@@ -11122,14 +11467,22 @@ game_menus = [
           (change_screen_return),
         ]
       ),
+      ("choice_07_no_center", [(neg|is_between, "$temp", centers_begin, centers_end)], "Continue.",
+        [
+          (display_message, "@No affected fief could be found. The report is dismissed.", quest_fail_color),
+          (change_screen_return),
+        ]
+      ),
     ]
   ),
-# [ src/menus/events/choice_08_1.py:L1-L54 ] event_08
+# [ src/menus/events/choice_08_1.py:L1-L63 ] event_08
 (
     "event_08", mnf_disable_all_keys,
     "You spot a single man riding hard towards your party. With a gesture of your hand, your men run to meet him. Intercepted by your men he presents himself as an emissary from {s1} and without delay informs you that an influential man has died {s2} and that his family requests that you agree to declare an official day of mourning in {s1} in his honor. You...",
     "none",
     [
+      (assign, "$temp", -1),
+      (str_store_string, s68, "@one of your fiefs"),
       (assign, ":stop", 0),
       (try_for_range, ":unused", 0, 9999),
         (eq, ":stop", 0),
@@ -11137,25 +11490,26 @@ game_menus = [
         (neg|party_slot_eq, "$temp", slot_party_type, spt_castle),
         (party_slot_eq, "$temp", slot_town_lord, "trp_player"),
         (assign, ":stop", 1),
-        (str_store_party_name, s1, "$temp"),
+        (str_store_party_name, s68, "$temp"),
       (try_end),
+      (str_store_string_reg, s1, s68),
       (store_random_in_range, ":rand_no", 1, 10),
       (try_begin),
         (ge, ":rand_no", 8),
-        (str_store_string , s2, "@of a fulminatng disease"),
+        (str_store_string , s2, "@of a sudden fever"),
       (else_try),
         (ge, ":rand_no", 5),
         (str_store_string , s2, "@in a hunting accident"),
       (else_try),
         (ge, ":rand_no", 3),
-        (str_store_string , s2, "@assasinated"),
+        (str_store_string , s2, "@after being assassinated"),
       (else_try),
         (ge, ":rand_no", 0),
-        (str_store_string , s2, "@of an indigestion"),
+        (str_store_string , s2, "@after a brief illness"),
       (try_end),
     ],
     [
-      ("choice_08_1", [], "Agree to such request.",
+      ("choice_08_1", [(is_between, "$temp", centers_begin, centers_end)], "Declare the day of mourning.",
       [
         (store_troop_gold, ":gold", "trp_player"),
         (try_begin),
@@ -11163,26 +11517,34 @@ game_menus = [
           (call_script, "script_change_player_relation_with_center", "$temp", 2),
           (call_script, "script_sod_player_charge_gold", 100),
         (else_try),
-          (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+          (display_message, "@You don't have enough gold to fund the day of mourning.", quest_fail_color),
           (call_script, "script_change_troop_renown", "trp_player", -1),
         (try_end),
         (change_screen_return),
       ]
     ),
-    ("choice_08_2", [], "Refuse to such request.",
+    ("choice_08_2", [(is_between, "$temp", centers_begin, centers_end)], "Refuse the request.",
       [
         (call_script, "script_change_player_relation_with_center", "$temp", -2),
         (change_screen_return),
       ]
     ),
+    ("choice_08_no_center", [(neg|is_between, "$temp", centers_begin, centers_end)], "Continue.",
+      [
+        (display_message, "@No affected fief could be found. The report is dismissed.", quest_fail_color),
+        (change_screen_return),
+      ]
+    ),
   ]
   ),
-# [ src/menus/events/choice_09_1.py:L1-L60 ] event_09
+# [ src/menus/events/choice_09_1.py:L1-L69 ] event_09
 (
     "event_09", mnf_disable_all_keys,
     "My Liege. High taxes and lack of prospects are causing people to leave {s1}.",
     "none",
     [
+      (assign, "$temp", -1),
+      (str_store_string, s68, "@one of your fiefs"),
       (assign, ":stop", 0),
       (try_for_range, ":unused", 0, 9999),
         (eq, ":stop", 0),
@@ -11190,11 +11552,12 @@ game_menus = [
         (neg|party_slot_eq, "$temp", slot_party_type, spt_castle),
         (party_slot_eq, "$temp", slot_town_lord, "trp_player"),
         (assign, ":stop", 1),
-        (str_store_party_name, s1, "$temp"),
+        (str_store_party_name, s68, "$temp"),
       (try_end),
+      (str_store_string_reg, s1, s68),
     ],
     [
-      ("choice_09_1", [], "Bribe them to stay. Lose 300 denars.",
+      ("choice_09_1", [(is_between, "$temp", centers_begin, centers_end)], "Bribe them to stay. Lose 300 denars.",
         [
           (store_troop_gold, ":gold", "trp_player"),
           (str_store_party_name_link, s1, "$temp"),
@@ -11203,7 +11566,7 @@ game_menus = [
             (call_script, "script_sod_player_charge_gold", 300),
             (display_message, "@You managed to stop people from leaving {s1}.", quest_success_color),
           (else_try),
-            (display_message, "@You don't have enough gold. How embarassing! Many people have left {s1}", quest_fail_color),
+            (display_message, "@You don't have enough gold. Many people have left {s1}.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -2),
             (party_get_slot, ":center_population", "$temp", slot_center_sod_local_population),
             (assign, ":temp_center_population", ":center_population"),
@@ -11214,7 +11577,7 @@ game_menus = [
           (change_screen_return),
         ]
       ),
-      ("choice_09_2", [], "As if I care...",
+      ("choice_09_2", [(is_between, "$temp", centers_begin, centers_end)], "Let them leave.",
       [
         (str_store_party_name_link, s1, "$temp"),
         (party_get_slot, ":center_population", "$temp", slot_center_sod_local_population),
@@ -11226,7 +11589,7 @@ game_menus = [
         (change_screen_return),
       ]
       ),
-      ("choice_09_3", [], "They are my property. They can't move without my permission.",
+      ("choice_09_3", [(is_between, "$temp", centers_begin, centers_end)], "They are my property. They can't move without my permission.",
       [
         (call_script, "script_change_player_relation_with_center", "$temp", -10),
         (call_script, "script_change_player_honor", -3),
@@ -11234,14 +11597,22 @@ game_menus = [
         (change_screen_return),
       ]
       ),
+      ("choice_09_no_center", [(neg|is_between, "$temp", centers_begin, centers_end)], "Continue.",
+      [
+        (display_message, "@No affected fief could be found. The report is dismissed.", quest_fail_color),
+        (change_screen_return),
+      ]
+      ),
     ]
   ),
-# [ src/menus/events/choice_10_1.py:L1-L61 ] event_10
+# [ src/menus/events/choice_10_1.py:L1-L70 ] event_10
 (
     "event_10", mnf_disable_all_keys,
-    "My Liege. You sow fear in hearts of your subjects. People are leaving {s1} to live under a better ruler.",
+    "My Liege. Fear of your rule is driving people out of {s1}. They are leaving for safer lands.",
     "none",
     [
+      (assign, "$temp", -1),
+      (str_store_string, s68, "@one of your fiefs"),
       (assign, ":stop", 0),
       (try_for_range, ":unused", 0, 9999),
         (eq, ":stop", 0),
@@ -11249,11 +11620,12 @@ game_menus = [
         (neg|party_slot_eq, "$temp", slot_party_type, spt_castle),
         (party_slot_eq, "$temp", slot_town_lord, "trp_player"),
         (assign, ":stop", 1),
-        (str_store_party_name, s1, "$temp"),
+        (str_store_party_name, s68, "$temp"),
       (try_end),
+      (str_store_string_reg, s1, s68),
     ],
     [
-      ("choice_10_1", [], "I'm not that bad. Organize festival. Lose 500 denars.",
+      ("choice_10_1", [(is_between, "$temp", centers_begin, centers_end)], "Hold a festival to calm them. Lose 500 denars.",
       [
         (str_store_party_name_link, s1, "$temp"),
         (store_troop_gold, ":gold", "trp_player"),
@@ -11262,7 +11634,7 @@ game_menus = [
           (call_script, "script_sod_player_charge_gold", 500),
           (display_message, "@You managed to stop people from leaving {s1}.", quest_success_color),
         (else_try),
-          (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+          (display_message, "@You don't have enough gold to hold the festival.", quest_fail_color),
           (call_script, "script_change_troop_renown", "trp_player", -2),
           (party_get_slot, ":center_population", "$temp", slot_center_sod_local_population),
           (assign, ":temp_center_population", ":center_population"),
@@ -11274,7 +11646,7 @@ game_menus = [
         (change_screen_return),
         ]
       ),
-      ("choice_10_2", [], "As if I care...",
+      ("choice_10_2", [(is_between, "$temp", centers_begin, centers_end)], "Let them leave.",
       [
         (str_store_party_name_link, s1, "$temp"),
         (party_get_slot, ":center_population", "$temp", slot_center_sod_local_population),
@@ -11286,7 +11658,7 @@ game_menus = [
         (change_screen_return),
       ]
       ),
-      ("choice_10_3", [], "They don't yet know how bad I can be. Give them a lesson.",
+      ("choice_10_3", [(is_between, "$temp", centers_begin, centers_end)], "They don't yet know how bad I can be. Give them a lesson.",
       [
         (call_script, "script_change_player_relation_with_center", "$temp", -10),
         (call_script, "script_change_player_honor", -5),
@@ -11294,12 +11666,18 @@ game_menus = [
         (change_screen_return),
       ]
       ),
+      ("choice_10_no_center", [(neg|is_between, "$temp", centers_begin, centers_end)], "Continue.",
+      [
+        (display_message, "@No affected fief could be found. The report is dismissed.", quest_fail_color),
+        (change_screen_return),
+      ]
+      ),
     ]
   ),
-# [ src/menus/events/choice_11_1.py:L1-L52 ] event_11
+# [ src/menus/events/choice_11_1.py:L1-L59 ] event_11
 (
     "event_11", mnf_disable_all_keys,
-    "Good news M'lord, your realm is benefitting from an especially bountiful harvest. The villagers claim to have not done anything different this year, yet many of their fields grow tall with lush yields of grain and by this so have the cattle grown fat and comfortable. Still, with good fortune comes a few prickly questions that require royal guidance. The most important question being just who exactly will benefit the most from this fortunate reaping. The workers? They were in fact the ones to do all of the work and will certainly be eating the most of it. Your Nobles claim that it can be the result of nothing less than superior management and wise choice of seed, but even now prominent religious figures within your realm have spoken up and claimed the divine miracle as a gift from God! But who is to say that it was not the result of even you, my King?",
+    "Good news, my lord. Your realm has seen an unusually rich harvest. The fields stand heavy with grain, the herds are fat, and everyone now claims credit: the workers who brought it in, the nobles who managed the land, the priests who call it a blessing, and courtiers who say it proves your wisdom. Who should benefit most?",
     "none",
     [
 
@@ -11307,9 +11685,11 @@ game_menus = [
     [
       ("choice_11_1", [], "Reward hard work.",
        [
+        (assign, ":affected_count", 0),
         (try_for_range, ":center_no", centers_begin, centers_end),
         (neg|party_slot_eq, ":center_no", slot_party_type, spt_castle),
         (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
+            (val_add, ":affected_count", 1),
             (try_begin),
                 (party_slot_eq, ":center_no", slot_party_type, spt_village),
                 (store_random_in_range, ":rand", 1, 30),
@@ -11319,18 +11699,23 @@ game_menus = [
                 (call_script, "script_sod_center_apply_population_delta", ":center_no", ":rand"),
             (try_end),
         (try_end),
-        (display_message, "@Your kingdom is experiencing population boom!", quest_success_color),
+        (try_begin),
+          (gt, ":affected_count", 0),
+          (display_message, "@Your fiefs benefit from the harvest.", quest_success_color),
+        (else_try),
+          (display_message, "@No affected fief could be found. The report is dismissed.", quest_fail_color),
+        (try_end),
         (change_screen_return),
       ]
       ),
-      ("choice_11_2", [], "Disperse profits amongst the Lords.",
+      ("choice_11_2", [], "Share the profits among the lords.",
       [
         (call_script, "script_change_player_honor", 10),
         (call_script, "script_change_troop_renown", "trp_player", 30),
         (change_screen_return),
       ]
       ),
-      ("choice_11_3", [], "Surely this is God's will. Donate to the Church.",
+      ("choice_11_3", [], "Call it God's blessing and donate to the Church.",
       [
         (val_add, "$g_sod_global_faith", 200),
         (val_clamp, "$g_sod_global_faith", -2000, 2001),
@@ -11338,7 +11723,7 @@ game_menus = [
         (change_screen_return),
       ]
       ),
-      ("choice_11_4", [], "Sell off what we do not need and institute a special grain tax.",
+      ("choice_11_4", [], "Sell the surplus and levy a special grain tax.",
       [
         (troop_add_gold, "trp_player", 2000),
         (call_script, "script_change_player_honor", -5),
@@ -11347,12 +11732,14 @@ game_menus = [
     ),
   ]
   ),
-# [ src/menus/events/choice_12_1.py:L1-L71 ] event_12
+# [ src/menus/events/choice_12_1.py:L1-L80 ] event_12
 (
     "event_12", mnf_disable_all_keys,
     "{s1} has been infected by a group of rats carrying the black death. The population is panicking. What are your orders, my liege?",
     "none",
     [
+      (assign, "$temp", -1),
+      (str_store_string, s68, "@one of your fiefs"),
       (assign, ":stop", 0),
       (try_for_range, ":unused", 0, 9999),
         (eq, ":stop", 0),
@@ -11360,11 +11747,12 @@ game_menus = [
         (neg|party_slot_eq, "$temp", slot_party_type, spt_castle),
         (party_slot_eq, "$temp", slot_town_lord, "trp_player"),
         (assign, ":stop", 1),
-        (str_store_party_name, s1, "$temp"),
+        (str_store_party_name, s68, "$temp"),
       (try_end),
+      (str_store_string_reg, s1, s68),
     ],
     [
-      ("choice_12_1", [], "Hire group of professional rat exterminators for 500 denars.",
+      ("choice_12_1", [(is_between, "$temp", centers_begin, centers_end)], "Hire rat catchers for 500 denars.",
       [
         (store_troop_gold, ":gold", "trp_player"),
         (str_store_party_name_link, s1, "$temp"),
@@ -11372,9 +11760,9 @@ game_menus = [
           (ge, ":gold", 500),
           (call_script, "script_sod_player_charge_gold", 500),
           (val_add, "$g_sod_global_health", 1),
-          (display_message, "@Good example causes health in Your kingdom to improve.", quest_success_color),
+          (display_message, "@Your decisive response improves public health across the realm.", quest_success_color),
         (else_try),
-          (display_message, "@You don't have enough gold. How embarrassing! Both population and health in {s1} are falling.", quest_fail_color),
+          (display_message, "@You don't have enough gold. Population and health in {s1} are falling.", quest_fail_color),
           (call_script, "script_change_troop_renown", "trp_player", -2),
           (party_get_slot, ":center_population", "$temp", slot_center_sod_local_population),
           (assign, ":temp_center_population", ":center_population"),
@@ -11387,7 +11775,7 @@ game_menus = [
         (change_screen_return),
       ]
       ),
-      ("choice_12_2", [], "Cleanse it with fire.",
+      ("choice_12_2", [(is_between, "$temp", centers_begin, centers_end)], "Burn the infected quarter.",
       [
         (str_store_party_name_link, s1, "$temp"),
         (call_script, "script_change_player_relation_with_center", "$temp", -10),
@@ -11401,7 +11789,7 @@ game_menus = [
         (change_screen_return),
       ]
       ),
-      ("choice_12_3", [], "So what?",
+      ("choice_12_3", [(is_between, "$temp", centers_begin, centers_end)], "Do nothing.",
       [
         (str_store_party_name_link, s1, "$temp"),
         (party_get_slot, ":center_population", "$temp", slot_center_sod_local_population),
@@ -11411,18 +11799,26 @@ game_menus = [
         (call_script, "script_sod_center_apply_population_delta", "$temp", ":population_delta"),
         (call_script, "script_sod_center_apply_health_delta", "$temp", -20),
         (val_sub, "$g_sod_global_health", 1),
-        (display_message, "@Many people have died in {s1}. Disease is still present and may spread throughout whole kingdom!", quest_fail_color),
+        (display_message, "@Many people have died in {s1}. The disease remains and may spread through the realm.", quest_fail_color),
+        (change_screen_return),
+      ]
+    ),
+      ("choice_12_no_center", [(neg|is_between, "$temp", centers_begin, centers_end)], "Continue.",
+      [
+        (display_message, "@No affected fief could be found. The report is dismissed.", quest_fail_color),
         (change_screen_return),
       ]
     ),
   ]
   ),
-# [ src/menus/events/choice_13_1.py:L1-L72 ] event_13
+# [ src/menus/events/choice_13_1.py:L1-L81 ] event_13
 (
     "event_13", mnf_disable_all_keys,
     "People in {s1} are suffering from an unknown but deadly disease. What should we do, my liege?",
     "none",
     [
+      (assign, "$temp", -1),
+      (str_store_string, s68, "@one of your fiefs"),
       (assign, ":stop", 0),
       (try_for_range, ":unused", 0, 9999),
         (eq, ":stop", 0),
@@ -11430,11 +11826,12 @@ game_menus = [
         (neg|party_slot_eq, "$temp", slot_party_type, spt_castle),
         (party_slot_eq, "$temp", slot_town_lord, "trp_player"),
         (assign, ":stop", 1),
-        (str_store_party_name, s1, "$temp"),
+        (str_store_party_name, s68, "$temp"),
       (try_end),
+      (str_store_string_reg, s1, s68),
     ],
     [
-      ("choice_13_1", [], "Gather medics from whole kingdom to stop it. =1000 denars=",
+      ("choice_13_1", [(is_between, "$temp", centers_begin, centers_end)], "Summon physicians from across the realm for 1000 denars.",
         [
           (str_store_party_name_link, s1, "$temp"),
           (store_troop_gold, ":gold", "trp_player"),
@@ -11442,9 +11839,9 @@ game_menus = [
             (ge, ":gold", 1000),
             (call_script, "script_sod_player_charge_gold", 1000),
             (val_add, "$g_sod_global_health", 1),
-            (display_message, "@Good example causes health in Your kingdom to improve.", quest_success_color),
+            (display_message, "@Your decisive response improves public health across the realm.", quest_success_color),
           (else_try),
-            (display_message, "@You don't have enough gold. How embarrassing! Both population and health in {s1} are falling.", quest_fail_color),
+            (display_message, "@You don't have enough gold. Population and health in {s1} are falling.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -2),
             (party_get_slot, ":center_population", "$temp", slot_center_sod_local_population),
             (assign, ":temp_center_population", ":center_population"),
@@ -11457,7 +11854,7 @@ game_menus = [
           (change_screen_return),
         ]
       ),
-      ("choice_13_2", [], "Quarantine settlement.",
+      ("choice_13_2", [(is_between, "$temp", centers_begin, centers_end)], "Quarantine the settlement.",
         [
           (str_store_party_name_link, s1, "$temp"),
           (call_script, "script_change_player_relation_with_center", "$temp", -10),
@@ -11471,7 +11868,7 @@ game_menus = [
           (change_screen_return),
         ]
       ),
-      ("choice_13_3", [], "Don't bother me.",
+      ("choice_13_3", [(is_between, "$temp", centers_begin, centers_end)], "Do nothing.",
         [
           (str_store_party_name_link, s1, "$temp"),
           (party_get_slot, ":center_population", "$temp", slot_center_sod_local_population),
@@ -11482,29 +11879,38 @@ game_menus = [
           (call_script, "script_sod_center_apply_health_delta", "$temp", -20),
           (call_script, "script_change_center_prosperity", "$temp", -5),
           (val_sub, "$g_sod_global_health", 1),
-          (display_message, "@Many people have died in {s1}. Disease is still present and may spread throughout whole kingdom!", quest_fail_color),
+          (display_message, "@Many people have died in {s1}. The disease remains and may spread through the realm.", quest_fail_color),
+          (change_screen_return),
+        ]
+      ),
+      ("choice_13_no_center", [(neg|is_between, "$temp", centers_begin, centers_end)], "Continue.",
+        [
+          (display_message, "@No affected fief could be found. The report is dismissed.", quest_fail_color),
           (change_screen_return),
         ]
       ),
     ]
   ),
-# [ src/menus/events/choice_14_1.py:L1-L58 ] event_14
+# [ src/menus/events/choice_14_1.py:L1-L67 ] event_14
 (
     "event_14", mnf_disable_all_keys,
     "Deadly disease strikes {s1}. There is nothing we can do.",
     "none",
     [
+      (assign, "$temp", -1),
+      (str_store_string, s68, "@one of your fiefs"),
       (assign, ":stop", 9999),
       (try_for_range, ":unused", 0, ":stop"),
         (store_random_party_in_range, "$temp", centers_begin, centers_end),
         (neg|party_slot_eq, "$temp", slot_party_type, spt_castle),
         (party_slot_eq, "$temp", slot_town_lord, "trp_player"),
         (assign, ":stop", ":unused"),
-        (str_store_party_name, s1, "$temp"),
+        (str_store_party_name, s68, "$temp"),
       (try_end),
+      (str_store_string_reg, s1, s68),
     ],
     [
-      ("choice_14_1", [], "That's terrible!",
+      ("choice_14_1", [(is_between, "$temp", centers_begin, centers_end)], "That's terrible.",
         [
           (str_store_party_name_link, s1, "$temp"),
           (call_script, "script_change_center_prosperity", "$temp", -5),
@@ -11515,11 +11921,11 @@ game_menus = [
           (store_mul, ":population_delta", ":temp_center_population", -1),
           (call_script, "script_sod_center_apply_population_delta", "$temp", ":population_delta"),
           (call_script, "script_sod_center_apply_health_delta", "$temp", -10),
-          (display_message, "@Both population and health of {s1} decreases. Economy of {s1} also suffered. The disease might have spread to other parts of Your kingdom.", quest_fail_color),
+          (display_message, "@Population and health in {s1} decline. The local economy suffers, and the disease may spread further.", quest_fail_color),
           (change_screen_return),
         ]
       ),
-      ("choice_14_2", [], "At least help the survivors. =500 denars=",
+      ("choice_14_2", [(is_between, "$temp", centers_begin, centers_end)], "Help the survivors for 500 denars.",
         [
           (str_store_party_name_link, s1, "$temp"),
           (store_troop_gold, ":gold", "trp_player"),
@@ -11534,41 +11940,49 @@ game_menus = [
             (ge, ":gold", 500),
             (call_script, "script_sod_player_charge_gold", 500),
             (call_script, "script_change_player_relation_with_center", "$temp", 10),
-            (display_message, "@Both population and health of {s1} decreases. People are grateful for Your help. The disease might have spread to other parts of Your kingdom.", quest_success_color),
+            (display_message, "@Population and health in {s1} still decline, but the people are grateful for your help.", quest_success_color),
           (else_try),
-            (display_message, "@You don't have enough gold. How embarrassing! Population, health and economy of {s1} suffer. The disease might have spread to other parts of your kingdom.", quest_fail_color),
+            (display_message, "@You don't have enough gold. Population, health, and the economy of {s1} suffer.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -2),
             (call_script, "script_change_center_prosperity", "$temp", -5),
           (try_end),
           (change_screen_return),
         ]
        ),
+      ("choice_14_no_center", [(neg|is_between, "$temp", centers_begin, centers_end)], "Continue.",
+        [
+          (display_message, "@No affected fief could be found. The report is dismissed.", quest_fail_color),
+          (change_screen_return),
+        ]
+      ),
       ]
   ),
-# [ src/menus/events/choice_15_1.py:L1-L70 ] event_15
+# [ src/menus/events/choice_15_1.py:L1-L83 ] event_15
 (
     "event_15", mnf_disable_all_keys,
-    "My Liege. Our kingdom is suffering from a real pandemic! What should we do?",
+    "My liege, disease is spreading across the realm. What are your orders?",
     "none",
     [
     ],
     [
-      ("choice_15_1", [], "Pay as much as is necessary to fight it! =1500=",
+      ("choice_15_1", [], "Spend 1500 denars to fight it.",
        [
         (store_troop_gold, ":gold", "trp_player"),
         (try_begin),
           (ge, ":gold", 1500),
           (call_script, "script_sod_player_charge_gold", 1500),
-          (display_message, "@It was small price to pay. Disease killed many people, and hurt economy but was stopped.", quest_success_color),
+          (display_message, "@The disease caused losses, but decisive action stopped it from spreading further.", quest_success_color),
         (else_try),
-          (display_message, "@You don't have enough gold. How embarrassing! Disease killed many people, hurt the economy and may spread even further!", quest_fail_color),
+          (display_message, "@You don't have enough gold. Disease killed many people, hurt the economy, and may spread further.", quest_fail_color),
           (call_script, "script_change_troop_renown", "trp_player", -2),
           (val_add, "$g_sod_global_health", 2),
         (try_end),
 
+        (assign, ":affected_count", 0),
         (try_for_range, ":center_no", centers_begin, centers_end),
           (neg|party_slot_eq, ":center_no", slot_party_type, spt_castle),
           (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
+          (val_add, ":affected_count", 1),
           (try_begin),
             (party_slot_eq, ":center_no", slot_party_type, spt_village),
             (store_random_in_range, ":rand", 20, 50),
@@ -11584,15 +11998,20 @@ game_menus = [
             (call_script, "script_sod_center_apply_health_delta", ":center_no", -10),
           (try_end),
         (try_end),
+        (try_begin),
+          (eq, ":affected_count", 0),
+          (display_message, "@No affected fief could be found. The report is dismissed.", quest_fail_color),
+        (try_end),
         (change_screen_return),
         ]
        ),
-      ("choice_15_2", [], "Just keep the sick away from me.",
+      ("choice_15_2", [], "Keep the sick away from me.",
        [
+        (assign, ":affected_count", 0),
         (try_for_range, ":center_no", centers_begin, centers_end),
         (neg|party_slot_eq, ":center_no", slot_party_type, spt_castle),
         (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
-        (val_sub, "$g_sod_global_health", 2),
+        (val_add, ":affected_count", 1),
             (try_begin),
                 (party_slot_eq, ":center_no", slot_party_type, spt_village),
                 (store_random_in_range, ":rand", 20, 50),
@@ -11608,18 +12027,26 @@ game_menus = [
                 (call_script, "script_sod_center_apply_health_delta", ":center_no", -10),
             (try_end),
         (try_end),
-        (display_message, "@Disease killed many people throughout whole kingdom. Hurt our economy badly and may spread even further!", quest_fail_color),
+        (try_begin),
+          (gt, ":affected_count", 0),
+          (val_sub, "$g_sod_global_health", 2),
+          (display_message, "@Disease killed many people throughout the realm, hurt the economy, and may spread further.", quest_fail_color),
+        (else_try),
+          (display_message, "@No affected fief could be found. The report is dismissed.", quest_fail_color),
+        (try_end),
         (change_screen_return),
         ]
        ),
       ]
   ),
-# [ src/menus/events/choice_16_1.py:L1-L61 ] event_16
+# [ src/menus/events/choice_16_1.py:L1-L70 ] event_16
 (
     "event_16", mnf_disable_all_keys,
     "Excellent news. Robust health policy in {s1} caused a population boom.",
     "none",
     [
+      (assign, "$temp", -1),
+      (str_store_string, s68, "@one of your fiefs"),
       (assign, ":stop", 0),
       (try_for_range, ":unused", 0, 9999),
         (eq, ":stop", 0),
@@ -11627,11 +12054,12 @@ game_menus = [
         (neg|party_slot_eq, "$temp", slot_party_type, spt_castle),
         (party_slot_eq, "$temp", slot_town_lord, "trp_player"),
         (assign, ":stop", 1),
-        (str_store_party_name, s1, "$temp"),
+        (str_store_party_name, s68, "$temp"),
       (try_end),
+      (str_store_string_reg, s1, s68),
     ],
     [
-      ("choice_16_1", [], "Excellent!",              #twan454
+      ("choice_16_1", [(is_between, "$temp", centers_begin, centers_end)], "Excellent.",              #twan454
         [
           (str_store_party_name_link, s1, "$temp"),
           (call_script, "script_change_center_prosperity", "$temp", -5),
@@ -11641,11 +12069,11 @@ game_menus = [
           (val_div, ":temp_center_population", 10),
           (call_script, "script_sod_center_apply_population_delta", "$temp", ":temp_center_population"),
           (call_script, "script_sod_center_apply_health_delta", "$temp", 7),
-          (display_message, "@Population and health of {s1} increases.", quest_success_color),
+          (display_message, "@Population and health of {s1} increase.", quest_success_color),
           (change_screen_return),
         ]
       ),
-      ("choice_16_2", [], "Cut their taxes to strenghten the effect (1000 denars).",
+      ("choice_16_2", [(is_between, "$temp", centers_begin, centers_end)], "Cut their taxes to strengthen the boom (1000 denars).",
         [
           (str_store_party_name_link, s1, "$temp"),
           (store_troop_gold, ":gold", "trp_player"),
@@ -11659,9 +12087,9 @@ game_menus = [
             (val_div, ":temp_center_population", 5),
             (call_script, "script_sod_center_apply_population_delta", "$temp", ":temp_center_population"),
             (call_script, "script_sod_center_apply_health_delta", "$temp", 10),
-            (display_message, "@Population, prosperity, Your popularity and health of {s1} greatly increases.", quest_success_color),
+            (display_message, "@Population, prosperity, your popularity, and health of {s1} greatly increase.", quest_success_color),
           (else_try),
-            (display_message, "@You don't have enough gold. How embarrassing! Still, population and health of {s1} rise.", quest_fail_color),
+            (display_message, "@You don't have enough gold. Even so, population and health in {s1} rise.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -2),
             (party_get_slot, ":center_population", "$temp", slot_center_sod_local_population),
             (assign, ":temp_center_population", ":center_population"),
@@ -11672,31 +12100,28 @@ game_menus = [
           (change_screen_return),  #twan454
         ]
       ),
+      ("choice_16_no_center", [(neg|is_between, "$temp", centers_begin, centers_end)], "Continue.",
+        [
+          (display_message, "@No affected fief could be found. The report is dismissed.", quest_fail_color),
+          (change_screen_return),
+        ]
+      ),
     ]
   ),
-# [ src/menus/events/choice_17_1.py:L1-L41 ] event_17
+# [ src/menus/events/choice_17_1.py:L1-L38 ] event_17
 (
     "event_17", mnf_disable_all_keys,
-    "Excellent global health policy causes population boom in whole kingdom.",
+    "Excellent global health policy has caused a population boom across your realm.",
     "none",
+    [],
     [
-      (assign, ":stop", 0),
-      (try_for_range, ":unused", 0, 9999),
-        (eq, ":stop", 0),
-        (store_random_party_in_range, "$temp", centers_begin, centers_end),
-        (neg|party_slot_eq, "$temp", slot_party_type, spt_castle),
-        (party_slot_eq, "$temp", slot_town_lord, "trp_player"),
-        (assign, ":stop", 1),
-        (str_store_party_name, s1, "$temp"),
-      (try_end),
-    ],
-    [
-      ("choice_17_1", [], "Excellent!",
+      ("choice_17_1", [], "Excellent.",
        [
+        (assign, ":affected_count", 0),
         (try_for_range, ":center_no", centers_begin, centers_end),
         (neg|party_slot_eq, ":center_no", slot_party_type, spt_castle),
         (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
-        (val_add, "$g_sod_global_health", 1),
+        (val_add, ":affected_count", 1),
             (try_begin),
                 (party_slot_eq, ":center_no", slot_party_type, spt_village),
                 (store_random_in_range, ":rand", 20, 50),
@@ -11708,7 +12133,13 @@ game_menus = [
                 (call_script, "script_sod_center_apply_health_delta", ":center_no", 10),
             (try_end),
         (try_end),
-        (display_message, "@All Your fiefs experience population boom.", quest_success_color),
+        (try_begin),
+          (gt, ":affected_count", 0),
+          (val_add, "$g_sod_global_health", 1),
+          (display_message, "@All your fiefs experience a population boom.", quest_success_color),
+        (else_try),
+          (display_message, "@No affected fief could be found. The report is dismissed.", quest_fail_color),
+        (try_end),
         (change_screen_return),
         ]
        ),
@@ -11778,21 +12209,21 @@ game_menus = [
           (change_screen_return),
         ]
        ),
-             ("choice_21_1", [], "RESERVED", [
+             ("choice_21_2", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_21_1", [], "RESERVED", [
+             ("choice_21_3", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_21_1", [], "RESERVED", [
+             ("choice_21_4", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
       ]
   ),
-# [ src/menus/events/choice_22_1.py:L1-L107 ] event_22
+# [ src/menus/events/choice_22_1.py:L1-L109 ] event_22
 (
     "event_22", mnf_disable_all_keys,
     "Unhappy with the way you lead your party {s2}.",
@@ -11862,17 +12293,18 @@ game_menus = [
         (str_store_string, s2, "@a {s1} has deserted and left your party"),
 	    (else_try),
         (str_store_troop_name_plural, s1, reg2),
-        (str_store_string, s2, "@some of your soldiers have deserted : {reg3} {s1} have left the party"),
+        (str_store_string, s2, "@{reg3} {s1} have deserted and left your party"),
         (try_end),
-		(party_remove_members, "p_main_party", reg2, reg3),
     ],
     [
-      ("choice_22_1", [], "It's sad.", [
+      ("choice_22_1", [], "Regrettable, but done.", [
+          (party_remove_members, "p_main_party", reg2, reg3),
 	      (call_script, "script_change_player_party_morale", -5),
           (change_screen_return),
         ]
        ),
              ("choice_22_2", [], "Give my remaining soldiers a bonus of 20 denars each.", [
+             (party_remove_members, "p_main_party", reg2, reg3),
 			 (party_get_num_companions, ":cost", "p_main_party"),
 			 (val_mul, ":cost", 20),
 			 (store_troop_gold, ":gold", "trp_player"),
@@ -11881,7 +12313,7 @@ game_menus = [
             (call_script, "script_change_player_party_morale", 10),
             (call_script, "script_sod_player_charge_gold", ":cost"),
             (else_try),
-            (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+            (display_message, "@You don't have enough gold to pay the bonus.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -5),
             (call_script, "script_change_player_party_morale", -5),
              (try_end),
@@ -11890,7 +12322,8 @@ game_menus = [
           (change_screen_return),
         ]
        ),
-         ("choice_22_1", [], "Whip some of your remaining soldiers they must have stopped the deserter.", [
+         ("choice_22_3", [], "Whip a few of the remaining soldiers for letting deserters slip away.", [
+			(party_remove_members, "p_main_party", reg2, reg3),
 			(call_script, "script_change_player_party_morale", -10),
 			(assign, "$g_whiped_for_example", 1),
           (change_screen_return),
@@ -11898,16 +12331,15 @@ game_menus = [
        ),
       ]
   ),
-# [ src/menus/events/choice_23_1.py:L1-L78 ] event_23
+# [ src/menus/events/choice_23_1.py:L1-L76 ] event_23
 (
     "event_23", mnf_disable_all_keys,
-    "Some priests of the One visit you. They complain about town merchants who loan money to farmers and take interests when earning money with bank operations is clearly forbidden by the sacred texts.\
-They think that seizing the benefits of these greedy moneylenders and distributing it to the poor peasants, would help your religion to spread.",
+    "Priests of the One visit you. They accuse town moneylenders of charging farmers interest, a practice forbidden by their sacred texts. They say seizing the lenders' profits and giving them to poor peasants would help the faith spread.",
     "none",
     [
     ],
     [
-      ("choice_23_1", [], "Do as they want (will reduce both your town relations and prosperity).", [
+      ("choice_23_1", [], "Seize the lenders' profits and give them to the poor.", [
 	       (try_for_range, ":town_no", towns_begin, towns_end),
 		   (party_slot_eq, ":town_no", slot_town_lord, "trp_player"),
 		   (call_script, "script_change_center_prosperity", ":town_no", -5),
@@ -11926,7 +12358,7 @@ They think that seizing the benefits of these greedy moneylenders and distributi
           (change_screen_return),
         ]
        ),
-      ("choice_23_2", [], "Do as they want, but with exceptions for influent merchants.", [
+      ("choice_23_2", [], "Seize the worst offenders' profits, but spare influential merchants.", [
 	  
 	  	   (try_for_range, ":town_no", towns_begin, towns_end),
 		   (party_slot_eq, ":town_no", slot_town_lord, "trp_player"),
@@ -11945,7 +12377,7 @@ They think that seizing the benefits of these greedy moneylenders and distributi
           (change_screen_return),
         ]
        ),
-           ("choice_23_3", [], "Seize moneylenders money, but keep it for you.", [
+           ("choice_23_3", [], "Seize the moneylenders' wealth and keep it for yourself.", [
 			 
 		   (try_for_range, ":town_no", towns_begin, towns_end),
 		   (party_slot_eq, ":town_no", slot_town_lord, "trp_player"),
@@ -11955,7 +12387,6 @@ They think that seizing the benefits of these greedy moneylenders and distributi
 	       
 		   (val_sub, "$g_sod_global_faith", 100),
 		   (val_clamp, "$g_sod_global_faith", -2000, 2001),
-		   (val_clamp, "$g_sod_global_faith", -2000, 2001),
 		   (val_sub, "$g_sod_clergy_happines", 5),
 		   
 		   (call_script, "script_change_player_honor", -5),
@@ -11964,7 +12395,7 @@ They think that seizing the benefits of these greedy moneylenders and distributi
           (change_screen_return),
         ]
        ),
-      ("choice_23_4", [], "Refuse the priests proposal (bankers will pay you 1000 denars for that).", [
+      ("choice_23_4", [], "Refuse the priests. The bankers will pay 1000 denars for protection.", [
 		(troop_add_gold, "trp_player", 1000),
     	(val_sub, "$g_sod_global_faith", 50),
     	(val_clamp, "$g_sod_global_faith", -2000, 2001),
@@ -11978,7 +12409,7 @@ They think that seizing the benefits of these greedy moneylenders and distributi
 # [ src/menus/events/choice_24_1.py:L1-L59 ] event_24
 (
     "event_24", mnf_disable_all_keys,
-    "Some {s2} visit you. They complain about your lack of humility. They think a ruler giving the example of modesty would help your faith to spread.",
+    "Some {s2} visit you. They complain about your lack of humility, arguing that a modest ruler would help the faith spread.",
     "none",
     [  (try_begin),
 	    (eq, "$g_sod_faith", cb_the_one),
@@ -12013,7 +12444,7 @@ They think that seizing the benefits of these greedy moneylenders and distributi
           (change_screen_return),
         ]
        ),
-             ("choice_24_3", [], "Refuse. A majesty don't have to be humble.", [
+             ("choice_24_3", [], "Refuse. Majesty does not bow to humility.", [
 		  (val_sub, "$g_sod_clergy_happines", 10),
 		  (val_sub, "$g_sod_global_faith", 25),
 		  (val_clamp, "$g_sod_global_faith", -2000, 2001),
@@ -12033,10 +12464,10 @@ They think that seizing the benefits of these greedy moneylenders and distributi
        ),
       ]
   ),
-# [ src/menus/events/choice_25_1.py:L1-L93 ] event_25
+# [ src/menus/events/choice_25_1.py:L1-L90 ] event_25
 (
     "event_25", mnf_disable_all_keys,
-    "Some {s2} visit you. They complain about the persecutions of {s3} in other realms. They think you should publicly condemn other rulers exactions to help the spreading of {s4}.",
+    "Some {s2} visit you. They complain about the persecution of {s3} in other realms. They say you should publicly condemn those rulers to help {s4} spread.",
     "none",
     [   (try_begin),
 	    (eq, "$g_sod_faith", cb_the_one),
@@ -12055,16 +12486,15 @@ They think that seizing the benefits of these greedy moneylenders and distributi
 		(str_store_string, s4, "@the true faith"),
 		(else_try),
 		(str_store_string, s2, "@philosophers"),
-		(str_store_string, s3, "@people showing disdain for supersticions"),
+		(str_store_string, s3, "@people who reject superstition"),
 		(str_store_string, s4, "@reason"),
 		(try_end),
     ],
     [
-      ("choice_25_1", [], "Threaten other rulers if they don't end these persecutions (cost: +6 badboy, -10 relations)", [
+      ("choice_25_1", [], "Threaten other rulers unless they end the persecutions. (+6 badboy, -10 relations)", [
 	      (call_script, "script_change_badboy_rating", 6),
-		  (try_for_range, ":kingdom_no", "fac_kingdom_1", kingdoms_end),
+		  (try_for_range, ":kingdom_no", native_kingdoms_begin, native_kingdoms_end),
 		  (faction_slot_eq, ":kingdom_no", slot_faction_state, sfs_active),
-		  (neq, ":kingdom_no", "fac_player_supporters_faction"),
 		  (store_relation, ":rln", ":kingdom_no", "fac_player_supporters_faction"),
 			  (try_begin),
 			  (this_or_next|ge, ":rln", 9), #avoid to start war
@@ -12079,11 +12509,10 @@ They think that seizing the benefits of these greedy moneylenders and distributi
           (change_screen_return),
         ]
        ),
-             ("choice_25_2", [], "Condemn persecutions in other realms without being too aggressive (+3 badboy, -5 relations)", [
+             ("choice_25_2", [], "Condemn the persecutions without making open threats. (+3 badboy, -5 relations)", [
 	      (call_script, "script_change_badboy_rating", 3),
-		  (try_for_range, ":kingdom_no", "fac_kingdom_1", kingdoms_end),
+		  (try_for_range, ":kingdom_no", native_kingdoms_begin, native_kingdoms_end),
 		  (faction_slot_eq, ":kingdom_no", slot_faction_state, sfs_active),
-		  (neq, ":kingdom_no", "fac_player_supporters_faction"),
 		  (store_relation, ":rln", ":kingdom_no", "fac_player_supporters_faction"),
 			  (try_begin),
 			  (this_or_next|ge, ":rln", 5), #avoid to start war
@@ -12097,21 +12526,20 @@ They think that seizing the benefits of these greedy moneylenders and distributi
 			 (change_screen_return),
         ]
        ),
-             ("choice_25_3", [], "Refuse to condemn your potential allies for some burned {s3}", [
+             ("choice_25_3", [], "Refuse to condemn potential allies over the fate of {s3}.", [
 			 (val_sub, "$g_sod_global_faith", 80),
 			 (val_clamp, "$g_sod_global_faith", -2000, 2001),
 			 (val_sub, "$g_sod_clergy_happines", 10),
           (change_screen_return),
         ]
        ),
-             ("choice_25_4", [], "Make other rulers know that you won't attack them for this reason.", [
+             ("choice_25_4", [], "Assure other rulers you will not attack them over this.", [
 			 (val_sub, "$g_sod_global_faith", 100),
 			 (val_clamp, "$g_sod_global_faith", -2000, 2001),
 			 (val_sub, "$g_sod_clergy_happines", 10),
 			 (call_script, "script_change_player_honor", -3),
-			 (try_for_range, ":kingdom_no", "fac_kingdom_1", kingdoms_end),
+			 (try_for_range, ":kingdom_no", native_kingdoms_begin, native_kingdoms_end),
 		     (faction_slot_eq, ":kingdom_no", slot_faction_state, sfs_active),
-			 (neq, ":kingdom_no", "fac_player_supporters_faction"),
 		     (store_relation, ":rln", ":kingdom_no", "fac_player_supporters_faction"),
 			  (try_begin),
 			  (ge, ":rln", 0),
@@ -12125,17 +12553,16 @@ They think that seizing the benefits of these greedy moneylenders and distributi
        ),
       ]
   ),
-# [ src/menus/events/choice_26_1.py:L1-L122 ] event_26
+# [ src/menus/events/choice_26_1.py:L1-L121 ] event_26
 (
     "event_26", mnf_disable_all_keys,
-    "Some {s2} visit you. They think that the public sacrifice of goats in all the towns and villages of your realm will help your religion to spread.\
-People not sharing your faith will probably don't appreciate this.",
+    "Some {s2} visit you. They believe public goat sacrifices in every town and village would help your religion spread. Those who do not share your faith are unlikely to welcome it.",
     "none",
     [    (try_begin),
 	    (eq, "$g_sod_faith", cb_the_void),
 		(str_store_string, s2, "@priests of the Void"),
 		(else_try),
-		(str_store_string, s2, "@priests of the Old Golds"),
+		(str_store_string, s2, "@priests of the Old Gods"),
 		(try_end),
     ],
     [
@@ -12165,7 +12592,7 @@ People not sharing your faith will probably don't appreciate this.",
 			(try_end),
 			
             (else_try),
-            (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+            (display_message, "@You don't have enough gold to buy the sacrificial animals.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -5),
             (val_sub, "$g_sod_global_faith", 50),
             (val_clamp, "$g_sod_global_faith", -2000, 2001),
@@ -12202,7 +12629,7 @@ People not sharing your faith will probably don't appreciate this.",
           (change_screen_return),
         ]
        ),
-             ("choice_26_3", [], "Buy for 500 denars of goats and only make sacrifices where your faith is strong.", [
+             ("choice_26_3", [], "Buy 500 denars of goats and sacrifice only where your faith is strong.", [
 			 (store_troop_gold, ":gold", "trp_player"),
 			(try_begin),
             (ge, ":gold", 500),
@@ -12227,7 +12654,7 @@ People not sharing your faith will probably don't appreciate this.",
 			(val_add, "$g_sod_global_faith", ":global_faith_effect"),
 			(val_clamp, "$g_sod_global_faith", -2000, 2001),
           (else_try),
-            (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+            (display_message, "@You don't have enough gold to buy the sacrificial animals.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -5),
             (val_sub, "$g_sod_global_faith", 50),
             (val_clamp, "$g_sod_global_faith", -2000, 2001),
@@ -12246,17 +12673,16 @@ People not sharing your faith will probably don't appreciate this.",
        ),
       ]
   ),
-# [ src/menus/events/choice_27_1.py:L1-L139 ] event_27
+# [ src/menus/events/choice_27_1.py:L1-L138 ] event_27
 (
     "event_27", mnf_disable_all_keys,
-    "Some {s2} visit you. They think that the public sacrifice of virgins in all the towns and villages of your realm would help your religion to spread.\
-People not sharing your faith will probably be extremely shocked by this, and killing these innocent would alwo lower your honor.",
+    "Some {s2} visit you. They demand public human sacrifices in every town and village, claiming terror and devotion will help your religion spread. Those who do not share your faith will be horrified, and innocent blood will stain your honor.",
     "none",
     [    (try_begin),
 	    (eq, "$g_sod_faith", cb_the_void),
 		(str_store_string, s2, "@priests of the Void"),
 		(else_try),
-		(str_store_string, s2, "@priests of the Old Golds"),
+		(str_store_string, s2, "@priests of the Old Gods"),
 		(try_end),
     ],
     [
@@ -12286,7 +12712,7 @@ People not sharing your faith will probably be extremely shocked by this, and ki
         ]
        ),
 	   
-        ("choice_27_2", [], "Only make some sacrifices, where your faith is strong.", [
+        ("choice_27_2", [], "Order sacrifices only where your faith is strong.", [
             (call_script, "script_change_player_honor", -5),
 			(assign, ":global_faith_effect", 0),
 			
@@ -12340,7 +12766,7 @@ People not sharing your faith will probably be extremely shocked by this, and ki
 			(try_end),
 			
             (else_try),
-            (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+            (display_message, "@You don't have enough gold to buy the sacrificial animals.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -5),
             (val_sub, "$g_sod_global_faith", 25),
             (val_clamp, "$g_sod_global_faith", -2000, 2001),
@@ -12358,7 +12784,7 @@ People not sharing your faith will probably be extremely shocked by this, and ki
         ]
        ),
 	   
-	    ("choice_27_5", [], "Refuse to make sacrifices and publicly condemn the priests for this silly idea.", [
+	    ("choice_27_5", [], "Refuse the sacrifices and publicly condemn the priests.", [
 			 (val_sub, "$g_sod_global_faith", 100),
 			 (val_clamp, "$g_sod_global_faith", -2000, 2001),
 			 (val_sub, "$g_sod_clergy_happines", 25),
@@ -12387,12 +12813,12 @@ People not sharing your faith will probably be extremely shocked by this, and ki
 # [ src/menus/events/choice_28_1.py:L1-L53 ] event_28
 (
     "event_28", mnf_disable_all_keys,
-    "Some disciples of the Inner Light visit you. They complain about your calradian subjects love for meat and sausages when people searching enlightnment should only eat vegetables.",
+    "Disciples of the Inner Light visit you. They complain that your Calradian subjects love meat and sausages, while those seeking enlightenment should eat only vegetables.",
     "none",
     [
     ],
     [
-      ("choice_28_1", [], "Force your subjects to only eat vegetables and condemn some known flesh eaters for example.", [
+      ("choice_28_1", [], "Force your subjects to eat only vegetables and make examples of known meat-eaters.", [
          (val_sub, "$g_sod_global_health", 50),
 		 (val_max, "$g_sod_global_health", -100),
 		 (val_add, "$g_sod_global_faith", 100),
@@ -12411,7 +12837,7 @@ People not sharing your faith will probably be extremely shocked by this, and ki
       (change_screen_return),
         ]
        ),
-         ("choice_28_1", [], "Remind your subjects they should only eat vegetables.", [
+         ("choice_28_2", [], "Remind your subjects they should only eat vegetables.", [
 	     (val_sub, "$g_sod_global_health", 25),
 		 (val_max, "$g_sod_global_health", -100),
 		 (val_add, "$g_sod_global_faith", 50),
@@ -12419,7 +12845,7 @@ People not sharing your faith will probably be extremely shocked by this, and ki
           (change_screen_return),
         ]
        ),
-            ("choice_28_1", [], "Remind your subjects it's better for their health to only eat meat three or for times a week.", [
+            ("choice_28_3", [], "Remind your subjects it is better for their health to eat meat only three or four times a week.", [
 			 (val_add, "$g_sod_global_health", 20),
 			 (val_sub, "$g_sod_clergy_happines", 10),
 			 (val_sub, "$g_sod_global_faith", 100),
@@ -12427,7 +12853,7 @@ People not sharing your faith will probably be extremely shocked by this, and ki
           (change_screen_return),
         ]
        ),
-           ("choice_28_1", [], "Ignore the disciples request.", [
+           ("choice_28_4", [], "Ignore the disciples' request.", [
 			(val_sub, "$g_sod_clergy_happines", 15),
 			(val_sub, "$g_sod_global_faith", 50), 
 			(val_clamp, "$g_sod_global_faith", -2000, 2001),
@@ -12436,11 +12862,10 @@ People not sharing your faith will probably be extremely shocked by this, and ki
        ),
       ]
   ),
-# [ src/menus/events/choice_29_1.py:L1-L68 ] event_29
+# [ src/menus/events/choice_29_1.py:L1-L67 ] event_29
 (
     "event_29", mnf_disable_all_keys,
-    "Some philosophers visit you. They complain about the strength of supersticion in your realm villages. They think you should publicly affirm that no god\
-or spirit exist and so condemn the priests of false religions and other magicians abusing your naive country men.",
+    "Some philosophers visit you. They complain about the strength of superstition in your villages. They want you to publicly declare that no gods or spirits exist, and to condemn priests and magicians who exploit common folk.",
     "none",
     [
     ],
@@ -12462,7 +12887,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (change_screen_return),
         ]
        ),
-             ("choice_29_2", [], "Condemn supersticion and bannish priests and magicians from your realm.", [
+             ("choice_29_2", [], "Condemn superstition and banish priests and magicians from your realm.", [
 			(val_add, "$g_sod_global_faith", 50),
 			(val_clamp, "$g_sod_global_faith", -2000, 2001),
 		    (val_add, "$g_sod_clergy_happines", 10),
@@ -12478,7 +12903,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (change_screen_return),
         ]
        ),
-             ("choice_29_3", [], "Ignore the philosophers request.", [
+             ("choice_29_3", [], "Ignore the philosophers' request.", [
 			(val_sub, "$g_sod_global_faith", 50),
 			(val_clamp, "$g_sod_global_faith", -2000, 2001),
 		    (val_sub, "$g_sod_clergy_happines", 10),
@@ -12506,11 +12931,11 @@ or spirit exist and so condemn the priests of false religions and other magician
 # [ src/menus/events/choice_30_1.py:L1-L66 ] event_30
 (
     "event_30", mnf_disable_all_keys,
-    "Some disciples of the Inner Light visit you. They complain about your calradian subject love for alcohol. They think you should prohibit vine and beer.",
+    "Disciples of the Inner Light visit you. They complain that your Calradian subjects drink too much wine and beer, and urge you to restrict alcohol throughout the realm.",
     "none",
     [
     ],
-   [   ("choice_30_1", [], "Prohibit alcohol in your realm, and condemn some known drinkers for example.", [
+   [   ("choice_30_1", [], "Prohibit alcohol and punish a few known drunkards as examples.", [
          (val_add, "$g_sod_global_health", 20),
 		 (val_min, "$g_sod_global_health", 100),
 		 (val_add, "$g_sod_global_faith", 100),
@@ -12536,7 +12961,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       (change_screen_return),
         ]
        ),
-         ("choice_30_2", [], "Remind your subjects drinking is bad for soul and body.", [
+         ("choice_30_2", [], "Warn your subjects that drink harms body and soul.", [
 	     (val_add, "$g_sod_global_health", 5),
 		 (val_min, "$g_sod_global_health", 100),
 		 (val_add, "$g_sod_global_faith", 50),
@@ -12559,7 +12984,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         ]
        ),
 	   
-           ("choice_30_3", [], "Ignore the disciples request.", [
+           ("choice_30_3", [], "Ignore the disciples' request.", [
 			(val_sub, "$g_sod_clergy_happines", 15),
 			(val_sub, "$g_sod_global_faith", 100), 
 			(val_clamp, "$g_sod_global_faith", -2000, 2001),
@@ -12580,15 +13005,15 @@ or spirit exist and so condemn the priests of false religions and other magician
           (change_screen_return),
         ]
        ),
-             ("choice_31_1", [], "RESERVED", [
+             ("choice_31_2", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_31_1", [], "RESERVED", [
+             ("choice_31_3", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_31_1", [], "RESERVED", [
+             ("choice_31_4", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
@@ -12606,15 +13031,15 @@ or spirit exist and so condemn the priests of false religions and other magician
           (change_screen_return),
         ]
        ),
-             ("choice_32_1", [], "RESERVED", [
+             ("choice_32_2", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_32_1", [], "RESERVED", [
+             ("choice_32_3", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_32_1", [], "RESERVED", [
+             ("choice_32_4", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
@@ -12632,15 +13057,15 @@ or spirit exist and so condemn the priests of false religions and other magician
           (change_screen_return),
         ]
        ),
-             ("choice_33_1", [], "RESERVED", [
+             ("choice_33_2", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_33_1", [], "RESERVED", [
+             ("choice_33_3", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_33_1", [], "RESERVED", [
+             ("choice_33_4", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
@@ -12658,15 +13083,15 @@ or spirit exist and so condemn the priests of false religions and other magician
           (change_screen_return),
         ]
        ),
-             ("choice_34_1", [], "RESERVED", [
+             ("choice_34_2", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_34_1", [], "RESERVED", [
+             ("choice_34_3", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_34_1", [], "RESERVED", [
+             ("choice_34_4", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
@@ -12684,15 +13109,15 @@ or spirit exist and so condemn the priests of false religions and other magician
           (change_screen_return),
         ]
        ),
-             ("choice_35_1", [], "RESERVED", [
+             ("choice_35_2", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_35_1", [], "RESERVED", [
+             ("choice_35_3", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_35_1", [], "RESERVED", [
+             ("choice_35_4", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
@@ -12710,15 +13135,15 @@ or spirit exist and so condemn the priests of false religions and other magician
           (change_screen_return),
         ]
        ),
-             ("choice_36_1", [], "RESERVED", [
+             ("choice_36_2", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_36_1", [], "RESERVED", [
+             ("choice_36_3", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_36_1", [], "RESERVED", [
+             ("choice_36_4", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
@@ -12750,15 +13175,15 @@ or spirit exist and so condemn the priests of false religions and other magician
           (change_screen_return),
         ]
        ),
-             ("choice_38_1", [], "RESERVED", [
+             ("choice_38_2", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_38_1", [], "RESERVED", [
+             ("choice_38_3", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
-             ("choice_38_1", [], "RESERVED", [
+             ("choice_38_4", [], "RESERVED", [
           (change_screen_return),
         ]
        ),
@@ -12772,16 +13197,16 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
     ],
     [
-      ("choice_39_1", [], "RESERVED", [(change_screen_return), ]),
-      ("choice_39_1", [], "RESERVED", [(change_screen_return), ]),
-      ("choice_39_1", [], "RESERVED", [(change_screen_return), ]),
+      ("choice_39_2", [], "RESERVED", [(change_screen_return), ]),
+      ("choice_39_3", [], "RESERVED", [(change_screen_return), ]),
+      ("choice_39_4", [], "RESERVED", [(change_screen_return), ]),
       ("choice_39_1", [], "RESERVED", [(change_screen_return), ]),
     ]
   ),
-# [ src/menus/events/choice_event_holy_1.py:L1-L64 ] event_holy
+# [ src/menus/events/choice_event_holy_1.py:L1-L86 ] event_holy
 (
     "event_holy", mnf_disable_all_keys,
-    "One of your noble elites requests a private audience. -My liege,- the veteran says, -I have served faithfully, but now I feel {s2}. If you grant leave, I will join {s1} and become a living standard for our cause.-",
+    "One of your noble veterans requests a private audience. -My liege,- the soldier says, -I have served faithfully, but now I feel {s2}. If you grant leave, I will join {s1} and serve our cause in a higher calling.-",
     "none",
     [
       (set_background_mesh, "mesh_pic_faith_zealot"),
@@ -12810,12 +13235,28 @@ or spirit exist and so condemn the priests of false religions and other magician
 	  (try_end),
     ],
     [
-      ("choice_event_holy_1", [(store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 200), (call_script, "script_sod_troop_get_effective_faith"), (ge, reg0, sod_zealot_min_faith)], "Go with my blessing. Serve the cause. (200 denars)",
+      ("choice_event_holy_1", [], "Go with my blessing. Serve the cause. (200 denars)",
        [
-		(party_remove_members, "p_main_party", "$g_sod_last_noble", 1),
-        (party_add_members , "p_main_party", "$g_sod_zealot", 1),             #twan456b
-        (call_script, "script_sod_troop_apply_faith_ascension_cost", 1),
-        (call_script, "script_sod_player_charge_gold", 200),
+        (store_troop_gold, ":gold", "trp_player"),
+        (party_count_members_of_type, ":noble_count", "p_main_party", "$g_sod_last_noble"),
+        (call_script, "script_sod_troop_get_effective_faith"),
+        (try_begin),
+          (ge, ":gold", 200),
+          (ge, reg0, sod_zealot_min_faith),
+          (gt, ":noble_count", 0),
+		  (party_remove_members, "p_main_party", "$g_sod_last_noble", 1),
+          (party_add_members , "p_main_party", "$g_sod_zealot", 1),             #twan456b
+          (call_script, "script_sod_troop_apply_faith_ascension_cost", 1),
+          (call_script, "script_sod_player_charge_gold", 200),
+        (else_try),
+          (le, ":noble_count", 0),
+          (display_message, "@The noble veteran is no longer with your party.", quest_fail_color),
+        (else_try),
+          (lt, ":gold", 200),
+          (display_message, "@You don't have enough gold to sponsor the ascension.", quest_fail_color),
+        (else_try),
+          (display_message, "@Your realm lacks the faith needed for such an ascension.", quest_fail_color),
+        (try_end),
         (change_screen_return),
         ]
        ),
@@ -12831,23 +13272,30 @@ or spirit exist and so condemn the priests of false religions and other magician
        ),
       ("choice_event_holy_3", [], "I release you from your oath. Preach among the people.",
        [
-       (call_script, "script_change_player_honor", 2),
-       (val_add, "$g_sod_global_faith", 50),
-       (val_clamp, "$g_sod_global_faith", -2000, 2001),
-       #MORDACHAI - bug fix: was failing to actually remove the unit who presumably goes off to become a priest or librarian
-       (party_remove_members , "p_main_party", "$g_sod_last_noble", 1), #twan456b
+       (party_count_members_of_type, ":noble_count", "p_main_party", "$g_sod_last_noble"),
+       (try_begin),
+         (gt, ":noble_count", 0),
+         (call_script, "script_change_player_honor", 2),
+         (val_add, "$g_sod_global_faith", 50),
+         (val_clamp, "$g_sod_global_faith", -2000, 2001),
+         #MORDACHAI - bug fix: was failing to actually remove the unit who presumably goes off to become a priest or librarian
+         (party_remove_members , "p_main_party", "$g_sod_last_noble", 1), #twan456b
+       (else_try),
+         (display_message, "@The noble veteran is no longer with your party.", quest_fail_color),
+       (try_end),
        (change_screen_return),
         ]
        ),
       ]
   ),
-# [ src/menus/events/choice_investment_report.py:L1-L88 ] investment_report
+# [ src/menus/events/choice_investment_report.py:L1-L95 ] investment_report
 (
     "investment_report", mnf_disable_all_keys|mnf_scale_picture,
     "Your Treasurer sends you a report on your last trade enterprise. You {s1}.",
     "none",
     [
       (set_background_mesh, "mesh_pic_payment"),
+      (assign, reg6, "$g_sod_invested_gold"),
 
       # count the number of guilds in the player's kingdom
       (assign, ":guilds", 0),
@@ -12876,7 +13324,7 @@ or spirit exist and so condemn the priests of false religions and other magician
 
         # apply change
         (val_add, "$g_sod_invested_gold", ":gold"),
-        (troop_add_gold, "trp_player", "$g_sod_invested_gold"),
+        (assign, reg6, "$g_sod_invested_gold"),
 
         # menu strings
         (assign, reg1, ":gold"),
@@ -12889,8 +13337,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       (else_try),
         # draw
         (eq, "$g_sod_invested_succes", 0),
-        # apply change
-        (troop_add_gold, "trp_player", "$g_sod_invested_gold"),
+        (assign, reg6, "$g_sod_invested_gold"),
         # menu strings
         (str_store_string, s1, "@broke even."),
       (else_try),
@@ -12912,7 +13359,7 @@ or spirit exist and so condemn the priests of false religions and other magician
 
         # apply change
         (val_sub, "$g_sod_invested_gold", ":gold"),
-        (troop_add_gold, "trp_player", "$g_sod_invested_gold"),
+        (assign, reg6, "$g_sod_invested_gold"),
 
         # menu strings
         (assign, reg1, ":gold"),
@@ -12925,10 +13372,17 @@ or spirit exist and so condemn the priests of false religions and other magician
       (try_end),
     ],
     [
-      ("choice_investment_report", [] , "Leave.", [(assign, "$g_sod_invested", 0), (assign, "$g_sod_invested_day", 0), (assign, "$g_sod_invested_gold", 0), (assign, "$g_sod_invested_succes", 0), (change_screen_return), ]),
+      ("choice_investment_report", [] , "Collect {reg6} denars and leave.", [
+        (troop_add_gold, "trp_player", "$g_sod_invested_gold"),
+        (assign, "$g_sod_invested", 0),
+        (assign, "$g_sod_invested_day", 0),
+        (assign, "$g_sod_invested_gold", 0),
+        (assign, "$g_sod_invested_succes", 0),
+        (change_screen_return),
+      ]),
     ]
   ),
-# [ src/menus/duels/choose_opponent.py:L1-L58 ] jotnar_clan_competition
+# [ src/menus/duels/choose_opponent.py:L1-L52 ] jotnar_clan_competition
 (
     "jotnar_clan_competition", 0,
     "You are participating in a duel tournament.^The clan expects a strong run before the judges name a champion.^^Standing: {s1}^Wear on the fighter: {s2}",
@@ -12968,16 +13422,10 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("choose_opponent", [], "Choose your next opponent.",
        [(jump_to_menu, "mnu_jc_choose_opponent"),
         ]),
-	  ("test-cheat", [], "test-cheat",
-	   [
-	   (set_jump_entry, 56),
-	   (set_jump_mission, "mt_sod_arena_duel_fight"),
-		(jump_to_scene, "scn_jotnar_clan_arena"),
-		(change_screen_mission),]),
 	  ("get_choosen", [], "Wait until someone chooses you as an opponent.",
        [(jump_to_menu, "mnu_jc_get_choosen"),
         ]),
-	  ("resign", [], "Quit from the tournament.",
+	  ("resign", [], "Withdraw from the tournament.",
        [(call_script, "script_end_quest", "qst_jotnar_clan_competition"),
 	   (call_script, "script_change_troop_renown", "trp_player", -5),
 	   (call_script, "script_change_player_relation_with_troop", jotnar_clan_guild_master, -2),
@@ -13051,56 +13499,115 @@ or spirit exist and so condemn the priests of false religions and other magician
     ],
     [],
   ),
-# [ src/menus/other/continue_18.py:L1-L29 ] requested_castle_granted_to_player
+# [ src/menus/other/continue_18.py:L1-L72 ] requested_castle_granted_to_player
 (
     "requested_castle_granted_to_player", mnf_scale_picture,
-    "You receive a message from your liege, {s3}.^^ {reg4?She:He} has decided to grant {s2}{reg3? and the nearby village of {s4}:} to you, with all due incomes and titles, to hold in {reg4?her:his} name for as long as you maintain your oath of homage.",
+    "{s68}",
     "none",
     [(set_background_mesh, "mesh_pic_messenger"),
-     (faction_get_slot, ":faction_leader", "$players_kingdom", slot_faction_leader),
-     (call_script, "script_store_troop_name", s3, ":faction_leader"),
-     (str_store_party_name, s2, "$g_center_to_give_to_player"),
+     (str_store_string, s3, "@your liege"),
+     (str_store_string, s2, "@the disputed fief"),
+     (str_store_string, s68, "@A messenger arrives with confused orders. The fief named in the grant can no longer be resolved, so no award is applied."),
+     (assign, ":faction_leader", -1),
+     (assign, ":award_center_valid", 0),
+     (assign, reg3, 0),
+     (assign, reg4, 0),
      (try_begin),
-       (party_slot_eq, "$g_center_to_give_to_player", slot_party_type, spt_castle),
-       (assign, reg3, 1),
-       (try_for_range, ":cur_village", villages_begin, villages_end),
-         (party_slot_eq, ":cur_village", slot_village_bound_center, "$g_center_to_give_to_player"),
-         (str_store_party_name, s4, ":cur_village"),
+       (is_between, "$players_kingdom", kingdoms_begin, kingdoms_end),
+       (faction_get_slot, ":faction_leader", "$players_kingdom", slot_faction_leader),
+       (try_begin),
+         (is_between, ":faction_leader", kingdom_heroes_begin, kingdom_heroes_end),
+         (call_script, "script_store_troop_name", s3, ":faction_leader"),
        (try_end),
-     (else_try),
-       (assign, reg3, 0),
      (try_end),
-     (troop_get_type, reg4, ":faction_leader"),
+     (try_begin),
+       (is_between, "$g_center_to_give_to_player", centers_begin, centers_end),
+       (assign, ":award_center_valid", 1),
+       (str_store_party_name, s2, "$g_center_to_give_to_player"),
+       (try_begin),
+         (party_slot_eq, "$g_center_to_give_to_player", slot_party_type, spt_castle),
+         (try_for_range, ":cur_village", villages_begin, villages_end),
+           (party_slot_eq, ":cur_village", slot_village_bound_center, "$g_center_to_give_to_player"),
+           (str_store_party_name, s4, ":cur_village"),
+           (assign, reg3, 1),
+         (try_end),
+       (try_end),
+     (try_end),
+     (try_begin),
+       (eq, ":award_center_valid", 1),
+       (try_begin),
+         (is_between, ":faction_leader", kingdom_heroes_begin, kingdom_heroes_end),
+         (troop_get_type, reg4, ":faction_leader"),
+       (try_end),
+       (try_begin),
+         (eq, reg4, 1),
+         (try_begin),
+           (eq, reg3, 1),
+           (str_store_string, s68, "@You receive a message from your liege, {s3}.^^ She has decided to grant {s2} and the nearby village of {s4} to you, with all due incomes and titles, to hold in her name for as long as you maintain your oath of homage."),
+         (else_try),
+           (str_store_string, s68, "@You receive a message from your liege, {s3}.^^ She has decided to grant {s2} to you, with all due incomes and titles, to hold in her name for as long as you maintain your oath of homage."),
+         (try_end),
+       (else_try),
+         (try_begin),
+           (eq, reg3, 1),
+           (str_store_string, s68, "@You receive a message from your liege, {s3}.^^ He has decided to grant {s2} and the nearby village of {s4} to you, with all due incomes and titles, to hold in his name for as long as you maintain your oath of homage."),
+         (else_try),
+           (str_store_string, s68, "@You receive a message from your liege, {s3}.^^ He has decided to grant {s2} to you, with all due incomes and titles, to hold in his name for as long as you maintain your oath of homage."),
+         (try_end),
+       (try_end),
+     (try_end),
     ],
     [
       ("continue", [], "Continue.",
-       [(call_script, "script_give_center_to_lord", "$g_center_to_give_to_player", "trp_player", 0),
-        (jump_to_menu, "mnu_give_center_to_player_2"),
+       [(try_begin),
+          (is_between, "$g_center_to_give_to_player", centers_begin, centers_end),
+          (call_script, "script_give_center_to_lord", "$g_center_to_give_to_player", "trp_player", 0),
+          (jump_to_menu, "mnu_give_center_to_player_2"),
+        (else_try),
+          (assign, "$g_center_to_give_to_player", -1),
+          (change_screen_return),
+        (try_end),
         ]),
      ],
   ),
-# [ src/menus/other/continue_19.py:L1-L31 ] give_center_to_player_2
+# [ src/menus/other/continue_19.py:L1-L47 ] give_center_to_player_2
 (
     "give_center_to_player_2", 0,
-    "With a brief ceremony, you are officially confirmed as the new lord of {s2}{reg3? and its bound village {s4}:}."\
-    " {reg5?This is a high military honor: the castle gives you command of a garrison, stores, road control, and noble mustering rights.:{reg3?They:It} will make a fine part of your fiefdom.}"\
-    " You can now claim the rents and revenues from your personal estates there, draft soldiers from the populace,"\
-    " and manage the lands as you see fit."\
-    " However, you are also expected to defend your fief and your people from harm,"\
-    " as well as maintaining the rule of law and order.",
+    "{s68}",
     "none",
     [
-      (str_store_party_name, s2, "$g_center_to_give_to_player"),
+      (str_store_string, s2, "@the awarded fief"),
+      (str_store_string, s68, "@The confirmation cannot be completed because the awarded fief can no longer be resolved."),
       (assign, reg3, 0),
       (assign, reg5, 0),
       (try_begin),
-        (party_slot_eq, "$g_center_to_give_to_player", slot_party_type, spt_castle),
-        (assign, reg5, 1),
-        (try_for_range, ":cur_village", villages_begin, villages_end),
-          (party_slot_eq, ":cur_village", slot_village_bound_center, "$g_center_to_give_to_player"),
-          (str_store_party_name, s4, ":cur_village"),
-          (assign, reg3, 1),
+        (is_between, "$g_center_to_give_to_player", centers_begin, centers_end),
+        (str_store_party_name, s2, "$g_center_to_give_to_player"),
+        (try_begin),
+          (party_slot_eq, "$g_center_to_give_to_player", slot_party_type, spt_castle),
+          (assign, reg5, 1),
+          (try_for_range, ":cur_village", villages_begin, villages_end),
+            (party_slot_eq, ":cur_village", slot_village_bound_center, "$g_center_to_give_to_player"),
+            (str_store_party_name, s4, ":cur_village"),
+            (assign, reg3, 1),
+          (try_end),
         (try_end),
+        (try_begin),
+          (eq, reg3, 1),
+          (str_store_string, s69, "@ and its bound village {s4}"),
+        (else_try),
+          (str_clear, s69),
+        (try_end),
+        (try_begin),
+          (eq, reg5, 1),
+          (str_store_string, s70, "@This is a high military honor: the castle gives you command of a garrison, stores, road control, and noble mustering rights."),
+        (else_try),
+          (eq, reg3, 1),
+          (str_store_string, s70, "@They will make a fine part of your fiefdom."),
+        (else_try),
+          (str_store_string, s70, "@It will make a fine part of your fiefdom."),
+        (try_end),
+        (str_store_string, s68, "@With a brief ceremony, you are officially confirmed as the new lord of {s2}{s69}. {s70} You can now claim the rents and revenues from your personal estates there, draft soldiers from the populace, and manage the lands as you see fit. However, you are also expected to defend your fief and your people from harm, as well as maintaining the rule of law and order."),
       (try_end),
     ],
     [
@@ -13109,7 +13616,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         ]),
     ],
   ),
-# [ src/menus/other/continue_20.py:L1-L64 ] siege_join_defense
+# [ src/menus/other/continue_20.py:L1-L77 ] siege_join_defense
 (
     "siege_join_defense", mnf_disable_all_keys,
     "{s4}^^Your casualties: {s8}^^Allies' casualties: {s9}^^Enemy casualties: {s10}",
@@ -13134,6 +13641,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       (val_div, ":enemy_party_strength", 10),
 
       (store_add, ":friend_party_strength", ":player_party_strength", ":ally_party_strength"),
+      (val_max, ":friend_party_strength", 1),
       (assign, ":enemy_party_strength_for_p", ":enemy_party_strength"),
       (val_mul, ":enemy_party_strength_for_p", ":player_party_strength"),
       (val_div, ":enemy_party_strength_for_p", ":friend_party_strength"),
@@ -13143,15 +13651,27 @@ or spirit exist and so condemn the priests of false religions and other magician
       (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
       (str_store_string_reg, s8, s0),
 
-      (inflict_casualties_to_party_group, "$g_ally_party", ":enemy_party_strength", "p_temp_casualties"),
-      (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
-      (str_store_string_reg, s9, s0),
-      (party_collect_attachments_to_party, "$g_ally_party", "p_collective_ally"),
+      (try_begin),
+        (gt, "$g_ally_party", 0),
+        (party_is_active, "$g_ally_party"),
+        (inflict_casualties_to_party_group, "$g_ally_party", ":enemy_party_strength", "p_temp_casualties"),
+        (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
+        (str_store_string_reg, s9, s0),
+        (party_collect_attachments_to_party, "$g_ally_party", "p_collective_ally"),
+      (else_try),
+        (str_store_string, s9, "@None"),
+      (try_end),
 
-      (inflict_casualties_to_party_group, "$g_enemy_party", ":friend_party_strength", "p_temp_casualties"),
-      (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
-      (str_store_string_reg, s10, s0),
-      (party_collect_attachments_to_party, "$g_enemy_party", "p_collective_enemy"),
+      (try_begin),
+        (gt, "$g_enemy_party", 0),
+        (party_is_active, "$g_enemy_party"),
+        (inflict_casualties_to_party_group, "$g_enemy_party", ":friend_party_strength", "p_temp_casualties"),
+        (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
+        (str_store_string_reg, s10, s0),
+        (party_collect_attachments_to_party, "$g_enemy_party", "p_collective_enemy"),
+      (else_try),
+        (str_store_string, s10, "@None"),
+      (try_end),
 
       (try_begin),
         (call_script, "script_party_count_members_with_full_health", "p_main_party"),
@@ -13172,7 +13692,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           ]),
     ]
   ),
-# [ src/menus/other/continue_28.py:L1-L28 ] town_bandits_failed
+# [ src/menus/other/continue_28.py:L1-L30 ] town_bandits_failed
 (
     "town_bandits_failed", mnf_disable_all_keys,
     "{s4} {s5}",
@@ -13183,10 +13703,12 @@ or spirit exist and so condemn the priests of false religions and other magician
       (store_random_in_range, ":random_loss", 40, 100),
       (val_add, ":gold_loss", ":random_loss"),
       (val_min, ":gold_loss", ":total_gold"),
-      (call_script, "script_sod_player_charge_gold", ":gold_loss"),
-      (party_set_slot, "$current_town", slot_center_has_bandits, 0),
+      (try_begin),
+        (party_slot_eq, "$current_town", slot_center_has_bandits, 1),
+        (call_script, "script_sod_player_charge_gold", ":gold_loss"),
+        (party_set_slot, "$current_town", slot_center_has_bandits, 0),
+      (try_end),
       (party_get_num_companions, ":num_companions", "p_main_party"),
-      (str_store_string, s4, "@The assasins beat you down and leave you for dead. ."),
       (str_store_string, s4, "@You have fallen. The bandits quickly search your body for every coin they can find, then vanish into the night. They have left you alive, if only barely."),
       (try_begin),
         (gt, ":num_companions", 2),
@@ -13199,25 +13721,28 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("continue", [], "Continue...", [(change_screen_return)]),
     ],
   ),
-# [ src/menus/other/continue_29.py:L1-L25 ] town_bandits_succeeded
+# [ src/menus/other/continue_29.py:L1-L28 ] town_bandits_succeeded
 (
     "town_bandits_succeeded", mnf_disable_all_keys,
     "The bandits fall before you as wheat to a scythe! Soon you stand alone in the streets while most of your attackers lie unconscious, dead or dying."\
     " Searching the bodies, you find a purse which must have belonged to a previous victim of these brutes. Or perhaps, it was given to them by someone who wanted to arrange a suitable ending to your life.",
     "none",
     [
-      (party_set_slot, "$current_town", slot_center_has_bandits, 0),
-      (assign, "$g_last_defeated_bandits_town", "$g_encountered_party"),
       (try_begin),
-        (check_quest_active, "qst_deal_with_night_bandits"),
-        (neg|check_quest_succeeded, "qst_deal_with_night_bandits"),
-        (quest_slot_eq, "qst_deal_with_night_bandits", slot_quest_target_center, "$g_encountered_party"),
-        (call_script, "script_succeed_quest", "qst_deal_with_night_bandits"),
+        (party_slot_eq, "$current_town", slot_center_has_bandits, 1),
+        (party_set_slot, "$current_town", slot_center_has_bandits, 0),
+        (assign, "$g_last_defeated_bandits_town", "$g_encountered_party"),
+        (try_begin),
+          (check_quest_active, "qst_deal_with_night_bandits"),
+          (neg|check_quest_succeeded, "qst_deal_with_night_bandits"),
+          (quest_slot_eq, "qst_deal_with_night_bandits", slot_quest_target_center, "$g_encountered_party"),
+          (call_script, "script_succeed_quest", "qst_deal_with_night_bandits"),
+        (try_end),
+        (store_mul, ":xp_reward", "$num_center_bandits", 117),
+        (add_xp_to_troop, ":xp_reward", "trp_player"),
+        (store_mul, ":gold_reward", "$num_center_bandits", 50),
+        (call_script, "script_troop_add_gold", "trp_player", ":gold_reward"),
       (try_end),
-      (store_mul, ":xp_reward", "$num_center_bandits", 117),
-      (add_xp_to_troop, ":xp_reward", "trp_player"),
-      (store_mul, ":gold_reward", "$num_center_bandits", 50),
-      (call_script, "script_troop_add_gold", "trp_player", ":gold_reward"),
     ],
     [
       ("continue", [], "Continue...", [(change_screen_return)]),
@@ -13269,22 +13794,14 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_town_tournament_won_by_another"), ]),
     ]
   ),
-# [ src/menus/other/continue_35.py:L1-L40 ] town_tournament_won
+# [ src/menus/other/continue_35.py:L1-L46 ] town_tournament_won
 (
     "town_tournament_won", mnf_disable_all_keys,
     "You have won the tournament of {s3}! You are filled with pride as the crowd cheers your name. In addition to honour, fame and glory, you earn a prize of {reg9} denars. {s8}",
     "none",
     [
       (str_store_party_name, s3, "$current_town"),
-      (call_script, "script_change_troop_renown", "trp_player", 20),
-      (call_script, "script_change_player_relation_with_center", "$current_town", 1),
-      (call_script, "script_sod_companion_apply_player_action", sod_companion_action_tournament_glory, 4),
-      (call_script, "script_sod_company_accounts_apply_arena_prestige"),
-      (call_script, "script_sod_companion_try_rolf_name_challenge_incident", 3),
-      (call_script, "script_sod_companion_try_nizar_charge_incident", 3),
       (assign, reg9, 200),
-      (add_xp_to_troop, 250, "trp_player"),
-      (troop_add_gold, "trp_player", reg9),
       (str_clear, s8),
       (store_add, ":total_win", "$g_tournament_bet_placed", "$g_tournament_bet_win_amount"),
 	  (val_add, ":total_win", "$tournament_high_bet"),  #twan456
@@ -13294,24 +13811,38 @@ or spirit exist and so condemn the priests of false religions and other magician
         (assign, reg8, ":total_win"),
         (str_store_string, s8, "@Moreover, you earn {reg8} denars from the clever bets you placed on yourself..."),
       (try_end),
-	  (assign, "$tournament_high_bet", 0),
-      (troop_add_gold, "trp_player", ":total_win"),
-      (assign, ":player_odds_sub", 0),
-      (store_div, ":player_odds_sub", "$g_tournament_bet_win_amount", 5),
-      (party_get_slot, ":player_odds", "$current_town", slot_town_player_odds),
-      (val_sub, ":player_odds", ":player_odds_sub"),
-      (val_max, ":player_odds", 250),
-      (party_set_slot, "$current_town", slot_town_player_odds, ":player_odds"),
-      (call_script, "script_play_victorious_sound"),
+      (try_begin),
+        (eq, "$g_tournament_player_team_won", 1),
+        (call_script, "script_change_troop_renown", "trp_player", 20),
+        (call_script, "script_change_player_relation_with_center", "$current_town", 1),
+        (call_script, "script_sod_companion_apply_player_action", sod_companion_action_tournament_glory, 4),
+        (call_script, "script_sod_company_accounts_apply_arena_prestige"),
+        (call_script, "script_sod_companion_try_rolf_name_challenge_incident", 3),
+        (call_script, "script_sod_companion_try_nizar_charge_incident", 3),
+        (add_xp_to_troop, 250, "trp_player"),
+        (troop_add_gold, "trp_player", reg9),
+        (troop_add_gold, "trp_player", ":total_win"),
+        (assign, ":player_odds_sub", 0),
+        (store_div, ":player_odds_sub", "$g_tournament_bet_win_amount", 5),
+        (party_get_slot, ":player_odds", "$current_town", slot_town_player_odds),
+        (val_sub, ":player_odds", ":player_odds_sub"),
+        (val_max, ":player_odds", 250),
+        (party_set_slot, "$current_town", slot_town_player_odds, ":player_odds"),
+        (assign, "$g_tournament_bet_placed", 0),
+        (assign, "$g_tournament_bet_win_amount", 0),
+        (assign, "$tournament_high_bet", 0),
+        (assign, "$g_tournament_player_team_won", 2),
+        (call_script, "script_play_victorious_sound"),
+      (try_end),
     ],
     [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_town")]),
     ]
   ),
-# [ src/menus/other/continue_36.py:L1-L23 ] town_tournament_won_by_another
+# [ src/menus/other/continue_36.py:L1-L31 ] town_tournament_won_by_another
 (
     "town_tournament_won_by_another", mnf_disable_all_keys,
-    "As the only {reg3?fighter:man} to remain undefeated this day, {s1} wins the lists and the glory of this tournament.",
+    "As the only {s68} to remain undefeated this day, {s1} wins the lists and the glory of this tournament.",
     "none",
     [ (assign, "$tournament_high_bet", 0), #twan456
       (call_script, "script_get_num_tournament_participants"),
@@ -13321,16 +13852,24 @@ or spirit exist and so condemn the priests of false religions and other magician
       (troop_get_slot, ":winner_troop", "trp_tournament_participants", 0),
       (call_script, "script_store_troop_name", s1, ":winner_troop"),
       (try_begin),
+        (neq, "$g_tournament_player_team_won", 2),
         (troop_is_hero, ":winner_troop"),
         (call_script, "script_change_troop_renown", ":winner_troop", 20),
       (try_end),
-      (troop_get_type, reg3, ":winner_troop"),
+      (assign, "$g_tournament_player_team_won", 2),
+      (troop_get_type, ":winner_is_female", ":winner_troop"),
+      (try_begin),
+        (eq, ":winner_is_female", 1),
+        (str_store_string, s68, "@fighter"),
+      (else_try),
+        (str_store_string, s68, "@man"),
+      (try_end),
     ],
     [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_town")]),
     ]
   ),
-# [ src/menus/other/continue_37.py:L1-L22 ] collect_taxes_complete
+# [ src/menus/other/continue_37.py:L1-L26 ] collect_taxes_complete
 (
     "collect_taxes_complete", mnf_disable_all_keys,
     "You've collected {reg13} denars in taxes from {s3}. {s19} will be expecting you to take the money to him.",
@@ -13340,10 +13879,14 @@ or spirit exist and so condemn the priests of false religions and other magician
      (call_script, "script_store_troop_name", s19, ":quest_giver"),
      (quest_get_slot, reg13, "qst_collect_taxes", slot_quest_gold_reward),
      (try_begin),
-       (eq, "$qst_collect_taxes_halve_taxes", 0),
-       (call_script, "script_change_player_relation_with_center", "$current_town", -2),
+       (check_quest_active, "qst_collect_taxes"),
+       (neg|check_quest_succeeded, "qst_collect_taxes"),
+       (try_begin),
+         (eq, "$qst_collect_taxes_halve_taxes", 0),
+         (call_script, "script_change_player_relation_with_center", "$current_town", -2),
+       (try_end),
+       (call_script, "script_succeed_quest", "qst_collect_taxes"),
      (try_end),
-     (call_script, "script_succeed_quest", "qst_collect_taxes"),
      ],
     [
       ("continue", [], "Continue...",
@@ -13364,7 +13907,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         ]),
     ]
   ),
-# [ src/menus/other/continue_39.py:L1-L20 ] collect_taxes_failed
+# [ src/menus/other/continue_39.py:L1-L24 ] collect_taxes_failed
 (
     "collect_taxes_failed", mnf_disable_all_keys,
     "You could collect only {reg3} denars as tax from {s3} before the revolt broke out. {s1} won't be happy, but some silver will placate him better than nothing at all...",
@@ -13373,8 +13916,12 @@ or spirit exist and so condemn the priests of false religions and other magician
      (quest_get_slot, ":quest_giver", "qst_collect_taxes", slot_quest_giver_troop),
      (call_script, "script_store_troop_name", s1, ":quest_giver"),
      (quest_get_slot, reg3, "qst_collect_taxes", slot_quest_gold_reward),
-     (call_script, "script_fail_quest", "qst_collect_taxes"),
-     (quest_set_slot, "qst_collect_taxes", slot_quest_current_state, 4),
+     (try_begin),
+       (check_quest_active, "qst_collect_taxes"),
+       (neg|check_quest_failed, "qst_collect_taxes"),
+       (call_script, "script_fail_quest", "qst_collect_taxes"),
+       (quest_set_slot, "qst_collect_taxes", slot_quest_current_state, 4),
+     (try_end),
      (rest_for_hours, 0, 0, 0), #stop resting
      ],
     [
@@ -13383,16 +13930,17 @@ or spirit exist and so condemn the priests of false religions and other magician
         ]),
     ]
   ),
-# [ src/menus/other/continue_40.py:L1-L35 ] collect_taxes_revolt
+# [ src/menus/other/continue_40.py:L1-L36 ] collect_taxes_revolt
 (
     "collect_taxes_revolt", 0,
-    "You are interrupted while collecting the taxes at {s3}. A large band of angry {reg9?peasants:townsmen} is marching nearer, shouting about the exorbitant taxes and waving torches and weapons. It looks like they aim to fight you!",
+    "You are interrupted while collecting the taxes at {s3}. A large band of angry {s68} is marching nearer, shouting about the exorbitant taxes and waving torches and weapons. It looks like they aim to fight you!",
     "none",
     [(str_store_party_name, s3, "$current_town"),
-     (assign, reg9, 0),
      (try_begin),
        (party_slot_eq, "$current_town", slot_party_type, spt_village),
-       (assign, reg9, 1),
+       (str_store_string, s68, "@peasants"),
+     (else_try),
+       (str_store_string, s68, "@townsmen"),
      (try_end),
      ],
     [
@@ -13417,28 +13965,37 @@ or spirit exist and so condemn the priests of false religions and other magician
         ]),
     ]
   ),
-# [ src/menus/other/continue_41.py:L1-L32 ] train_peasants_against_bandits_training_result
+# [ src/menus/other/continue_41.py:L1-L41 ] train_peasants_against_bandits_training_result
 (
     "train_peasants_against_bandits_training_result", mnf_disable_all_keys,
-    "{s0}",
+    "{s68}",
     "none",
     [
       (assign, reg5, "$g_train_peasants_against_bandits_num_peasants"),
-      (str_store_troop_name_by_count, s0, "trp_trainee_peasant", "$g_train_peasants_against_bandits_num_peasants"),
+      (str_store_troop_name_by_count, s68, "trp_trainee_peasant", "$g_train_peasants_against_bandits_num_peasants"),
       (try_begin),
-        (eq, "$g_train_peasants_against_bandits_training_succeeded", 0),
-        (str_store_string, s0, "@You were beaten. The peasants are heartened by their success, but the lesson you wanted to teach them probably didn't get through..."),
+        (this_or_next|neg|check_quest_active, "qst_train_peasants_against_bandits"),
+        (neq, "$qst_train_peasants_against_bandits_currently_training", 1),
+        (str_store_string, s68, "@The drill breaks up, but there is no active village training order to report."),
       (else_try),
-        (str_store_string, s0, "@After beating your last opponent, you explain to the peasants how to better defend themselves against such an attack. Hopefully they'll take the experience on board and will be prepared next time."),
+        (eq, "$g_train_peasants_against_bandits_training_succeeded", 0),
+        (str_store_string, s68, "@You were beaten. The peasants are heartened by their success, but the lesson you wanted to teach them probably didn't get through..."),
+      (else_try),
+        (str_store_string, s68, "@After beating your last opponent, you explain how to hold a line, watch the flanks, and keep calm when the bandits charge."),
         (quest_get_slot, ":quest_current_state", "qst_train_peasants_against_bandits", slot_quest_current_state),
+        (quest_get_slot, ":quest_target_amount", "qst_train_peasants_against_bandits", slot_quest_target_amount),
         (val_add, ":quest_current_state", "$g_train_peasants_against_bandits_num_peasants"),
+        (val_min, ":quest_current_state", ":quest_target_amount"),
         (quest_set_slot, "qst_train_peasants_against_bandits", slot_quest_current_state, ":quest_current_state"),
       (try_end),
+      (assign, "$qst_train_peasants_against_bandits_currently_training", 0),
+      (assign, "$g_train_peasants_against_bandits_num_peasants", 0),
      ],
     [
       ("continue", [], "Continue...",
        [
          (try_begin),
+           (check_quest_active, "qst_train_peasants_against_bandits"),
            (quest_get_slot, ":quest_current_state", "qst_train_peasants_against_bandits", slot_quest_current_state),
            (quest_slot_eq, "qst_train_peasants_against_bandits", slot_quest_target_amount, ":quest_current_state"),
            (jump_to_menu, "mnu_train_peasants_against_bandits_attack"),
@@ -13448,7 +14005,7 @@ or spirit exist and so condemn the priests of false religions and other magician
          ]),
       ]
     ),
-# [ src/menus/other/continue_42.py:L1-L31 ] train_peasants_against_bandits_attack_result
+# [ src/menus/other/continue_42.py:L1-L41 ] train_peasants_against_bandits_attack_result
 (
     "train_peasants_against_bandits_attack_result", mnf_scale_picture|mnf_disable_all_keys,
     "{s9}",
@@ -13456,22 +14013,32 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       (try_begin),
         (eq, "$g_battle_result", 1),
-        (str_store_string, s9, "@The bandits are broken! Those few who remain alive and conscious run off with their tails between their legs, terrified of the peasants and their new champion."),
-        (call_script, "script_succeed_quest", "qst_train_peasants_against_bandits"),
+        (str_store_string, s9, "@The bandits break. Those still standing flee the lanes, suddenly less eager to test the village militia."),
+        (try_begin),
+          (check_quest_active, "qst_train_peasants_against_bandits"),
+          (neg|check_quest_succeeded, "qst_train_peasants_against_bandits"),
+          (call_script, "script_succeed_quest", "qst_train_peasants_against_bandits"),
+        (try_end),
         (jump_to_menu, "mnu_train_peasants_against_bandits_success"),
       (else_try),
-        (call_script, "script_fail_quest", "qst_train_peasants_against_bandits"),
-        (str_store_string, s9, "@Try as you might, you could not defeat the bandits. Infuriated, they raze the village to the ground to punish the peasants, and then leave the burning wasteland behind to find greener pastures to plunder."),
+        (try_begin),
+          (check_quest_active, "qst_train_peasants_against_bandits"),
+          (neg|check_quest_failed, "qst_train_peasants_against_bandits"),
+          (call_script, "script_fail_quest", "qst_train_peasants_against_bandits"),
+        (try_end),
+        (str_store_string, s9, "@You cannot break the bandits. They turn on the village in anger, firing homes and driving the peasants into the fields."),
         (set_background_mesh, "mesh_pic_looted_village"),
       (try_end),
      ],
     [
       ("continue", [], "Continue...",
        [(try_begin),
+          (check_quest_active, "qst_train_peasants_against_bandits"),
+          (check_quest_failed, "qst_train_peasants_against_bandits"),
           (call_script, "script_village_set_state", "$current_town", svs_looted),
           (party_set_slot, "$current_town", slot_village_raid_progress, 0),
           (party_set_slot, "$current_town", slot_village_recover_progress, 0),
-          (call_script, "script_change_player_relation_with_center", "$g_encountered_party", -3),
+          (call_script, "script_change_player_relation_with_center", "$current_town", -3),
           (call_script, "script_end_quest", "qst_train_peasants_against_bandits"),
         (try_end),
         (change_screen_map),
@@ -13657,9 +14224,9 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_town_trade")]),
     ]
   ),
-# [ src/menus/other/continue_45.py:L1-L13 ] sneak_into_town_suceeded
+# [ src/menus/other/continue_45.py:L1-L13 ] sneak_into_town_succeeded
 (
-    "sneak_into_town_suceeded", 0,
+    "sneak_into_town_succeeded", 0,
     "Disguised in the garments of a poor pilgrim, you fool the guards and make your way into the town.",
     "none",
     [
@@ -13706,7 +14273,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       ),
     ]
   ),
-# [ src/menus/other/continue_48.py:L1-L49 ] captivity_wilderness_taken_prisoner
+# [ src/menus/other/continue_48.py:L1-L62 ] captivity_wilderness_taken_prisoner
 (
     "captivity_wilderness_taken_prisoner", mnf_scale_picture,
     "Your enemies take you prisoner.",
@@ -13718,6 +14285,16 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("continue", [], "Continue...",
        [
          (call_script, "script_sod_companion_retinue_handle_player_defeat"),
+         (assign, ":victorious_faction", "fac_commoners"),
+         (try_begin),
+           (gt, "$g_encountered_party", 0),
+           (party_is_active, "$g_encountered_party"),
+           (store_faction_of_party, ":victorious_faction", "$g_encountered_party"),
+         (else_try),
+           (gt, "$capturer_party", 0),
+           (party_is_active, "$capturer_party"),
+           (store_faction_of_party, ":victorious_faction", "$capturer_party"),
+         (try_end),
          (try_for_range, ":npc", companions_begin, companions_end),
            (main_party_has_troop, ":npc"),
            (store_random_in_range, ":rand", 0, 100),
@@ -13727,7 +14304,6 @@ or spirit exist and so condemn the priests of false religions and other magician
            (troop_set_slot, ":npc", slot_troop_occupation, 0),
            (troop_set_slot, ":npc", slot_troop_playerparty_history, pp_history_scattered),
            (assign, "$last_lost_companion", ":npc"),
-           (store_faction_of_party, ":victorious_faction", "$g_encountered_party"),
            (troop_set_slot, ":npc", slot_troop_playerparty_history_string, ":victorious_faction"),
            (troop_set_health, ":npc", 100),
            (store_random_in_range, ":rand_town", towns_begin, towns_end),
@@ -13744,7 +14320,11 @@ or spirit exist and so condemn the priests of false religions and other magician
            (try_end),
          (try_end),
 
-         (set_camera_follow_party, "$capturer_party"),
+         (try_begin),
+           (gt, "$capturer_party", 0),
+           (party_is_active, "$capturer_party"),
+           (set_camera_follow_party, "$capturer_party"),
+         (try_end),
          (assign, "$g_player_is_captive", 1),
          (store_random_in_range, ":random_hours", 18, 30),
          (call_script, "script_event_player_captured_as_prisoner"),
@@ -13754,7 +14334,7 @@ or spirit exist and so condemn the priests of false religions and other magician
          ]),
       ]
   ),
-# [ src/menus/other/continue_49.py:L1-L32 ] captivity_end_wilderness_escape
+# [ src/menus/other/continue_49.py:L1-L33 ] captivity_end_wilderness_escape
 (
     "captivity_end_wilderness_escape", mnf_scale_picture,
     "After painful days of being dragged about as a prisoner, you find a chance and escape from your captors!",
@@ -13779,6 +14359,7 @@ or spirit exist and so condemn the priests of false religions and other magician
            (try_end),
            (call_script, "script_set_parties_around_player_ignore_player", 2, 4),
            (assign, "$g_player_icon_state", pis_normal),
+           (call_script, "script_sod_refresh_player_map_icon"),
            (set_camera_follow_party, "p_main_party"),
            (rest_for_hours, 0, 0, 0), #stop resting
            (change_screen_return),
@@ -13837,7 +14418,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         ]),
     ]
   ),
-# [ src/menus/other/continue_52.py:L1-L25 ] captivity_end_exchanged_with_prisoner
+# [ src/menus/other/continue_52.py:L1-L26 ] captivity_end_exchanged_with_prisoner
 (
     "captivity_end_exchanged_with_prisoner", 0,
     "After days of imprisonment, you are finally set free when your captors exchange you with another prisoner.",
@@ -13855,6 +14436,7 @@ or spirit exist and so condemn the priests of false religions and other magician
            (try_end),
            (call_script, "script_set_parties_around_player_ignore_player", 2, 12),
            (assign, "$g_player_icon_state", pis_normal),
+           (call_script, "script_sod_refresh_player_map_icon"),
            (set_camera_follow_party, "p_main_party"),
            (rest_for_hours, 0, 0, 0), #stop resting
            (change_screen_return),
@@ -13963,7 +14545,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         ]),
      ]
   ),
-# [ src/menus/other/continue_57.py:L1-L19 ] kingdom_army_follow_failed
+# [ src/menus/other/continue_57.py:L1-L22 ] kingdom_army_follow_failed
 (
     "kingdom_army_follow_failed", mnf_scale_picture,
     "You have disobeyed orders and failed to follow {s8}. In anger he has disbanded you from the army, and sends a stern warning that your actions will not be forgotten.",
@@ -13972,8 +14554,11 @@ or spirit exist and so condemn the priests of false religions and other magician
       (set_background_mesh, "mesh_pic_messenger"),
       (faction_get_slot, ":faction_marshall", "$players_kingdom", slot_faction_marshall),
       (call_script, "script_store_troop_name", s8, ":faction_marshall"),
-      (call_script, "script_abort_quest", "qst_follow_army", 1),
-      (call_script, "script_change_player_relation_with_troop", ":faction_marshall", -3),
+      (try_begin),
+        (check_quest_active, "qst_follow_army"),
+        (call_script, "script_abort_quest", "qst_follow_army", 1),
+        (call_script, "script_change_player_relation_with_troop", ":faction_marshall", -3),
+      (try_end),
     ],
     [
       ("continue", [], "Continue...",
@@ -14460,18 +15045,23 @@ or spirit exist and so condemn the priests of false religions and other magician
     (try_end),
 	]),
 	],),
-# [ src/menus/other/defeated_by_peasants.py:L1-L12 ] defeated_by_peasants
+# [ src/menus/other/defeated_by_peasants.py:L1-L17 ] defeated_by_peasants
 ("defeated_by_peasants", mnf_disable_all_keys,
-	"The peasants defended their village",
+	"The peasants hold the village. Your company is driven back before the fires can take.",
 	"none",
 	[
-	(call_script, "script_fail_quest", "qst_slavers_deal_with_good_guys"),
+	(try_begin),
+	  (check_quest_active, "qst_slavers_deal_with_good_guys"),
+	  (quest_slot_eq, "qst_slavers_deal_with_good_guys", slot_quest_target_center, "$current_town"),
+	  (call_script, "script_fail_quest", "qst_slavers_deal_with_good_guys"),
+	  (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_retreat_or_fail, 1),
+	(try_end),
 	],
 	[
 	("continue", [], "Continue...",
 	[(change_screen_map),]),
 	]),
-# [ src/menus/other/disembark_yes_02.py:L1-L44 ] disembark
+# [ src/menus/other/disembark_yes_02.py:L1-L45 ] disembark
 (
     "disembark", 0,
     "Do you wish to disembark?",
@@ -14481,6 +15071,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("disembark_yes", [], "Yes.",
        [(assign, "$g_player_icon_state", pis_normal),
         (party_set_flags, "p_main_party", pf_is_ship, 0),
+        (call_script, "script_sod_refresh_player_map_icon"),
         (party_get_position, pos1, "p_main_party"),
         (party_set_position, "p_main_party", pos0),
         (try_begin),
@@ -14591,9 +15182,9 @@ or spirit exist and so condemn the priests of false religions and other magician
         ]),
      ]
   ),
-# [ src/menus/kingdom/fief_available_construction_report.py:L1-L149 ] fief_available_construction_report
+# [ src/menus/kingdom/fief_available_construction_report.py:L1-L153 ] fief_available_construction_report
 ("fief_available_construction_report", 0,
-   "Available Construction Report:^^{s2}",
+   "Available Construction Report:^^{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
@@ -14602,10 +15193,12 @@ or spirit exist and so condemn the priests of false religions and other magician
         (assign, "$g_sod_construction_report_return_menu", "mnu_fief_reports"),
       (try_end),
 
-      (str_clear, s1),
-      (str_clear, s2),
-      (str_clear, s3),
-      (str_clear, s4),
+      (str_clear, s68),
+      (str_clear, s69),
+      (str_clear, s70),
+      (str_clear, s97),
+      (str_clear, s98),
+      (str_clear, s99),
 
       (assign, ":no_centers", 0),
       (assign, ":complete", 0),
@@ -14667,21 +15260,22 @@ or spirit exist and so condemn the priests of false religions and other magician
             (val_add, ":num_in_report", 1),
 
             # generate text for this location
-            (str_store_party_name, s1, ":cur_center"),
+            (str_store_party_name, s68, ":cur_center"),
             (assign, reg0, ":remaining"),
             (try_begin),
               (gt, ":remaining", 1),
-              (str_store_string, s1, "@{s1} has {reg0} more projects available."),
+              (str_store_string, s99, "@{s68} has {reg0} more projects available."),
             (else_try),
-              (str_store_string, s1, "@{s1} has one more project available."),
+              (str_store_string, s99, "@{s68} has one more project available."),
             (try_end),
 
             # concatenate together
             (try_begin),
               (eq, ":num_in_report", 1),
-              (str_store_string_reg, s2, s1),
+              (str_store_string_reg, s98, s99),
             (else_try),
-              (str_store_string, s2, "@{s2}^{s1}"),
+              (str_store_string_reg, s97, s98),
+              (str_store_string, s98, "@{s97}^{s99}"),
             (try_end),
           (try_end),
         (try_end),
@@ -14690,48 +15284,49 @@ or spirit exist and so condemn the priests of false religions and other magician
       # generate the summary
       (try_begin),
         (eq, ":no_centers", 0),
-        (str_store_string, s2, "@You do not currently control any manageable fiefs for construction."),
+        (str_store_string, s98, "@You do not currently control any manageable fiefs for construction."),
       (else_try),
         (eq, ":complete", ":no_centers"),
-        (str_store_string, s2, "@All of your fiefs are completely built up!  There is absolutely nothing left to build."),
+        (str_store_string, s98, "@All of your fiefs are completely built up. There is nothing left to build."),
       (else_try),
         (eq, ":num_in_report", 0),
-        (str_store_string, s2, "@All of your fiefs that can have a project under construction, do."),
+        (str_store_string, s98, "@Every fief with available construction is already building something."),
       (try_end),
 
       # append whichever active project is closest to completion (if any)
       (try_begin),
         (neq, ":best_center", -1),
-        (str_store_party_name, s1, ":best_center"),
+        (str_store_party_name, s68, ":best_center"),
         (try_begin),
           (lt, ":best_progress", 25),
-          (str_store_string, s3, "@still early"),
+          (str_store_string, s69, "@still early"),
         (else_try),
           (lt, ":best_progress", 60),
-          (str_store_string, s3, "@well underway"),
+          (str_store_string, s69, "@well underway"),
         (else_try),
           (lt, ":best_progress", 90),
-          (str_store_string, s3, "@approaching completion"),
+          (str_store_string, s69, "@approaching completion"),
         (else_try),
-          (str_store_string, s3, "@nearly finished"),
+          (str_store_string, s69, "@nearly finished"),
         (try_end),
         (try_begin),
           (le, ":best_weeks", 0),
-          (str_store_string, s4, "@construction is currently stalled by lack of usable labor"),
+          (str_store_string, s70, "@construction is currently stalled by lack of usable labor"),
         (else_try),
           (le, ":best_weeks", 1),
-          (str_store_string, s4, "@the remaining labor should be short if workers stay available"),
+          (str_store_string, s70, "@the remaining labor should be short if workers stay available"),
         (else_try),
           (le, ":best_weeks", 3),
-          (str_store_string, s4, "@the remaining labor should take several weeks at the current pace"),
+          (str_store_string, s70, "@the remaining labor should take several weeks at the current pace"),
         (else_try),
-          (str_store_string, s4, "@the remaining labor will take a long while at the current pace"),
+          (str_store_string, s70, "@the remaining labor will take a long while at the current pace"),
         (try_end),
+        (str_store_string_reg, s97, s98),
         (try_begin),
           (gt, ":best_weeks", 0),
-          (str_store_string, s2, "@{s2}^^{s1} has the most advanced active project; it is {s3}, and {s4}."),
+          (str_store_string, s98, "@{s97}^^{s68} has the most advanced active project; it is {s69}, and {s70}."),
         (else_try),
-          (str_store_string, s2, "@{s2}^^{s1} has the most advanced active project; it is {s3}, but {s4}."),
+          (str_store_string, s98, "@{s97}^^{s68} has the most advanced active project; it is {s69}, but {s70}."),
         (try_end),
       (try_end),
     ],
@@ -14739,15 +15334,18 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("continue", [], "Continue...", [(jump_to_menu, "$g_sod_construction_report_return_menu")]),
     ]
   ),
-# [ src/menus/kingdom/fief_prosperity_report.py:L1-L147 ] fief_prosperity_report
+# [ src/menus/kingdom/fief_prosperity_report.py:L1-L222 ] fief_prosperity_report
 ("fief_prosperity_report", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
+      (str_clear, s98),
 
       (try_begin),
         (assign, ":total_prosperity", 0),
+        (assign, ":worst_score", -1),
+        (assign, ":worst_center", -1),
         (call_script, "script_get_number_of_hero_centers", "trp_player"),
         (assign, ":no_centers", reg0),
         (gt, ":no_centers", 0),
@@ -14775,11 +15373,42 @@ or spirit exist and so condemn the priests of false religions and other magician
 
           # health
           (party_get_slot, ":health", ":cur_center", slot_center_sod_local_health),
+          (call_script, "script_sod_center_public_health_brief_to_s0", ":cur_center"),
+          (str_store_string_reg, s5, s0),
 
           # taxes & rents
           (party_get_slot, ":accumulated_rents", ":cur_center", slot_center_accumulated_rents),
           (party_get_slot, ":accumulated_tariffs", ":cur_center", slot_center_accumulated_tariffs),
           (store_add, ":taxes", ":accumulated_rents", ":accumulated_tariffs"),
+
+          # Stewardship priority score: health and population matter everywhere;
+          # prosperity only applies to towns/villages, while castles mostly show rent strain.
+          (assign, ":issue_score", 0),
+          (try_begin),
+            (lt, ":health", 35),
+            (store_sub, ":health_issue", 35, ":health"),
+            (val_add, ":issue_score", ":health_issue"),
+          (try_end),
+          (try_begin),
+            (this_or_next|is_between, ":cur_center", towns_begin, towns_end),
+            (is_between, ":cur_center", villages_begin, villages_end),
+            (lt, ":prosperity", 35),
+            (store_sub, ":prosperity_issue", 35, ":prosperity"),
+            (val_add, ":issue_score", ":prosperity_issue"),
+          (try_end),
+          (try_begin),
+            (lt, ":population", 250),
+            (val_add, ":issue_score", 15),
+          (try_end),
+          (try_begin),
+            (lt, ":taxes", 0),
+            (val_add, ":issue_score", 10),
+          (try_end),
+          (try_begin),
+            (gt, ":issue_score", ":worst_score"),
+            (assign, ":worst_score", ":issue_score"),
+            (assign, ":worst_center", ":cur_center"),
+          (try_end),
 
           # generate strings
           (str_store_party_name, s1, ":cur_center"),
@@ -14818,14 +15447,15 @@ or spirit exist and so condemn the priests of false religions and other magician
               (str_store_string, s7, "@large herds"),
             (try_end),
 
-            (str_store_string, s8, "@{s2} Its fields are {s6}. They have {s7}. {s3}{s4}"),
+            (str_store_string, s8, "@{s2} Its fields are {s6}. They have {s7}. {s3}{s4} {s5}"),
 
             # accumulated taxes
             (try_begin),
               (eq, "$g_sod_king", 0),
               (gt, ":taxes", 0),
               (assign, reg1, ":taxes"),
-              (str_store_string, s8, "@{s8} Accumulated taxes are {reg1}."),
+              (str_store_string_reg, s96, s8),
+              (str_store_string, s8, "@{s96} Accumulated taxes are {reg1}."),
             (try_end),
 
           (else_try),
@@ -14835,6 +15465,7 @@ or spirit exist and so condemn the priests of false religions and other magician
             (try_begin),
               (eq, "$g_sod_king", 0),
               (lt, ":taxes", 0),
+              (assign, reg1, ":taxes"),
               (str_store_string, s8, "@Unpaid rent at {s1} is {reg1}."),
             (else_try),
               (assign, ":skip", 1),
@@ -14844,14 +15475,15 @@ or spirit exist and so condemn the priests of false religions and other magician
 
             # town
             (is_between, ":cur_center", towns_begin, towns_end),
-            (str_store_string, s8, "@{s2} {s3} {s4}"),
+            (str_store_string, s8, "@{s2} {s3} {s4} {s5}"),
 
             # accumulated taxes
             (try_begin),
               (eq, "$g_sod_king", 0),
               (gt, ":taxes", 0),
               (assign, reg1, ":taxes"),
-              (str_store_string, s8, "@{s8} Accumulated taxes are {reg1}."),
+              (str_store_string_reg, s96, s8),
+              (str_store_string, s8, "@{s96} Accumulated taxes are {reg1}."),
             (try_end),
 
           (try_end),
@@ -14861,10 +15493,11 @@ or spirit exist and so condemn the priests of false religions and other magician
             (eq, ":skip", 0),
             (try_begin),
               (eq, ":first", 1),
-              (str_store_string, s9, "@{s8}"),
+              (str_store_string, s98, "@{s8}"),
               (assign, ":first", 0),
             (else_try),
-              (str_store_string, s9, "@{s9}^^{s8}"),
+              (str_store_string_reg, s97, s98),
+              (str_store_string, s98, "@{s97}^^{s8}"),
             (try_end),
           (try_end),
 
@@ -14874,23 +15507,286 @@ or spirit exist and so condemn the priests of false religions and other magician
         (store_div, ":prosperity", ":total_prosperity", ":no_centers"),
         (call_script, "script_get_prosperity_text", s8, ":prosperity"),
         (assign, reg2, ":no_centers"),
-        (store_sub, reg0, reg2, 1),
-        (str_store_string, s9, "@Average prosperity for your {reg2} {reg0?fiefs:fief} is: {s8}^^{s9}"),
+        (assign, reg3, ":worst_score"),
+        (try_begin),
+          (eq, reg2, 1),
+          (str_store_string, s68, "@fief"),
+        (else_try),
+          (str_store_string, s68, "@fiefs"),
+        (try_end),
+        (str_store_string, s70, "@Steward priority: no urgent weakness stands out. Keep food, health, roads, and taxes steady."),
+        (try_begin),
+          (is_between, ":worst_center", centers_begin, centers_end),
+          (gt, ":worst_score", 0),
+          (str_store_party_name, s69, ":worst_center"),
+          (party_get_slot, ":priority_health", ":worst_center", slot_center_sod_local_health),
+          (party_get_slot, ":priority_prosperity", ":worst_center", slot_town_prosperity),
+          (party_get_slot, ":priority_population", ":worst_center", slot_center_sod_local_population),
+          (party_get_slot, ":priority_rents", ":worst_center", slot_center_accumulated_rents),
+          (party_get_slot, ":priority_tariffs", ":worst_center", slot_center_accumulated_tariffs),
+          (store_add, ":priority_taxes", ":priority_rents", ":priority_tariffs"),
+          (try_begin),
+            (lt, ":priority_health", 35),
+            (str_store_string, s70, "@Steward priority: {s69}. Health is the immediate weakness; move food, secure recovery, or build support before prosperity slips further."),
+          (else_try),
+            (this_or_next|is_between, ":worst_center", towns_begin, towns_end),
+            (is_between, ":worst_center", villages_begin, villages_end),
+            (lt, ":priority_prosperity", 35),
+            (str_store_string, s70, "@Steward priority: {s69}. Prosperity is the immediate weakness; secure roads, trade routes, and recovery before the tax base shrinks."),
+          (else_try),
+            (lt, ":priority_population", 250),
+            (str_store_string, s70, "@Steward priority: {s69}. The tax roll is thin; protect people, food, and migration before squeezing revenue."),
+          (else_try),
+            (lt, ":priority_taxes", 0),
+            (str_store_string, s70, "@Steward priority: {s69}. Unpaid rent is the visible problem; settle obligations before garrison strain becomes politics."),
+          (else_try),
+            (str_store_string, s70, "@Steward priority: {s69}. It is the weakest fief by combined health, prosperity, population, and rent pressure. Priority score {reg3}."),
+          (try_end),
+        (try_end),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@Average prosperity for your {reg2} {s68} is: {s8}^^{s70}^^{s97}"),
       (else_try),
-        (str_store_string, s9, "@You don't have any fiefs!"),
+        (str_store_string, s98, "@You don't have any fiefs!"),
       (try_end),
-      (str_store_string, s9, "@Fief Prosperity Report:^^{s9}"),
+      (str_store_string_reg, s97, s98),
+      (str_store_string, s98, "@Fief Prosperity Report:^^{s97}"),
     ],
     [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_fief_reports")]),
     ]
   ),
-# [ src/menus/economy/regional_economy_flow_report.py:L1-L120 ] regional_economy_flow_report
-("regional_economy_flow_report", mnf_enable_hot_keys,
-   "{s9}",
+# [ src/menus/kingdom/center_public_health_report.py:L1-L226 ] center_public_health_report
+("center_public_health_report", mnf_enable_hot_keys,
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
+      (str_clear, s98),
+      (assign, "$g_sod_public_health_report_target", -1),
+      (call_script, "script_sod_center_public_health_find_player_target"),
+      (assign, "$g_sod_public_health_report_target", reg0),
+      (assign, ":target_need", reg1),
+      (assign, ":first", 1),
+      (call_script, "script_get_number_of_hero_centers", "trp_player"),
+      (assign, ":no_centers", reg0),
+      (try_begin),
+        (gt, ":no_centers", 0),
+        (try_for_range, ":i_center", 0, ":no_centers"),
+          (call_script, "script_troop_get_leaded_center_with_index", "trp_player", ":i_center"),
+          (assign, ":center_no", reg0),
+          (str_store_party_name, s1, ":center_no"),
+          (call_script, "script_sod_center_public_health_describe_to_s0", ":center_no"),
+          (str_store_string_reg, s68, s0),
+          (try_begin),
+            (eq, ":first", 1),
+            (str_store_string, s98, "@{s1}: {s68}"),
+            (assign, ":first", 0),
+          (else_try),
+            (str_store_string_reg, s97, s98),
+            (str_store_string, s98, "@{s97}^^{s1}: {s68}"),
+          (try_end),
+        (try_end),
+        (try_begin),
+          (is_between, "$g_sod_public_health_report_target", centers_begin, centers_end),
+          (str_store_party_name, s7, "$g_sod_public_health_report_target"),
+          (assign, reg7, ":target_need"),
+          (str_store_string_reg, s97, s98),
+          (str_store_string, s98, "@Public Health Report:^^Most urgent fief: {s7}. Need score {reg7}.^^{s97}"),
+        (else_try),
+          (str_store_string_reg, s97, s98),
+          (str_store_string, s98, "@Public Health Report:^^No urgent fief target could be found.^^{s97}"),
+        (try_end),
+      (else_try),
+        (str_store_string, s98, "@Public Health Report:^^You do not personally hold any fiefs."),
+      (try_end),
+    ],
+    [
+      ("public_health_fund_healers",
+        [
+          (is_between, "$g_sod_public_health_report_target", centers_begin, centers_end),
+          (call_script, "script_cf_sod_center_public_health_can_order_intervention", "$g_sod_public_health_report_target"),
+          (store_troop_gold, ":gold", "trp_player"),
+          (ge, ":gold", 1200),
+        ],
+        "Fund healers for the neediest fief. (1200 denars)",
+        [
+          (call_script, "script_sod_player_charge_gold", 1200),
+          (val_add, "$g_sod_weekly_construction", 1200),
+          (call_script, "script_sod_center_public_health_apply_intervention", "$g_sod_public_health_report_target", sod_public_health_intervention_fund_healers),
+          (jump_to_menu, "mnu_center_public_health_report"),
+        ]),
+      ("public_health_distribute_grain",
+        [
+          (is_between, "$g_sod_public_health_report_target", centers_begin, centers_end),
+          (call_script, "script_cf_sod_center_public_health_can_order_intervention", "$g_sod_public_health_report_target"),
+          (store_troop_gold, ":gold", "trp_player"),
+          (ge, ":gold", 800),
+        ],
+        "Distribute grain to the neediest fief. (800 denars)",
+        [
+          (call_script, "script_sod_player_charge_gold", 800),
+          (val_add, "$g_sod_weekly_construction", 800),
+          (call_script, "script_sod_center_public_health_apply_intervention", "$g_sod_public_health_report_target", sod_public_health_intervention_distribute_grain),
+          (jump_to_menu, "mnu_center_public_health_report"),
+        ]),
+      ("public_health_clean_wells",
+        [
+          (is_between, "$g_sod_public_health_report_target", centers_begin, centers_end),
+          (call_script, "script_cf_sod_center_public_health_can_order_intervention", "$g_sod_public_health_report_target"),
+          (store_troop_gold, ":gold", "trp_player"),
+          (ge, ":gold", 600),
+        ],
+        "Clean wells and streets in the neediest fief. (600 denars)",
+        [
+          (call_script, "script_sod_player_charge_gold", 600),
+          (val_add, "$g_sod_weekly_construction", 600),
+          (call_script, "script_sod_center_public_health_apply_intervention", "$g_sod_public_health_report_target", sod_public_health_intervention_clean_wells),
+          (jump_to_menu, "mnu_center_public_health_report"),
+        ]),
+      ("public_health_repair_water",
+        [
+          (is_between, "$g_sod_public_health_report_target", centers_begin, centers_end),
+          (call_script, "script_cf_sod_center_public_health_can_order_intervention", "$g_sod_public_health_report_target"),
+          (store_troop_gold, ":gold", "trp_player"),
+          (ge, ":gold", 1500),
+        ],
+        "Repair water systems and infirmary works. (1500 denars)",
+        [
+          (call_script, "script_sod_player_charge_gold", 1500),
+          (val_add, "$g_sod_weekly_construction", 1500),
+          (call_script, "script_sod_center_public_health_apply_intervention", "$g_sod_public_health_report_target", sod_public_health_intervention_repair_water),
+          (jump_to_menu, "mnu_center_public_health_report"),
+        ]),
+      ("public_health_quarantine",
+        [
+          (is_between, "$g_sod_public_health_report_target", centers_begin, centers_end),
+          (call_script, "script_cf_sod_center_public_health_can_order_intervention", "$g_sod_public_health_report_target"),
+          (neg|party_slot_ge, "$g_sod_public_health_report_target", slot_center_health_quarantine, 1),
+          (store_troop_gold, ":gold", "trp_player"),
+          (ge, ":gold", 300),
+        ],
+        "Establish quarantine in the neediest fief. (300 denars)",
+        [
+          (call_script, "script_sod_player_charge_gold", 300),
+          (val_add, "$g_sod_weekly_construction", 300),
+          (call_script, "script_sod_center_public_health_apply_intervention", "$g_sod_public_health_report_target", sod_public_health_intervention_establish_quarantine),
+          (jump_to_menu, "mnu_center_public_health_report"),
+        ]),
+      ("public_health_lift_quarantine",
+        [
+          (is_between, "$g_sod_public_health_report_target", centers_begin, centers_end),
+          (call_script, "script_cf_sod_center_public_health_can_order_intervention", "$g_sod_public_health_report_target"),
+          (party_slot_ge, "$g_sod_public_health_report_target", slot_center_health_quarantine, 1),
+        ],
+        "Lift quarantine in the neediest fief.",
+        [
+          (call_script, "script_sod_center_public_health_apply_intervention", "$g_sod_public_health_report_target", sod_public_health_intervention_lift_quarantine),
+          (jump_to_menu, "mnu_center_public_health_report"),
+        ]),
+      ("public_health_shelter_refugees",
+        [
+          (is_between, "$g_sod_public_health_report_target", centers_begin, centers_end),
+          (call_script, "script_cf_sod_center_public_health_can_order_intervention", "$g_sod_public_health_report_target"),
+          (store_troop_gold, ":gold", "trp_player"),
+          (ge, ":gold", 700),
+        ],
+        "Shelter refugees and sick travelers. (700 denars)",
+        [
+          (call_script, "script_sod_player_charge_gold", 700),
+          (val_add, "$g_sod_weekly_construction", 700),
+          (call_script, "script_sod_center_public_health_apply_intervention", "$g_sod_public_health_report_target", sod_public_health_intervention_shelter_refugees),
+          (jump_to_menu, "mnu_center_public_health_report"),
+        ]),
+      ("public_health_move_refugees",
+        [
+          (is_between, "$g_sod_public_health_report_target", centers_begin, centers_end),
+          (call_script, "script_cf_sod_center_public_health_can_order_intervention", "$g_sod_public_health_report_target"),
+          (party_slot_ge, "$g_sod_public_health_report_target", slot_center_health_refugee_pressure, 1),
+          (store_troop_gold, ":gold", "trp_player"),
+          (ge, ":gold", 500),
+        ],
+        "Move refugees onward under guarded road writs. (500 denars)",
+        [
+          (call_script, "script_sod_player_charge_gold", 500),
+          (val_add, "$g_sod_weekly_construction", 500),
+          (call_script, "script_sod_center_public_health_apply_intervention", "$g_sod_public_health_report_target", sod_public_health_intervention_move_refugees),
+          (jump_to_menu, "mnu_center_public_health_report"),
+        ]),
+      ("public_health_temple_aid",
+        [
+          (is_between, "$g_sod_public_health_report_target", centers_begin, centers_end),
+          (call_script, "script_cf_sod_center_public_health_can_order_intervention", "$g_sod_public_health_report_target"),
+          (store_troop_gold, ":gold", "trp_player"),
+          (ge, ":gold", 900),
+        ],
+        "Request temple, shrine, or monastery aid. (900 denars)",
+        [
+          (call_script, "script_sod_player_charge_gold", 900),
+          (val_add, "$g_sod_weekly_construction", 900),
+          (call_script, "script_sod_center_public_health_apply_intervention", "$g_sod_public_health_report_target", sod_public_health_intervention_request_temple_aid),
+          (jump_to_menu, "mnu_center_public_health_report"),
+        ]),
+      ("public_health_medicine_shipment",
+        [
+          (is_between, "$g_sod_public_health_report_target", centers_begin, centers_end),
+          (call_script, "script_cf_sod_center_public_health_can_order_intervention", "$g_sod_public_health_report_target"),
+          (store_troop_gold, ":gold", "trp_player"),
+          (ge, ":gold", 1800),
+        ],
+        "Sponsor a medicine shipment. (1800 denars)",
+        [
+          (call_script, "script_sod_player_charge_gold", 1800),
+          (val_add, "$g_sod_weekly_construction", 1800),
+          (call_script, "script_sod_center_public_health_apply_intervention", "$g_sod_public_health_report_target", sod_public_health_intervention_medicine_shipment),
+          (jump_to_menu, "mnu_center_public_health_report"),
+        ]),
+      ("public_health_grain_shipment",
+        [
+          (is_between, "$g_sod_public_health_report_target", centers_begin, centers_end),
+          (call_script, "script_cf_sod_center_public_health_can_order_intervention", "$g_sod_public_health_report_target"),
+          (store_troop_gold, ":gold", "trp_player"),
+          (ge, ":gold", 1400),
+        ],
+        "Sponsor a grain shipment. (1400 denars)",
+        [
+          (call_script, "script_sod_player_charge_gold", 1400),
+          (val_add, "$g_sod_weekly_construction", 1400),
+          (call_script, "script_sod_center_public_health_apply_intervention", "$g_sod_public_health_report_target", sod_public_health_intervention_grain_shipment),
+          (jump_to_menu, "mnu_center_public_health_report"),
+        ]),
+      ("public_health_burial_cleanup",
+        [
+          (is_between, "$g_sod_public_health_report_target", centers_begin, centers_end),
+          (call_script, "script_cf_sod_center_public_health_can_order_intervention", "$g_sod_public_health_report_target"),
+          (store_troop_gold, ":gold", "trp_player"),
+          (ge, ":gold", 1000),
+        ],
+        "Pay for burial and cleanup. (1000 denars)",
+        [
+          (call_script, "script_sod_player_charge_gold", 1000),
+          (val_add, "$g_sod_weekly_construction", 1000),
+          (call_script, "script_sod_center_public_health_apply_intervention", "$g_sod_public_health_report_target", sod_public_health_intervention_burial_cleanup),
+          (jump_to_menu, "mnu_center_public_health_report"),
+        ]),
+      ("public_health_orders_today",
+        [
+          (is_between, "$g_sod_public_health_report_target", centers_begin, centers_end),
+          (neg|call_script, "script_cf_sod_center_public_health_can_order_intervention", "$g_sod_public_health_report_target"),
+        ],
+        "Orders are already in motion for the neediest fief today.",
+        [
+          (jump_to_menu, "mnu_center_public_health_report"),
+        ]),
+      ("continue", [], "Continue...", [(jump_to_menu, "mnu_fief_reports")]),
+    ]
+  ),
+# [ src/menus/economy/regional_economy_flow_report.py:L1-L124 ] regional_economy_flow_report
+("regional_economy_flow_report", mnf_enable_hot_keys,
+   "{s98}",
+   "none",
+    [
+      (set_background_mesh, "mesh_pic_report_screen"),
+      (str_clear, s98),
 
       (assign, ":first", 1),
       (assign, ":center_count", 0),
@@ -14899,8 +15795,9 @@ or spirit exist and so condemn the priests of false religions and other magician
       (try_for_range, ":i_center", 0, ":no_centers"),
         (call_script, "script_troop_get_leaded_center_with_index", "trp_player", ":i_center"),
         (assign, ":cur_center", reg0),
+        (is_between, ":cur_center", centers_begin, centers_end),
         (val_add, ":center_count", 1),
-        (str_store_party_name, s1, ":cur_center"),
+        (str_store_party_name, s68, ":cur_center"),
         (call_script, "script_sod_get_center_regional_flow_profile", ":cur_center"),
         (assign, ":flow_score", reg0),
         (assign, ":rural_output", reg2),
@@ -14918,98 +15815,101 @@ or spirit exist and so condemn the priests of false religions and other magician
         (assign, ":security_bandit_pressure_pct", reg2),
         (try_begin),
           (eq, ":recommended_mode", 3),
-          (str_store_string, s2, "@castle support"),
+          (str_store_string, s69, "@castle support"),
         (else_try),
           (eq, ":recommended_mode", 2),
-          (str_store_string, s2, "@trade stimulus"),
+          (str_store_string, s69, "@trade stimulus"),
         (else_try),
-          (str_store_string, s2, "@emergency recovery"),
+          (str_store_string, s69, "@emergency recovery"),
         (try_end),
         (try_begin),
           (lt, ":flow_score", 25),
-          (str_store_string, s3, "@regional flow is badly disrupted"),
+          (str_store_string, s70, "@regional flow is badly disrupted"),
         (else_try),
           (lt, ":flow_score", 55),
-          (str_store_string, s3, "@regional flow is strained"),
+          (str_store_string, s70, "@regional flow is strained"),
         (else_try),
           (lt, ":flow_score", 85),
-          (str_store_string, s3, "@regional flow is steady"),
+          (str_store_string, s70, "@regional flow is steady"),
         (else_try),
-          (str_store_string, s3, "@regional flow is strong"),
+          (str_store_string, s70, "@regional flow is strong"),
         (try_end),
 
         (try_begin),
           (gt, ":rural_output", ":market_pull"),
-          (str_store_string, s4, "@villages are feeding the market with room to spare"),
+          (str_store_string, s71, "@villages are feeding the market with room to spare"),
         (else_try),
           (gt, ":market_pull", ":rural_output"),
-          (str_store_string, s4, "@market demand is pulling harder than nearby villages can answer"),
+          (str_store_string, s71, "@market demand is pulling harder than nearby villages can answer"),
         (else_try),
-          (str_store_string, s4, "@village output and market demand are roughly balanced"),
+          (str_store_string, s71, "@village output and market demand are roughly balanced"),
         (try_end),
 
         (try_begin),
           (lt, ":food_security", 35),
-          (str_store_string, s5, "@food stores are fragile"),
+          (str_store_string, s72, "@food stores are fragile"),
         (else_try),
           (lt, ":food_security", 75),
-          (str_store_string, s5, "@food stores are workable if roads stay open"),
+          (str_store_string, s72, "@food stores are workable if roads stay open"),
         (else_try),
-          (str_store_string, s5, "@food stores look secure"),
+          (str_store_string, s72, "@food stores look secure"),
         (try_end),
 
         (try_begin),
           (gt, ":effective_threat", ":security"),
-          (str_store_string, s6, "@threats are overrunning local protection"),
+          (str_store_string, s73, "@threats are overrunning local protection"),
         (else_try),
           (gt, ":security_bandit_pressure_pct", 65),
-          (str_store_string, s6, "@bandit pressure is still troubling the roads"),
+          (str_store_string, s73, "@bandit pressure is still troubling the roads"),
         (else_try),
           (gt, ":security_trade_pct", 70),
-          (str_store_string, s6, "@trade protection is doing useful work"),
+          (str_store_string, s73, "@trade protection is doing useful work"),
         (else_try),
-          (str_store_string, s6, "@security is passable but not reassuring"),
+          (str_store_string, s73, "@security is passable but not reassuring"),
         (try_end),
 
         (try_begin),
           (gt, ":weakness_score", 70),
-          (str_store_string, s7, "@the region shows serious weak points"),
+          (str_store_string, s74, "@the region shows serious weak points"),
         (else_try),
           (lt, ":recovery_strength", 35),
-          (str_store_string, s7, "@recovery is likely to be slow"),
+          (str_store_string, s74, "@recovery is likely to be slow"),
         (else_try),
           (gt, ":tax_pressure", 70),
-          (str_store_string, s7, "@heavy extraction is slowing recovery"),
+          (str_store_string, s74, "@heavy extraction is slowing recovery"),
         (else_try),
-          (str_store_string, s7, "@the region can recover if pressure does not worsen"),
+          (str_store_string, s74, "@the region can recover if pressure does not worsen"),
         (try_end),
 
-        (str_store_string, s8, "@{s1}: {s3}.^Supply: {s4}; {s5}.^Roads: {s6}.^Outlook: {s7}. Recommended investment: {s2}."),
+        (str_store_string, s75, "@{s68}: {s70}.^Supply: {s71}; {s72}.^Roads: {s73}.^Outlook: {s74}. Recommended investment: {s69}."),
         (try_begin),
           (eq, ":first", 1),
-          (str_store_string, s9, "@{s8}"),
+          (str_store_string, s98, "@{s75}"),
           (assign, ":first", 0),
         (else_try),
-          (str_store_string, s9, "@{s9}^^{s8}"),
+          (str_store_string_reg, s97, s98),
+          (str_store_string, s98, "@{s97}^^{s75}"),
         (try_end),
       (try_end),
 
       (try_begin),
         (eq, ":center_count", 0),
-        (str_store_string, s9, "@You do not personally hold any centers."),
+        (str_store_string, s98, "@You do not personally hold any centers."),
       (try_end),
-      (str_store_string, s9, "@Regional Economy Flow Report:^^Villages produce food, cattle, raw materials, recruits, and labor. Towns pull imports and convert rural surplus into wealth and services. Castles turn garrisons, stores, roads, and attached villages into military support. Security infrastructure protects trade volume and recovery, while tax extraction can fund rulers now while slowing liquidity, retention, and recovery later.^^{s9}"),
+      (str_store_string_reg, s97, s98),
+      (str_store_string, s98, "@Regional Economy Flow Report:^^Villages produce food, cattle, raw materials, recruits, and labor. Towns pull imports and convert rural surplus into wealth and services. Castles turn garrisons, stores, roads, and attached villages into military support. Security infrastructure protects trade volume and recovery, while tax extraction can fund rulers now while slowing liquidity, retention, and recovery later.^^{s97}"),
     ],
     [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_fief_reports")]),
     ]
   ),
-# [ src/menus/centers/common/center_goods_market_report.py:L1-L129 ] center_goods_market_report
+# [ src/menus/centers/common/center_goods_market_report.py:L1-L134 ] center_goods_market_report
 ("center_goods_market_report", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
+      (str_clear, s98),
 
       (assign, ":first", 1),
       (assign, ":center_count", 0),
@@ -15033,6 +15933,8 @@ or spirit exist and so condemn the priests of false religions and other magician
         (assign, ":wealth_delta", reg7),
         (assign, ":prosperity_pressure", reg8),
         (assign, ":market_role", reg9),
+        (call_script, "script_sod_center_public_health_brief_to_s0", ":cur_center"),
+        (str_store_string_reg, s12, s0),
 
         (try_begin),
           (eq, ":market_role", 3),
@@ -15111,33 +16013,36 @@ or spirit exist and so condemn the priests of false religions and other magician
         (else_try),
           (str_store_string, s11, "@wealth should stay roughly steady"),
         (try_end),
-        (str_store_string, s8, "@{s1}: locally known as a {s23}; {s2}.^Goods: {s4}; {s5}; {s6}; {s7}.^Market mood: {s10}.^Outlook: {s11}; prosperity signal shows {s3}."),
+        (str_store_string, s8, "@{s1}: locally known as a {s23}; {s2}.^Goods: {s4}; {s5}; {s6}; {s7}.^Public health: {s12}.^Market mood: {s10}.^Outlook: {s11}; prosperity signal shows {s3}."),
 
         (try_begin),
           (eq, ":first", 1),
-          (str_store_string, s9, "@{s8}"),
+          (str_store_string, s98, "@{s8}"),
           (assign, ":first", 0),
         (else_try),
-          (str_store_string, s9, "@{s9}^^{s8}"),
+          (str_store_string_reg, s97, s98),
+          (str_store_string, s98, "@{s97}^^{s8}"),
         (try_end),
       (try_end),
 
       (try_begin),
         (eq, ":center_count", 0),
-        (str_store_string, s9, "@You do not personally hold any centers."),
+        (str_store_string, s98, "@You do not personally hold any centers."),
       (try_end),
-      (str_store_string, s9, "@Center Goods Market Report:^^This is a steward's summary, not fresh road gossip. Trade goods matter as consumption, caravan flow, and center wealth. Villages mainly export food and raw materials, towns turn rural surplus and services into coin, and castles consume food and strategic goods for military support. Scarcity raises demand, but sickness, poor security, and heavy tolls make merchants cautious.^^{s9}"),
+      (str_store_string_reg, s97, s98),
+      (str_store_string, s98, "@Center Goods Market Report:^^This is a steward's summary, not fresh road gossip. Trade goods matter as consumption, caravan flow, and center wealth. Villages mainly export food and raw materials, towns turn rural surplus and services into coin, and castles consume food and strategic goods for military support. Scarcity raises demand, but sickness, poor security, and heavy tolls make merchants cautious.^^{s97}"),
     ],
     [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_fief_reports")]),
     ]
   ),
-# [ src/menus/economy/town_market_report.py:L1-L121 ] town_market_report
+# [ src/menus/economy/town_market_report.py:L1-L124 ] town_market_report
 ("town_market_report", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
+      (str_clear, s98),
 
       (assign, ":first", 1),
       (assign, ":town_count", 0),
@@ -15149,7 +16054,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         (is_between, ":cur_center", towns_begin, towns_end),
         (val_add, ":town_count", 1),
 
-        (str_store_party_name, s1, ":cur_center"),
+        (str_store_party_name, s68, ":cur_center"),
         (call_script, "script_sod_get_town_market_profile", ":cur_center"),
         (assign, ":market_score", reg0),
         (assign, ":rural_surplus", reg1),
@@ -15168,96 +16073,99 @@ or spirit exist and so condemn the priests of false religions and other magician
         (assign, ":security_bandit_pressure_pct", reg2),
         (try_begin),
           (lt, ":market_score", 25),
-          (str_store_string, s2, "@The market is sputtering and merchants are cautious"),
+          (str_store_string, s69, "@The market is sputtering and merchants are cautious"),
         (else_try),
           (lt, ":market_score", 55),
-          (str_store_string, s2, "@The market is strained but still moving"),
+          (str_store_string, s69, "@The market is strained but still moving"),
         (else_try),
           (lt, ":market_score", 85),
-          (str_store_string, s2, "@The market is steady and broadly dependable"),
+          (str_store_string, s69, "@The market is steady and broadly dependable"),
         (else_try),
-          (str_store_string, s2, "@The market is lively, confident, and drawing trade"),
+          (str_store_string, s69, "@The market is lively, confident, and drawing trade"),
         (try_end),
 
         (try_begin),
           (gt, ":rural_surplus", ":consumption_pressure"),
-          (str_store_string, s3, "@local supply is covering most town needs"),
+          (str_store_string, s70, "@local supply is covering most town needs"),
         (else_try),
           (gt, ":import_demand", 60),
-          (str_store_string, s3, "@the town is leaning heavily on imports"),
+          (str_store_string, s70, "@the town is leaning heavily on imports"),
         (else_try),
-          (str_store_string, s3, "@local supply is uneven and merchants are filling gaps"),
+          (str_store_string, s70, "@local supply is uneven and merchants are filling gaps"),
         (try_end),
 
         (try_begin),
           (lt, ":food_security", 35),
-          (str_store_string, s4, "@granaries look thin"),
+          (str_store_string, s71, "@granaries look thin"),
         (else_try),
           (lt, ":food_security", 75),
-          (str_store_string, s4, "@granaries should hold if roads stay open"),
+          (str_store_string, s71, "@granaries should hold if roads stay open"),
         (else_try),
-          (str_store_string, s4, "@granaries look comfortable for now"),
+          (str_store_string, s71, "@granaries look comfortable for now"),
         (try_end),
 
         (try_begin),
           (gt, ":effective_threat", ":security"),
-          (str_store_string, s5, "@road danger is outpacing the watch"),
+          (str_store_string, s72, "@road danger is outpacing the watch"),
         (else_try),
           (gt, ":security_bandit_pressure_pct", 65),
-          (str_store_string, s5, "@bandits are still testing the approaches"),
+          (str_store_string, s72, "@bandits are still testing the approaches"),
         (else_try),
           (gt, ":security_trade_pct", 70),
-          (str_store_string, s5, "@guards and patrols are keeping trade mostly safe"),
+          (str_store_string, s72, "@guards and patrols are keeping trade mostly safe"),
         (else_try),
-          (str_store_string, s5, "@the roads are passable but not truly secure"),
+          (str_store_string, s72, "@the roads are passable but not truly secure"),
         (try_end),
 
         (try_begin),
           (gt, ":tax_pressure", 70),
-          (str_store_string, s6, "@tax pressure is biting into merchant confidence"),
+          (str_store_string, s73, "@tax pressure is biting into merchant confidence"),
         (else_try),
           (gt, ":tax_reliability", 65),
-          (str_store_string, s6, "@tax collection is orderly without choking trade"),
+          (str_store_string, s73, "@tax collection is orderly without choking trade"),
         (else_try),
-          (str_store_string, s6, "@tax collection is uneven and leaves coin on the table"),
+          (str_store_string, s73, "@tax collection is uneven and leaves coin on the table"),
         (try_end),
 
         (try_begin),
           (lt, ":recovery_rate", 30),
-          (str_store_string, s7, "@recovery will be slow without better food or safety"),
+          (str_store_string, s74, "@recovery will be slow without better food or safety"),
         (else_try),
           (lt, ":liquidity", 45),
-          (str_store_string, s7, "@cash is tight, so recovery may come in fits and starts"),
+          (str_store_string, s74, "@cash is tight, so recovery may come in fits and starts"),
         (else_try),
-          (str_store_string, s7, "@recovery prospects look healthy if conditions hold"),
+          (str_store_string, s74, "@recovery prospects look healthy if conditions hold"),
         (try_end),
 
-        (str_store_string, s8, "@{s1}: {s2}.^Supply: {s3}; {s4}.^Roads: {s5}.^Revenue: {s6}; {s7}."),
+        (str_store_string, s75, "@{s68}: {s69}.^Supply: {s70}; {s71}.^Roads: {s72}.^Revenue: {s73}; {s74}."),
         (try_begin),
           (eq, ":first", 1),
-          (str_store_string, s9, "@{s8}"),
+          (str_store_string, s98, "@{s75}"),
           (assign, ":first", 0),
         (else_try),
-          (str_store_string, s9, "@{s9}^^{s8}"),
+          (str_store_string_reg, s97, s98),
+          (str_store_string, s98, "@{s97}^^{s75}"),
         (try_end),
       (try_end),
 
       (try_begin),
         (eq, ":town_count", 0),
-        (str_store_string, s9, "@You do not personally hold any towns."),
+        (str_store_string, s98, "@You do not personally hold any towns."),
       (try_end),
-      (str_store_string, s9, "@Town Market Report:^^Towns are market engines. They consume more than villages, draw imports when local supply is weak, convert rural surplus into liquidity, support craftsmen and services, and recover fastest when food and security are stable. Security infrastructure protects trade volume, lowers bandit pressure, and helps recovery; high extraction raises immediate revenue but depresses merchants, retention, liquidity, and recovery.^^{s9}"),
+      (str_store_string_reg, s97, s98),
+      (str_store_string, s98, "@Town Market Report:^^Towns are market engines. They consume more than villages, draw imports when local supply is weak, convert rural surplus into liquidity, support craftsmen and services, and recover fastest when food and security are stable. Security infrastructure protects trade volume, lowers bandit pressure, and helps recovery; high extraction raises immediate revenue but depresses merchants, retention, liquidity, and recovery.^^{s97}"),
     ],
     [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_fief_reports")]),
     ]
   ),
-# [ src/menus/economy/castle_support_report.py:L1-L157 ] castle_support_report
+# [ src/menus/economy/castle_support_report.py:L1-L160 ] castle_support_report
 ("castle_support_report", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
+      (str_clear, s98),
 
       (assign, ":first", 1),
       (assign, ":castle_count", 0),
@@ -15269,7 +16177,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         (is_between, ":cur_center", castles_begin, castles_end),
         (val_add, ":castle_count", 1),
 
-        (str_store_party_name, s1, ":cur_center"),
+        (str_store_party_name, s68, ":cur_center"),
         (call_script, "script_sod_get_castle_support_profile", ":cur_center"),
         (assign, ":support_score", reg0),
         (assign, ":garrison", reg1),
@@ -15287,133 +16195,136 @@ or spirit exist and so condemn the priests of false religions and other magician
         (assign, ":village_protection", reg16),
         (try_begin),
           (lt, ":support_score", 30),
-          (str_store_string, s2, "@support is fragile and mostly local"),
+          (str_store_string, s69, "@support is fragile and mostly local"),
         (else_try),
           (lt, ":support_score", 65),
-          (str_store_string, s2, "@support is serviceable but uneven"),
+          (str_store_string, s69, "@support is serviceable but uneven"),
         (else_try),
           (lt, ":support_score", 90),
-          (str_store_string, s2, "@support is dependable"),
+          (str_store_string, s69, "@support is dependable"),
         (else_try),
-          (str_store_string, s2, "@support is strong enough to shape the surrounding roads"),
+          (str_store_string, s69, "@support is strong enough to shape the surrounding roads"),
         (try_end),
 
         (try_begin),
           (lt, ":garrison", 80),
-          (str_store_string, s3, "@the garrison is thin"),
+          (str_store_string, s70, "@the garrison is thin"),
         (else_try),
           (lt, ":garrison", 180),
-          (str_store_string, s3, "@the garrison can hold ordinary trouble"),
+          (str_store_string, s70, "@the garrison can hold ordinary trouble"),
         (else_try),
-          (str_store_string, s3, "@the garrison is a serious military presence"),
+          (str_store_string, s70, "@the garrison is a serious military presence"),
         (try_end),
 
         (try_begin),
           (lt, ":food_security", 35),
-          (str_store_string, s4, "@stores are a worry"),
+          (str_store_string, s71, "@stores are a worry"),
         (else_try),
           (lt, ":food_security", 75),
-          (str_store_string, s4, "@stores should hold if roads remain open"),
+          (str_store_string, s71, "@stores should hold if roads remain open"),
         (else_try),
-          (str_store_string, s4, "@stores are reassuring"),
+          (str_store_string, s71, "@stores are reassuring"),
         (try_end),
 
         (try_begin),
           (lt, ":road_control", 35),
-          (str_store_string, s5, "@road control is weak"),
+          (str_store_string, s72, "@road control is weak"),
         (else_try),
           (lt, ":road_control", 70),
-          (str_store_string, s5, "@road control is contested"),
+          (str_store_string, s72, "@road control is contested"),
         (else_try),
-          (str_store_string, s5, "@road control is firm"),
+          (str_store_string, s72, "@road control is firm"),
         (try_end),
 
         (try_begin),
           (eq, ":noble_access", 1),
-          (str_store_string, s6, "@the noble chapter is active"),
+          (str_store_string, s73, "@the noble chapter is active"),
         (else_try),
-          (str_store_string, s6, "@no noble chapter is active"),
+          (str_store_string, s73, "@no noble chapter is active"),
         (try_end),
 
         (try_begin),
           (lt, ":military_power", 45),
-          (str_store_string, s7, "@military power is limited"),
+          (str_store_string, s74, "@military power is limited"),
         (else_try),
           (lt, ":siege_readiness", 50),
-          (str_store_string, s7, "@military power is useful, though siege readiness lags"),
+          (str_store_string, s74, "@military power is useful, though siege readiness lags"),
         (else_try),
-          (str_store_string, s7, "@military power is ready for hard service"),
+          (str_store_string, s74, "@military power is ready for hard service"),
         (try_end),
 
         (try_begin),
           (lt, ":commander_quality", 35),
-          (str_store_string, s10, "@command is uncertain"),
+          (str_store_string, s75, "@command is uncertain"),
         (else_try),
           (lt, ":commander_quality", 70),
-          (str_store_string, s10, "@command is competent"),
+          (str_store_string, s75, "@command is competent"),
         (else_try),
-          (str_store_string, s10, "@command is sharp"),
+          (str_store_string, s75, "@command is sharp"),
         (try_end),
 
         (try_begin),
           (lt, ":patrol_strength", 35),
-          (str_store_string, s11, "@patrols are too light to reassure the villages"),
+          (str_store_string, s76, "@patrols are too light to reassure the villages"),
         (else_try),
           (lt, ":village_protection", 55),
-          (str_store_string, s11, "@patrols cover the roads better than the villages"),
+          (str_store_string, s76, "@patrols cover the roads better than the villages"),
         (else_try),
           (lt, ":patrol_strength", 75),
-          (str_store_string, s11, "@patrols are present enough to matter"),
+          (str_store_string, s76, "@patrols are present enough to matter"),
         (else_try),
-          (str_store_string, s11, "@patrols are strong and visible"),
+          (str_store_string, s76, "@patrols are strong and visible"),
         (try_end),
 
         (try_begin),
           (lt, ":garrison_recovery", 35),
-          (str_store_string, s12, "@recovery is slow"),
+          (str_store_string, s77, "@recovery is slow"),
         (else_try),
           (lt, ":recruitment_quality", 45),
-          (str_store_string, s12, "@recovery is possible, but recruitment quality is uneven"),
+          (str_store_string, s77, "@recovery is possible, but recruitment quality is uneven"),
         (else_try),
-          (str_store_string, s12, "@recovery and recruitment look healthy"),
+          (str_store_string, s77, "@recovery and recruitment look healthy"),
         (try_end),
 
         (try_begin),
           (lt, ":bound_villages", 1),
-          (str_store_string, s13, "@no villages feed this estate directly"),
+          (str_store_string, s78, "@no villages feed this estate directly"),
         (else_try),
           (lt, ":bound_population", 700),
-          (str_store_string, s13, "@its attached villages are modest"),
+          (str_store_string, s78, "@its attached villages are modest"),
         (else_try),
-          (str_store_string, s13, "@its attached villages give it a meaningful base"),
+          (str_store_string, s78, "@its attached villages give it a meaningful base"),
         (try_end),
 
-        (str_store_string, s8, "@{s1}: {s2}; {s13}.^Garrison: {s3}; {s4}.^Roads: {s5}; {s11}.^Command: {s10}; {s7}; {s6}.^Outlook: {s12}."),
+        (str_store_string, s79, "@{s68}: {s69}; {s78}.^Garrison: {s70}; {s71}.^Roads: {s72}; {s76}.^Command: {s75}; {s74}; {s73}.^Outlook: {s77}."),
         (try_begin),
           (eq, ":first", 1),
-          (str_store_string, s9, "@{s8}"),
+          (str_store_string, s98, "@{s79}"),
           (assign, ":first", 0),
         (else_try),
-          (str_store_string, s9, "@{s9}^^{s8}"),
+          (str_store_string_reg, s97, s98),
+          (str_store_string, s98, "@{s97}^^{s79}"),
         (try_end),
       (try_end),
 
       (try_begin),
         (eq, ":castle_count", 0),
-        (str_store_string, s9, "@You do not personally hold any castles."),
+        (str_store_string, s98, "@You do not personally hold any castles."),
       (try_end),
-      (str_store_string, s9, "@Castle Support Report:^^Castles are military estates. Their strength comes from garrisons, attached villages, stores, road control, commander quality, siege readiness, and noble access.^^{s9}"),
+      (str_store_string_reg, s97, s98),
+      (str_store_string, s98, "@Castle Support Report:^^Castles are military estates. Their strength comes from garrisons, attached villages, stores, road control, commander quality, siege readiness, and noble access.^^{s97}"),
     ],
     [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_fief_reports")]),
     ]
   ),
-# [ src/menus/prisoners/prisoner_economy_report.py:L1-L36 ] prisoner_economy_report
+# [ src/menus/prisoners/prisoner_economy_report.py:L1-L45 ] prisoner_economy_report
 ("prisoner_economy_report", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
+      (str_clear, s98),
 
       (assign, ":first", 1),
       (assign, ":center_count", 0),
@@ -15426,34 +16337,43 @@ or spirit exist and so condemn the priests of false religions and other magician
         (call_script, "script_sod_center_prisoner_report_to_s20", ":cur_center"),
         (try_begin),
           (eq, ":first", 1),
-          (str_store_string, s9, "@{s20}"),
+          (str_store_string, s98, "@{s20}"),
           (assign, ":first", 0),
         (else_try),
-          (str_store_string, s9, "@{s9}^^{s20}"),
+          (str_store_string_reg, s97, s98),
+          (str_store_string, s98, "@{s97}^^{s20}"),
         (try_end),
       (try_end),
 
       (try_begin),
         (eq, ":center_count", 0),
-        (str_store_string, s9, "@You do not personally hold any centers."),
+        (str_store_string, s98, "@You do not personally hold any centers."),
       (try_end),
-      (str_store_string, s9, "@Prisoner Economy Report:^^Non-hero captives now move through prisoner pools, guarded trains, ransom and exchange pressure, forced labor, trials, and liberation outcomes. Prison Towers raise safe capacity and reduce escape pressure; overcrowded holdings can create unrest and make prisoner logistics worth managing.^^{s9}"),
+      (assign, reg20, "$g_sod_prisoner_logistics_snapshot_day"),
+      (assign, reg21, "$g_sod_prisoner_active_trains"),
+      (assign, reg22, "$g_sod_prisoner_overflow_candidate_centers"),
+      (assign, reg23, "$g_sod_prisoner_policy_candidate_centers"),
+      (assign, reg24, "$g_sod_prisoner_patrol_scan_allowed"),
+      (str_store_string, s96, "@Last logistics snapshot: day {reg20}; active trains {reg21}; overflow centers {reg22}; policy-demand centers {reg23}; patrol scan {reg24?open:closed}."),
+      (str_store_string_reg, s97, s98),
+      (str_store_string, s98, "@Prisoner Economy Report:^^Non-hero captives now move through prisoner pools, guarded trains, ransom and exchange pressure, forced labor, trials, and liberation outcomes. Prison Towers raise safe capacity and reduce escape pressure; overcrowded holdings can create unrest and make prisoner logistics worth managing.^^{s96}^^{s97}"),
     ],
     [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_fief_reports")]),
     ]
   ),
-# [ src/menus/prisoners/prisoner_train_orders.py:L1-L220 ] prisoner_train_orders
+# [ src/menus/prisoners/prisoner_train_orders.py:L1-L222 ] prisoner_train_orders
 ("prisoner_train_orders", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
-      (str_store_string, s9, "@Prisoner Train Orders:^^Choose how your most strained prisoner holding should move its non-hero captives. The order will use the eligible fief with the highest prisoner pressure, then pick a valid destination by policy, infrastructure, and route risk."),
+      (str_store_string, s98, "@Prisoner Train Orders:^^Choose how your most strained prisoner holding should move its non-hero captives. The order will use the eligible fief with the highest prisoner pressure, then pick a valid destination by policy, infrastructure, and route risk."),
       (try_begin),
         (gt, "$g_sod_prisoner_train_quest_party", 0),
         (call_script, "script_sod_prisoner_train_quest_status_to_s20"),
-        (str_store_string, s9, "@{s9}^^{s20}"),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^^{s20}"),
       (try_end),
     ],
     [
@@ -15542,20 +16462,21 @@ or spirit exist and so condemn the priests of false religions and other magician
   ),
 
 ("prisoner_train_order_confirm", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
       (call_script, "script_sod_player_prepare_prisoner_train_order", "$g_sod_player_prisoner_train_purpose"),
       (try_begin),
         (eq, reg0, 1),
-        (str_store_string, s9, "@Order prisoner train:^^Origin: {s20}^{s23} destination: {s21}^Captives available: {reg20}^Cost: {reg21} denars and {reg22} food items.^^Companion objections: {reg23}."),
+        (str_store_string, s98, "@Order prisoner train:^^Origin: {s20}^{s23} destination: {s21}^Captives available: {reg20}^Cost: {reg21} denars and {reg22} food items.^^Companion objections: {reg23}."),
         (try_begin),
           (gt, reg23, 0),
-          (str_store_string, s9, "@{s9}^^Warning: anti-slavery companions object strongly to slave labor and slaver sales."),
+          (str_store_string_reg, s97, s98),
+          (str_store_string, s98, "@{s97}^^Warning: anti-slavery companions object strongly to slave labor and slaver sales."),
         (try_end),
       (else_try),
-        (str_store_string, s9, "@No eligible prisoner train order can be formed under current policy, infrastructure, or prisoner pressure."),
+        (str_store_string, s98, "@No eligible prisoner train order can be formed under current policy, infrastructure, or prisoner pressure."),
       (try_end),
     ],
     [
@@ -15606,11 +16527,11 @@ or spirit exist and so condemn the priests of false religions and other magician
   ),
 
 ("prisoner_policy_orders", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
-      (str_store_string, s9, "@Realm Prisoner Policy:^^This policy shapes labor trains, slaver-market access, companion reactions, and diplomatic reputation. It does not instantly move captives; use prisoner train orders for that."),
+      (str_store_string, s98, "@Realm Prisoner Policy:^^This policy shapes labor trains, slaver-market access, companion reactions, and diplomatic reputation. It does not instantly move captives; use prisoner train orders for that."),
     ],
     [
       ("policy_none", [], "No forced labor: hold, ransom, exchange, or release captives.",
@@ -15628,12 +16549,12 @@ or spirit exist and so condemn the priests of false religions and other magician
   ),
 
 ("prisoner_local_holding_orders", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
       (call_script, "script_sod_player_prepare_prisoner_local_policy_target"),
-      (str_store_string, s9, "@Local Prisoner Holding:^^Current priority fief: {s20}.^^Use this for the holding that is under the most prisoner pressure. Prison Towers improve capacity, order, and escape control; local holding policy tunes how this fief handles captives before trains are formed."),
+      (str_store_string, s98, "@Local Prisoner Holding:^^Current priority fief: {s20}.^^Use this for the holding that is under the most prisoner pressure. Prison Towers improve capacity, order, and escape control; local holding policy tunes how this fief handles captives before trains are formed."),
     ],
     [
       ("build_tower",
@@ -15662,12 +16583,13 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("back", [], "Go back.", [(jump_to_menu, "mnu_prisoner_train_orders")]),
     ]
   ),
-# [ src/menus/kingdom/fief_trade_pressure_report.py:L1-L187 ] fief_trade_pressure_report
+# [ src/menus/kingdom/fief_trade_pressure_report.py:L1-L190 ] fief_trade_pressure_report
 ("fief_trade_pressure_report", mnf_enable_hot_keys,
-   "Trade and Prosperity Report:^^{s9}",
+   "Trade and Prosperity Report:^^{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
+      (str_clear, s98),
       (store_current_day, ":current_day"),
       (assign, ":total_prosperity", 0),
       (assign, ":report_count", 0),
@@ -15821,10 +16743,11 @@ or spirit exist and so condemn the priests of false religions and other magician
 
             (try_begin),
               (eq, ":first", 1),
-              (str_store_string, s9, "@{s8}"),
+              (str_store_string, s98, "@{s8}"),
               (assign, ":first", 0),
             (else_try),
-              (str_store_string, s9, "@{s9}^^{s8}"),
+              (str_store_string_reg, s97, s98),
+              (str_store_string, s98, "@{s97}^^{s8}"),
             (try_end),
           (try_end),
         (try_end),
@@ -15835,12 +16758,13 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_get_prosperity_text", s8, ":avg_prosperity"),
           (assign, reg2, ":report_count"),
           (store_sub, reg0, reg2, 1),
-          (str_store_string, s9, "@Average prosperity across your listed centers is: {s8}.^^{s9}"),
+          (str_store_string_reg, s97, s98),
+          (str_store_string, s98, "@Average prosperity across your listed centers is: {s8}.^^{s97}"),
         (else_try),
-          (str_store_string, s9, "@You do not currently govern any towns or villages. Castles are excluded from this report."),
+          (str_store_string, s98, "@You do not currently govern any towns or villages. Castles are excluded from this report."),
         (try_end),
       (else_try),
-        (str_store_string, s9, "@You don't have any fiefs!"),
+        (str_store_string, s98, "@You don't have any fiefs!"),
       (try_end),
 
     ],
@@ -15848,9 +16772,9 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_fief_reports")]),
     ]
   ),
-# [ src/menus/kingdom/fief_under_construction_report.py:L1-L60 ] fief_under_construction_report
+# [ src/menus/kingdom/fief_under_construction_report.py:L1-L63 ] fief_under_construction_report
 ("fief_under_construction_report", mnf_enable_hot_keys,
-   "Current Construction Report:^^{s2}",
+   "Current Construction Report:^^{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
@@ -15859,9 +16783,11 @@ or spirit exist and so condemn the priests of false religions and other magician
         (assign, "$g_sod_construction_report_return_menu", "mnu_fief_reports"),
       (try_end),
 
-      (str_clear, s1),
-      (str_clear, s2),
-      (str_clear, s20),
+      (str_clear, s68),
+      (str_clear, s69),
+      (str_clear, s97),
+      (str_clear, s98),
+      (str_clear, s99),
 
       (assign, ":no_centers", 0),
       (assign, ":num_in_report", 0),
@@ -15880,16 +16806,17 @@ or spirit exist and so condemn the priests of false religions and other magician
           (val_add, ":num_in_report", 1),
 
           # generate the report for this location
-          (call_script, "script_describe_current_project", s20, ":cur_center"),
-          (str_store_party_name, s1, ":cur_center"),
-          (str_store_string, s1, "@{s1}: {s20}"),
+          (call_script, "script_describe_current_project", s69, ":cur_center"),
+          (str_store_party_name, s68, ":cur_center"),
+          (str_store_string, s99, "@{s68}: {s69}"),
 
           # concatenate together
           (try_begin),
             (eq, ":num_in_report", 1),
-            (str_store_string_reg, s2, s1),
+            (str_store_string_reg, s98, s99),
           (else_try),
-            (str_store_string, s2, "@{s2}^^{s1}"),
+            (str_store_string_reg, s97, s98),
+            (str_store_string, s98, "@{s97}^^{s99}"),
           (try_end),
         (try_end),
       (try_end),
@@ -15897,51 +16824,69 @@ or spirit exist and so condemn the priests of false religions and other magician
       # store the final report
       (try_begin),
         (eq, ":no_centers", 0),
-        (str_store_string, s2, "@You do not currently control any manageable fiefs for construction."),
+        (str_store_string, s98, "@You do not currently control any manageable fiefs for construction."),
       (else_try),
         (eq, ":num_in_report", 0),
-        (str_store_string, s2, "@No construction projects are currently happening in any of your fiefs."),
+        (str_store_string, s98, "@No construction projects are currently underway in any of your fiefs."),
       (try_end),
     ],
     [
       ("continue", [], "Continue...", [(jump_to_menu, "$g_sod_construction_report_return_menu")]),
     ]
   ),
-# [ src/menus/centers/common/give_center_to_player_accept.py:L1-L28 ] give_center_to_player
+# [ src/menus/centers/common/give_center_to_player_accept.py:L1-L40 ] give_center_to_player
 (
     "give_center_to_player", mnf_scale_picture,
     "Your lord offers to extend your fiefs! {s1} sends word that he is willing to grant {s2} to you in payment for your loyal service, adding it to your holdings.{reg4? A castle grant is a high honor: it carries real military power, noble obligations, and command over its attached villages.:} What is your answer?",
     "none",
     [(set_background_mesh, "mesh_pic_messenger"),
-     (store_faction_of_party, ":center_faction", "$g_center_to_give_to_player"),
-     (faction_get_slot, ":faction_leader", ":center_faction", slot_faction_leader),
-     (call_script, "script_store_troop_name", s1, ":faction_leader"),
-     (str_store_party_name, s2, "$g_center_to_give_to_player"),
+     (str_store_string, s1, "@your lord"),
+     (str_store_string, s2, "@the disputed fief"),
      (assign, reg4, 0),
      (try_begin),
-       (party_slot_eq, "$g_center_to_give_to_player", slot_party_type, spt_castle),
-       (assign, reg4, 1),
+       (is_between, "$g_center_to_give_to_player", centers_begin, centers_end),
+       (store_faction_of_party, ":center_faction", "$g_center_to_give_to_player"),
+       (faction_get_slot, ":faction_leader", ":center_faction", slot_faction_leader),
+       (try_begin),
+         (is_between, ":faction_leader", kingdom_heroes_begin, kingdom_heroes_end),
+         (call_script, "script_store_troop_name", s1, ":faction_leader"),
+       (try_end),
+       (str_store_party_name, s2, "$g_center_to_give_to_player"),
+       (try_begin),
+         (party_slot_eq, "$g_center_to_give_to_player", slot_party_type, spt_castle),
+         (assign, reg4, 1),
+       (try_end),
      (try_end),
     ],
     [
-      ("give_center_to_player_accept", [], "Accept the offer.",
+      ("give_center_to_player_accept", [(is_between, "$g_center_to_give_to_player", centers_begin, centers_end)], "Accept the offer.",
        [(call_script, "script_give_center_to_lord", "$g_center_to_give_to_player", "trp_player", 0),
         (jump_to_menu, "mnu_give_center_to_player_2"),
         ]),
-      ("give_center_to_player_reject", [], "Reject. You have no interest in holding {s2}.",
+      ("give_center_to_player_reject", [(is_between, "$g_center_to_give_to_player", centers_begin, centers_end)], "Reject. You have no interest in holding {s2}.",
        [(party_set_slot, "$g_center_to_give_to_player", slot_town_lord, stl_rejected_by_player),
+        (change_screen_return),
+        ]),
+      ("give_center_to_player_invalid_return", [(neg|is_between, "$g_center_to_give_to_player", centers_begin, centers_end)], "Let the matter pass.",
+       [(assign, "$g_center_to_give_to_player", -1),
         (change_screen_return),
         ]),
     ],
   ),
-# [ src/menus/other/go_back_dot.py:L1-L104 ] tournament_bet
+# [ src/menus/other/go_back_dot.py:L1-L110 ] tournament_bet
 (
     "tournament_bet", 0,
-    "The odds against you are {reg5} to {reg6}{reg1? You have already made regular bets of {reg1} denars on yourself, and if you win, you will earn {reg2} denars.:}{s2}^^ How much do you want to bet?",
+    "The odds against you are {reg5} to {reg6}{s68}{s2}^^ How much do you want to bet?",
     "none",
     [
       (assign, reg1, "$g_tournament_bet_placed"),
       (store_add, reg2, "$g_tournament_bet_win_amount", "$g_tournament_bet_placed"),
+      (try_begin),
+        (gt, reg1, 0),
+        (str_store_string, s68, "@ You have already made regular bets of {reg1} denars on yourself, and if you win, you will earn {reg2} denars."),
+      (else_try),
+        (str_clear, s68),
+      (try_end),
       (call_script, "script_get_win_amount_for_tournament_bet"),
       (assign, ":player_odds", reg0),
       (assign, ":min_dif", 100000),
@@ -16208,7 +17153,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       ),
 
 	    (
-        "bet_1000", [(store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 1000),  (ge, "$g_tournament_cur_tier", 1), (lt, reg9, 9) ],
+        "bet_1000_later", [(store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 1000),  (ge, "$g_tournament_cur_tier", 1), (lt, reg9, 9) ],
         "I bet 1,000 denars for 1,700.",
         [
 		  (call_script, "script_sod_player_charge_gold", 1000),
@@ -16230,7 +17175,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       ),
 
 	  	  (
-        "bet_500", [ (ge, reg9, 8) ],   # if other bets aren't available there is always someone to accept that
+        "bet_500_last_bookmaker", [ (ge, reg9, 8) ],   # if other bets aren't available there is always someone to accept that
         "I bet 500 denars for 800.",
         [
 		  (call_script, "script_sod_player_charge_gold", 500),
@@ -16243,7 +17188,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("go_back_dot", [], "Go back.", [ (jump_to_menu, "mnu_town_tournament"), ]),
 
 	  ]),
-# [ src/menus/other/go_back_dot_03.py:L1-L23 ] tournament_participants
+# [ src/menus/other/go_back_dot_03.py:L1-L24 ] tournament_participants
 (
     "tournament_participants", 0,
     "You ask one of the criers for the names of the tournament participants. They are:^{s11}",
@@ -16256,7 +17201,8 @@ or spirit exist and so condemn the priests of false religions and other magician
       (try_for_range, ":cur_slot", 0, ":num_participants"),
         (troop_get_slot, ":troop_no", "trp_tournament_participants", ":cur_slot"),
         (call_script, "script_store_troop_name", s12, ":troop_no"),
-        (str_store_string, s11, "@{s11}^{s12}"),
+        (str_store_string_reg, s97, s11),
+        (str_store_string, s11, "@{s97}^{s12}"),
       (try_end),
     ],
     [
@@ -16391,64 +17337,73 @@ or spirit exist and so condemn the priests of false religions and other magician
       ),
     ]
   ),
-# [ src/menus/jotnar/jc_choose_bet.py:L1-L66 ] jc_choose_bet
+# [ src/menus/jotnar/jc_choose_bet.py:L1-L75 ] jc_choose_bet
 ("jc_choose_bet", 0, 
-  "Your opponent has selected the following equipment:^{s1}^^Current bet: {reg1?{reg1} denars:no bet}",
+  "Your opponent has selected the following equipment:^{s69}^^Current bet: {s68}",
   "none",[
   (quest_get_slot, ":opp_troop", "qst_jotnar_clan_competition", slot_quest_target_troop),
   (try_begin),
 	(eq, ":opp_troop", "trp_jotnar_clan_jarl"),
-	(str_store_string, s1, "@Medium Armor"),
-	(str_store_string, s1, "@{s1}, Two Handed Sword"),
+	(str_store_string, s69, "@Medium Armor, Two Handed Sword"),
   (else_try),
 	(eq, ":opp_troop", "trp_jotnar_clan_einherjar"),
-	(str_store_string, s1, "@Medium Armor"),
-	(str_store_string, s1, "@{s1}, Two Handed Axe"),
+	(str_store_string, s69, "@Medium Armor, Two Handed Axe"),
   (else_try),
 	(eq, ":opp_troop", "trp_jotnar_clan_valkyrie"),
-	(str_store_string, s1, "@Light Armor"),
-	(str_store_string, s1, "@{s1}, One Handed Sword"),
-	(str_store_string, s1, "@{s1}, Shield"),
-	(str_store_string, s1, "@{s1}, Bow and Arrows"),
-	(str_store_string, s1, "@{s1}, Horse"),
+	(str_store_string, s69, "@Light Armor, One Handed Sword, Shield, Bow and Arrows, Horse"),
   (else_try),
 	(eq, ":opp_troop", "trp_jotnar_clan_disir"),
-	(str_store_string, s1, "@Medium Armor"),
-	(str_store_string, s1, "@{s1}, One Handed Axe"),
-	(str_store_string, s1, "@{s1}, Shield"),
-	(str_store_string, s1, "@{s1}, Bow and Arrows"),
-	(str_store_string, s1, "@{s1}, Horse"),
+	(str_store_string, s69, "@Medium Armor, One Handed Axe, Shield, Bow and Arrows, Horse"),
   (try_end),
   (assign, reg1, "$g_jotnar_clan_competition_bet"),
+  (try_begin),
+    (gt, reg1, 0),
+    (str_store_string, s68, "@{reg1} denars"),
+  (else_try),
+    (str_store_string, s68, "@no bet"),
+  (try_end),
   ],
   [
   ("fight", [], "Fight.", [
-  (quest_get_slot, ":opp_troop", "qst_jotnar_clan_competition", slot_quest_target_troop),
-  (modify_visitors_at_site, "scn_jotnar_clan_arena"),
-  (reset_visitors),
   (try_begin),
-	(eq, ":opp_troop", "trp_jotnar_clan_jarl"),
-	(set_visitor, 11, ":opp_troop"),
-	(set_visitor, 21, "trp_player"),
+    (gt, "$g_jotnar_clan_competition_bet", 0),
+    (store_troop_gold, ":gold", "trp_player"),
+    (lt, ":gold", "$g_jotnar_clan_competition_bet"),
+    (display_message, "@You no longer have enough coin to cover that wager.", warning_color),
+    (jump_to_menu, "mnu_jc_choose_bet"),
   (else_try),
-	(eq, ":opp_troop", "trp_jotnar_clan_einherjar"),
-	(set_visitor, 12, ":opp_troop"),
-	(set_visitor, 22, "trp_player"),
-  (else_try),
-	(eq, ":opp_troop", "trp_jotnar_clan_valkyrie"),
-	(set_visitor, 13, ":opp_troop"),
-	(set_visitor, 23, "trp_player"),
-  (else_try),
-	(set_visitor, 14, ":opp_troop"),
-	(set_visitor, 24, "trp_player"),
+    (try_begin),
+      (gt, "$g_jotnar_clan_competition_bet", 0),
+      (call_script, "script_sod_player_charge_gold", "$g_jotnar_clan_competition_bet"),
+      (eq, reg1, 1),
+      (play_sound, "snd_money_paid"),
+    (try_end),
+    (quest_get_slot, ":opp_troop", "qst_jotnar_clan_competition", slot_quest_target_troop),
+    (modify_visitors_at_site, "scn_jotnar_clan_arena"),
+    (reset_visitors),
+    (try_begin),
+      (eq, ":opp_troop", "trp_jotnar_clan_jarl"),
+      (set_visitor, 11, ":opp_troop"),
+      (set_visitor, 21, "trp_player"),
+    (else_try),
+      (eq, ":opp_troop", "trp_jotnar_clan_einherjar"),
+      (set_visitor, 12, ":opp_troop"),
+      (set_visitor, 22, "trp_player"),
+    (else_try),
+      (eq, ":opp_troop", "trp_jotnar_clan_valkyrie"),
+      (set_visitor, 13, ":opp_troop"),
+      (set_visitor, 23, "trp_player"),
+    (else_try),
+      (set_visitor, 14, ":opp_troop"),
+      (set_visitor, 24, "trp_player"),
+    (try_end),
+    (set_jump_mission, "mt_jotnar_clan_arena"),
+    (jump_to_scene, "scn_jotnar_clan_arena"),
+    (change_screen_mission),
   (try_end),
-  # (call_script, "script_sod_player_charge_gold", "$g_jotnar_clan_competition_bet"),
-  (set_jump_mission, "mt_jotnar_clan_arena"),
-  (jump_to_scene, "scn_jotnar_clan_arena"),
-  (change_screen_mission),
   ]),
   
-  ("change_bet", [], "Change bet value.", [
+  ("change_bet", [], "Change wager.", [
   (assign, "$g_next_menu", "mnu_jc_choose_bet"),
   (jump_to_menu, "mnu_jc_change_bet"),]),
   
@@ -16459,7 +17414,7 @@ or spirit exist and so condemn the priests of false religions and other magician
 # [ src/menus/jotnar/jc_jarl.py:L1-L41 ] jc_choose_opponent
 (
     "jc_choose_opponent", 0,
-    "Choose your next opponent. The challanged person has the right to select wepons, armors and possibly horses.^The values in brackets describe points gain/loss per won/lost duel.",
+    "Choose your next opponent. The challenged fighter chooses the weapons, armor, and horses.^^The values in brackets show standing gained or lost after the duel.",
     "none",
     [],
     [
@@ -16488,7 +17443,7 @@ or spirit exist and so condemn the priests of false religions and other magician
        [
 	   (quest_set_slot, "qst_jotnar_clan_competition", slot_quest_target_troop, "trp_jotnar_clan_disir"),
 	   (assign, "$sod_jc_competition_win_value", 2),
-	   (assign, "$sod_jc_competition_lose_value", -1),
+	   (assign, "$sod_jc_competition_lose_value", -2),
 	   (jump_to_menu, "mnu_jc_choose_bet"),
         ]),
 	  ("back", [], "Back.",
@@ -16545,50 +17500,65 @@ or spirit exist and so condemn the priests of false religions and other magician
 		(call_script, "script_change_player_relation_with_troop", jotnar_clan_guild_master, 5),
 	  (jump_to_menu, "mnu_sod_merc_guild"),]),
 	 ],),
-# [ src/menus/kingdom/leave_faction_give_back.py:L1-L37 ] leave_faction
+# [ src/menus/kingdom/leave_faction_give_back.py:L1-L52 ] leave_faction
 (
     "leave_faction", 0,
     "Renouncing your oath is a grave act. Your lord may condemn you and confiscate your lands and holdings. However, if you return them of your own free will, he may let the betrayal go without a fight.",
     "none",
     [
+      (str_store_string, s2, "@the disputed fief"),
+      (try_begin),
+        (is_between, "$g_center_to_give_to_player", centers_begin, centers_end),
+        (str_store_party_name, s2, "$g_center_to_give_to_player"),
+      (try_end),
     ],
     [
       ("leave_faction_give_back", [], "Renounce your oath and give up your holdings.",
        [(call_script, "script_player_leave_faction", 1),
         (change_screen_return), ]),
 
-      ("leave_faction_hold", [(str_store_party_name, s2, "$g_center_to_give_to_player"), ],
+      ("leave_faction_hold", [
+        (is_between, "$players_kingdom", kingdoms_begin, kingdoms_end),
+        (is_between, "$g_center_to_give_to_player", centers_begin, centers_end),
+        ],
        "Renounce your oath and hold on to your lands, including {s2}.",
        [
-        (faction_get_slot, ":old_leader", "$players_kingdom", slot_faction_leader),
-        (call_script, "script_add_log_entry", logent_renounced_allegiance, "trp_player", -1, ":old_leader", "$players_kingdom"),
+        (try_begin),
+          (is_between, "$players_kingdom", kingdoms_begin, kingdoms_end),
+          (is_between, "$g_center_to_give_to_player", centers_begin, centers_end),
+          (faction_get_slot, ":old_leader", "$players_kingdom", slot_faction_leader),
+          (call_script, "script_add_log_entry", logent_renounced_allegiance, "trp_player", -1, ":old_leader", "$players_kingdom"),
 
-        #Initializing renounce war variables
-        (assign, "$players_oath_renounced_against_kingdom", "$players_kingdom"),
-        (assign, "$players_oath_renounced_given_center", 0),
-        (store_current_hours, "$players_oath_renounced_begin_time"),
+          #Initializing renounce war variables
+          (assign, "$players_oath_renounced_against_kingdom", "$players_kingdom"),
+          (assign, "$players_oath_renounced_given_center", 0),
+          (store_current_hours, "$players_oath_renounced_begin_time"),
 
-        (call_script, "script_give_center_to_lord", "$g_center_to_give_to_player", "trp_player", 0),
-        (call_script, "script_player_leave_faction", 0),
-        (try_for_range, ":cur_center", walled_centers_begin, walled_centers_end),
-          (store_faction_of_party, ":cur_center_faction", ":cur_center"),
-          (party_set_slot, ":cur_center", slot_center_faction_when_oath_renounced, ":cur_center_faction"),
+          (call_script, "script_give_center_to_lord", "$g_center_to_give_to_player", "trp_player", 0),
+          (call_script, "script_player_leave_faction", 0),
+          (try_for_range, ":cur_center", walled_centers_begin, walled_centers_end),
+            (store_faction_of_party, ":cur_center_faction", ":cur_center"),
+            (party_set_slot, ":cur_center", slot_center_faction_when_oath_renounced, ":cur_center_faction"),
+          (try_end),
+          (party_set_slot, "$g_center_to_give_to_player", slot_center_faction_when_oath_renounced, "$players_oath_renounced_against_kingdom"),
+          (change_screen_return),
+        (else_try),
+          (assign, "$g_center_to_give_to_player", -1),
+          (change_screen_return),
         (try_end),
-        (party_set_slot, "$g_center_to_give_to_player", slot_center_faction_when_oath_renounced, "$players_oath_renounced_against_kingdom"),
-        (change_screen_return),
         ]),
 
       ("leave_faction_cancel", [], "Remain loyal and accept the decision.", [ (change_screen_return), ]),
     ],
   ),
-# [ src/menus/kingdom/lord_fief_assignment_report.py:L1-L91 ] lord_fief_assignment_report
+# [ src/menus/kingdom/lord_fief_assignment_report.py:L1-L97 ] lord_fief_assignment_report
 ("lord_fief_assignment_report", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
 
-      (str_clear, s9),
+      (str_clear, s98),
       (assign, ":total_lords", 0),
       (assign, ":landed_lords", 0),
       (assign, ":assigned_fiefs", 0),
@@ -16606,13 +17576,13 @@ or spirit exist and so condemn the priests of false religions and other magician
           (val_add, ":assigned_fiefs", ":no_centers"),
           (gt, ":no_centers", 0),
           (val_add, ":landed_lords", 1),
-          (str_clear, s1),
+          (str_clear, s96),
           (try_for_range, ":i_center", 0, ":no_centers"),
 
             # name
             (call_script, "script_troop_get_leaded_center_with_index", ":lord", ":i_center"),
             (assign, ":cur_center", reg0),
-            (str_store_party_name, s2, ":cur_center"),
+            (str_store_party_name, s68, ":cur_center"),
 
             # prosperity
             (party_get_slot, ":prosperity", ":cur_center", slot_town_prosperity),
@@ -16621,24 +17591,28 @@ or spirit exist and so condemn the priests of false religions and other magician
             # add the prosperity to the string
             (try_begin),
               (neg|party_slot_eq, ":cur_center", slot_party_type, spt_castle),
-              (call_script, "script_get_prosperity_text", s3, ":prosperity"),
-              (str_store_string, s2, "@{s2} ({s3})"),
+              (call_script, "script_get_prosperity_text", s69, ":prosperity"),
+              (str_store_string_reg, s95, s68),
+              (str_store_string, s68, "@{s95} ({s69})"),
             (try_end),
 
             # concatenate the strings
             (try_begin),
               (eq, ":i_center", 0),
-              (str_store_string_reg, s1, s2),
+              (str_store_string_reg, s96, s68),
             (else_try),
-              (str_store_string, s1, "@{s1}, {s2}"),
+              (str_store_string, s97, "@{s96}, {s68}"),
+              (str_store_string_reg, s96, s97),
             (try_end),
           (try_end),
-          (str_store_string, s1, "@{s1}."),
+          (str_store_string, s97, "@{s96}."),
+          (str_store_string_reg, s96, s97),
         (else_try),
-          (str_store_string, s1, "@none."),
+          (str_store_string, s96, "@none."),
         (try_end),
-        (call_script, "script_store_troop_name", s2, ":lord"),
-        (str_store_string, s9, "@{s9}^{s2}: {s1}"),
+        (call_script, "script_store_troop_name", s70, ":lord"),
+        (str_store_string, s99, "@{s98}^{s70}: {s96}"),
+        (str_store_string_reg, s98, s99),
       (try_end),
 
       # determine the grand total number of fiefs in the player's kingdom
@@ -16649,10 +17623,10 @@ or spirit exist and so condemn the priests of false religions and other magician
       # generate a summary preamble
       (try_begin),
         (eq, ":total_lords", 0),
-        (str_store_string, s9, "@You don't have any lords!"),
+        (str_store_string, s98, "@No active lords are currently sworn to this realm."),
       (else_try),
         (eq, ":assigned_fiefs", 0),
-        (str_store_string, s9, "@Your lords have not been granted estates yet. This will make the court restless before long."),
+        (str_store_string, s98, "@Your lords have not been granted estates yet. This will make the court restless before long."),
       (else_try),
         (store_mul, ":landed_ratio", ":landed_lords", 100),
         (val_div, ":landed_ratio", ":total_lords"),
@@ -16665,21 +17639,23 @@ or spirit exist and so condemn the priests of false religions and other magician
         (else_try),
           (str_store_string, s8, "@Most of your nobility has been settled with land."),
         (try_end),
-        (str_store_string, s9, "@Total estates under your banner: {reg8}.^{s8}^{s9}"),
+        (str_store_string, s99, "@Total estates under your banner: {reg8}.^{s8}^{s98}"),
+        (str_store_string_reg, s98, s99),
       (try_end),
-      (str_store_string, s9, "@Lord Fief Assignment Report:^^{s9}"),
+      (str_store_string, s99, "@Lord Fief Assignment Report:^^{s98}"),
+      (str_store_string_reg, s98, s99),
     ],
     [("continue", [], "Continue...", [(jump_to_menu, "mnu_lord_reports")])]
   ),
-# [ src/menus/kingdom/lord_finances_report.py:L1-L47 ] lord_finances_report
+# [ src/menus/kingdom/lord_finances_report.py:L1-L53 ] lord_finances_report
 ("lord_finances_report", mnf_enable_hot_keys,
-    "{s1}",
+    "{s98}",
     "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
 
       #(str_store_string, s1, "@^You have no lords in your kingdom, as yet!  Speak with your Marshal at one of your towns or castles to correct this!"),
-      (str_clear, s1),
+      (str_clear, s98),
       (assign, ":count", 0),
       (try_for_range, ":lord", kingdom_heroes_begin, kingdom_heroes_end),
         (store_troop_faction, ":faction", ":lord"),
@@ -16705,28 +17681,35 @@ or spirit exist and so condemn the priests of false religions and other magician
           (str_store_string, s2, "@{s3} {s4}."),
           (try_begin),
             (eq, ":count", 0),
-            (str_store_string_reg, s1, s2),
+            (str_store_string_reg, s98, s2),
           (else_try),
-            (str_store_string, s1, "@{s1}^{s2}"),
+            (str_store_string, s99, "@{s98}^{s2}"),
+            (str_store_string_reg, s98, s99),
           (try_end),
           (val_add, ":count", 1),
         (try_end),
       (try_end),
+      (try_begin),
+        (eq, ":count", 0),
+        (str_store_string, s98, "@No active lords are currently sworn to this realm."),
+      (try_end),
       (str_store_faction_name, s2, "$players_kingdom"),
-      (str_store_string, s1, "@Treasury health among the lords of {s2}:^^{s1}"),
+      (str_store_string, s99, "@Treasury health among the lords of {s2}:^^{s98}"),
+      (str_store_string_reg, s98, s99),
     ],
     [("continue", [], "Continue...", [(jump_to_menu, "mnu_lord_reports")])]
   ),
-# [ src/menus/kingdom/lord_readiness_report.py:L1-L84 ] lord_readiness_report
+# [ src/menus/kingdom/lord_readiness_report.py:L1-L92 ] lord_readiness_report
 ("lord_readiness_report", mnf_enable_hot_keys,
-    "{s1}",
+    "{s98}",
     "none",
     [
       #(store_random_in_range, ":mesh", "mesh_pic_arms_swadian", "mesh_portrait_blend_out"),
       #(set_background_mesh, ":mesh"),
       (set_background_mesh, "mesh_pic_report_screen"),
 
-      (str_clear, s1),
+      (str_clear, s98),
+      (assign, ":lord_count", 0),
       (try_for_range, ":lord", kingdom_heroes_begin, kingdom_heroes_end),
         (store_troop_faction, ":faction", ":lord"),
         (try_begin),
@@ -16734,15 +17717,15 @@ or spirit exist and so condemn the priests of false religions and other magician
           (eq, ":faction", "$players_kingdom"),
 
           (troop_get_slot, ":party", ":lord", slot_troop_leaded_party),
-          (call_script, "script_store_troop_name", s2, ":lord"),
+          (call_script, "script_store_troop_name", s68, ":lord"),
           (try_begin),
             # check if this lord is current a prisoner
             (troop_slot_ge, ":lord", slot_troop_prisoner_of_party, 0),
-            (str_store_string, s2, "@{s2} is a prisoner"),
+            (str_store_string, s69, "@{s68} is a prisoner"),
           (else_try),
             # check if this lord has a party yet (could be brand new)
             (le, ":party", 0),
-            (str_store_string, s2, "@{s2} has no troops"),
+            (str_store_string, s69, "@{s68} has no troops"),
           (else_try),
             (party_get_num_companion_stacks, ":num_stacks", ":party"),
             (assign, ":fit", 0),
@@ -16773,41 +17756,49 @@ or spirit exist and so condemn the priests of false religions and other magician
             (call_script, "script_sod_lord_store_morale_report_text", ":lord"),
             (try_begin),
               (le, ":total", 0),
-              (str_store_string, s3, "@has no fighting line"),
+              (str_store_string, s70, "@has no fighting line"),
             (else_try),
               (store_mul, ":fit_ratio", ":fit", 100),
               (val_div, ":fit_ratio", ":total"),
               (try_begin),
                 (lt, ":fit_ratio", 35),
-                (str_store_string, s3, "@is badly depleted"),
+                (str_store_string, s70, "@is badly depleted"),
               (else_try),
                 (lt, ":fit_ratio", 60),
-                (str_store_string, s3, "@has a tired but usable force"),
+                (str_store_string, s70, "@has a tired but usable force"),
               (else_try),
                 (lt, ":fit_ratio", 85),
-                (str_store_string, s3, "@has a mostly ready company"),
+                (str_store_string, s70, "@has a mostly ready company"),
               (else_try),
-                (str_store_string, s3, "@is battle-ready"),
+                (str_store_string, s70, "@is battle-ready"),
               (try_end),
             (try_end),
-            (str_store_string, s2, "@{s2} {s3}; {s4}"),
+            (str_store_string, s69, "@{s68} {s70}; {s4}"),
           (try_end),
-          (str_store_string, s1, "@{s1}^{s2}."),
+          (str_store_string, s99, "@{s98}^{s69}."),
+          (str_store_string_reg, s98, s99),
+          (val_add, ":lord_count", 1),
         (try_end),
       (try_end),
-      (str_store_faction_name, s2, "$players_kingdom"),
-      (str_store_string, s1, "@Battle readiness report for {s2}:^{s1}"),
+      (try_begin),
+        (eq, ":lord_count", 0),
+        (str_store_string, s98, "@No active lords are currently sworn to this realm."),
+      (try_end),
+      (str_store_faction_name, s68, "$players_kingdom"),
+      (str_store_string, s99, "@Battle readiness report for {s68}:^{s98}"),
+      (str_store_string_reg, s98, s99),
     ],
     [("continue", [], "Continue...", [(jump_to_menu, "mnu_lord_reports")])]
   ),
-# [ src/menus/kingdom/lord_relations_report.py:L1-L31 ] lord_relations_report
+# [ src/menus/kingdom/lord_relations_report.py:L1-L40 ] lord_relations_report
 ("lord_relations_report", 0,
-    "{s1}",
+    "{s98}",
     "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
 
-      (str_clear, s1),
+      (str_clear, s98),
+      (assign, ":lord_count", 0),
       (try_for_range, ":lord", kingdom_heroes_begin, kingdom_heroes_end),
         (store_troop_faction, ":faction", ":lord"),
         (try_begin),
@@ -16817,23 +17808,31 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_troop_get_player_relation", ":lord"), # display the effective relation (not the raw value)
           (assign, ":relation", reg0),
           (call_script, "script_get_realtion_name_s3", ":relation"),
-          (str_store_string, s1, "@{s1}^{s2} is {s3}"),
+          (str_store_string, s99, "@{s98}^{s2} is {s3}"),
+          (str_store_string_reg, s98, s99),
+          (val_add, ":lord_count", 1),
         (try_end),
       (try_end),
       (try_begin),
+        (eq, ":lord_count", 0),
+        (str_store_string, s98, "@No active lords are currently sworn to this realm."),
+      (try_end),
+      (try_begin),
         (faction_slot_eq, "$players_kingdom", slot_faction_leader, "trp_player"),
-        (str_store_string, s1, "@Relations with your lords:^{s1}"),
+        (str_store_string, s99, "@Relations with your lords:^{s98}"),
+        (str_store_string_reg, s98, s99),
       (else_try),
         (str_store_faction_name, s2, "$players_kingdom"),
-        (str_store_string, s1, "@Relations with the lords of the {s2}:^{s1}"),
+        (str_store_string, s99, "@Relations with the lords of the {s2}:^{s98}"),
+        (str_store_string_reg, s98, s99),
       (try_end),
     ],
     [("continue", [], "Continue...", [(jump_to_menu, "mnu_lord_reports")])]
   ),
-# [ src/menus/other/make_preparation.py:L1-L37 ] train_peasants_against_bandits
+# [ src/menus/other/make_preparation.py:L1-L43 ] train_peasants_against_bandits
 (
     "train_peasants_against_bandits", 0,
-    "As the party member with the highest training skill ({reg2}), {reg3?you expect:{s1} expects} that getting some peasants ready for practice will take {reg4} hours.",
+    "{s68}",
     "none",
     [(call_script, "script_get_max_skill_of_player_party", "skl_trainer"),
      (assign, ":max_skill", reg0),
@@ -16850,6 +17849,12 @@ or spirit exist and so condemn the priests of false religions and other magician
      (val_mul, ":needed_hours", 3),
      (val_div, ":needed_hours", 5),
      (store_sub, reg4, ":needed_hours", "$qst_train_peasants_against_bandits_num_hours_trained"),
+     (try_begin),
+       (eq, ":max_skill_owner", "trp_player"),
+       (str_store_string, s68, "@As the party member with the highest training skill ({reg2}), you expect that getting some peasants ready for practice will take {reg4} hours."),
+     (else_try),
+       (str_store_string, s68, "@As the party member with the highest training skill ({reg2}), {s1} expects that getting some peasants ready for practice will take {reg4} hours."),
+     (try_end),
      ],
     [
       ("make_preparation", [], "Train them.",
@@ -17161,40 +18166,59 @@ or spirit exist and so condemn the priests of false religions and other magician
         ]),
      ]
   ),
-# [ src/menus/jotnar/player_choosen_select_bet.py:L1-L42 ] player_choosen_select_bet
+# [ src/menus/jotnar/player_choosen_select_bet.py:L1-L61 ] player_choosen_select_bet
 ("player_choosen_select_bet", 0, 
-  "Your opponent is ready.^^Current bet: {reg1?{reg1} denars:no bet}",
+  "Your opponent is ready.^^Current bet: {s68}",
   "none",[
   (assign, reg1, "$g_jotnar_clan_competition_bet"),
+  (try_begin),
+    (gt, reg1, 0),
+    (str_store_string, s68, "@{reg1} denars"),
+  (else_try),
+    (str_store_string, s68, "@no bet"),
+  (try_end),
   ],
   [
   ("fight", [], "Fight.", [
-  (quest_get_slot, ":opp_troop", "qst_jotnar_clan_competition", slot_quest_target_troop),
-  (modify_visitors_at_site, "scn_jotnar_clan_arena"),
-  (reset_visitors),
   (try_begin),
-	(eq, "$jc_wep_set", 1),
-	(set_visitor, 11, ":opp_troop"),
-	(set_jump_entry, 21),
+    (gt, "$g_jotnar_clan_competition_bet", 0),
+    (store_troop_gold, ":gold", "trp_player"),
+    (lt, ":gold", "$g_jotnar_clan_competition_bet"),
+    (display_message, "@You no longer have enough coin to cover that wager.", warning_color),
+    (jump_to_menu, "mnu_player_choosen_select_bet"),
   (else_try),
-	(eq, "$jc_wep_set", 2),
-	(set_visitor, 12, ":opp_troop"),
-	(set_visitor, 22, "trp_player"),
-  (else_try),
-	(eq, "$jc_wep_set", 3),
-	(set_visitor, 13, ":opp_troop"),
-	(set_visitor, 23, "trp_player"),
-  (else_try),
-	(set_visitor, 14, ":opp_troop"),
-	(set_visitor, 24, "trp_player"),
+    (try_begin),
+      (gt, "$g_jotnar_clan_competition_bet", 0),
+      (call_script, "script_sod_player_charge_gold", "$g_jotnar_clan_competition_bet"),
+      (eq, reg1, 1),
+      (play_sound, "snd_money_paid"),
+    (try_end),
+    (quest_get_slot, ":opp_troop", "qst_jotnar_clan_competition", slot_quest_target_troop),
+    (modify_visitors_at_site, "scn_jotnar_clan_arena"),
+    (reset_visitors),
+    (try_begin),
+      (eq, "$jc_wep_set", 1),
+      (set_visitor, 11, ":opp_troop"),
+      (set_visitor, 21, "trp_player"),
+    (else_try),
+      (eq, "$jc_wep_set", 2),
+      (set_visitor, 12, ":opp_troop"),
+      (set_visitor, 22, "trp_player"),
+    (else_try),
+      (eq, "$jc_wep_set", 3),
+      (set_visitor, 13, ":opp_troop"),
+      (set_visitor, 23, "trp_player"),
+    (else_try),
+      (set_visitor, 14, ":opp_troop"),
+      (set_visitor, 24, "trp_player"),
+    (try_end),
+    (set_jump_mission, "mt_jotnar_clan_arena"),
+    (jump_to_scene, "scn_jotnar_clan_arena"),
+    (change_screen_mission),
   (try_end),
-  # (call_script, "script_sod_player_charge_gold", "$g_jotnar_clan_competition_bet"),
-  (set_jump_mission, "mt_jotnar_clan_arena"),
-  (jump_to_scene, "scn_jotnar_clan_arena"),
-  (change_screen_mission),
   ]),
   
-  ("change_bet", [], "Change bet value.", [
+  ("change_bet", [], "Change wager.", [
   (assign, "$g_next_menu", "mnu_player_choosen_select_bet"),
   (jump_to_menu, "mnu_jc_change_bet"),]),
   
@@ -17238,7 +18262,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         ]),
     ]
   ),
-# [ src/menus/other/reembark_yes.py:L1-L28 ] ship_reembark
+# [ src/menus/other/reembark_yes.py:L1-L29 ] ship_reembark
 (
     "ship_reembark", 0,
     "Do you wish to embark?",
@@ -17253,6 +18277,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         ], "Yes.",
        [(assign, "$g_player_icon_state", pis_ship),
         (party_set_flags, "p_main_party", pf_is_ship, 1),
+        (call_script, "script_sod_refresh_player_map_icon"),
         (party_get_position, pos1, "p_main_party"),
         (map_get_water_position_around_position, pos2, pos1, 6),
         (party_set_position, "p_main_party", pos2),
@@ -17439,8 +18464,8 @@ or spirit exist and so condemn the priests of false religions and other magician
        ),
       ]
   ),
-# [ src/menus/kingdom/sod_royal_diseaster.py:L1-L12 ] sod_royal_diseaster
-("sod_royal_diseaster", 0,
+# [ src/menus/kingdom/sod_royal_disaster.py:L1-L12 ] sod_royal_disaster
+("sod_royal_disaster", 0,
 	"My liege. Grim news from the old world. The expedition was exposed in hostile territory, condemned as spies, and executed before ransom could be arranged. No survivors returned.",
 	"none", [
 	],
@@ -17619,11 +18644,11 @@ or spirit exist and so condemn the priests of false religions and other magician
 	(change_screen_return),
 	]),
 	]),
-# [ src/menus/other/sod_upgrade.py:L1-L104 ] sod_upgrade
+# [ src/menus/other/sod_upgrade.py:L1-L108 ] sod_upgrade
 ("sod_upgrade", 0,
-	"{s1}",
+	"{s98}",
 	"none", [
-		(str_clear, s1),
+		(str_clear, s98),
 		(str_clear, s2),
 		(str_clear, s5),
 		(str_clear, s18),
@@ -17663,11 +18688,13 @@ or spirit exist and so condemn the priests of false religions and other magician
 				(party_slot_eq, ":upgrade_center", ":improvement_no", 1),
 				(val_add, ":num_improvements", 1),
 				(call_script, "script_get_improvement_details", ":improvement_no"),
+				(str_store_string_reg, s68, s0),
 				(try_begin),
 					(eq, ":num_improvements", 1),
-					(str_store_string, s18, "@{s0}"),
+					(str_store_string, s18, "@{s68}"),
 				(else_try),
-					(str_store_string, s18, "@{s18}, {s0}"),
+					(str_store_string_reg, s97, s18),
+					(str_store_string, s18, "@{s97}, {s68}"),
 				(try_end),
 			(try_end),
 
@@ -17706,23 +18733,25 @@ or spirit exist and so condemn the priests of false religions and other magician
 			(eq, reg7, 1),
 			(try_begin),
 				(eq, reg2, 1),
-				(str_store_string, s1, "@This center can train troops of {s5} and its old {s2} traditions."),
+				(str_store_string, s98, "@This center can train troops of {s5} and its old {s2} traditions."),
 			(else_try),
-				(str_store_string, s1, "@This center can train troops of {s5}."),
+				(str_store_string, s98, "@This center can train troops of {s5}."),
 			(try_end),
 		(else_try),
-			(str_store_string, s1, "@This center has no regular military training facilities."),
+			(str_store_string, s98, "@This center has no regular military training facilities."),
 		(try_end),
 		(try_begin),
 			(gt, reg1, 0),
-			(str_store_string, s1, "@{s1}^^{reg1} troops in your party can be promoted here.{s20}"),
+			(str_store_string_reg, s97, s98),
+			(str_store_string, s98, "@{s97}^^{reg1} troops in your party can be promoted here.{s20}"),
 		(else_try),
-			(str_store_string, s1, "@{s1}^^No troops in your party can be promoted here.{s20}"),
+			(str_store_string_reg, s97, s98),
+			(str_store_string, s98, "@{s97}^^No troops in your party can be promoted here.{s20}"),
 		(try_end),
 	],
 		generate_upgrade_options()
 	),
-# [ src/menus/other/sod_upgrade_continue.py:L1-L308 ] sod_upgrade_continue
+# [ src/menus/other/sod_upgrade_continue.py:L1-L399 ] sod_upgrade_continue
 ("sod_upgrade_continue", 0,
 	"{s1}",
 	"none", [
@@ -17765,7 +18794,7 @@ or spirit exist and so condemn the priests of false religions and other magician
 			(call_script, "script_sod_troop_get_elite_tier", ":upgrade1"),
 			(try_begin),
 				(eq, reg0, sod_elite_tier_faith),
-				(str_store_string, s4, "@^^Elite doctrine: Faith ascension. This is the highest troop tier and requires chapel or temple support."),
+				(str_store_string, s4, "@^^Elite doctrine: Faith ascension. This is the highest troop tier, requires chapel or temple support, and is performed one soldier at a time."),
 			(else_try),
 				(eq, reg0, sod_elite_tier_noble),
 				(str_store_string, s4, "@^^Elite doctrine: Noble house training. Nobles are the second-best troop tier and require chapter support."),
@@ -17775,7 +18804,7 @@ or spirit exist and so condemn the priests of false religions and other magician
 			(call_script, "script_sod_troop_get_elite_tier", ":upgrade2"),
 			(try_begin),
 				(eq, reg0, sod_elite_tier_faith),
-				(str_store_string, s4, "@^^Elite doctrine: Faith ascension. This is the highest troop tier and requires chapel or temple support."),
+				(str_store_string, s4, "@^^Elite doctrine: Faith ascension. This is the highest troop tier, requires chapel or temple support, and is performed one soldier at a time."),
 			(else_try),
 				(eq, reg0, sod_elite_tier_noble),
 				(str_store_string, s4, "@^^Elite doctrine: Noble house training. Nobles are the second-best troop tier and require chapter support."),
@@ -17808,7 +18837,13 @@ or spirit exist and so condemn the priests of false religions and other magician
 				(str_store_string, s8, "@no charge"),
 			(try_end),
 			(str_store_string_reg, s68, s6),
-			(str_store_string, s6, "@{s68}^^Path: {s7} - {s8}."),
+			(str_store_string_reg, s97, s6),
+			(str_store_string, s6, "@{s97}^^Path: {s7} - {s8}."),
+		(try_end),
+		(try_begin),
+			(eq, "$can_upgrade1", 0),
+			(eq, "$can_upgrade2", 0),
+			(str_store_string, s6, "@^^This promotion is no longer available here. Return and choose another troop."),
 		(try_end),
 		(str_store_string, s1, "@You have {reg4} denars.^^Selected troops: {reg5} {s3}.{s6}{s4}"),
 		(assign, "$g_upgrade_troop", "$g_sod_town_upgrade_selected_troop"),
@@ -17830,11 +18865,17 @@ or spirit exist and so condemn the priests of false religions and other magician
 
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_sod_upgrade_center"),
       (val_mul, reg0, "$upgrade_count"),
+      (try_begin),
+        (gt, reg0, 0),
+        (str_store_string, s68, "@ ({reg0} denars total)"),
+      (else_try),
+        (str_store_string, s68, "@ (no charge)"),
+      (try_end),
 
       (store_troop_gold, ":gold", "trp_player"),
       (ge, ":gold", reg0),
     ],
-    "Promote all {s1} to {s2}{reg0? ({reg0} denars total): (no charge)}",
+    "Promote all {s1} to {s2}{s68}",
     [
       (troop_get_slot, ":upgrade1", "$g_upgrade_troop", slot_troop_sod_upgrade1),
 	  (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_sod_upgrade_center"),
@@ -17865,11 +18906,17 @@ or spirit exist and so condemn the priests of false religions and other magician
 
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_sod_upgrade_center"),
       (val_mul, reg0, 5),
+      (try_begin),
+        (gt, reg0, 0),
+        (str_store_string, s68, "@ ({reg0} denars total)"),
+      (else_try),
+        (str_store_string, s68, "@ (no charge)"),
+      (try_end),
 
       (store_troop_gold, ":gold", "trp_player"),
       (ge, ":gold", reg0),
     ],
-    "Promote five {s1} to {s2}{reg0? ({reg0} denars total): (no charge)}",
+    "Promote five {s1} to {s2}{s68}",
     [
       (troop_get_slot, ":upgrade1", "$g_upgrade_troop", slot_troop_sod_upgrade1),
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_sod_upgrade_center"),
@@ -17897,11 +18944,17 @@ or spirit exist and so condemn the priests of false religions and other magician
       (str_store_troop_name, s2, ":upgrade1"),
 
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_sod_upgrade_center"),
+      (try_begin),
+        (gt, reg0, 0),
+        (str_store_string, s68, "@ ({reg0} denars)"),
+      (else_try),
+        (str_store_string, s68, "@ (no charge)"),
+      (try_end),
 
       (store_troop_gold, ":gold", "trp_player"),
       (ge, ":gold", reg0),
     ],
-    "Promote one {s1} to {s2}{reg0? ({reg0} denars): (no charge)}",
+    "Promote one {s1} to {s2}{s68}",
     [
       (troop_get_slot, ":upgrade1", "$g_upgrade_troop", slot_troop_sod_upgrade1),
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_sod_upgrade_center"),
@@ -17917,6 +18970,23 @@ or spirit exist and so condemn the priests of false religions and other magician
         (eq, reg0, sod_elite_tier_faith),
         (call_script, "script_sod_troop_apply_faith_ascension_cost", 1),
       (try_end),
+      (jump_to_menu, "mnu_sod_upgrade_continue"),
+    ]
+  ),
+
+  ("marshal_upgrade_need_coin1",
+    [
+      (eq, "$can_upgrade1", 1),
+      (troop_get_slot, ":upgrade1", "$g_upgrade_troop", slot_troop_sod_upgrade1),
+      (str_store_troop_name, s1, "$g_upgrade_troop"),
+      (str_store_troop_name, s2, ":upgrade1"),
+      (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade1", "$g_sod_upgrade_center"),
+      (gt, reg0, 0),
+      (store_troop_gold, ":gold", "trp_player"),
+      (lt, ":gold", reg0),
+    ],
+    "Need {reg0} denars to promote one {s1} to {s2}.",
+    [
       (jump_to_menu, "mnu_sod_upgrade_continue"),
     ]
   ),
@@ -17937,11 +19007,17 @@ or spirit exist and so condemn the priests of false religions and other magician
 
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_sod_upgrade_center"),
       (val_mul, reg0, "$upgrade_count"),
+      (try_begin),
+        (gt, reg0, 0),
+        (str_store_string, s68, "@ ({reg0} denars total)"),
+      (else_try),
+        (str_store_string, s68, "@ (no charge)"),
+      (try_end),
 
       (store_troop_gold, ":gold", "trp_player"),
       (ge, ":gold", reg0),
     ],
-    "Promote all {s1} to {s2}{reg0? ({reg0} denars total): (no charge)}",
+    "Promote all {s1} to {s2}{s68}",
     [
       (troop_get_slot, ":upgrade2", "$g_upgrade_troop", slot_troop_sod_upgrade2),
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_sod_upgrade_center"),
@@ -17972,11 +19048,17 @@ or spirit exist and so condemn the priests of false religions and other magician
 
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_sod_upgrade_center"),
       (val_mul, reg0, 5),
+      (try_begin),
+        (gt, reg0, 0),
+        (str_store_string, s68, "@ ({reg0} denars total)"),
+      (else_try),
+        (str_store_string, s68, "@ (no charge)"),
+      (try_end),
 
       (store_troop_gold, ":gold", "trp_player"),
       (ge, ":gold", reg0),
     ],
-    "Promote five {s1} to {s2}{reg0? ({reg0} denars total): (no charge)}",
+    "Promote five {s1} to {s2}{s68}",
     [
       (troop_get_slot, ":upgrade2", "$g_upgrade_troop", slot_troop_sod_upgrade2),
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_sod_upgrade_center"),
@@ -18004,11 +19086,17 @@ or spirit exist and so condemn the priests of false religions and other magician
       (str_store_troop_name, s2, ":upgrade2"),
 
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_sod_upgrade_center"),
+      (try_begin),
+        (gt, reg0, 0),
+        (str_store_string, s68, "@ ({reg0} denars)"),
+      (else_try),
+        (str_store_string, s68, "@ (no charge)"),
+      (try_end),
 
       (store_troop_gold, ":gold", "trp_player"),
       (ge, ":gold", reg0),
     ],
-    "Promote one {s1} to {s2}{reg0? ({reg0} denars): (no charge)}",
+    "Promote one {s1} to {s2}{s68}",
     [
       (troop_get_slot, ":upgrade2", "$g_upgrade_troop", slot_troop_sod_upgrade2),
       (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_sod_upgrade_center"),
@@ -18027,7 +19115,39 @@ or spirit exist and so condemn the priests of false religions and other magician
       (jump_to_menu, "mnu_sod_upgrade_continue"),
     ]
   ),
-  ("return",[],"Return.",[(jump_to_menu, "$jump_menu"),])
+
+  ("marshal_upgrade_need_coin2",
+    [
+      (eq, "$can_upgrade2", 1),
+      (troop_get_slot, ":upgrade2", "$g_upgrade_troop", slot_troop_sod_upgrade2),
+      (str_store_troop_name, s1, "$g_upgrade_troop"),
+      (str_store_troop_name, s2, ":upgrade2"),
+      (call_script, "script_sod_get_cost_to_upgrade_troop_at", ":upgrade2", "$g_sod_upgrade_center"),
+      (gt, reg0, 0),
+      (store_troop_gold, ":gold", "trp_player"),
+      (lt, ":gold", reg0),
+    ],
+    "Need {reg0} denars to promote one {s1} to {s2}.",
+    [
+      (jump_to_menu, "mnu_sod_upgrade_continue"),
+    ]
+  ),
+  ("marshal_upgrade_no_current_path",
+    [
+      (eq, "$can_upgrade1", 0),
+      (eq, "$can_upgrade2", 0),
+    ],
+    "Choose another troop.",
+    [
+      (try_begin),
+        (neq, "$g_encountered_party", -1),
+        (jump_to_menu, "mnu_sod_upgrade"),
+      (else_try),
+        (jump_to_menu, "mnu_sod_upgrade_camp"),
+      (try_end),
+    ]
+  ),
+  ("return",[],"Leave promotions.",[(jump_to_menu, "$jump_menu"),])
 	]),
 # [ src/menus/kingdom/take_supplies.py:L1-L60 ] village_take_food
 (
@@ -18404,7 +19524,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("talk_council_return", [], "That will be all.", [(jump_to_menu, "mnu_town")]),
     ]
   ),
-# [ src/menus/economy/to_price_and_productions.py:L1-L41 ] center_reports
+# [ src/menus/economy/to_price_and_productions.py:L1-L42 ] center_reports
 (
     "center_reports", 0,
     "Town Name: {s1}^Rent Income: {reg1} denars^Tariff Income: {reg2} denars^Food Stores: {s2}",
@@ -18412,6 +19532,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [(party_get_slot, ":town_food_store", "$g_encountered_party", slot_party_food_store),
      (call_script, "script_center_get_food_consumption", "$g_encountered_party"),
      (assign, ":food_consumption", reg0),
+     (val_max, ":food_consumption", 1),
      (store_div, reg3, ":town_food_store", ":food_consumption"),
      (try_begin),
        (lt, reg3, 3),
@@ -18472,10 +19593,10 @@ or spirit exist and so condemn the priests of false religions and other magician
 	(try_end),
 	],
 	[],),
-# [ src/menus/other/wep_set_1.py:L1-L61 ] jc_get_choosen
+# [ src/menus/other/wep_set_1.py:L1-L51 ] jc_get_choosen
 (
     "jc_get_choosen", 0,
-    "{s2} challenges you to a duel. As the challenged one you have the right to selcet the equipment.",
+    "{s2} challenges you to a duel. As the challenged fighter, you choose the equipment.",
     "none",
     [
 	(assign, reg0, "trp_jotnar_clan_jarl"),
@@ -18497,32 +19618,22 @@ or spirit exist and so condemn the priests of false religions and other magician
 	   (assign, "$sod_jc_competition_lose_value", -2),
 	(else_try),
 	   (assign, "$sod_jc_competition_win_value", 2),
-	   (assign, "$sod_jc_competition_lose_value", -1),
+	   (assign, "$sod_jc_competition_lose_value", -2),
 	(try_end),
 	(quest_set_slot, "qst_jotnar_clan_competition", slot_quest_target_troop, reg1),
 	(str_store_troop_name, s2, reg1),
 	],
     [
-  ("wep_set_1", [(str_store_string, s1, "@Medium Armor"),
-	(str_store_string, s1, "@{s1}, Two Handed Sword"),], "{s1}", [
+  ("wep_set_1", [], "Medium Armor, Two Handed Sword", [
 	(assign, "$jc_wep_set", 1),
 	(jump_to_menu, "mnu_player_choosen_select_bet"),]),
-  ("wep_set_2", [(str_store_string, s1, "@Medium Armor"),
-	(str_store_string, s1, "@{s1}, Two Handed Axe"),], "{s1}", [
+  ("wep_set_2", [], "Medium Armor, Two Handed Axe", [
 	(assign, "$jc_wep_set", 2),
 	(jump_to_menu, "mnu_player_choosen_select_bet"),]),
-  ("wep_set_3", [(str_store_string, s1, "@Light Armor"),
-	(str_store_string, s1, "@{s1}, One Handed Sword"),
-	(str_store_string, s1, "@{s1}, Shield"),
-	(str_store_string, s1, "@{s1}, Bow and Arrows"),
-	(str_store_string, s1, "@{s1}, Horse"),], "{s1}", [
+  ("wep_set_3", [], "Light Armor, One Handed Sword, Shield, Bow and Arrows, Horse", [
 	(assign, "$jc_wep_set", 3),
 	(jump_to_menu, "mnu_player_choosen_select_bet"),]),
-  ("wep_set_4", [(str_store_string, s1, "@Medium Armor"),
-	(str_store_string, s1, "@{s1}, One Handed Axe"),
-	(str_store_string, s1, "@{s1}, Shield"),
-	(str_store_string, s1, "@{s1}, Bow and Arrows"),
-	(str_store_string, s1, "@{s1}, Horse"),], "{s1}", [
+  ("wep_set_4", [], "Medium Armor, One Handed Axe, Shield, Bow and Arrows, Horse", [
 	(assign, "$jc_wep_set", 4),
 	(jump_to_menu, "mnu_player_choosen_select_bet"),]),
 	
@@ -21431,7 +22542,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       (assign, "$g_train_peasants_against_bandits_num_peasants", ":random_number"),
       (assign, reg0, ":random_number"),
       (store_sub, reg1, ":random_number", 1),
-      (str_store_troop_name_by_count, s0, "trp_trainee_peasant", ":random_number"),
+      (str_store_troop_name_by_count, s68, "trp_trainee_peasant", ":random_number"),
      ],
     [
       ("peasant_start_practice", [], "Start the practice fight.",
@@ -21451,10 +22562,10 @@ or spirit exist and so condemn the priests of false religions and other magician
          ]),
       ]
     ),
-# [ src/menus/start_game/start_collecting.py:L1-L117 ] collect_taxes
+# [ src/menus/start_game/start_collecting.py:L1-L130 ] collect_taxes
 (
     "collect_taxes", mnf_disable_all_keys,
-    "{reg3?You expect:{s1} expects} the tax collection to take {s2}.",
+    "{s68}",
     "none",
     [
       (set_background_mesh, "$g_sod_town_background"),
@@ -21508,13 +22619,20 @@ or spirit exist and so condemn the priests of false religions and other magician
          (val_mul, "$qst_collect_taxes_total_hours", ":tax_capacity_drag"),
          (val_div, "$qst_collect_taxes_total_hours", 100),
        (try_end),
+       (val_max, "$qst_collect_taxes_total_hours", 24),
 
        (quest_set_slot, "qst_collect_taxes", slot_quest_target_amount, "$qst_collect_taxes_total_hours"),
        (store_div, ":menu_begin_time", "$qst_collect_taxes_total_hours", 20), #between %5-%25
        (store_div, ":menu_end_time", "$qst_collect_taxes_total_hours", 4),
+       (val_max, ":menu_end_time", 2),
+       (val_min, ":menu_begin_time", ":menu_end_time"),
+       (val_sub, ":menu_begin_time", 1),
+       (val_max, ":menu_begin_time", 1),
        (assign, ":unrest_begin_time", ":menu_end_time"), #between %25-%75
        (store_mul, ":unrest_end_time", "$qst_collect_taxes_total_hours", 3),
        (val_div, ":unrest_end_time", 4),
+       (store_add, ":min_unrest_end_time", ":unrest_begin_time", 1),
+       (val_max, ":unrest_end_time", ":min_unrest_end_time"),
 
        (val_mul, ":tax_quest_expected_revenue", 2),
        (store_div, "$qst_collect_taxes_hourly_income", ":tax_quest_expected_revenue", "$qst_collect_taxes_total_hours"),
@@ -21544,6 +22662,12 @@ or spirit exist and so condemn the priests of false religions and other magician
       (else_try),
         (str_store_string, s2, "@a long and unpopular week or more"),
       (try_end),
+      (try_begin),
+        (eq, ":max_skill_owner", "trp_player"),
+        (str_store_string, s68, "@You expect the tax collection to take {s2}."),
+      (else_try),
+        (str_store_string, s68, "@{s1} expects the tax collection to take {s2}."),
+      (try_end),
     ],
     [
       ("start_collecting", [], "Start collecting.",
@@ -21567,10 +22691,13 @@ or spirit exist and so condemn the priests of false religions and other magician
         ]),
     ]
   ),
-# [ src/menus/centers/town/sod_merc_guild.py:L1-L61 ] sod_merc_guild
+# [ src/menus/centers/town/sod_merc_guild.py:L1-L64 ] sod_merc_guild
 ("sod_merc_guild",mnf_disable_all_keys,
   "You approach a mercenary base. Drill sergeants bark orders over the ring of steel, and armed sellswords watch you from the yard as they weigh your purpose here.",
   "none",[
+    (store_sub, ":guild_faction", "$g_encountered_party", "p_sod_merc_guild_1"),
+    (val_add, ":guild_faction", "fac_sod_merc_guild1"),
+    (call_script, "script_sod_show_guild_contact_portrait", ":guild_faction"),
   ],
     [
       ("enter",[],"Step into the yard.",[
@@ -21627,18 +22754,23 @@ or spirit exist and so condemn the priests of false religions and other magician
 	  ("leave",[],"Leave.",[(leave_encounter),(change_screen_return)]),
     ]
   ),
-# [ src/menus/centers/town/sod_bank.py:L1-L60 ] sod_bank
+# [ src/menus/centers/town/sod_bank.py:L1-L65 ] sod_bank
 ("sod_bank", mnf_enable_hot_keys,
     "{s1}",
     "none",
     [
       (set_background_mesh, "mesh_pic_town_1_aerial"),
+      (call_script, "script_sod_show_center_market_contact_portrait", "$current_town"),
       (call_script, "script_sod_bank_store_report_registers"),
       (str_store_string, s1, "@The town bank keeps its ledgers behind heavy shutters. {s21}^^Cash on hand: {reg1} denars.^Deposited: {reg2} denars.^Weekly interest: {reg3}/10000.^Expected next interest: {reg4} denars."),
     ],
     [
       ("sod_bank_finance_report", [], "View finance report.",
        [(jump_to_menu, "mnu_sod_bank_finance_report")]),
+      ("sod_bank_withdraw_for_warnings",
+       [(call_script, "script_sod_bank_store_report_registers"), (gt, reg12, 0)],
+       "Withdraw {reg12} denars for current warnings.",
+       [(call_script, "script_sod_bank_store_report_registers"), (call_script, "script_sod_bank_withdraw", reg12), (jump_to_menu, "mnu_sod_bank")]),
       ("sod_bank_deposit_1000",
        [(store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 1000)],
        "Deposit 1,000 denars.",
@@ -21680,13 +22812,13 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       (set_background_mesh, "mesh_pic_report_screen"),
       (call_script, "script_sod_bank_store_report_registers"),
-      (str_store_string, s1, "@Finance Report^^{s21}^^Cash on hand: {reg1} denars.^Bank balance: {reg2} denars.^Weekly interest rate: {reg3}/10000.^Expected next interest: {reg4} denars.^Projected balance after interest: {reg9} denars.^^{s20}"),
+      (str_store_string, s1, "@Finance Report^^{s21}^^Cash on hand: {reg1} denars.^Bank balance: {reg2} denars.^Weekly interest rate: {reg3}/10000.^Expected next interest: {reg4} denars.^Projected balance after interest: {reg9} denars.^^Outstanding obligations: {reg10} denars.^Cash shortfall: {reg11} denars.^^{s20}^^{s22}"),
     ],
     [
       ("sod_bank_finance_report_back", [], "Back to the bank.", [(jump_to_menu, "mnu_sod_bank")]),
     ]
   ),
-# [ src/menus/centers/town/trade_with_arms_merchant.py:L1-L152 ] town_trade
+# [ src/menus/centers/town/trade_with_arms_merchant.py:L1-L153 ] town_trade
 (
     "town_trade", mnf_enable_hot_keys,
     "You make your way toward the marketplace, where hawkers shout over one another and the smell of leather, oil, and pack animals hangs in the air.",
@@ -21694,6 +22826,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       #(set_background_mesh, "$g_sod_town_background"),
       (set_background_mesh, "mesh_pic_marketplace"),
+      (call_script, "script_sod_show_center_market_contact_portrait", "$current_town"),
     ],
     [
       ("trade_with_arms_merchant", [(party_slot_ge, "$current_town", slot_town_weaponsmith, 1)],
@@ -21837,7 +22970,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("back_to_town_menu", [], "Return to the streets.", [ (jump_to_menu, "mnu_town"), ]),
     ]
   ),
-# [ src/menus/reports/report_submenus.py:L1-L54 ] party_reports
+# [ src/menus/reports/report_submenus.py:L1-L57 ] party_reports
 ("party_reports", mnf_enable_hot_keys,
     "Party and Company Reports",
     "none",
@@ -21858,7 +22991,10 @@ or spirit exist and so condemn the priests of false religions and other magician
     [(set_background_mesh, "mesh_pic_report_screen")],
     [
       ("realm_reports_resume", [], "Resume travelling.", [(change_screen_return)]),
-      ("view_faith_world_report", [(eq, "$cheat_mode", 1)], "Debug faith and institution ledgers.", [(jump_to_menu, "mnu_faith_world_report")]),
+      ("view_faith_world_report", [
+        (this_or_next|eq, "$cheat_mode", 1),
+        (eq, "$g_sod_cheat_mode", 1),
+      ], "Debug faith and institution ledgers.", [(jump_to_menu, "mnu_faith_world_report")]),
       ("view_realm_law_report", [], "Read realm laws and foreign edicts.", [(jump_to_menu, "mnu_realm_law_report")]),
       ("view_noble_houses_report", [], "Read noble house ledgers.", [(jump_to_menu, "mnu_noble_houses_report")]),
       ("view_sod_diplomacy_report", [], "Open the diplomatic dispatches.", [(jump_to_menu, "mnu_sod_diplomacy_report")]),
@@ -21905,1374 +23041,30 @@ or spirit exist and so condemn the priests of false religions and other magician
        ),
       ]
   ),
-# [ src/menus/camp/companion_campfire.py:L1-L1368 ] companion_campfire
+# [ src/menus/camp/companion_campfire.py:L1-L24 ] companion_campfire
 ("companion_campfire", mnf_scale_picture|mnf_enable_hot_keys,
-   "{s1}",
+   "{s68}",
    "none",
     [
       (set_background_mesh, "mesh_pic_camp"),
-      (call_script, "script_sod_companion_describe_campfire_to_s1"),
+      (call_script, "script_sod_companion_describe_campfire_to_s68"),
     ],
     [
-      ("companion_campfire_borcha_scout", [
-          (main_party_has_troop, "trp_npc1"),
-        ], "Ask Borcha to serve as Scout.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc1", sod_companion_role_scout),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_borcha_quartermaster", [
-          (main_party_has_troop, "trp_npc1"),
-        ], "Ask Borcha to watch the road stores.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc1", sod_companion_role_quartermaster),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_marnid_quartermaster", [
-          (main_party_has_troop, "trp_npc2"),
-        ], "Ask Marnid to serve as Quartermaster.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc2", sod_companion_role_quartermaster),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_marnid_envoy", [
-          (main_party_has_troop, "trp_npc2"),
-        ], "Ask Marnid to serve as Envoy.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc2", sod_companion_role_envoy),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_ymira_surgeon", [
-          (main_party_has_troop, "trp_npc3"),
-        ], "Ask Ymira to serve as Surgeon.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc3", sod_companion_role_surgeon),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_ymira_envoy", [
-          (main_party_has_troop, "trp_npc3"),
-        ], "Ask Ymira to serve as Envoy.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc3", sod_companion_role_envoy),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_rolf_envoy", [
-          (main_party_has_troop, "trp_npc4"),
-        ], "Ask Rolf to serve as Envoy.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc4", sod_companion_role_envoy),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_rolf_captain", [
-          (main_party_has_troop, "trp_npc4"),
-        ], "Ask Rolf to serve as Captain.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc4", sod_companion_role_captain),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_baheshtur_scout", [
-          (main_party_has_troop, "trp_npc5"),
-        ], "Ask Baheshtur to serve as Scout.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc5", sod_companion_role_scout),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_baheshtur_captain", [
-          (main_party_has_troop, "trp_npc5"),
-        ], "Ask Baheshtur to command the riders.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc5", sod_companion_role_captain),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_firentis_captain", [
-          (main_party_has_troop, "trp_npc6"),
-        ], "Ask Firentis to serve as Captain.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc6", sod_companion_role_captain),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_firentis_envoy", [
-          (main_party_has_troop, "trp_npc6"),
-        ], "Ask Firentis to serve as Envoy.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc6", sod_companion_role_envoy),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_deshavi_scout", [
-          (main_party_has_troop, "trp_npc7"),
-        ], "Ask Deshavi to serve as Scout.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc7", sod_companion_role_scout),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_deshavi_spymaster", [
-          (main_party_has_troop, "trp_npc7"),
-        ], "Ask Deshavi to serve as Spymaster.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc7", sod_companion_role_spymaster),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_matheld_captain", [
-          (main_party_has_troop, "trp_npc8"),
-        ], "Ask Matheld to serve as Captain.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc8", sod_companion_role_captain),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_alayen_envoy", [
-          (main_party_has_troop, "trp_npc9"),
-        ], "Ask Alayen to serve as Envoy.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc9", sod_companion_role_envoy),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_alayen_captain", [
-          (main_party_has_troop, "trp_npc9"),
-        ], "Ask Alayen to serve as Captain.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc9", sod_companion_role_captain),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_nizar_captain", [
-          (main_party_has_troop, "trp_npc13"),
-        ], "Ask Nizar to serve as Captain.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc13", sod_companion_role_captain),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_nizar_scout", [
-          (main_party_has_troop, "trp_npc13"),
-        ], "Ask Nizar to scout for bold openings.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc13", sod_companion_role_scout),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_bunduk_captain", [
-          (main_party_has_troop, "trp_npc10"),
-        ], "Ask Bunduk to serve as Captain.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc10", sod_companion_role_captain),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_bunduk_quartermaster", [
-          (main_party_has_troop, "trp_npc10"),
-        ], "Ask Bunduk to watch the common soldiers' stores.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc10", sod_companion_role_quartermaster),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_katrin_quartermaster", [
-          (main_party_has_troop, "trp_npc11"),
-        ], "Ask Katrin to serve as Quartermaster.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc11", sod_companion_role_quartermaster),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_katrin_surgeon", [
-          (main_party_has_troop, "trp_npc11"),
-        ], "Ask Katrin to tend the camp as Surgeon.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc11", sod_companion_role_surgeon),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_jeremus_surgeon", [
-          (main_party_has_troop, "trp_npc12"),
-        ], "Ask Jeremus to serve as Surgeon.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc12", sod_companion_role_surgeon),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_jeremus_envoy", [
-          (main_party_has_troop, "trp_npc12"),
-        ], "Ask Jeremus to serve as Envoy.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc12", sod_companion_role_envoy),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_klethi_spymaster", [
-          (main_party_has_troop, "trp_npc16"),
-        ], "Ask Klethi to serve as Spymaster.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc16", sod_companion_role_spymaster),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_klethi_scout", [
-          (main_party_has_troop, "trp_npc16"),
-        ], "Ask Klethi to serve as Scout.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc16", sod_companion_role_scout),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_lezalit_captain", [
-          (main_party_has_troop, "trp_npc14"),
-        ], "Ask Lezalit to serve as Captain.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc14", sod_companion_role_captain),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_lezalit_engineer", [
-          (main_party_has_troop, "trp_npc14"),
-        ], "Ask Lezalit to serve as Engineer.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc14", sod_companion_role_engineer),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_artimenner_engineer", [
-          (main_party_has_troop, "trp_npc15"),
-        ], "Ask Artimenner to serve as Engineer.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc15", sod_companion_role_engineer),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_artimenner_quartermaster", [
-          (main_party_has_troop, "trp_npc15"),
-        ], "Ask Artimenner to organize tools and stores.",
-        [
-          (call_script, "script_sod_companion_assign_role", "trp_npc15", sod_companion_role_quartermaster),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_borcha_road_keeps_own_start", [
-          (main_party_has_troop, "trp_npc1"),
-          (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc1", slot_troop_companion_approval, 45),
-        ], "Speak with Borcha about The Road Keeps Its Own.",
-        [
-          (troop_set_slot, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Borcha crouches near the fire and draws a crooked line in the dirt. 'Too clean a road means somebody swept it. Raiders, maybe. Men waiting to be called ghosts.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_borcha_road_keeps_own_trust", [
-          (main_party_has_troop, "trp_npc1"),
-          (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Trust Borcha and set scouts on the hidden route.",
-        [
-          (call_script, "script_sod_companion_start_borcha_road_incident", 1),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_safe_roadcraft, 3),
-          (display_message, "@Borcha nods once. 'Good. We ask who saw the road first. Bleed later, if bleeding has to happen.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_borcha_road_keeps_own_profit", [
-          (main_party_has_troop, "trp_npc1"),
-          (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Use Borcha's route to bait raiders for plunder.",
-        [
-          (call_script, "script_sod_companion_start_borcha_road_incident", 2),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc1", 1),
-          (display_message, "@Borcha snorts. 'Dirty, but not stupid. Ask at the road town. Bait has a short life if the hook is slow.'", 0xCCCC66),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_borcha_road_keeps_own_dismiss", [
-          (main_party_has_troop, "trp_npc1"),
-          (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Tell Borcha the road can wait.",
-        [
-          (call_script, "script_sod_companion_shift_approval", "trp_npc1", -4),
-          (display_message, "@Borcha smooths the dirt with his boot. 'Roads wait. Knives do not.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_borcha_road_keeps_own_resolve", [
-          (main_party_has_troop, "trp_npc1"),
-          (eq, "$g_sod_borcha_road_pending", 1),
-          (eq, "$g_sod_borcha_road_witnessed", 1),
-          (eq, "$g_sod_borcha_road_confronted", 1),
-          (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Follow Borcha's road plan to its end.",
-        [
-          (jump_to_menu, "mnu_borcha_road_keeps_own"),
-        ]
-      ),
-      ("companion_campfire_borcha_road_keeps_own_hard", [
-          (main_party_has_troop, "trp_npc1"),
-          (eq, "$g_sod_borcha_road_pending", 1),
-          (eq, "$g_sod_borcha_road_witnessed", 1),
-          (eq, "$g_sod_borcha_road_confronted", 1),
-          (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Press the route hard for profit.",
-        [
-          (jump_to_menu, "mnu_borcha_road_keeps_own"),
-        ]
-      ),
-      ("companion_campfire_marnid_honest_price_start", [
-          (main_party_has_troop, "trp_npc2"),
-          (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc2", slot_troop_companion_approval, 45),
-        ], "Speak with Marnid about The Honest Price.",
-        [
-          (troop_set_slot, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Marnid opens a careful ledger. 'There are clean profits, necessary profits, and profits that poison the next road. I would rather know which column we are using.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_marnid_honest_price_clean", [
-          (main_party_has_troop, "trp_npc2"),
-          (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Back Marnid's clean trade contacts.",
-        [
-          (call_script, "script_sod_companion_start_marnid_market_incident", 1),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_orderly_profit, 3),
-          (display_message, "@Marnid marks three names and crosses out two. 'Good. Now we ask the market which names are missing.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_marnid_honest_price_dirty", [
-          (main_party_has_troop, "trp_npc2"),
-          (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Use Marnid's contacts for dirtier prisoner profit.",
-        [
-          (call_script, "script_sod_companion_start_marnid_market_incident", 2),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_dirty_profit, 2),
-          (display_message, "@Marnid closes the ledger slowly. 'Profitable, yes. But some accounts charge interest in sleep. We ask the market before it collects.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_marnid_honest_price_resolve", [
-          (main_party_has_troop, "trp_npc2"),
-          (eq, "$g_sod_marnid_market_pending", 1),
-          (ge, "$g_sod_marnid_market_evidence", 1),
-          (eq, "$g_sod_marnid_market_confronted", 1),
-          (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Settle The Honest Price cleanly.",
-        [
-          (jump_to_menu, "mnu_marnid_honest_price"),
-        ]
-      ),
-      ("companion_campfire_marnid_honest_price_hard", [
-          (main_party_has_troop, "trp_npc2"),
-          (eq, "$g_sod_marnid_market_pending", 1),
-          (ge, "$g_sod_marnid_market_evidence", 1),
-          (eq, "$g_sod_marnid_market_confronted", 1),
-          (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Squeeze The Honest Price for every denar.",
-        [
-          (jump_to_menu, "mnu_marnid_honest_price"),
-        ]
-      ),
-      ("companion_campfire_ymira_mercy_start", [
-          (main_party_has_troop, "trp_npc3"),
-          (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc3", slot_troop_companion_approval, 45),
-        ], "Speak with Ymira about Mercy Under Arms.",
-        [
-          (troop_set_slot, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Ymira watches the prisoners beyond the fire. 'A victory does not end when the shouting stops. That is when command shows its real face.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_ymira_mercy_spare", [
-          (main_party_has_troop, "trp_npc3"),
-          (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Promise Ymira the helpless will be protected.",
-        [
-          (troop_set_slot, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_free_captives, 3),
-          (display_message, "@Ymira lets out a breath she had been holding. 'Then mercy has a place in this company, not just a corner where it hides.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_ymira_mercy_ransom", [
-          (main_party_has_troop, "trp_npc3"),
-          (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Tell Ymira mercy must answer to ransom and supply.",
-        [
-          (troop_set_slot, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc3", -2),
-          (display_message, "@Ymira nods, but not happily. 'I know supplies matter. I only fear the day every person becomes a line in the stores.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_ymira_mercy_dismiss", [
-          (main_party_has_troop, "trp_npc3"),
-          (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Tell Ymira not every wound can be your concern.",
-        [
-          (call_script, "script_sod_companion_shift_approval", "trp_npc3", -5),
-          (display_message, "@Ymira looks back to the dark beyond camp. 'No. Only the ones we choose not to see.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_ymira_mercy_resolve", [
-          (main_party_has_troop, "trp_npc3"),
-          (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve Mercy Under Arms with protection.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc3", 1),
-          (display_message, "@The captives are guarded, fed, and sent toward safety. Ymira does not call it victory. She calls it proof.", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_ymira_mercy_hard", [
-          (main_party_has_troop, "trp_npc3"),
-          (troop_slot_eq, "trp_npc3", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve Mercy Under Arms with hard necessity.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc3", 0),
-          (display_message, "@The army is supplied and the captives are accounted for, but Ymira's thanks do not come easily. 'Necessary should never become easy.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_rolf_name_start", [
-          (main_party_has_troop, "trp_npc4"),
-          (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc4", slot_troop_companion_approval, 45),
-        ], "Speak with Rolf about A Name Worth Wearing.",
-        [
-          (troop_set_slot, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Rolf adjusts his cloak as if a hall of nobles were watching. 'There are men who inherit names, and lesser men who question them.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_rolf_name_earn", [
-          (main_party_has_troop, "trp_npc4"),
-          (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Tell Rolf a name is proven by conduct.",
-        [
-          (troop_set_slot, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_hard_victory, 2),
-          (display_message, "@Rolf begins to object, then smiles. 'Naturally. A great name improves the deeds beneath it.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_rolf_name_defend", [
-          (main_party_has_troop, "trp_npc4"),
-          (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Publicly defend Rolf's dignity.",
-        [
-          (troop_set_slot, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc4", 3),
-          (display_message, "@Rolf's bow is magnificent. 'At last, someone here understands lineage as a civic necessity.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_rolf_name_expose", [
-          (main_party_has_troop, "trp_npc4"),
-          (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Force Rolf to drop the performance.",
-        [
-          (troop_set_slot, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc4", -5),
-          (display_message, "@Rolf's smile stays in place a moment too long. 'How brave, to strip a cloak and call the shivering man honest.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_rolf_name_resolve", [
-          (main_party_has_troop, "trp_npc4"),
-          (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve A Name Worth Wearing by letting Rolf earn it.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc4", 1),
-          (display_message, "@Rolf stands before the company without embellishing the tale. Somehow, the name sounds larger for carrying less smoke.", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_rolf_name_hard", [
-          (main_party_has_troop, "trp_npc4"),
-          (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve A Name Worth Wearing by preserving the grand claim.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc4", 0),
-          (display_message, "@The story survives intact. Rolf is grateful, proud, and a little more trapped inside it.", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_baheshtur_saddle_start", [
-          (main_party_has_troop, "trp_npc5"),
-          (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc5", slot_troop_companion_approval, 45),
-        ], "Speak with Baheshtur about The Unbroken Saddle.",
-        [
-          (troop_set_slot, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Baheshtur tightens a saddle strap beside the fire. 'A saddle can carry a man or mark him owned. The difference is who chose the road.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_baheshtur_saddle_ride", [
-          (main_party_has_troop, "trp_npc5"),
-          (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Ride hard against the steppe rival before he gathers strength.",
-        [
-          (troop_set_slot, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_hard_victory, 2),
-          (display_message, "@Baheshtur's nod is small and fierce. 'Good. Let him learn that open ground does not belong only to raiders.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_baheshtur_saddle_free", [
-          (main_party_has_troop, "trp_npc5"),
-          (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Offer captured riders honorable freedom if they swear freely.",
-        [
-          (troop_set_slot, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc5", 4),
-          (display_message, "@Baheshtur watches you carefully. 'An oath taken by a free man has weight. Anything else is rope.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_baheshtur_saddle_bargain", [
-          (main_party_has_troop, "trp_npc5"),
-          (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Buy peace with tribute and let the insult pass.",
-        [
-          (troop_set_slot, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_black_khergit_tribute, 1),
-          (display_message, "@Baheshtur looks toward the horse lines. 'A paid wolf is still a wolf. He only learns your purse has meat in it.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_baheshtur_saddle_resolve", [
-          (main_party_has_troop, "trp_npc5"),
-          (eq, "$g_sod_baheshtur_saddle_witnessed", 1),
-          (eq, "$g_sod_baheshtur_saddle_confronted", 1),
-          (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve The Unbroken Saddle through chosen loyalty.",
-        [
-          (assign, "$g_sod_baheshtur_saddle_result_grade", 3),
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc5", 1),
-          (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc5"),
-          (display_message, "@The rival's riders scatter, and those who remain do so by their own word. Baheshtur says only, 'Now they ride with us, not under us.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_baheshtur_saddle_hard", [
-          (main_party_has_troop, "trp_npc5"),
-          (eq, "$g_sod_baheshtur_saddle_witnessed", 1),
-          (eq, "$g_sod_baheshtur_saddle_confronted", 1),
-          (troop_slot_eq, "trp_npc5", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve The Unbroken Saddle by forcing submission.",
-        [
-          (assign, "$g_sod_baheshtur_saddle_result_grade", 1),
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc5", 0),
-          (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc5"),
-          (display_message, "@The riders obey. Baheshtur does not mistake obedience for loyalty. 'You have broken the saddle in. Perhaps too well.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_firentis_debt_start", [
-          (main_party_has_troop, "trp_npc6"),
-          (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc6", slot_troop_companion_approval, 45),
-        ], "Speak with Firentis about Debt of the Sword.",
-        [
-          (troop_set_slot, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Firentis studies the edge of his blade. 'A sword remembers what the hand asks of it. So do the living.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_firentis_debt_restitution", [
-          (main_party_has_troop, "trp_npc6"),
-          (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Back Firentis in making restitution.",
-        [
-          (troop_set_slot, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_help_village, 2),
-          (display_message, "@Firentis bows his head. 'Restitution will not make the dead answer. It may still keep the living from joining them.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_firentis_debt_confess", [
-          (main_party_has_troop, "trp_npc6"),
-          (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Have Firentis confess publicly and accept judgment.",
-        [
-          (troop_set_slot, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc6", 2),
-          (display_message, "@Firentis looks afraid, then relieved by the fear. 'Then let truth do what steel cannot.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_firentis_debt_silence", [
-          (main_party_has_troop, "trp_npc6"),
-          (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Bury Firentis's past to preserve the company.",
-        [
-          (troop_set_slot, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc6", -4),
-          (display_message, "@Firentis sheathes the blade carefully. 'A buried thing is not absolved. It is only waiting.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_firentis_debt_resolve", [
-          (main_party_has_troop, "trp_npc6"),
-          (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve Debt of the Sword through restitution.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc6", 1),
-          (display_message, "@The debt is not erased, but it is named and answered. Firentis stands lighter, as if service has become more than punishment.", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_firentis_debt_hard", [
-          (main_party_has_troop, "trp_npc6"),
-          (troop_slot_eq, "trp_npc6", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve Debt of the Sword by silencing the matter.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc6", 0),
-          (display_message, "@The matter goes quiet. Firentis stays, but his obedience has the shape of a sentence.", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_jeremus_hands_start", [
-          (main_party_has_troop, "trp_npc12"),
-          (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc12", slot_troop_companion_approval, 45),
-        ], "Speak with Jeremus about Hands That Will Not Harden.",
-        [
-          (troop_set_slot, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Jeremus cleans a needle until it catches the firelight. 'There will be a day when we have too many wounded and too little time. I fear what that day will teach us.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_jeremus_hands_civilians", [
-          (main_party_has_troop, "trp_npc12"),
-          (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Promise Jeremus that civilians and helpless wounded come first.",
-        [
-          (troop_set_slot, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_free_captives, 3),
-          (display_message, "@Jeremus closes his eyes for a moment. 'Then we will still be an army, but not only an army.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_jeremus_hands_triage", [
-          (main_party_has_troop, "trp_npc12"),
-          (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Set a hard triage order: save those who can still be saved.",
-        [
-          (troop_set_slot, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc12", 1),
-          (display_message, "@Jeremus nods sadly. 'Cruel arithmetic, but not cruelty. I can work with that difference.'", 0xCCCC66),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_jeremus_hands_soldiers", [
-          (main_party_has_troop, "trp_npc12"),
-          (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Tell Jeremus the company's soldiers come before all others.",
-        [
-          (troop_set_slot, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc12", -4),
-          (display_message, "@Jeremus folds the clean cloth with care. 'Then I pray our banner never becomes the measure of a life.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_jeremus_hands_resolve", [
-          (main_party_has_troop, "trp_npc12"),
-          (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve Hands That Will Not Harden with mercy under pressure.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc12", 1),
-          (display_message, "@The wounded are sorted without rank deciding who deserves breath. Jeremus looks exhausted, but not defeated.", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_jeremus_hands_hard", [
-          (main_party_has_troop, "trp_npc12"),
-          (troop_slot_eq, "trp_npc12", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve Hands That Will Not Harden by saving only company strength.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc12", 0),
-          (display_message, "@The company recovers faster. Jeremus does not argue with the result. He only asks who will heal what the result did to you.", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_bunduk_line_start", [
-          (main_party_has_troop, "trp_npc10"),
-          (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc10", slot_troop_companion_approval, 45),
-        ], "Speak with Bunduk about The Men Who Hold the Line.",
-        [
-          (troop_set_slot, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Bunduk checks a crossbow string twice before speaking. 'Men in the line know when officers are spending them. They know before the officers do.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_bunduk_line_advocate", [
-          (main_party_has_troop, "trp_npc10"),
-          (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Let Bunduk speak for the common soldiers.",
-        [
-          (troop_set_slot, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_train_troops, 2),
-          (display_message, "@Bunduk nods. 'Good. They do not need soft words. They need boots, bolts, pay, and orders that are not stupid.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_bunduk_line_supplies", [
-          (main_party_has_troop, "trp_npc10"),
-          (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Back Bunduk's demand for fair stores and watches.",
-        [
-          (troop_set_slot, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_food_security, 2),
-          (display_message, "@Bunduk gives a short laugh. 'Amazing thing, feeding men before asking them to die. Should write a book.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_bunduk_line_crackdown", [
-          (main_party_has_troop, "trp_npc10"),
-          (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Tell Bunduk the line needs harsher discipline, not complaints.",
-        [
-          (troop_set_slot, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc10", -5),
-          (display_message, "@Bunduk's face hardens. 'Aye. I have heard officers say that just before blaming dead men for obeying.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_bunduk_line_resolve", [
-          (main_party_has_troop, "trp_npc10"),
-          (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve The Men Who Hold the Line by backing the soldiers.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc10", 1),
-          (display_message, "@The line gets better watches, fairer stores, and orders worth obeying. Bunduk only says, 'Now they might live long enough to complain properly.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_bunduk_line_hard", [
-          (main_party_has_troop, "trp_npc10"),
-          (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve The Men Who Hold the Line by enforcing command authority.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc10", 0),
-          (display_message, "@The line obeys. Bunduk stays with it, but his salute looks like something nailed to a door.", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_katrin_coin_start", [
-          (main_party_has_troop, "trp_npc11"),
-          (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc11", slot_troop_companion_approval, 45),
-        ], "Speak with Katrin about The Last Coin in Camp.",
-        [
-          (troop_set_slot, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Katrin drops a small coin into an empty cup. 'That is the sound of a grand plan after supper, wages, and bandages have had their say.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_katrin_coin_stores", [
-          (main_party_has_troop, "trp_npc11"),
-          (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Put the last coin toward stores, wages, and medicine.",
-        [
-          (troop_set_slot, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_food_security, 3),
-          (display_message, "@Katrin sniffs. 'Sensible. Dangerous habit, that. Keep it up and the camp may start expecting to live.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_katrin_coin_refugees", [
-          (main_party_has_troop, "trp_npc11"),
-          (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Stretch the stores to feed refugees without starving the camp.",
-        [
-          (troop_set_slot, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_help_village, 2),
-          (display_message, "@Katrin begins counting portions under her breath. 'Mercy with arithmetic. Harder than speeches, better for everyone.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_katrin_coin_glory", [
-          (main_party_has_troop, "trp_npc11"),
-          (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Spend the last coin on a bold opportunity instead.",
-        [
-          (troop_set_slot, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc11", -5),
-          (display_message, "@Katrin folds her arms. 'Of course. A hungry man loves hearing he is part of history.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_katrin_coin_resolve", [
-          (main_party_has_troop, "trp_npc11"),
-          (eq, "$g_sod_katrin_last_coin_witnessed", 1),
-          (eq, "$g_sod_katrin_last_coin_confronted", 1),
-          (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve The Last Coin in Camp through practical care.",
-        [
-          (assign, "$g_sod_katrin_last_coin_result_grade", 3),
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc11", 1),
-          (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc11"),
-          (display_message, "@The camp eats, the sick are tended, and the coin is gone without regret. Katrin calls it ordinary sense, which is her highest poetry.", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_katrin_coin_hard", [
-          (main_party_has_troop, "trp_npc11"),
-          (eq, "$g_sod_katrin_last_coin_witnessed", 1),
-          (eq, "$g_sod_katrin_last_coin_confronted", 1),
-          (troop_slot_eq, "trp_npc11", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve The Last Coin in Camp by accepting heroic waste.",
-        [
-          (assign, "$g_sod_katrin_last_coin_result_grade", 1),
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc11", 0),
-          (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc11"),
-          (display_message, "@The opportunity pays in noise and risk. Katrin keeps the camp together anyway, but every ladle of thin broth sounds like an accusation.", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_matheld_step_start", [
-          (main_party_has_troop, "trp_npc8"),
-          (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc8", slot_troop_companion_approval, 45),
-        ], "Speak with Matheld about No Backward Step.",
-        [
-          (troop_set_slot, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Matheld sets her shield near the fire like a second face. 'There are days a company learns whether its back is bone or smoke.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_matheld_step_stand", [
-          (main_party_has_troop, "trp_npc8"),
-          (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Stand firm and answer the threat directly.",
-        [
-          (troop_set_slot, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_hard_victory, 2),
-          (display_message, "@Matheld bares her teeth. 'Good. Let them see the shield before they feel it.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_matheld_step_temper", [
-          (main_party_has_troop, "trp_npc8"),
-          (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Temper courage with a plan that saves lives.",
-        [
-          (troop_set_slot, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc8", 2),
-          (display_message, "@Matheld grunts. 'Planning is not cowardice if the shield still faces forward.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_matheld_step_yield", [
-          (main_party_has_troop, "trp_npc8"),
-          (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Yield ground and avoid the challenge.",
-        [
-          (troop_set_slot, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_cowardice, 2),
-          (display_message, "@Matheld's voice drops. 'Every backward step teaches someone to chase.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_matheld_step_resolve", [
-          (main_party_has_troop, "trp_npc8"),
-          (eq, "$g_sod_matheld_no_backward_step_witnessed", 1),
-          (eq, "$g_sod_matheld_no_backward_step_confronted", 1),
-          (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve No Backward Step with courage held in discipline.",
-        [
-          (assign, "$g_sod_matheld_no_backward_step_result_grade", 3),
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc8", 1),
-          (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc8"),
-          (display_message, "@The threat breaks against a shield wall that knows when to stand and when to breathe. Matheld calls it courage with teeth.", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_matheld_step_hard", [
-          (main_party_has_troop, "trp_npc8"),
-          (eq, "$g_sod_matheld_no_backward_step_witnessed", 1),
-          (eq, "$g_sod_matheld_no_backward_step_confronted", 1),
-          (troop_slot_eq, "trp_npc8", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve No Backward Step by spending blood for reputation.",
-        [
-          (assign, "$g_sod_matheld_no_backward_step_result_grade", 1),
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc8", 0),
-          (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc8"),
-          (display_message, "@No one can call the company soft. The dead cannot call it wise. Matheld accepts the courage and says nothing of the cost.", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_alayen_standard_start", [
-          (main_party_has_troop, "trp_npc9"),
-          (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc9", slot_troop_companion_approval, 45),
-        ], "Speak with Alayen about The Standard and the Self.",
-        [
-          (troop_set_slot, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Alayen folds a strip of worn cloth with formal care. 'A standard is not decoration. It is a promise men die believing.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_alayen_standard_duty", [
-          (main_party_has_troop, "trp_npc9"),
-          (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Tell Alayen honor means duty to those beneath the banner.",
-        [
-          (troop_set_slot, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_help_village, 2),
-          (display_message, "@Alayen inclines his head. 'Then nobility is not a height. It is a weight. Good.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_alayen_standard_oath", [
-          (main_party_has_troop, "trp_npc9"),
-          (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Keep the public oath even at real cost.",
-        [
-          (troop_set_slot, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc9", 4),
-          (display_message, "@Alayen's expression steadies. 'Cost is where oath becomes more than speech.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_alayen_standard_pride", [
-          (main_party_has_troop, "trp_npc9"),
-          (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Use the standard to secure prestige and obedience.",
-        [
-          (troop_set_slot, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc9", -4),
-          (display_message, "@Alayen goes very still. 'A banner used as ornament soon becomes a rag.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_alayen_standard_resolve", [
-          (main_party_has_troop, "trp_npc9"),
-          (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve The Standard and the Self through responsibility.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc9", 1),
-          (display_message, "@The promise is kept where all can see it. Alayen lowers the standard only after the last dependent is safe.", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_alayen_standard_hard", [
-          (main_party_has_troop, "trp_npc9"),
-          (troop_slot_eq, "trp_npc9", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve The Standard and the Self through prestige.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc9", 0),
-          (display_message, "@The company looks grander for it. Alayen remains, but he watches the standard as if checking whether it still means anything.", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_nizar_charge_start", [
-          (main_party_has_troop, "trp_npc13"),
-          (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc13", slot_troop_companion_approval, 45),
-        ], "Speak with Nizar about The Impossible Charge.",
-        [
-          (troop_set_slot, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Nizar leans toward the fire as if it were an audience. 'There is a charge men call impossible because they lack imagination. There is also the other kind. I would prefer we learn the difference before dawn.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_nizar_charge_daring", [
-          (main_party_has_troop, "trp_npc13"),
-          (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Take the daring rescue before the enemy can form.",
-        [
-          (troop_set_slot, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_hard_victory, 2),
-          (display_message, "@Nizar springs up smiling. 'At last, a decision with a pulse. I shall try not to improve it too much when I retell it.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_nizar_charge_responsible", [
-          (main_party_has_troop, "trp_npc13"),
-          (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Make the charge work by planning the way out first.",
-        [
-          (troop_set_slot, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc13", 2),
-          (display_message, "@Nizar makes a face, then laughs. 'A cautious legend. Disgraceful. Useful. Possibly immortal.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_nizar_charge_refuse", [
-          (main_party_has_troop, "trp_npc13"),
-          (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Refuse the charge as needless theater.",
-        [
-          (troop_set_slot, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_cowardice, 1),
-          (display_message, "@Nizar bows too deeply. 'Of course. We shall leave the impossible to poorer poets.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_nizar_charge_resolve", [
-          (main_party_has_troop, "trp_npc13"),
-          (eq, "$g_sod_nizar_charge_witnessed", 1),
-          (eq, "$g_sod_nizar_charge_confronted", 1),
-          (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve The Impossible Charge with glory and survivors.",
-        [
-          (assign, "$g_sod_nizar_charge_result_grade", 3),
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc13", 1),
-          (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc13"),
-          (display_message, "@The charge breaks the enemy and brings the living home. Nizar raises a cup. 'A rare triumph: the song need not lie about the ending.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_nizar_charge_hard", [
-          (main_party_has_troop, "trp_npc13"),
-          (eq, "$g_sod_nizar_charge_witnessed", 1),
-          (eq, "$g_sod_nizar_charge_confronted", 1),
-          (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve The Impossible Charge by spending blood for legend.",
-        [
-          (assign, "$g_sod_nizar_charge_result_grade", 1),
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc13", 0),
-          (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc13"),
-          (display_message, "@The story will travel farther than the burial count. Nizar still smiles, but the smile arrives late. 'Yes. That is one way to become unforgettable.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_lezalit_discipline_start", [
-          (main_party_has_troop, "trp_npc14"),
-          (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc14", slot_troop_companion_approval, 45),
-        ], "Speak with Lezalit about Discipline Without Chains.",
-        [
-          (troop_set_slot, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Lezalit watches the drill line until one man drops his shield from exhaustion. 'There. That is the moment command decides whether it trains soldiers or breaks them.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_lezalit_discipline_reform", [
-          (main_party_has_troop, "trp_npc14"),
-          (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Order Lezalit to reform the drills without softening standards.",
-        [
-          (troop_set_slot, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_train_troops, 3),
-          (display_message, "@Lezalit studies you for a long moment. 'Good. Mercy that preserves standards is not weakness. It is efficiency with a conscience.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_lezalit_discipline_punish", [
-          (main_party_has_troop, "trp_npc14"),
-          (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Back harsh punishment to restore order.",
-        [
-          (troop_set_slot, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc14", 2),
-          (display_message, "@Lezalit nods once. 'The line will hold. Whether it learns why is another matter.'", 0xCCCC66),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_lezalit_discipline_dismiss", [
-          (main_party_has_troop, "trp_npc14"),
-          (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Tell Lezalit the men need less discipline, not more.",
-        [
-          (call_script, "script_sod_companion_shift_approval", "trp_npc14", -5),
-          (display_message, "@Lezalit's expression closes like a gate. 'Then pray sentiment can hold a shield wall.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_lezalit_discipline_resolve", [
-          (main_party_has_troop, "trp_npc14"),
-          (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve Discipline Without Chains through reform.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc14", 1),
-          (display_message, "@The drills remain hard, but the men understand them now. Lezalit calls it obedience. Later, more quietly, he calls it command.", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_lezalit_discipline_hard", [
-          (main_party_has_troop, "trp_npc14"),
-          (troop_slot_eq, "trp_npc14", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve Discipline Without Chains through fear.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc14", 0),
-          (display_message, "@The line becomes quiet and fast to obey. Lezalit approves of the order, but even he does not call it loyalty.", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_artimenner_siege_start", [
-          (main_party_has_troop, "trp_npc15"),
-          (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc15", slot_troop_companion_approval, 45),
-        ], "Speak with Artimenner about The Siege That Should Have Worked.",
-        [
-          (troop_set_slot, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Artimenner lays three little sticks into a wall shape, then knocks one loose. 'This is how men die: not from courage, but from one brace nobody inspected.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_artimenner_siege_prepare", [
-          (main_party_has_troop, "trp_npc15"),
-          (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Give Artimenner time and materials to rebuild the works properly.",
-        [
-          (troop_set_slot, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_orderly_profit, 2),
-          (display_message, "@Artimenner blinks, as if bracing for argument that never comes. 'Good. Remarkable. We may yet defeat gravity and stupidity in the same week.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_artimenner_siege_improvise", [
-          (main_party_has_troop, "trp_npc15"),
-          (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Ask him to improvise a leaner plan with what the army has.",
-        [
-          (troop_set_slot, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc15", 2),
-          (display_message, "@Artimenner pinches the bridge of his nose. 'Inferior, but possible. I prefer possible to glorious nonsense.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_artimenner_siege_blame", [
-          (main_party_has_troop, "trp_npc15"),
-          (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Tell Artimenner he will be blamed if the works fail.",
-        [
-          (troop_set_slot, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc15", -6),
-          (display_message, "@Artimenner's voice goes flat. 'Ah. So I am not an engineer. I am a bucket for falling stones.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_artimenner_siege_resolve", [
-          (main_party_has_troop, "trp_npc15"),
-          (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve The Siege That Should Have Worked by respecting the design.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc15", 1),
-          (display_message, "@The works hold because they were built to hold. Artimenner allows himself one grim smile. 'At last. A wall that understands its vocation.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_artimenner_siege_hard", [
-          (main_party_has_troop, "trp_npc15"),
-          (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve The Siege That Should Have Worked by shifting blame.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc15", 0),
-          (display_message, "@The failed work finds a culprit and the army moves on. Artimenner does not. 'There. A neat report. Shame it cannot carry a ladder.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_deshavi_tracks_start", [
-          (main_party_has_troop, "trp_npc7"),
-          (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc7", slot_troop_companion_approval, 45),
-        ], "Speak with Deshavi about Tracks Through Ash.",
-        [
-          (troop_set_slot, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Deshavi lays three blackened twigs by the fire. 'Same ash on all of them. Three villages. Same riders passed before the smoke.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_deshavi_tracks_rescue", [
-          (main_party_has_troop, "trp_npc7"),
-          (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Follow Deshavi's trail to rescue survivors.",
-        [
-          (troop_set_slot, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_food_security, 3),
-          (display_message, "@Deshavi nods without smiling. 'Good. Poor folk leave signs because rich men do not leave help.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_deshavi_tracks_ambush", [
-          (main_party_has_troop, "trp_npc7"),
-          (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Use the trail to ambush the raiders first.",
-        [
-          (troop_set_slot, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_safe_roadcraft, 2),
-          (display_message, "@Deshavi checks her bowstring. 'Better to find wolves before they find doors.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_deshavi_tracks_ignore", [
-          (main_party_has_troop, "trp_npc7"),
-          (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Tell Deshavi the company cannot chase every burned trail.",
-        [
-          (call_script, "script_sod_companion_shift_approval", "trp_npc7", -5),
-          (display_message, "@Deshavi gathers the twigs back into her palm. 'No. Only the trails poor enough to be quiet.'", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_deshavi_tracks_resolve", [
-          (main_party_has_troop, "trp_npc7"),
-          (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve Tracks Through Ash by sheltering survivors.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc7", 1),
-          (display_message, "@The survivors are fed, hidden, and guided toward safer ground. Deshavi only says, 'They will remember who looked down and saw tracks.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_deshavi_tracks_hard", [
-          (main_party_has_troop, "trp_npc7"),
-          (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve Tracks Through Ash by hunting the raiders only.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc7", 0),
-          (display_message, "@The raiders bleed for the ash they left behind. Deshavi accepts the dead, but not the ones you did not stop to count.", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_klethi_knife_start", [
-          (main_party_has_troop, "trp_npc16"),
-          (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_none),
-          (troop_slot_ge, "trp_npc16", slot_troop_companion_approval, 45),
-        ], "Speak with Klethi about A Knife With a Name.",
-        [
-          (troop_set_slot, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-          (display_message, "@Klethi turns a small knife in her fingers without looking at it. 'Funny thing. A blade can go nameless for years, then one old face remembers it.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_klethi_knife_protect", [
-          (main_party_has_troop, "trp_npc16"),
-          (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Protect Klethi from the old accusation.",
-        [
-          (troop_set_slot, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_stealth_success, 3),
-          (display_message, "@Klethi's smile almost reaches her eyes. 'Careful. Protecting thieves is how honest people learn useful habits.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_klethi_knife_face", [
-          (main_party_has_troop, "trp_npc16"),
-          (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Make Klethi face the damage, but on her own terms.",
-        [
-          (troop_set_slot, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_shift_approval", "trp_npc16", 2),
-          (display_message, "@Klethi pockets the knife. 'My terms, then. That is the part people forget when they say justice.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_klethi_knife_sellout", [
-          (main_party_has_troop, "trp_npc16"),
-          (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked),
-        ], "Trade Klethi's old secret for leverage.",
-        [
-          (troop_set_slot, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-          (call_script, "script_sod_companion_apply_player_action", sod_companion_action_betray_autonomy, 2),
-          (display_message, "@Klethi laughs once. Small sound. No warmth. 'There it is. Belonging with a price tag.'", 0xCC6666),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_klethi_knife_resolve", [
-          (main_party_has_troop, "trp_npc16"),
-          (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve A Knife With a Name by letting Klethi choose.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc16", 1),
-          (display_message, "@Klethi handles the old debt quietly and returns before dawn. 'Still here,' she says. For her, it is a long speech.", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_klethi_knife_hard", [
-          (main_party_has_troop, "trp_npc16"),
-          (troop_slot_eq, "trp_npc16", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
-        ], "Resolve A Knife With a Name by using the secret.",
-        [
-          (call_script, "script_sod_companion_advance_personal_quest", "trp_npc16", 0),
-          (display_message, "@The secret buys leverage. Klethi buys distance. She stays, but every door near her seems half open now.", 0xCC9966),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_acknowledge_warnings", [
-          (assign, ":has_pending_warning", 0),
-          (try_for_range, ":companion", companions_begin, companions_end),
-            (main_party_has_troop, ":companion"),
-            (troop_slot_eq, ":companion", slot_troop_companion_warning_state, sod_companion_warning_pending),
-            (assign, ":has_pending_warning", 1),
-          (try_end),
-          (eq, ":has_pending_warning", 1),
-        ], "Hold the fire open for grievances.",
-        [
-          (try_for_range, ":companion", companions_begin, companions_end),
-            (main_party_has_troop, ":companion"),
-            (troop_slot_eq, ":companion", slot_troop_companion_warning_state, sod_companion_warning_pending),
-            (call_script, "script_sod_companion_warning_to_s0", ":companion"),
-            (display_message, "@Companion warning: {s0}", 0xCC9966),
-            (troop_set_slot, ":companion", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
-            (call_script, "script_sod_companion_shift_approval", ":companion", 3),
-          (try_end),
-          (display_message, "@The company hears itself speak plainly. Some wounds are named before they split open.", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_repair_acknowledged_warnings", [
-          (assign, ":has_named_warning", 0),
-          (try_for_range, ":companion", companions_begin, companions_end),
-            (main_party_has_troop, ":companion"),
-            (this_or_next|troop_slot_eq, ":companion", slot_troop_companion_warning_state, sod_companion_warning_final),
-            (troop_slot_eq, ":companion", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
-            (troop_get_slot, ":approval", ":companion", slot_troop_companion_approval),
-            (lt, ":approval", 45),
-            (assign, ":has_named_warning", 1),
-          (try_end),
-          (eq, ":has_named_warning", 1),
-        ], "Make amends for named grievances.",
-        [
-          (try_for_range, ":companion", companions_begin, companions_end),
-            (main_party_has_troop, ":companion"),
-            (this_or_next|troop_slot_eq, ":companion", slot_troop_companion_warning_state, sod_companion_warning_final),
-            (troop_slot_eq, ":companion", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
-            (troop_get_slot, ":approval", ":companion", slot_troop_companion_approval),
-            (lt, ":approval", 45),
-            (call_script, "script_sod_companion_shift_approval", ":companion", 8),
-            (call_script, "script_sod_companion_reconciliation_to_s0", ":companion"),
-            (display_message, "@Companion reconciliation: {s0}", 0x99CCFF),
-            (troop_set_slot, ":companion", slot_troop_companion_warning_state, sod_companion_warning_acknowledged),
-          (try_end),
-          (display_message, "@Promises are made in plain language tonight. They will need deeds later, but the worst silences have loosened.", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
-      ("companion_campfire_diego_chainbreaker", [
-          (main_party_has_troop, "trp_diego_companion"),
-        ], "Ask Diego to watch for captives who can still run.",
-        [
-          (display_message, "@Diego nods once. 'Give them a gap in the road and a name to follow. Some will find us.'", 0x99CCFF),
-          (jump_to_menu, "mnu_companion_campfire"),
-        ]
-      ),
       ("companion_campfire_back", [], "Bank the fire and return.",
         [
-          (jump_to_menu, "mnu_camp_action"),
+          (try_begin),
+            (gt, "$g_sod_companion_campfire_return_menu", 0),
+            (assign, ":sod_campfire_back_menu", "$g_sod_companion_campfire_return_menu"),
+            (assign, "$g_sod_companion_campfire_return_menu", 0),
+            (jump_to_menu, ":sod_campfire_back_menu"),
+          (else_try),
+            (jump_to_menu, "mnu_camp_action"),
+          (try_end),
         ]
       ),
     ]
   ),
-# [ src/menus/camp/companion_depth_report.py:L1-L25 ] companion_depth_report
+# [ src/menus/camp/companion_depth_report.py:L1-L34 ] companion_depth_report
 ("companion_depth_report", mnf_scale_picture|mnf_enable_hot_keys,
    "{s1}",
    "none",
@@ -23282,10 +23074,19 @@ or spirit exist and so condemn the priests of false religions and other magician
     ],
     [
       ("companion_depth_report_campfire", [
-          (party_get_num_companion_stacks, ":num_stacks", "p_main_party"),
-          (gt, ":num_stacks", 1),
+          (assign, ":has_companion", 0),
+          (try_for_range, ":companion", companions_begin, companions_end),
+            (main_party_has_troop, ":companion"),
+            (assign, ":has_companion", 1),
+          (try_end),
+          (try_for_range, ":companion", special_companions_begin, special_companions_end),
+            (main_party_has_troop, ":companion"),
+            (assign, ":has_companion", 1),
+          (try_end),
+          (eq, ":has_companion", 1),
         ], "Gather companions by the fire.",
         [
+          (assign, "$g_sod_companion_campfire_return_menu", "mnu_companion_depth_report"),
           (jump_to_menu, "mnu_companion_campfire"),
         ]
       ),
@@ -23296,7 +23097,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       ),
     ]
   ),
-# [ src/menus/camp/companion_retinue_report.py:L1-L370 ] companion_retinue_report
+# [ src/menus/camp/companion_retinue_report.py:L1-L372 ] companion_retinue_report
 ("companion_retinue_report", mnf_scale_picture|mnf_enable_hot_keys,
    "{s1}",
    "none",
@@ -23542,7 +23343,9 @@ or spirit exist and so condemn the priests of false religions and other magician
         [
           (try_begin),
             (gt, "$g_sod_retinue_return_menu", 0),
-            (jump_to_menu, "$g_sod_retinue_return_menu"),
+            (assign, ":sod_retinue_back_menu", "$g_sod_retinue_return_menu"),
+            (assign, "$g_sod_retinue_return_menu", 0),
+            (jump_to_menu, ":sod_retinue_back_menu"),
           (else_try),
             (change_screen_return),
           (try_end),
@@ -23665,7 +23468,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       ),
     ]
   ),
-# [ src/menus/camp/camp_jobs.py:L1-L162 ] camp_jobs
+# [ src/menus/camp/camp_jobs.py:L1-L168 ] camp_jobs
 ("camp_jobs", mnf_scale_picture|mnf_enable_hot_keys,
    "{s1}",
    "none",
@@ -23680,6 +23483,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         [
           (assign, "$g_camp_mode", 1),
           (assign, "$g_player_icon_state", pis_camping),
+          (call_script, "script_sod_refresh_player_map_icon"),
           (rest_for_hours_interactive, 6, 5, 1),
           (change_screen_return),
         ]
@@ -23692,6 +23496,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         [
           (assign, "$g_camp_mode", 1),
           (assign, "$g_player_icon_state", pis_camping),
+          (call_script, "script_sod_refresh_player_map_icon"),
           (call_script, "script_sod_camp_job_start", sod_camp_job_scout_route, 6, "trp_npc1"),
           (try_begin),
             (eq, reg0, 1),
@@ -23720,6 +23525,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         [
           (assign, "$g_camp_mode", 1),
           (assign, "$g_player_icon_state", pis_camping),
+          (call_script, "script_sod_refresh_player_map_icon"),
           (call_script, "script_sod_camp_job_start", sod_camp_job_forage_hunt, 6, "trp_player"),
           (try_begin),
             (eq, reg0, 1),
@@ -23739,6 +23545,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         [
           (assign, "$g_camp_mode", 1),
           (assign, "$g_player_icon_state", pis_camping),
+          (call_script, "script_sod_refresh_player_map_icon"),
           (call_script, "script_sod_camp_job_start", sod_camp_job_ration_stores, 6, "trp_npc2"),
           (try_begin),
             (eq, reg0, 1),
@@ -23768,6 +23575,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         [
           (assign, "$g_camp_mode", 1),
           (assign, "$g_player_icon_state", pis_camping),
+          (call_script, "script_sod_refresh_player_map_icon"),
           (call_script, "script_sod_camp_job_start", sod_camp_job_tend_mounts, 6, "trp_npc5"),
           (try_begin),
             (eq, reg0, 1),
@@ -23796,6 +23604,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         [
           (assign, "$g_camp_mode", 1),
           (assign, "$g_player_icon_state", pis_camping),
+          (call_script, "script_sod_refresh_player_map_icon"),
           (call_script, "script_sod_camp_job_start", sod_camp_job_repair_gear, 6, "trp_player"),
           (try_begin),
             (eq, reg0, 1),
@@ -23879,7 +23688,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (main_party_has_troop, "trp_npc1"),
           (eq, "$g_sod_borcha_road_witnessed", 1),
           (eq, "$g_sod_borcha_road_confronted", 1),
-        ], "Keep Borcha's counter-ambush standing until the road is clean.",
+        ], "Hold the counter-ambush until the road is clean.",
         [
           (assign, "$g_sod_borcha_road_pending", 0),
           (try_begin),
@@ -23900,7 +23709,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (main_party_has_troop, "trp_npc1"),
           (eq, "$g_sod_borcha_road_witnessed", 1),
           (eq, "$g_sod_borcha_road_confronted", 1),
-        ], "Use the route for profit before anyone else learns it is safe.",
+        ], "Use the route for profit first.",
         [
           (assign, "$g_sod_borcha_road_pending", 0),
           (assign, "$g_sod_borcha_road_result_grade", 1),
@@ -23971,7 +23780,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_safe_roadcraft, 2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
           (display_message, "@Borcha walks the caravan around the teeth of the trap. The raiders keep their lives; the road loses its secret.", 0xCCCC66),
-          (jump_to_menu, "mnu_borcha_road_keeps_own"),
+          (start_map_conversation, "trp_npc1"),
         ]
       ),
       ("borcha_counter_ambush_sell_route", [
@@ -23989,10 +23798,10 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc1", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
           (display_message, "@The warning sells well. Borcha watches the road afterward, counting who was not worth warning.", 0xCC9966),
-          (jump_to_menu, "mnu_borcha_road_keeps_own"),
+          (start_map_conversation, "trp_npc1"),
         ]
       ),
-      ("borcha_counter_ambush_leave", [], "Return to town.",
+      ("borcha_counter_ambush_leave", [], "Leave the side road for now.",
         [
           (jump_to_menu, "mnu_town"),
         ]
@@ -24018,7 +23827,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("borcha_road_ambush_after", [], "Speak with Borcha about the road.",
         [
-          (jump_to_menu, "mnu_borcha_road_keeps_own"),
+          (start_map_conversation, "trp_npc1"),
         ]
       ),
     ]
@@ -24038,7 +23847,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("borcha_road_failed_after", [], "Face Borcha's road lesson.",
         [
-          (jump_to_menu, "mnu_borcha_road_keeps_own"),
+          (start_map_conversation, "trp_npc1"),
         ]
       ),
     ]
@@ -24067,7 +23876,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (main_party_has_troop, "trp_npc2"),
           (ge, "$g_sod_marnid_market_evidence", 1),
           (eq, "$g_sod_marnid_market_confronted", 1),
-        ], "Expose the dirty contract and pay compensation from the seized goods.",
+        ], "Expose the contract; compensate the laborers.",
         [
           (assign, "$g_sod_marnid_market_pending", 0),
           (assign, "$g_sod_marnid_market_result_grade", 3),
@@ -24087,7 +23896,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (eq, "$g_sod_marnid_market_confronted", 1),
           (store_troop_gold, ":gold", "trp_player"),
           (ge, ":gold", 300),
-        ], "Repay the cheated laborers and keep the clean part of the contract.",
+        ], "Repay the cheated and keep clean terms.",
         [
           (assign, "$g_sod_marnid_market_pending", 0),
           (assign, "$g_sod_marnid_market_result_grade", 2),
@@ -24107,7 +23916,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (main_party_has_troop, "trp_npc2"),
           (ge, "$g_sod_marnid_market_evidence", 1),
           (eq, "$g_sod_marnid_market_confronted", 1),
-        ], "Use the evidence for leverage and take the discount.",
+        ], "Use the evidence for a discount.",
         [
           (assign, "$g_sod_marnid_market_pending", 0),
           (assign, "$g_sod_marnid_market_result_grade", 1),
@@ -24172,7 +23981,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_orderly_profit, 2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc2"),
           (display_message, "@Marnid reads the false accounts aloud until the warehouse guard discovers there is no clean answer left.", 0xCCCC66),
-          (jump_to_menu, "mnu_marnid_honest_price"),
+          (start_map_conversation, "trp_npc2"),
         ]
       ),
       ("marnid_warehouse_blackmail", [
@@ -24191,10 +24000,10 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc2", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc2"),
           (display_message, "@The merchant pays for silence. Marnid writes the number down because ugly accounts still need accuracy.", 0xCC9966),
-          (jump_to_menu, "mnu_marnid_honest_price"),
+          (start_map_conversation, "trp_npc2"),
         ]
       ),
-      ("marnid_warehouse_leave", [], "Return to town.",
+      ("marnid_warehouse_leave", [], "Leave the warehouse for now.",
         [
           (jump_to_menu, "mnu_town"),
         ]
@@ -24220,7 +24029,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("marnid_warehouse_after", [], "Speak with Marnid about the contract.",
         [
-          (jump_to_menu, "mnu_marnid_honest_price"),
+          (start_map_conversation, "trp_npc2"),
         ]
       ),
     ]
@@ -24240,7 +24049,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("marnid_warehouse_failed_after", [], "Face Marnid's account of the loss.",
         [
-          (jump_to_menu, "mnu_marnid_honest_price"),
+          (start_map_conversation, "trp_npc2"),
         ]
       ),
     ]
@@ -24277,14 +24086,14 @@ or spirit exist and so condemn the priests of false religions and other magician
           (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
           (store_add, ":slave_count", ":male_slaves", ":female_slaves"),
           (ge, ":slave_count", 3),
-        ], "Let Ymira choose a refuge before anyone is released.",
+        ], "Choose a refuge before release.",
         [
           (party_count_members_of_type, ":male_slaves", "p_main_party", "trp_slave"),
           (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
           (store_add, ":slave_count", ":male_slaves", ":female_slaves"),
           (call_script, "script_sod_companion_try_ymira_refugee_incident", ":slave_count"),
           (display_message, "@Ymira writes names instead of numbers and asks you to reach the refuge before mercy becomes only talk.", 0x99CCFF),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc3"),
         ]
       ),
       ("ymira_mercy_under_arms_ransom", [
@@ -24294,7 +24103,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
           (store_add, ":slave_count", ":male_slaves", ":female_slaves"),
           (ge, ":slave_count", 3),
-        ], "Ask Ymira where the weakest could be sheltered first.",
+        ], "Shelter the weakest first.",
         [
           (party_count_members_of_type, ":male_slaves", "p_main_party", "trp_slave"),
           (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
@@ -24303,7 +24112,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (assign, "$g_sod_ymira_refugee_result_grade", 2),
           (quest_set_slot, "qst_companion_ymira_mercy_under_arms", slot_quest_sod_runtime_metadata, 2),
           (display_message, "@Ymira accepts the practical question, but asks that the weakest be seen by a village witness before coin decides the rest.", 0xCC9966),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc3"),
         ]
       ),
       ("ymira_mercy_under_arms_expedience", [
@@ -24313,14 +24122,14 @@ or spirit exist and so condemn the priests of false religions and other magician
           (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
           (store_add, ":slave_count", ":male_slaves", ":female_slaves"),
           (ge, ":slave_count", 3),
-        ], "Keep them chained. The army needs every advantage.",
+        ], "Keep the captives under guard.",
         [
           (party_count_members_of_type, ":male_slaves", "p_main_party", "trp_slave"),
           (party_count_members_of_type, ":female_slaves", "p_main_party", "trp_slave_female"),
           (store_add, ":slave_count", ":male_slaves", ":female_slaves"),
           (call_script, "script_sod_companion_try_ymira_refugee_expedience", ":slave_count"),
           (display_message, "@Ymira stops learning names. Mercy Under Arms remembers expedience.", 0xCC6666),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc3"),
         ]
       ),
       ("ymira_mercy_under_arms_leave", [], "Return to camp.",
@@ -24386,7 +24195,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_ymira_refugee_mercy, 2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc3"),
           (display_message, "@The riders take your coin and leave the village unburned. Ymira waits to ask what the coin bought besides a night.", 0xCC9966),
-          (jump_to_menu, "mnu_village"),
+          (start_map_conversation, "trp_npc3"),
         ]
       ),
       ("ymira_refugee_standoff_betray", [
@@ -24395,7 +24204,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (eq, "$current_town", "$g_sod_ymira_refugee_focus_center"),
           (eq, "$g_sod_ymira_refugee_witnessed", 1),
           (eq, "$g_sod_ymira_refugee_confronted", 0),
-        ], "Give the riders names and keep the village out of it.",
+        ], "Give names; spare the village.",
         [
           (assign, "$g_sod_ymira_refugee_confronted", 1),
           (assign, "$g_sod_ymira_refugee_result_grade", 1),
@@ -24404,10 +24213,10 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_ymira_refugee_expedience, 3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc3"),
           (display_message, "@The village is spared by giving the riders names. Ymira says nothing until the hoofbeats fade.", 0xCC6666),
-          (jump_to_menu, "mnu_village"),
+          (start_map_conversation, "trp_npc3"),
         ]
       ),
-      ("ymira_refugee_standoff_leave", [], "Step back for now.",
+      ("ymira_refugee_standoff_leave", [], "Step back from the standoff.",
         [
           (jump_to_menu, "mnu_village"),
         ]
@@ -24429,7 +24238,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc3"),
     ],
     [
-      ("continue", [], "Continue...", [(jump_to_menu, "mnu_village")]),
+      ("continue", [], "Speak with Ymira.", [(start_map_conversation, "trp_npc3")]),
     ]
   ),
 ("ymira_refugee_defense_failed", mnf_disable_all_keys,
@@ -24444,7 +24253,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc3"),
     ],
     [
-      ("continue", [], "Continue...", [(jump_to_menu, "mnu_village")]),
+      ("continue", [], "Speak with Ymira.", [(start_map_conversation, "trp_npc3")]),
     ]
   ),
 # [ src/menus/camp/lezalit_discipline_without_chains.py:L1-L207 ] lezalit_discipline_without_chains
@@ -24583,7 +24392,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_train_troops, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc14"),
           (display_message, "@The line moves faster when the useless punishments are cut away. Lezalit dislikes the proof mostly because it is proof.", 0xCCCC66),
-          (jump_to_menu, "mnu_lezalit_discipline_without_chains"),
+          (start_map_conversation, "trp_npc14"),
         ]
       ),
       ("lezalit_trial_mark", [
@@ -24600,7 +24409,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_lezalit_ief_harsh, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc14"),
           (display_message, "@The line moves cleanly and looks at the marked man instead of the enemy. Lezalit records the result. Bunduk records the cost.", 0xCC9966),
-          (jump_to_menu, "mnu_lezalit_discipline_without_chains"),
+          (start_map_conversation, "trp_npc14"),
         ]
       ),
       ("lezalit_trial_leave", [], "Return to camp.",
@@ -24628,7 +24437,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("lezalit_trial_after", [], "Settle doctrine with Lezalit.",
         [
-          (jump_to_menu, "mnu_lezalit_discipline_without_chains"),
+          (start_map_conversation, "trp_npc14"),
         ]
       ),
     ]
@@ -24648,7 +24457,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("lezalit_trial_failed_after", [], "Face Lezalit's report.",
         [
-          (jump_to_menu, "mnu_lezalit_discipline_without_chains"),
+          (start_map_conversation, "trp_npc14"),
         ]
       ),
     ]
@@ -24699,7 +24508,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (eq, "$g_sod_bunduk_line_pending", 1),
           (eq, "$g_sod_bunduk_line_witnessed", 1),
           (eq, "$g_sod_bunduk_line_confronted", 1),
-        ], "Make a practical compromise. Some complaints wait until after the campaign.",
+        ], "Fix what we can. Defer the rest.",
         [
           (assign, "$g_sod_bunduk_line_pending", 0),
           (assign, "$g_sod_bunduk_line_result_grade", 2),
@@ -24718,7 +24527,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (eq, "$g_sod_bunduk_line_pending", 1),
           (eq, "$g_sod_bunduk_line_witnessed", 1),
           (eq, "$g_sod_bunduk_line_confronted", 1),
-        ], "Enforce command authority. The line obeys first and complains later.",
+        ], "Order obedience first.",
         [
           (assign, "$g_sod_bunduk_line_pending", 0),
           (assign, "$g_sod_bunduk_line_result_grade", 1),
@@ -24782,7 +24591,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_train_troops, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc10"),
           (display_message, "@The attack finds a line awake enough to answer. Bunduk marks the watch bill with a grunt that is almost approval.", 0xCCCC66),
-          (jump_to_menu, "mnu_bunduk_men_hold_line"),
+          (start_map_conversation, "trp_npc10"),
         ]
       ),
       ("bunduk_line_test_drive", [
@@ -24790,7 +24599,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (eq, "$g_sod_bunduk_line_pending", 1),
           (eq, "$g_sod_bunduk_line_witnessed", 1),
           (eq, "$g_sod_bunduk_line_confronted", 0),
-        ], "Drive the tired line harder. They can rest after obedience.",
+        ], "Push the tired line harder.",
         [
           (assign, "$g_sod_bunduk_line_confronted", 1),
           (assign, "$g_sod_bunduk_line_result_grade", 1),
@@ -24800,7 +24609,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc10", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc10"),
           (display_message, "@The line holds because it must. Bunduk counts the cost before anyone counts the victory.", 0xCC9966),
-          (jump_to_menu, "mnu_bunduk_men_hold_line"),
+          (start_map_conversation, "trp_npc10"),
         ]
       ),
       ("bunduk_line_test_leave", [], "Return to camp.",
@@ -24828,7 +24637,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("bunduk_line_after", [], "Speak with Bunduk about the line.",
         [
-          (jump_to_menu, "mnu_bunduk_men_hold_line"),
+          (start_map_conversation, "trp_npc10"),
         ]
       ),
     ]
@@ -24848,7 +24657,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("bunduk_line_failed_after", [], "Face Bunduk's report.",
         [
-          (jump_to_menu, "mnu_bunduk_men_hold_line"),
+          (start_map_conversation, "trp_npc10"),
         ]
       ),
     ]
@@ -24989,7 +24798,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_honorable_peace, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc12"),
           (display_message, "@The infirmary steadies because guards and order arrive before panic does. Jeremus can finally look up from the blood.", 0xCCCC66),
-          (jump_to_menu, "mnu_jeremus_hands_triage"),
+          (start_map_conversation, "trp_npc12"),
         ]
       ),
       ("jeremus_infirmary_company_first", [
@@ -25006,7 +24815,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc12", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc12"),
           (display_message, "@The company wounded get cloth first. The infirmary quiets, but Jeremus hears the silence around the prisoners.", 0xCC9966),
-          (jump_to_menu, "mnu_jeremus_hands_triage"),
+          (start_map_conversation, "trp_npc12"),
         ]
       ),
       ("jeremus_infirmary_leave", [], "Return to camp.",
@@ -25034,7 +24843,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("jeremus_infirmary_after", [], "Speak with Jeremus about triage.",
         [
-          (jump_to_menu, "mnu_jeremus_hands_triage"),
+          (start_map_conversation, "trp_npc12"),
         ]
       ),
     ]
@@ -25054,7 +24863,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("jeremus_infirmary_failed_after", [], "Face Jeremus' triage order.",
         [
-          (jump_to_menu, "mnu_jeremus_hands_triage"),
+          (start_map_conversation, "trp_npc12"),
         ]
       ),
     ]
@@ -25090,7 +24899,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (quest_set_slot, "qst_companion_firentis_debt_restitution", slot_quest_sod_runtime_metadata, 3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
           (display_message, "@Firentis accepts that penance must become shelter, coin, and restraint. Debt of the Sword remembers restitution.", 0x99CCFF),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc6"),
         ]
       ),
       ("firentis_restitution_confess", [
@@ -25115,7 +24924,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (quest_set_slot, "qst_companion_firentis_debt_restitution", slot_quest_sod_runtime_metadata, 2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
           (display_message, "@The answer is not clean, but it is honest. Firentis hears judgment without reaching for steel.", 0xCCCC66),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc6"),
         ]
       ),
       ("firentis_restitution_silence", [
@@ -25133,7 +24942,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (quest_set_slot, "qst_companion_firentis_debt_restitution", slot_quest_sod_runtime_metadata, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
           (display_message, "@Firentis obeys. Debt of the Sword remembers silence as another wound.", 0xCC6666),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc6"),
         ]
       ),
       ("firentis_restitution_leave", [], "Return to camp.",
@@ -25197,7 +25006,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_debt_honesty, 2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
           (display_message, "@Firentis lets the accusation stand in daylight. The village hears truth before it hears promises.", 0xCCCC66),
-          (jump_to_menu, "mnu_village"),
+          (start_map_conversation, "trp_npc6"),
         ]
       ),
       ("firentis_hearing_silence", [
@@ -25216,7 +25025,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_hard_compromise, 2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
           (display_message, "@The hearing ends under armed quiet. Firentis follows, but the village now knows which truth was too costly.", 0xCC6666),
-          (jump_to_menu, "mnu_village"),
+          (start_map_conversation, "trp_npc6"),
         ]
       ),
       ("firentis_hearing_leave", [], "Step back from the hearing.",
@@ -25241,7 +25050,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
     ],
     [
-      ("continue", [], "Continue...", [(jump_to_menu, "mnu_village")]),
+      ("continue", [], "Speak with Firentis.", [(start_map_conversation, "trp_npc6")]),
     ]
   ),
 ("firentis_restitution_defense_failed", mnf_disable_all_keys,
@@ -25256,7 +25065,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
     ],
     [
-      ("continue", [], "Continue...", [(jump_to_menu, "mnu_village")]),
+      ("continue", [], "Speak with Firentis.", [(start_map_conversation, "trp_npc6")]),
     ]
   ),
 # [ src/menus/camp/katrin_last_coin.py:L1-L214 ] katrin_last_coin
@@ -25381,7 +25190,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc11", 3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc11"),
           (display_message, "@The camp sees the sums before it tastes the thin broth. Grumbling remains, but suspicion loses its teeth.", 0x99CCFF),
-          (jump_to_menu, "mnu_katrin_last_coin"),
+          (start_map_conversation, "trp_npc11"),
         ]
       ),
       ("katrin_watch_defend_stores", [
@@ -25419,7 +25228,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc11", -3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc11"),
           (display_message, "@The camp smiles for a day because it has not seen the numbers. Katrin has, and writes harder.", 0xCC9966),
-          (jump_to_menu, "mnu_katrin_last_coin"),
+          (start_map_conversation, "trp_npc11"),
         ]
       ),
       ("katrin_watch_leave", [], "Return to camp.",
@@ -25447,7 +25256,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("katrin_supply_watch_after", [], "Settle the last coin with Katrin.",
         [
-          (jump_to_menu, "mnu_katrin_last_coin"),
+          (start_map_conversation, "trp_npc11"),
         ]
       ),
     ]
@@ -25467,7 +25276,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("katrin_supply_watch_failed_after", [], "Face Katrin after the broken store line.",
         [
-          (jump_to_menu, "mnu_katrin_last_coin"),
+          (start_map_conversation, "trp_npc11"),
         ]
       ),
     ]
@@ -25617,7 +25426,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_safe_roadcraft, 2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc7"),
           (display_message, "@Deshavi turns the pursuers' own impatience against them. Some captives scatter, but the chase breaks.", 0xCCCC66),
-          (jump_to_menu, "mnu_deshavi_tracks_through_ash"),
+          (start_map_conversation, "trp_npc7"),
         ]
       ),
       ("deshavi_trail_hunt_first", [
@@ -25634,10 +25443,10 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc7", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc7"),
           (display_message, "@The pursuers die quickly. Deshavi marks every track left by people who had to save themselves.", 0xCC9966),
-          (jump_to_menu, "mnu_deshavi_tracks_through_ash"),
+          (start_map_conversation, "trp_npc7"),
         ]
       ),
-      ("deshavi_trail_leave", [], "Return to the village.",
+      ("deshavi_trail_leave", [], "Leave the trail for now.",
         [
           (jump_to_menu, "mnu_village"),
         ]
@@ -25663,7 +25472,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("deshavi_rescue_aftermath", [], "Speak with Deshavi about the trail.",
         [
-          (jump_to_menu, "mnu_deshavi_tracks_through_ash"),
+          (start_map_conversation, "trp_npc7"),
         ]
       ),
     ]
@@ -25683,7 +25492,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("deshavi_rescue_failed_aftermath", [], "Face Deshavi's judgment.",
         [
-          (jump_to_menu, "mnu_deshavi_tracks_through_ash"),
+          (start_map_conversation, "trp_npc7"),
         ]
       ),
     ]
@@ -25736,7 +25545,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         [
           (str_store_party_name, s4, "$g_sod_klethi_old_job_focus_center"),
           (display_message, "@Klethi taps the mark twice. The old job has a witness in {s4}; bring her there before choosing what the secret buys.", 0x99CCFF),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc16"),
         ]
       ),
       ("klethi_knife_follow_mark", [
@@ -25750,7 +25559,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         [
           (str_store_party_name, s4, "$g_sod_klethi_old_job_focus_center"),
           (display_message, "@The tavernkeeper's witness points to an alley in {s4}. Travel there with Klethi and follow the old mark before settling the price.", 0x99CCFF),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc16"),
         ]
       ),
       ("klethi_knife_choose", [
@@ -25766,7 +25575,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_advance_personal_quest", "trp_npc16", 1),
           (call_script, "script_sod_companion_klethi_apply_old_job_payoff"),
           (display_message, "@Klethi chooses the door, the knife, and the mercy herself. A Knife With a Name remembers chosen belonging.", 0x99CCFF),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc16"),
         ]
       ),
       ("klethi_knife_protect", [
@@ -25789,7 +25598,7 @@ or spirit exist and so condemn the priests of false religions and other magician
             (call_script, "script_sod_companion_klethi_apply_old_job_payoff"),
           (try_end),
           (display_message, "@The old job is cut loose without selling Klethi with it. She calls that almost decent.", 0xCCCC66),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc16"),
         ]
       ),
       ("klethi_knife_sellout", [
@@ -25805,7 +25614,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_advance_personal_quest", "trp_npc16", 0),
           (troop_set_slot, "trp_npc16", slot_troop_companion_warning_state, sod_companion_warning_pending),
           (display_message, "@The secret buys leverage. Klethi buys distance. A Knife With a Name remembers the price tag.", 0xCC6666),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc16"),
         ]
       ),
       ("klethi_knife_leave", [], "Return to camp.",
@@ -25845,7 +25654,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_stealth_success, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc16"),
           (display_message, "@Klethi trades two old phrases and one quiet threat. The contact leaves the name in her hands.", 0x99CCFF),
-          (jump_to_menu, "mnu_town"),
+          (start_map_conversation, "trp_npc16"),
         ]
       ),
       ("klethi_alley_protect", [
@@ -25890,7 +25699,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_betray_autonomy, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc16"),
           (display_message, "@The broker buys silence with names and routes. Klethi watches which hand you used to take them.", 0xCC6666),
-          (jump_to_menu, "mnu_town"),
+          (start_map_conversation, "trp_npc16"),
         ]
       ),
       ("klethi_alley_leave", [], "Step back from the alley.",
@@ -25916,7 +25725,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc16"),
     ],
     [
-      ("continue", [], "Continue...", [(jump_to_menu, "mnu_town")]),
+      ("continue", [], "Speak with Klethi.", [(start_map_conversation, "trp_npc16")]),
     ]
   ),
 ("klethi_knife_alley_failed", mnf_disable_all_keys,
@@ -25929,7 +25738,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc16"),
     ],
     [
-      ("continue", [], "Continue...", [(jump_to_menu, "mnu_town")]),
+      ("continue", [], "Speak with Klethi.", [(start_map_conversation, "trp_npc16")]),
     ]
   ),
 # [ src/menus/camp/rolf_name_worth_wearing.py:L1-L213 ] rolf_name_worth_wearing
@@ -26074,7 +25883,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_tournament_glory, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc4"),
           (display_message, "@Rolf's name buys repairs in public. He calls it patronage. The town calls it useful.", 0xCCCC66),
-          (jump_to_menu, "mnu_rolf_name_worth_wearing"),
+          (start_map_conversation, "trp_npc4"),
         ]
       ),
       ("rolf_proof_theater", [
@@ -26091,7 +25900,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc4", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc4"),
           (display_message, "@The crowd enjoys the answer. Rolf enjoys it too much. The name survives, and remains hungry.", 0xCC9966),
-          (jump_to_menu, "mnu_rolf_name_worth_wearing"),
+          (start_map_conversation, "trp_npc4"),
         ]
       ),
       ("rolf_proof_leave", [], "Return to camp.",
@@ -26119,7 +25928,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("rolf_public_proof_after", [], "Settle the name with Rolf.",
         [
-          (jump_to_menu, "mnu_rolf_name_worth_wearing"),
+          (start_map_conversation, "trp_npc4"),
         ]
       ),
     ]
@@ -26139,7 +25948,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("rolf_public_proof_failed_after", [], "Face Rolf's public answer.",
         [
-          (jump_to_menu, "mnu_rolf_name_worth_wearing"),
+          (start_map_conversation, "trp_npc4"),
         ]
       ),
     ]
@@ -26291,7 +26100,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_honorable_peace, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc9"),
           (display_message, "@The standard costs coin and pride in front of witnesses. Alayen looks relieved that honor has weight.", 0xCCCC66),
-          (jump_to_menu, "mnu_alayen_standard_self"),
+          (start_map_conversation, "trp_npc9"),
         ]
       ),
       ("alayen_test_command_prestige", [
@@ -26308,7 +26117,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc9", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc9"),
           (display_message, "@The crowd obeys the banner. Alayen sees the obedience and searches for the honor.", 0xCC9966),
-          (jump_to_menu, "mnu_alayen_standard_self"),
+          (start_map_conversation, "trp_npc9"),
         ]
       ),
       ("alayen_test_leave", [], "Return to camp.",
@@ -26336,7 +26145,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("alayen_standard_after", [], "Settle the oath with Alayen.",
         [
-          (jump_to_menu, "mnu_alayen_standard_self"),
+          (start_map_conversation, "trp_npc9"),
         ]
       ),
     ]
@@ -26356,7 +26165,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("alayen_standard_failed_after", [], "Face Alayen's standard.",
         [
-          (jump_to_menu, "mnu_alayen_standard_self"),
+          (start_map_conversation, "trp_npc9"),
         ]
       ),
     ]
@@ -26477,7 +26286,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc13", 3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc13"),
           (display_message, "@Nizar makes a show of being offended by caution, then improves the route until even caution looks dramatic.", 0x99CCFF),
-          (jump_to_menu, "mnu_nizar_impossible_charge"),
+          (start_map_conversation, "trp_npc13"),
         ]
       ),
       ("nizar_lane_ride_it", [
@@ -26514,7 +26323,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc13", -3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc13"),
           (display_message, "@The charge will be remembered. Nizar notices too late that remembering and surviving are different arts.", 0xCC9966),
-          (jump_to_menu, "mnu_nizar_impossible_charge"),
+          (start_map_conversation, "trp_npc13"),
         ]
       ),
       ("nizar_lane_leave", [], "Return to camp.",
@@ -26542,7 +26351,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("nizar_charge_lane_after", [], "Settle the charge with Nizar.",
         [
-          (jump_to_menu, "mnu_nizar_impossible_charge"),
+          (start_map_conversation, "trp_npc13"),
         ]
       ),
     ]
@@ -26562,7 +26371,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("nizar_charge_lane_failed_after", [], "Face Nizar after the broken charge.",
         [
-          (jump_to_menu, "mnu_nizar_impossible_charge"),
+          (start_map_conversation, "trp_npc13"),
         ]
       ),
     ]
@@ -26690,7 +26499,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc5", 3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc5"),
           (display_message, "@Baheshtur lets silence work. One rider crosses the line, then another. The oath holds because no hand drags it.", 0x99CCFF),
-          (jump_to_menu, "mnu_baheshtur_unbroken_saddle"),
+          (start_map_conversation, "trp_npc5"),
         ]
       ),
       ("baheshtur_trial_defend_line", [
@@ -26727,7 +26536,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc5", -3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc5"),
           (display_message, "@The line is quiet because no one can move. Baheshtur watches the bound riders and says nothing.", 0xCC9966),
-          (jump_to_menu, "mnu_baheshtur_unbroken_saddle"),
+          (start_map_conversation, "trp_npc5"),
         ]
       ),
       ("baheshtur_trial_leave", [], "Return to camp.",
@@ -26755,7 +26564,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("baheshtur_rider_oath_after", [], "Settle the oath with Baheshtur.",
         [
-          (jump_to_menu, "mnu_baheshtur_unbroken_saddle"),
+          (start_map_conversation, "trp_npc5"),
         ]
       ),
     ]
@@ -26775,7 +26584,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("baheshtur_rider_oath_failed_after", [], "Face Baheshtur after the broken oath.",
         [
-          (jump_to_menu, "mnu_baheshtur_unbroken_saddle"),
+          (start_map_conversation, "trp_npc5"),
         ]
       ),
     ]
@@ -26903,7 +26712,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc8", 3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc8"),
           (display_message, "@Matheld hates the slow count until the line holds through it. Courage learns to breathe.", 0x99CCFF),
-          (jump_to_menu, "mnu_matheld_no_backward_step"),
+          (start_map_conversation, "trp_npc8"),
         ]
       ),
       ("matheld_test_hold_under_charge", [
@@ -26941,7 +26750,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc8", -3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc8"),
           (display_message, "@The charge feels brave. The line cheers, then looks back at the gap where discipline should have stood.", 0xCC9966),
-          (jump_to_menu, "mnu_matheld_no_backward_step"),
+          (start_map_conversation, "trp_npc8"),
         ]
       ),
       ("matheld_test_leave", [], "Return to camp.",
@@ -26969,7 +26778,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("matheld_shield_line_after", [], "Settle the shield-line lesson with Matheld.",
         [
-          (jump_to_menu, "mnu_matheld_no_backward_step"),
+          (start_map_conversation, "trp_npc8"),
         ]
       ),
     ]
@@ -26989,7 +26798,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("matheld_shield_line_failed_after", [], "Face Matheld after the broken line.",
         [
-          (jump_to_menu, "mnu_matheld_no_backward_step"),
+          (start_map_conversation, "trp_npc8"),
         ]
       ),
     ]
@@ -27136,7 +26945,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_siege_preparation, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc15"),
           (display_message, "@The works become less elegant and more honest. Artimenner calls that an improvement over beautiful collapse.", 0xCCCC66),
-          (jump_to_menu, "mnu_artimenner_siege_that_should"),
+          (start_map_conversation, "trp_npc15"),
         ]
       ),
       ("artimenner_watch_blame_workers", [
@@ -27153,7 +26962,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (call_script, "script_sod_companion_shift_approval", "trp_npc15", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc15"),
           (display_message, "@The workers measure twice because they fear what happens if they do not. Artimenner measures the cost and says nothing flattering.", 0xCC9966),
-          (jump_to_menu, "mnu_artimenner_siege_that_should"),
+          (start_map_conversation, "trp_npc15"),
         ]
       ),
       ("artimenner_watch_leave", [], "Return to camp.",
@@ -27181,7 +26990,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("artimenner_watch_after", [], "Settle the siege design with Artimenner.",
         [
-          (jump_to_menu, "mnu_artimenner_siege_that_should"),
+          (start_map_conversation, "trp_npc15"),
         ]
       ),
     ]
@@ -27201,7 +27010,7 @@ or spirit exist and so condemn the priests of false religions and other magician
     [
       ("artimenner_watch_failed_after", [], "Face Artimenner's report.",
         [
-          (jump_to_menu, "mnu_artimenner_siege_that_should"),
+          (start_map_conversation, "trp_npc15"),
         ]
       ),
     ]
@@ -27218,45 +27027,45 @@ or spirit exist and so condemn the priests of false religions and other magician
       (try_end),
     ],
     [
-      ("qa_recruit_roster", [], "QA: Recruit companion roster and open trust.",
+      ("qa_recruit_roster", [(eq, "$g_sod_debug", 1)], "QA: Recruit companion roster and open trust.",
         [
           (call_script, "script_sod_companion_qa_recruit_roster"),
           (jump_to_menu, "mnu_companion_interactive_quest_qa"),
         ]
       ),
 
-      ("qa_borcha_climax", [], "Borcha: ready for road climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc1", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_borcha_final", [], "Borcha: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc1", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_marnid_climax", [], "Marnid: ready for warehouse climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc2", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_marnid_final", [], "Marnid: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc2", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_ymira_climax", [], "Ymira: ready for refugee climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc3", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_ymira_final", [], "Ymira: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc3", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_rolf_climax", [], "Rolf: ready for public proof.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc4", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_rolf_final", [], "Rolf: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc4", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_baheshtur_climax", [], "Baheshtur: ready for rider-oath trial.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc5", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_baheshtur_final", [], "Baheshtur: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc5", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_firentis_climax", [], "Firentis: ready for restitution climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc6", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_firentis_final", [], "Firentis: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc6", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_deshavi_climax", [], "Deshavi: ready for trail climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc7", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_deshavi_final", [], "Deshavi: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc7", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_matheld_climax", [], "Matheld: ready for shield-line test.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc8", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_matheld_final", [], "Matheld: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc8", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_alayen_climax", [], "Alayen: ready for standard test.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc9", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_alayen_final", [], "Alayen: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc9", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_bunduk_climax", [], "Bunduk: ready for watch-line test.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc10", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_bunduk_final", [], "Bunduk: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc10", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_katrin_climax", [], "Katrin: ready for supply watch.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc11", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_katrin_final", [], "Katrin: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc11", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_jeremus_climax", [], "Jeremus: ready for infirmary crisis.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc12", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_jeremus_final", [], "Jeremus: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc12", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_nizar_climax", [], "Nizar: ready for charge-lane test.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc13", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_nizar_final", [], "Nizar: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc13", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_lezalit_climax", [], "Lezalit: ready for drill trial.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc14", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_lezalit_final", [], "Lezalit: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc14", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_artimenner_climax", [], "Artimenner: ready for repair watch.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc15", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_artimenner_final", [], "Artimenner: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc15", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_klethi_climax", [], "Klethi: ready for alley confrontation.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc16", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
-      ("qa_klethi_final", [], "Klethi: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc16", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_borcha_climax", [(eq, "$g_sod_debug", 1)], "Borcha: ready for road climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc1", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_borcha_final", [(eq, "$g_sod_debug", 1)], "Borcha: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc1", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_marnid_climax", [(eq, "$g_sod_debug", 1)], "Marnid: ready for warehouse climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc2", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_marnid_final", [(eq, "$g_sod_debug", 1)], "Marnid: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc2", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_ymira_climax", [(eq, "$g_sod_debug", 1)], "Ymira: ready for refugee climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc3", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_ymira_final", [(eq, "$g_sod_debug", 1)], "Ymira: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc3", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_rolf_climax", [(eq, "$g_sod_debug", 1)], "Rolf: ready for public proof.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc4", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_rolf_final", [(eq, "$g_sod_debug", 1)], "Rolf: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc4", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_baheshtur_climax", [(eq, "$g_sod_debug", 1)], "Baheshtur: ready for rider-oath trial.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc5", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_baheshtur_final", [(eq, "$g_sod_debug", 1)], "Baheshtur: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc5", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_firentis_climax", [(eq, "$g_sod_debug", 1)], "Firentis: ready for restitution climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc6", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_firentis_final", [(eq, "$g_sod_debug", 1)], "Firentis: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc6", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_deshavi_climax", [(eq, "$g_sod_debug", 1)], "Deshavi: ready for trail climax.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc7", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_deshavi_final", [(eq, "$g_sod_debug", 1)], "Deshavi: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc7", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_matheld_climax", [(eq, "$g_sod_debug", 1)], "Matheld: ready for shield-line test.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc8", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_matheld_final", [(eq, "$g_sod_debug", 1)], "Matheld: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc8", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_alayen_climax", [(eq, "$g_sod_debug", 1)], "Alayen: ready for standard test.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc9", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_alayen_final", [(eq, "$g_sod_debug", 1)], "Alayen: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc9", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_bunduk_climax", [(eq, "$g_sod_debug", 1)], "Bunduk: ready for watch-line test.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc10", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_bunduk_final", [(eq, "$g_sod_debug", 1)], "Bunduk: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc10", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_katrin_climax", [(eq, "$g_sod_debug", 1)], "Katrin: ready for supply watch.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc11", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_katrin_final", [(eq, "$g_sod_debug", 1)], "Katrin: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc11", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_jeremus_climax", [(eq, "$g_sod_debug", 1)], "Jeremus: ready for infirmary crisis.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc12", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_jeremus_final", [(eq, "$g_sod_debug", 1)], "Jeremus: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc12", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_nizar_climax", [(eq, "$g_sod_debug", 1)], "Nizar: ready for charge-lane test.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc13", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_nizar_final", [(eq, "$g_sod_debug", 1)], "Nizar: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc13", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_lezalit_climax", [(eq, "$g_sod_debug", 1)], "Lezalit: ready for drill trial.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc14", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_lezalit_final", [(eq, "$g_sod_debug", 1)], "Lezalit: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc14", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_artimenner_climax", [(eq, "$g_sod_debug", 1)], "Artimenner: ready for repair watch.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc15", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_artimenner_final", [(eq, "$g_sod_debug", 1)], "Artimenner: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc15", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_klethi_climax", [(eq, "$g_sod_debug", 1)], "Klethi: ready for alley confrontation.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc16", 2), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
+      ("qa_klethi_final", [(eq, "$g_sod_debug", 1)], "Klethi: ready for aftermath.", [(call_script, "script_sod_companion_qa_prime_interactive_quest", "trp_npc16", 3), (jump_to_menu, "mnu_companion_interactive_quest_qa")]),
 
       ("qa_return", [], "Return to camp actions.",
         [
@@ -27296,7 +27105,7 @@ or spirit exist and so condemn the priests of false religions and other magician
   ),
 # [ src/menus/reports/realm_law_report.py:L1-L13 ] realm_law_report
 ("realm_law_report", mnf_enable_hot_keys,
-    "{s1}",
+    "{s98}",
     "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
@@ -27635,7 +27444,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("sod_decree_back", [], "Back.", [(jump_to_menu, "mnu_sod_diplomacy_report")]),
     ]
   ),
-# [ src/menus/reports/invasion_status_report.py:L1-L218 ] invasion_status_report
+# [ src/menus/reports/invasion_status_report.py:L1-L224 ] invasion_status_report
 ("invasion_status_report", mnf_enable_hot_keys,
     "{s1}",
     "none",
@@ -27707,7 +27516,13 @@ or spirit exist and so condemn the priests of false religions and other magician
         (else_try),
           (str_store_string, s38, "@your realm is not yet openly committed against them"),
         (try_end),
-        (str_store_string, s1, "@Imperial Invasion Status^^Front: {s32}^Imperial field strength: {s34}.^Foothold: {s35}; {s36}.^Strategic danger: {s37}.^Calradian war response: {reg5?several realms have answered:too few realms have answered}. {s38}.{s28}^^Strategic read:^Hold border garrisons near the front, keep mobile reserves ready to intercept centurions, sabotage supply cohesion, and exploit any alliance pressure against the Legion."),
+        (try_begin),
+          (gt, reg5, 0),
+          (str_store_string, s39, "@several realms have answered"),
+        (else_try),
+          (str_store_string, s39, "@too few realms have answered"),
+        (try_end),
+        (str_store_string, s1, "@Imperial Invasion Status^^Front: {s32}^Imperial field strength: {s34}.^Foothold: {s35}; {s36}.^Strategic danger: {s37}.^Calradian war response: {s39}. {s38}.{s28}^^Strategic read:^Hold border garrisons near the front, keep mobile reserves ready to intercept centurions, sabotage supply cohesion, and exploit any alliance pressure against the Legion."),
       (else_try),
         (store_sub, reg1, "$g_sod_invasion_begin", ":cur_day"),
         (val_max, reg1, 0),
@@ -27867,9 +27682,9 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("mercenary_market_report_back", [], "Back.", [(jump_to_menu, "mnu_mini_faction_reports")]),
     ]
   ),
-# [ src/menus/reports/mercenary_world_activity_report.py:L1-L356 ] mercenary_world_activity_report
+# [ src/menus/reports/mercenary_world_activity_report.py:L1-L364 ] mercenary_world_activity_report
 ("mercenary_world_activity_report", mnf_enable_hot_keys,
-    "{s1}",
+    "{s98}",
     "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
@@ -28071,23 +27886,31 @@ or spirit exist and so condemn the priests of false religions and other magician
         (str_store_string, s53, "@Last local footprint: pressure touched {s54} on day {reg53}; wealth, prosperity, supply, or route safety may have shifted."),
       (try_end),
       (call_script, "script_sod_black_army_describe_status_to_s24"),
-      (str_store_string, s1, "@Mini-Faction World Activity^^Pressure read:^Slavers: {s31}^Jotnar: {s32}^Elephant Guard: {s33}^Black Khergits: {s34}^Boar Clan: {s35}^Serpent Host: {s36}^Black Army: {s37}^Conquistadors: {s38}^^Highest pressure: {s39}.^{s40}^^{s41}^{s45}^{s47}^{s49}^{s51}^{s53}^^Countermeasure dispatch: 1000 denars to target the highest pressure through existing allies and contacts. Cooldown remaining: {reg43} days. Your purse: {reg44}.^^{s24}"),
+      (str_store_string, s98, "@Mini-Faction World Activity^^Pressure read:^Slavers: {s31}^Jotnar: {s32}^Elephant Guard: {s33}^Black Khergits: {s34}^Boar Clan: {s35}^Serpent Host: {s36}^Black Army: {s37}^Conquistadors: {s38}^^Highest pressure: {s39}.^{s40}^^{s41}^{s45}^{s47}^{s49}^{s51}^{s53}^^Countermeasure dispatch: 1000 denars to target the highest pressure through existing allies and contacts. Cooldown remaining: {reg43} days. Your purse: {reg44}.^^{s24}"),
       (call_script, "script_sod_conquistador_describe_status_to_s25"),
-      (str_store_string, s1, "@{s1}^{s25}"),
+      (str_store_string, s99, "@{s98}^{s25}"),
+      (str_store_string_reg, s98, s99),
       (call_script, "script_sod_elephant_guard_describe_status_to_s21"),
-      (str_store_string, s1, "@{s1}^{s21}"),
+      (str_store_string, s99, "@{s98}^{s21}"),
+      (str_store_string_reg, s98, s99),
       (call_script, "script_sod_jotnar_describe_status_to_s22"),
-      (str_store_string, s1, "@{s1}^{s22}"),
+      (str_store_string, s99, "@{s98}^{s22}"),
+      (str_store_string_reg, s98, s99),
       (call_script, "script_sod_serpent_host_describe_status_to_s26"),
-      (str_store_string, s1, "@{s1}^{s26}"),
+      (str_store_string, s99, "@{s98}^{s26}"),
+      (str_store_string_reg, s98, s99),
       (call_script, "script_sod_slavers_describe_status_to_s20"),
-      (str_store_string, s1, "@{s1}^{s20}"),
+      (str_store_string, s99, "@{s98}^{s20}"),
+      (str_store_string_reg, s98, s99),
       (call_script, "script_sod_boar_clan_describe_status_to_s23"),
-      (str_store_string, s1, "@{s1}^{s23}"),
+      (str_store_string, s99, "@{s98}^{s23}"),
+      (str_store_string_reg, s98, s99),
       (call_script, "script_sod_black_khergits_describe_status_to_s27"),
-      (str_store_string, s1, "@{s1}^{s27}"),
+      (str_store_string, s99, "@{s98}^{s27}"),
+      (str_store_string_reg, s98, s99),
       (call_script, "script_sod_mini_faction_describe_standing_ledger_to_s34"),
-      (str_store_string, s1, "@{s1}{s34}^^Strategic read:^These powers are not kingdoms. They are pressure systems: markets, rites, roads, hearths, patrol contracts, toll bands, route screens, and horde camps. Use the detailed reports below to fund, disrupt, redirect, or study each presence."),
+      (str_store_string, s99, "@{s98}{s34}^^Strategic read:^These powers are not kingdoms. They are pressure systems: markets, rites, roads, hearths, patrol contracts, toll bands, route screens, and horde camps. Use the detailed reports below to fund, disrupt, redirect, or study each presence."),
+      (str_store_string_reg, s98, s99),
     ],
     [
       ("mini_faction_dispatch_countermeasures",
@@ -28839,7 +28662,7 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("slaver_black_market_report_back", [], "Back to reports.", [(jump_to_menu, "mnu_reports")]),
     ]
   ),
-# [ src/menus/reports/boar_clan_frontier_report.py:L1-L137 ] boar_clan_frontier_report
+# [ src/menus/reports/boar_clan_frontier_report.py:L1-L138 ] boar_clan_frontier_report
 ("boar_clan_frontier_report", mnf_enable_hot_keys,
     "{s1}",
     "none",
@@ -28851,7 +28674,8 @@ or spirit exist and so condemn the priests of false religions and other magician
       (faction_get_slot, ":intimidation", "fac_sod_merc_guild7", slot_faction_boar_intimidation),
       (faction_get_slot, ":target_center", "fac_sod_merc_guild7", slot_faction_boar_target_center),
       (call_script, "script_sod_store_center_name_or_fallback_to_s21", ":target_center", "@no confirmed frontier mark"),
-      (str_store_string, s2, "@{s21}"),
+      (str_store_string_reg, s97, s21),
+      (str_store_string, s2, "@{s97}"),
       (store_num_parties_of_template, ":raiding_bands", "pt_boar_clan_fighters"),
       (store_num_parties_of_template, ":desert_bands", "pt_boar_clan_fighters_desert"),
       (store_relation, ":standing", "fac_player_supporters_faction", "fac_sod_merc_guild7"),
@@ -29153,7 +28977,7 @@ or spirit exist and so condemn the priests of false religions and other magician
          (call_script, "script_sod_threat_board_generate_offers", "$g_sod_threat_board_context_center"),
          (str_store_party_name, s2, "$g_sod_threat_board_context_center"),
          (call_script, "script_sod_threat_board_describe_center_stakes", "$g_sod_threat_board_context_center"),
-      (str_store_string, s1, "@Job Board - {s2}^^{s8}^^Pick one notice. Accepting it creates a marked warband on the map; defeat it before the deadline and claim the reward here."),
+      (str_store_string, s1, "@Job Board - {s2}^^{s8}^^Each notice lists the expected enemy, tier, recommended force, reward, and deadline. Accepting it creates a marked warband on the map; defeat it before the deadline and claim the reward here."),
       (try_end),
     ],
     [
@@ -29277,12 +29101,17 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_reports"),]),
       ]
   ),
-# [ src/menus/reports/faith_world_report.py:L1-L13 ] faith_world_report
+# [ src/menus/reports/faith_world_report.py:L1-L18 ] faith_world_report
 ("faith_world_report", mnf_enable_hot_keys,
     "{s1}",
     "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
+      (try_begin),
+        (neq, "$cheat_mode", 1),
+        (neq, "$g_sod_cheat_mode", 1),
+        (jump_to_menu, "mnu_reports"),
+      (try_end),
       (call_script, "script_sod_describe_faith_world_report"),
     ],
     [
@@ -29301,12 +29130,16 @@ or spirit exist and so condemn the priests of false religions and other magician
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_reports")]),
    ]
  ),
-# [ src/menus/camp/company_accounts.py:L1-L638 ] company_accounts
+# [ src/menus/camp/company_accounts.py:L1-L599 ] company_accounts
 ("company_accounts", mnf_enable_hot_keys,
    "{s20}",
    "none",
    [
      (set_background_mesh, "mesh_pic_payment"),
+     (try_begin),
+       (le, "$g_sod_company_accounts_return_menu", 0),
+       (assign, "$g_sod_company_accounts_return_menu", "mnu_camp"),
+     (try_end),
      (call_script, "script_sod_company_accounts_describe_to_s20"),
    ],
    [
@@ -29387,15 +29220,6 @@ or spirit exist and so condemn the priests of false religions and other magician
        (display_message, "@Wounded shares cost {reg20} denars. Unpaid debt remains {reg21}.", money_color),
        (jump_to_menu, "mnu_company_accounts"),
        ]),
-     ("company_accounts_casualty_compensation", [(gt, "$g_sod_company_casualty_compensation_pressure", 0),
-                                                (call_script, "script_sod_company_accounts_get_casualty_compensation_cost_to_regs"),
-                                                (store_troop_gold, ":gold", "trp_player"),
-                                                (ge, ":gold", reg20),
-                                               ], "Set aside casualty compensation ({reg20} denars).",
-      [(call_script, "script_sod_company_accounts_apply_casualty_compensation"),
-       (display_message, "@Casualty compensation costs {reg20} denars. The wounded and their messmates see the account answered.", money_color),
-       (jump_to_menu, "mnu_company_accounts"),
-       ]),
      ("company_accounts_hazard_pay", [(gt, "$g_sod_company_siege_hazard_pressure", 0),
                                       (call_script, "script_sod_company_accounts_get_hazard_pay_cost_to_regs"),
                                       (store_troop_gold, ":gold", "trp_player"),
@@ -29442,7 +29266,9 @@ or spirit exist and so condemn the priests of false religions and other magician
       [(display_message, "@The company books are clear for now.", good_color),
        ]),
      ("company_accounts_back", [], "Back.",
-      [(jump_to_menu, "mnu_camp"),
+      [(assign, ":sod_company_accounts_back_menu", "$g_sod_company_accounts_return_menu"),
+       (assign, "$g_sod_company_accounts_return_menu", 0),
+       (jump_to_menu, ":sod_company_accounts_back_menu"),
        ]),
    ]),
 
@@ -29570,42 +29396,6 @@ or spirit exist and so condemn the priests of false religions and other magician
                                           ], "Hold a victory feast after the hard-fought battle.",
      [(call_script, "script_sod_company_accounts_apply_victory_feast"),
        (display_message, "@The feast spends {reg21} provisions. The company eats like survivors, not debtors.", good_color),
-       (jump_to_menu, "mnu_company_recreation"),
-       ]),
-     ("company_recreation_victory_spoils", [(store_current_day, ":cur_day"),
-                                            (store_sub, ":days_since_victory", ":cur_day", "$g_sod_company_last_victory_day"),
-                                            (le, ":days_since_victory", 3),
-                                            (store_sub, ":days_since_reward", ":cur_day", "$g_sod_company_last_victory_reward_day"),
-                                            (gt, ":days_since_reward", 3),
-                                            (call_script, "script_sod_company_accounts_get_victory_reward_cost_to_regs"),
-                                            (store_troop_gold, ":gold", "trp_player"),
-                                            (ge, ":gold", reg20),
-                                           ], "Pay victory spoils to the company ({reg20} denars).",
-      [(call_script, "script_sod_company_accounts_apply_victory_reward", 1),
-       (display_message, "@Victory claims: {reg20} denars paid into the company after the fight.", money_color),
-       (jump_to_menu, "mnu_company_recreation"),
-       ]),
-     ("company_recreation_public_honor", [(store_current_day, ":cur_day"),
-                                          (store_sub, ":days_since_victory", ":cur_day", "$g_sod_company_last_victory_day"),
-                                          (le, ":days_since_victory", 3),
-                                          (store_sub, ":days_since_honor", ":cur_day", "$g_sod_company_last_public_honor_day"),
-                                          (gt, ":days_since_honor", 7),
-                                          (call_script, "script_sod_company_accounts_get_victory_reward_cost_to_regs"),
-                                          (store_troop_gold, ":gold", "trp_player"),
-                                          (ge, ":gold", reg21),
-                                         ], "Stage a public honor for the company ({reg21} denars).",
-      [(call_script, "script_sod_company_accounts_apply_victory_reward", 2),
-       (display_message, "@Victory claims: public honor costs {reg20} denars and turns survival into reputation.", money_color),
-       (jump_to_menu, "mnu_company_recreation"),
-       ]),
-     ("company_recreation_refuse_spectacle", [(store_current_day, ":cur_day"),
-                                             (store_sub, ":days_since_victory", ":cur_day", "$g_sod_company_last_victory_day"),
-                                             (le, ":days_since_victory", 3),
-                                             (store_sub, ":days_since_refusal", ":cur_day", "$g_sod_company_last_refused_spectacle_day"),
-                                             (gt, ":days_since_refusal", 3),
-                                            ], "Refuse spectacle; keep the company moving.",
-      [(call_script, "script_sod_company_accounts_refuse_public_spectacle"),
-       (display_message, "@Victory claims: no spectacle is held. Discipline approves, proud troops remember the slight.", warning_color),
        (jump_to_menu, "mnu_company_recreation"),
        ]),
      ("company_recreation_village_festival", [(call_script, "script_get_closest_center", "p_main_party"),
@@ -30140,45 +29930,45 @@ or spirit exist and so condemn the priests of false religions and other magician
      (troop_get_slot, "$temp_3", "trp_stack_selection_amounts", 0), #number of slots
      ],
     [
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 1), ], "{s0}",
+      ("training_ground_melee_1", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 1), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 1), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 2), ], "{s0}",
+      ("training_ground_melee_2", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 2), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 2), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 3), ], "{s0}",
+      ("training_ground_melee_3", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 3), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 3), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 4), ], "{s0}",
+      ("training_ground_melee_4", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 4), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 4), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 5), ], "{s0}",
+      ("training_ground_melee_5", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 5), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 5), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 6), ], "{s0}",
+      ("training_ground_melee_6", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 6), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 6), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 7), ], "{s0}",
+      ("training_ground_melee_7", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 7), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 7), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 8), ], "{s0}",
+      ("training_ground_melee_8", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 8), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 8), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 9), ], "{s0}",
+      ("training_ground_melee_9", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 9), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 9), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 10), ], "{s0}",
+      ("training_ground_melee_10", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 10), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 10), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 11), ], "{s0}",
+      ("training_ground_melee_11", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 11), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 11), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 12), ], "{s0}",
+      ("training_ground_melee_12", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 12), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 12), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 13), ], "{s0}",
+      ("training_ground_melee_13", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 13), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 13), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 14), ], "{s0}",
+      ("training_ground_melee_14", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 14), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 14), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 15), ], "{s0}",
+      ("training_ground_melee_15", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 15), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 15), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 16), ], "{s0}",
+      ("training_ground_melee_16", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 16), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 16), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 17), ], "{s0}",
+      ("training_ground_melee_17", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 17), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 17), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 18), ], "{s0}",
+      ("training_ground_melee_18", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 18), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 18), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 19), ], "{s0}",
+      ("training_ground_melee_19", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 19), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 19), ]),
-      ("s0", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 20), ], "{s0}",
+      ("training_ground_melee_20", [(call_script, "script_cf_training_ground_sub_routine_1_for_melee_details", 20), ], "{s68}",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", 20), ]),
       ("training_ground_selection_details_melee_random", [], "Choose randomly.",
        [(call_script, "script_training_ground_sub_routine_2_for_melee_details", -1), ]),
@@ -30288,7 +30078,7 @@ or spirit exist and so condemn the priests of false religions and other magician
   ),
 # [ src/menus/training/training_ground_description.py:L1-L16 ] training_ground_description
 ("training_ground_description", 0,
-   "{s0}",
+   "{s68}",
    "none",
    [],
     [
@@ -30301,15 +30091,15 @@ or spirit exist and so condemn the priests of false religions and other magician
        ),
       ]
   ),
-# [ src/menus/training/training_ground_training_result.py:L1-L100 ] training_ground_training_result
+# [ src/menus/training/training_ground_training_result.py:L1-L103 ] training_ground_training_result
 ("training_ground_training_result", mnf_disable_all_keys,
-   "{s7}{s2}",
+   "{s98}{s97}",
    "none",
    [
      (store_skill_level, ":trainer_skill", "skl_trainer", "trp_player"),
      (store_add, ":trainer_skill_multiplier", 5, ":trainer_skill"),
      (call_script, "script_write_fit_party_members_to_stack_selection", "p_main_party", 1),
-     (str_clear, s2),
+     (str_clear, s97),
      (troop_get_slot, ":num_fit", "trp_stack_selection_amounts", 1),
      (troop_get_slot, ":num_slots", "trp_stack_selection_amounts", 0),
      (try_begin),
@@ -30346,9 +30136,10 @@ or spirit exist and so condemn the priests of false religions and other magician
            (eq, ":stack_troop", ":troop_id"),
            (assign, ":end_cond_2", 0), #break
            (call_script, "script_cf_training_ground_sub_routine_for_training_result", ":troop_id", ":stack_no", ":amount", ":xp_ratio_to_add_with_trainer_skill"),
-           (str_store_troop_name_by_count, s1, ":troop_id", ":amount"),
+           (str_store_troop_name_by_count, s68, ":troop_id", ":amount"),
            (assign, reg1, ":amount"),
-           (str_store_string, s2, "@{s2}^{reg1} {s1} earned {reg0} experience."),
+           (str_store_string_reg, s96, s97),
+           (str_store_string, s97, "@{s96}^{reg1} {s68} earned {reg0} experience."),
          (try_end),
        (try_end),
        (try_begin),
@@ -30363,33 +30154,35 @@ or spirit exist and so condemn the priests of false religions and other magician
              (eq, ":stack_troop", ":troop_id"),
              (assign, ":end_cond_2", 0), #break
              (call_script, "script_cf_training_ground_sub_routine_for_training_result", ":troop_id", ":stack_no", 1, ":special_xp_ratio_to_add"),
-             (call_script, "script_store_troop_name", s1, ":troop_id"),
-             (str_store_string, s2, "@{s2}^{s1} earned an additional {reg0} experience."),
+             (call_script, "script_store_troop_name", s68, ":troop_id"),
+             (str_store_string_reg, s96, s97),
+             (str_store_string, s97, "@{s96}^{s68} earned an additional {reg0} experience."),
            (try_end),
          (try_end),
        (try_end),
        (try_begin),
          (call_script, "script_cf_training_ground_sub_routine_for_training_result", "trp_player", -1, 1, ":xp_ratio_to_add"),
-         (str_store_string, s2, "@^You earned {reg0} experience.{s2}"),
+         (str_store_string_reg, s96, s97),
+         (str_store_string, s97, "@^You earned {reg0} experience.{s96}"),
        (try_end),
      (try_end),
      (try_begin),
        (eq, "$g_training_ground_training_success_ratio", 0),
-       (str_store_string, s7, "@The training didn't go well at all."),
+       (str_store_string, s98, "@The training didn't go well at all."),
      (else_try),
        (lt, "$g_training_ground_training_success_ratio", 25),
-       (str_store_string, s7, "@The training didn't go well at all."),
+       (str_store_string, s98, "@The training didn't go well at all."),
      (else_try),
        (lt, "$g_training_ground_training_success_ratio", 50),
-       (str_store_string, s7, "@The training didn't go very well."),
+       (str_store_string, s98, "@The training didn't go very well."),
      (else_try),
        (lt, "$g_training_ground_training_success_ratio", 75),
-       (str_store_string, s7, "@The training went quite well."),
+       (str_store_string, s98, "@The training went quite well."),
      (else_try),
        (lt, "$g_training_ground_training_success_ratio", 99),
-       (str_store_string, s7, "@The training went very well."),
+       (str_store_string, s98, "@The training went very well."),
      (else_try),
-       (str_store_string, s7, "@The training went perfectly."),
+       (str_store_string, s98, "@The training went perfectly."),
      (try_end),
 
      ],
@@ -30746,7 +30539,7 @@ or spirit exist and so condemn the priests of false religions and other magician
         ]),
     ]
   ),
-# [ src/menus/reports/trade_network_report.py:L1-L30 ] trade_network_report
+# [ src/menus/reports/trade_network_report.py:L1-L38 ] trade_network_report
 ("trade_network_report", mnf_enable_hot_keys,
     "{s1}",
     "none",
@@ -30757,34 +30550,50 @@ or spirit exist and so condemn the priests of false religions and other magician
     ],
     [
       ("trade_network_fund_patrols",
-       [(store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 1200)],
+       [(call_script, "script_cf_sod_trade_network_can_apply_strategy_action"),
+        (store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 1200)],
        "Fund road patrols. (1200 denars)",
        [(call_script, "script_sod_trade_network_apply_strategy_action", 1), (jump_to_menu, "mnu_trade_network_report")]),
       ("trade_network_suppress_tolls",
-       [(store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 900)],
+       [(call_script, "script_cf_sod_trade_network_can_apply_strategy_action"),
+        (store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 900)],
        "Challenge Boar toll pressure. (900 denars)",
        [(call_script, "script_sod_trade_network_apply_strategy_action", 2), (jump_to_menu, "mnu_trade_network_report")]),
       ("trade_network_subsidize_relief",
-       [(store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 1000), (is_between, "$g_sod_trade_network_last_result_center", centers_begin, centers_end)],
+       [(call_script, "script_cf_sod_trade_network_can_apply_strategy_action"),
+        (store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 1000), (is_between, "$g_sod_trade_network_last_result_center", centers_begin, centers_end)],
        "Subsidize relief to the last known needy market. (1000 denars)",
        [(call_script, "script_sod_trade_network_apply_strategy_action", 3), (jump_to_menu, "mnu_trade_network_report")]),
       ("trade_network_repeat_route",
-       [(store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 800), (gt, "$g_sod_trade_network_last_result_party", 0)],
+       [(call_script, "script_cf_sod_trade_network_can_apply_strategy_action"),
+        (store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 800), (gt, "$g_sod_trade_network_last_result_party", 0)],
        "Invest in the familiar caravan route. (800 denars)",
        [(call_script, "script_sod_trade_network_apply_strategy_action", 4), (jump_to_menu, "mnu_trade_network_report")]),
+      ("trade_network_orders_today",
+       [(neg|call_script, "script_cf_sod_trade_network_can_apply_strategy_action")],
+       "Road orders are already moving today.",
+       [(jump_to_menu, "mnu_trade_network_report")]),
       ("trade_network_report_back", [], "Back to reports.", [(jump_to_menu, "mnu_reports")]),
     ]
   ),
-# [ src/menus/reports/runtime_sanity_report.py:L1-L21 ] runtime_sanity_report
+# [ src/menus/reports/runtime_sanity_report.py:L1-L29 ] runtime_sanity_report
 ("runtime_sanity_report", mnf_enable_hot_keys,
    "{s20}",
    "none",
    [
      (set_background_mesh, "mesh_pic_report_screen"),
+     (try_begin),
+       (neq, "$cheat_mode", 1),
+       (neq, "$g_sod_cheat_mode", 1),
+       (jump_to_menu, "mnu_reports"),
+     (try_end),
      (call_script, "script_sod_describe_runtime_sanity_to_s20"),
    ],
    [
-     ("runtime_sanity_scrub", [(eq, "$cheat_mode", 1)], "Debug: clean stale encounter state.",
+     ("runtime_sanity_scrub", [
+        (this_or_next|eq, "$cheat_mode", 1),
+        (eq, "$g_sod_cheat_mode", 1),
+      ], "Debug: clean stale encounter state.",
       [
         (call_script, "script_sod_sanitize_encounter_globals"),
         (display_message, "@Runtime sanity: stale encounter globals have been checked and cleared where invalid.", good_color),
@@ -30795,21 +30604,22 @@ or spirit exist and so condemn the priests of false religions and other magician
         (jump_to_menu, "mnu_reports"),
       ]),
    ]),
-# [ src/menus/camp/sod_upgrade_camp.py:L1-L52 ] sod_upgrade_camp
+# [ src/menus/camp/sod_upgrade_camp.py:L1-L53 ] sod_upgrade_camp
 ("sod_upgrade_camp", 0,
-	"{s1}",
+	"{s98}",
 	"none", [	
-		(str_clear, s1),
+		(str_clear, s98),
 		(str_clear, s20),
 		(assign, "$jump_menu", "mnu_camp"),
 		(assign, "$g_encountered_party", -1),
 		(assign, "$g_sod_upgrade_center", -1),
 		(str_store_string, s18, "@The Commoners, The Slavers"),
-		(try_for_range, ":guild", "fac_sod_merc_guild1", "fac_kingdom_6_mercenaries"),
+		(try_for_range, ":guild", guilds_begin, guilds_end),
 			(neq, ":guild", "fac_sod_merc_guild6"),
 			(faction_slot_eq, ":guild", slot_faction_upgrade_permission, 1),
-			(str_store_faction_name, s0, ":guild"),
-			(str_store_string, s18, "@{s18}, {s0}"),
+			(str_store_faction_name, s68, ":guild"),
+			(str_store_string_reg, s97, s18),
+			(str_store_string, s18, "@{s97}, {s68}"),
 		(try_end),
 
 		(str_store_string, s20, "@^^^Authorized promotion sources:^^{s18}.^^Guild promotions remain camp-based; noble and faith doctrines require proper centers."),
@@ -30839,9 +30649,9 @@ or spirit exist and so condemn the priests of false religions and other magician
 		(assign, reg1, ":total"),
 		(try_begin),
 			(gt, ":total", 0),
-			(str_store_string, s1, "@{reg1} mercenaries in your party can be promoted from camp.{s20}"),
+			(str_store_string, s98, "@{reg1} mercenaries in your party can be promoted from camp.{s20}"),
 		(else_try),
-			(str_store_string, s1, "@No mercenaries in your party can be promoted from camp.{s20}"),
+			(str_store_string, s98, "@No mercenaries in your party can be promoted from camp.{s20}"),
 		(try_end),
 	],
 		generate_upgrade_options()
@@ -30849,11 +30659,11 @@ or spirit exist and so condemn the priests of false religions and other magician
 # [ src/menus/other/sod_battle_commander_select.py:L1-L12 ] sod_battle_commander_select
 (
     "sod_battle_commander_select", 0,
-    "Choose who will lead the next fight. Current acting commander: {s7}. If you cannot fight, select a fit companion.",
+    "Choose who will lead the next fight. Current acting commander: {s68}. If you cannot fight, select a fit companion.",
     "none",
     [
       (set_background_mesh, "mesh_pic_attack_ready"),
-      (call_script, "script_sod_battle_commander_store_current_name_to_s7"),
+      (call_script, "script_sod_battle_commander_store_current_name_to_s68"),
     ],
     generate_sod_battle_commander_select_options()
   ),

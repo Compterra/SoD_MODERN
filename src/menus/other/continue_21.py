@@ -29,8 +29,8 @@ MENUS = [
     [
       ("continue", [(eq, reg5, 0)], "Continue...", [(party_set_slot, "$current_town", slot_center_volunteer_troop_amount, -1), (jump_to_menu, "mnu_village")]),
       ("recruit_them", [(gt, reg5, 0)], "Recruit them as native recruits. ({reg6} denars)", [(call_script, "script_village_recruit_volunteers_recruit", 0), (jump_to_menu, "mnu_village"), ]),
-      ("recruit_them", [(gt, reg5, 0)], "Recruit them as mercenaries. ({reg6} denars)", [(call_script, "script_village_recruit_volunteers_recruit", 1), (jump_to_menu, "mnu_village"), ]),
-      ("recruit_them", [(gt, reg5, 0), 
+      ("recruit_mercenaries", [(gt, reg5, 0)], "Recruit them as mercenaries. ({reg6} denars)", [(call_script, "script_village_recruit_volunteers_recruit", 1), (jump_to_menu, "mnu_village"), ]),
+      ("recruit_special", [(gt, reg5, 0), 
 	  (call_script, "script_village_recruit_volunteers_get_params", 2),
       (str_store_troop_name_by_count, s3, reg0, 2),
 	  ], "Recruit them as {s3}. ({reg6} denars)", [(call_script, "script_village_recruit_volunteers_recruit", 2), (jump_to_menu, "mnu_village"), ]),

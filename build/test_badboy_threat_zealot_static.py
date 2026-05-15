@@ -12,7 +12,7 @@ def main():
     badboy = read("src/scripts/ZF_factions/change_badboy_rating.py")
     assert '(val_min, ":cur_badboy", 40)' in badboy, "badboy should be hard-capped at 40"
     assert '(assign, ":active_calradian_rivals", 0)' in badboy
-    assert '(try_for_range, ":kingdom_no", "fac_kingdom_1", "fac_kingdom_6")' in badboy
+    assert '(try_for_range, ":kingdom_no", native_kingdoms_begin, native_kingdoms_end)' in badboy
     assert '(eq, ":active_calradian_rivals", 0)' in badboy
     assert '(assign, ":cur_badboy", 0)' in badboy, "badboy should clear when no Calradian rival realms remain"
 
@@ -26,7 +26,8 @@ def main():
     threat = read("src/scripts/ZD_centers/get_center_threat_level.py")
     assert '(is_between, ":center_no", centers_begin, centers_end)' in threat
     assert '(call_script, "script_sod_get_center_security_profile", ":center_no")' in threat
-    assert '(display_log_message, "@Debug: get_center_threat_level ignored a non-center argument.", debug_color)' in threat
+    assert '(assign, reg0, 0)' in threat
+    assert '(assign, reg11, 0)' in threat
 
     relation = read("src/scripts/ZH_heroes/troop_get_player_relation.py")
     assert '(neq, ":faction", "fac_player_supporters_faction")' in relation
@@ -42,8 +43,8 @@ def main():
     )
 
     lord_dialog = read("src/dialogs/ZA02_sod_court_and_strategy/trp_sod_chancellor_plyr_chancellor_lord_action_02.py")
-    assert "There are no homeland lords left to recruit." in lord_dialog
-    assert "Let's look at other topics to make decisions about." in lord_dialog
+    assert "Then there is no one left worth summoning." in lord_dialog
+    assert "Leave the summons for now. I have other business." in lord_dialog
 
     print("Badboy, threat, lord recruitment, and zealot static checks passed")
 

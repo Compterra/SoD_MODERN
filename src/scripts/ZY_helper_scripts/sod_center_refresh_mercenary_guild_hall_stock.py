@@ -72,7 +72,7 @@ SCRIPTS = [
        (store_random_in_range, ":amount", 4, 9),
        (val_add, ":amount", ":stock_bonus"),
      (else_try),
-       (call_script, "script_sod_merc_market_calculate_guild_supply", ":guild"),
+       (call_script, "script_sod_merc_market_calculate_guild_supply", ":guild", 0),
        (assign, ":available_companies", reg0),
        (assign, ":market_quality", reg2),
        (assign, ":refusal_reason", reg6),

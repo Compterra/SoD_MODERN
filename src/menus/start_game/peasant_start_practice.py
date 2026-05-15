@@ -17,7 +17,7 @@ MENUS = [
       (assign, "$g_train_peasants_against_bandits_num_peasants", ":random_number"),
       (assign, reg0, ":random_number"),
       (store_sub, reg1, ":random_number", 1),
-      (str_store_troop_name_by_count, s0, "trp_trainee_peasant", ":random_number"),
+      (str_store_troop_name_by_count, s68, "trp_trainee_peasant", ":random_number"),
      ],
     [
       ("peasant_start_practice", [], "Start the practice fight.",

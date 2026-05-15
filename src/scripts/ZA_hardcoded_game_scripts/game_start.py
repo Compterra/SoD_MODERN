@@ -1167,6 +1167,10 @@ SCRIPTS = [
       (call_script, "script_update_party_creation_random_limits"),
       # Reseting player party icon
       (assign, "$g_player_party_icon", -1),
+      (assign, "$g_sod_player_map_icon_dirty", 1),
+      (assign, "$g_sod_player_map_icon_initialized", 0),
+      (assign, "$g_sod_player_map_icon_next_check_hour", 0),
+      (assign, "$g_sod_battle_commander_reset_pending", 0),
       # Setting food bonuses
       (item_set_slot, "itm_smoked_fish", slot_item_food_bonus, 10),
       (item_set_slot, "itm_dried_meat", slot_item_food_bonus, 10),

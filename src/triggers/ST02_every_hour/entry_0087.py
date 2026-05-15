@@ -52,7 +52,7 @@ SIMPLE_TRIGGERS = [
       (troop_set_slot, ":troop_no", slot_troop_change_to_faction, 0),
       (try_begin),
         (is_between, ":new_faction_no", kingdoms_begin, kingdoms_end),
-        (str_store_troop_name_link, s1, ":troop_no"),
+        (call_script, "script_store_troop_name_link", s1, ":troop_no"),
         (str_store_faction_name_link, s2, ":faction_no"),
         (str_store_faction_name_link, s3, ":new_faction_no"),
         (try_begin),

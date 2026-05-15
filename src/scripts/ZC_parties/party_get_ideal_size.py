@@ -9,6 +9,8 @@ SCRIPTS = [
         (gt, ":party_no", 0),
         (party_is_active, ":party_no"),
         (party_slot_eq, ":party_no", slot_party_type, spt_kingdom_hero_party),
+        (party_get_num_companion_stacks, ":num_stacks", ":party_no"),
+        (gt, ":num_stacks", 0),
         (party_stack_get_troop_id, ":party_leader", ":party_no", 0),
         (store_faction_of_party, ":faction_id", ":party_no"),
         (assign, ":limit", 10),

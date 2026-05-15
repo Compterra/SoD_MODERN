@@ -8,12 +8,17 @@ SCRIPTS = [
       (party_get_slot, ":old_lord_troop_id", ":center_no", slot_town_lord),
 	  
 	  (party_set_slot, ":center_no", slot_center_max_garrison, 150),
-	  (party_set_slot, ":center_no", slot_center_trainers, 0),
+      (party_set_slot, ":center_no", slot_center_trainers, 0),
 	  (party_set_slot, ":center_no", slot_center_garrison_soldiers, 0),
 	  (party_set_slot, ":center_no", slot_center_garrison_ranged, 0),
 
       (store_troop_faction, ":lord_troop_faction", ":lord_troop_id"),
+      (store_faction_of_party, ":center_faction_before_lord", ":center_no"),
       (try_begin),
+        (eq, ":lord_troop_id", "trp_player"),
+        (eq, ":center_faction_before_lord", "fac_player_supporters_faction"),
+        (party_set_faction, ":center_no", "fac_player_supporters_faction"),
+      (else_try),
         (eq, ":lord_troop_id", "trp_player"),
         (gt, "$players_kingdom", 0),
         (party_set_faction, ":center_no", "$players_kingdom"),

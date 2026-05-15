@@ -15,13 +15,18 @@ SIMPLE_TRIGGERS = [
     (faction_get_slot, ":leader", "fac_player_supporters_faction", slot_faction_leader),
     (try_begin),
       (eq, ":leader", "trp_player"),
-      #MORDACHAI - DEBUG - this happens if player takes a center, but it isn't assigned to anyone (yet)
-      #MORDACHAI - DEBUG - this should no longer occur, as conquests are immediately fully assigned to the player now (see mnu_castle_taken)
+      # Repair any player-faction center left without a real lord after conquest or faction changes.
       (str_store_party_name_link, s2, "$g_center_taken_by_player_faction"),
-      (party_get_slot, reg1, ":center_no", slot_town_lord),
-      (display_message, "@ERROR {s2}'s slot_town_lord = {reg1}", red),
+      (party_get_slot, reg1, "$g_center_taken_by_player_faction", slot_town_lord),
+      (call_script, "script_give_center_to_lord", "$g_center_taken_by_player_faction", "trp_player", 0),
+      (display_message, "@{s2} has been confirmed under your personal authority.", 0x99CCFF),
     (else_try),
+      (is_between, ":leader", kingdom_heroes_begin, kingdom_heroes_end),
       (start_map_conversation, ":leader"),
+    (else_try),
+      (str_store_party_name_link, s2, "$g_center_taken_by_player_faction"),
+      (party_get_slot, reg1, "$g_center_taken_by_player_faction", slot_town_lord),
+      (display_message, "@Player faction warning: {s2}'s lord slot could not be resolved ({reg1}).", red),
     (try_end),
     ]),
 ]

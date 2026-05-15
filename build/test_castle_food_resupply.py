@@ -17,18 +17,28 @@ def assert_contains(raw: str, needle: str) -> None:
 
 def main() -> int:
     restock = read("src/triggers/ST03_daily/entry_0051.py")
+    helper = read("src/scripts/ZD_centers/sod_center_daily_maintenance.py")
 
-    assert_contains(restock, "slot_party_food_store")
-    assert_contains(restock, "script_center_get_food_consumption")
-    assert_contains(restock, "slot_town_wealth")
-    assert_contains(restock, "script_sod_get_castle_support_profile")
-    assert_contains(restock, ":castle_support")
-    assert_contains(restock, ":garrison")
-    assert_contains(restock, ":road_control")
-    assert_contains(restock, "support_population")
-    assert_contains(restock, "resupply_capacity")
-    assert_contains(restock, "resupply_cost")
-    assert_contains(restock, "script_sod_change_center_wealth")
+    assert_contains(restock, "script_sod_center_process_daily_castle_food_resupply")
+    assert "try_for_range" not in restock
+    for token in [
+        '"sod_center_process_daily_castle_food_resupply"',
+        "castles_begin, castles_end",
+        "slot_center_is_besieged_by, -1",
+        "slot_party_food_store",
+        "script_center_get_food_consumption",
+        "slot_town_wealth",
+        "script_sod_get_castle_support_profile",
+        ":castle_support",
+        ":garrison",
+        ":road_control",
+        "support_population",
+        "resupply_capacity",
+        "resupply_cost",
+        "script_sod_change_center_wealth",
+        "script_sod_center_apply_food_delta",
+    ]:
+        assert_contains(helper, token)
 
     print("[castle_food_resupply] OK")
     return 0

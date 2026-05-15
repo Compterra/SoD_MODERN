@@ -8,10 +8,19 @@ MENUS = [
     ],
     [
       ("companion_depth_report_campfire", [
-          (party_get_num_companion_stacks, ":num_stacks", "p_main_party"),
-          (gt, ":num_stacks", 1),
+          (assign, ":has_companion", 0),
+          (try_for_range, ":companion", companions_begin, companions_end),
+            (main_party_has_troop, ":companion"),
+            (assign, ":has_companion", 1),
+          (try_end),
+          (try_for_range, ":companion", special_companions_begin, special_companions_end),
+            (main_party_has_troop, ":companion"),
+            (assign, ":has_companion", 1),
+          (try_end),
+          (eq, ":has_companion", 1),
         ], "Gather companions by the fire.",
         [
+          (assign, "$g_sod_companion_campfire_return_menu", "mnu_companion_depth_report"),
           (jump_to_menu, "mnu_companion_campfire"),
         ]
       ),

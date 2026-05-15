@@ -4,7 +4,7 @@ DIALOGS = [
                           (check_quest_succeeded, ":lords_quest"),
                           (quest_slot_eq, ":lords_quest", slot_quest_giver_troop, "$g_talk_troop"),
                           ],
-   "I have heard about your deeds. You have given those peasants the punishment they deserved.", "gm_pretalk", [
+   "The road is ours again. You made that plain.", "gm_pretalk", [
 							(store_partner_quest, ":lords_quest"),
 							  (quest_get_slot, ":quest_gold_reward", ":lords_quest", slot_quest_gold_reward),
                               (assign, ":xp_reward", ":quest_gold_reward"),

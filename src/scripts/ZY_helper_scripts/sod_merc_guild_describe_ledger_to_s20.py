@@ -72,7 +72,7 @@ SCRIPTS = [
        (ge, reg28, 15),
        (str_store_string, s23, "@Road pressure active; caravans, threats, and border trouble are stretching the guild."),
      (try_end),
-     (call_script, "script_sod_merc_market_calculate_guild_supply", ":guild_faction"),
+     (call_script, "script_sod_merc_market_calculate_guild_supply", ":guild_faction", 0),
      (assign, ":refusal_reason", reg6),
      (str_store_string, s25, "@Open for contracts."),
      (try_begin),

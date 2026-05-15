@@ -244,7 +244,9 @@ MENUS = [
         [
           (try_begin),
             (gt, "$g_sod_retinue_return_menu", 0),
-            (jump_to_menu, "$g_sod_retinue_return_menu"),
+            (assign, ":sod_retinue_back_menu", "$g_sod_retinue_return_menu"),
+            (assign, "$g_sod_retinue_return_menu", 0),
+            (jump_to_menu, ":sod_retinue_back_menu"),
           (else_try),
             (change_screen_return),
           (try_end),

@@ -7,7 +7,7 @@ DIALOGS = [
     (eq, "$g_sod_rolf_name_challenge_confronted", 1),
     (troop_slot_eq, "trp_npc4", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Rolf, answer the question about your name here, not from a pose.", "companion_depth_rolf_name_pending",
+  "Rolf, answer the question of your name plainly.", "companion_depth_rolf_name_pending",
   []],
 
 [anyone|plyr, "member_talk",

@@ -35,7 +35,7 @@ def test_no_direct_player_gold_removal_outside_charge_script():
 def test_known_register_based_payments_use_charge_script():
     checked = {
         "src/dialogs/ZZ99_misc_dialogs/anyone_plyr_boar_clan_talk_03.py": 'script_sod_player_charge_gold", reg5',
-        "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_boar_clan_recruit_3.py": 'script_sod_player_charge_gold", reg5',
+        "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_boar_clan_recruit_3.py": 'script_sod_player_charge_gold", ":hire_cost"',
         "src/menus/other/sod_upgrade_continue.py": 'script_sod_player_charge_gold", reg0',
         "src/menus/kingdom/mercenaries_weekly_payment.py": 'script_sod_player_charge_gold", reg1',
     }
@@ -89,6 +89,11 @@ def test_high_risk_paid_outcomes_check_full_payment():
             '(call_script, "script_sod_player_charge_gold", "$temp")',
             '(eq, reg1, 1)',
             '(call_script, "script_change_player_party_morale", 20)',
+        ],
+        "src/scripts/ZY_helper_scripts/sod_banking.py": [
+            '(call_script, "script_sod_player_charge_gold", ":deposit_amount")',
+            '(eq, reg1, 1)',
+            '(troop_add_gold, "trp_sod_bankvault_possessions", ":deposit_amount")',
         ],
     }
     for rel, needles in checked.items():

@@ -24,7 +24,7 @@ SCRIPTS = [
         (assign, ":template", "pt_sod_diplomatic_envoy"),
         (else_try),
           (eq, ":route", sod_rtc_branch_restoration),
-          (assign, ":template", "pt_bandits_awaiting_ransom"),
+          (assign, ":template", "pt_bandits"),
         (else_try),
           (eq, ":route", sod_rtc_branch_imperial),
           (assign, ":template", "pt_sod_diplomatic_envoy"),

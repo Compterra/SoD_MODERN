@@ -1,14 +1,13 @@
 MENUS = [
 (
     "event_27", mnf_disable_all_keys,
-    "Some {s2} visit you. They think that the public sacrifice of virgins in all the towns and villages of your realm would help your religion to spread.\
-People not sharing your faith will probably be extremely shocked by this, and killing these innocent would alwo lower your honor.",
+    "Some {s2} visit you. They demand public human sacrifices in every town and village, claiming terror and devotion will help your religion spread. Those who do not share your faith will be horrified, and innocent blood will stain your honor.",
     "none",
     [    (try_begin),
 	    (eq, "$g_sod_faith", cb_the_void),
 		(str_store_string, s2, "@priests of the Void"),
 		(else_try),
-		(str_store_string, s2, "@priests of the Old Golds"),
+		(str_store_string, s2, "@priests of the Old Gods"),
 		(try_end),
     ],
     [
@@ -38,7 +37,7 @@ People not sharing your faith will probably be extremely shocked by this, and ki
         ]
        ),
 	   
-        ("choice_27_2", [], "Only make some sacrifices, where your faith is strong.", [
+        ("choice_27_2", [], "Order sacrifices only where your faith is strong.", [
             (call_script, "script_change_player_honor", -5),
 			(assign, ":global_faith_effect", 0),
 			
@@ -92,7 +91,7 @@ People not sharing your faith will probably be extremely shocked by this, and ki
 			(try_end),
 			
             (else_try),
-            (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+            (display_message, "@You don't have enough gold to buy the sacrificial animals.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -5),
             (val_sub, "$g_sod_global_faith", 25),
             (val_clamp, "$g_sod_global_faith", -2000, 2001),
@@ -110,7 +109,7 @@ People not sharing your faith will probably be extremely shocked by this, and ki
         ]
        ),
 	   
-	    ("choice_27_5", [], "Refuse to make sacrifices and publicly condemn the priests for this silly idea.", [
+	    ("choice_27_5", [], "Refuse the sacrifices and publicly condemn the priests.", [
 			 (val_sub, "$g_sod_global_faith", 100),
 			 (val_clamp, "$g_sod_global_faith", -2000, 2001),
 			 (val_sub, "$g_sod_clergy_happines", 25),

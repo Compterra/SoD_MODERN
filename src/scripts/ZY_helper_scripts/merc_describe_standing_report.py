@@ -37,7 +37,7 @@ SCRIPTS = [
      (store_add, reg12, reg10, reg11),
      (try_begin),
        (assign, ":employer_faction", 0),
-       (try_for_range, ":cur_faction", kingdoms_begin, kingdoms_end),
+       (try_for_range, ":cur_faction", native_kingdoms_begin, native_kingdoms_end),
          (eq, ":employer_faction", 0),
          (faction_slot_eq, ":cur_faction", slot_faction_merc_pact, "fac_sod_merc_guild1"),
          (faction_slot_eq, ":cur_faction", slot_faction_state, sfs_active),

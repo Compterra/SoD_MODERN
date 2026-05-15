@@ -13,7 +13,7 @@ def read_items() -> str:
 
 
 def item_block(text: str, item_id: str) -> str:
-    pattern = re.compile(rf'\["{re.escape(item_id)}",.*?\],', re.S)
+    pattern = re.compile(rf'(?ms)^\["{re.escape(item_id)}",.*?(?=^\["|\Z)')
     match = pattern.search(text)
     assert match, f"missing item {item_id}"
     return match.group(0)

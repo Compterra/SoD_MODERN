@@ -58,6 +58,15 @@ def test_victory_feast_lives_in_recreation_and_consumes_once_after_hard_victory(
     assert '(assign, "$g_sod_company_victory_feast_available", 0)' in scripts
     assert '(ge, "$g_starting_strength_enemy_party", 1000)' in scripts
     assert '(this_or_next|is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end)' in scripts
+    for token in (
+        "company_recreation_victory_spoils",
+        "company_recreation_public_honor",
+        "company_recreation_refuse_spectacle",
+        "Pay victory spoils",
+        "Stage a public honor",
+        "Refuse spectacle",
+    ):
+        assert token not in menu
 
 
 def test_spokesperson_menu_keeps_ceremonies_out_of_generic_grievances():

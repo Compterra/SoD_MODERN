@@ -121,7 +121,7 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc5", 3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc5"),
           (display_message, "@Baheshtur lets silence work. One rider crosses the line, then another. The oath holds because no hand drags it.", 0x99CCFF),
-          (jump_to_menu, "mnu_baheshtur_unbroken_saddle"),
+          (start_map_conversation, "trp_npc5"),
         ]
       ),
       ("baheshtur_trial_defend_line", [
@@ -158,7 +158,7 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc5", -3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc5"),
           (display_message, "@The line is quiet because no one can move. Baheshtur watches the bound riders and says nothing.", 0xCC9966),
-          (jump_to_menu, "mnu_baheshtur_unbroken_saddle"),
+          (start_map_conversation, "trp_npc5"),
         ]
       ),
       ("baheshtur_trial_leave", [], "Return to camp.",
@@ -186,7 +186,7 @@ MENUS = [
     [
       ("baheshtur_rider_oath_after", [], "Settle the oath with Baheshtur.",
         [
-          (jump_to_menu, "mnu_baheshtur_unbroken_saddle"),
+          (start_map_conversation, "trp_npc5"),
         ]
       ),
     ]
@@ -206,7 +206,7 @@ MENUS = [
     [
       ("baheshtur_rider_oath_failed_after", [], "Face Baheshtur after the broken oath.",
         [
-          (jump_to_menu, "mnu_baheshtur_unbroken_saddle"),
+          (start_map_conversation, "trp_npc5"),
         ]
       ),
     ]

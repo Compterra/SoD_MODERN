@@ -17,10 +17,10 @@ SIMPLE_TRIGGERS = [
 			   (str_clear, s31),
 			   (str_clear, s8),
 			   
-			  (try_for_range, ":kingdom", "fac_kingdom_1", "fac_kingdom_6"),
+			  (try_for_range, ":kingdom", native_kingdoms_begin, native_kingdoms_end),
 			  (faction_slot_eq, ":kingdom", slot_faction_state, sfs_active),
 			  
-			    (try_for_range, ":other_kingdom_no", "fac_kingdom_1", "fac_kingdom_6"),
+			    (try_for_range, ":other_kingdom_no", native_kingdoms_begin, native_kingdoms_end),
                 (faction_slot_eq, ":other_kingdom_no", slot_faction_state, sfs_active),
                 (store_relation, ":rln", ":kingdom", ":other_kingdom_no"),
 	            (store_random_in_range, ":rnd", 0, 6),
@@ -33,7 +33,8 @@ SIMPLE_TRIGGERS = [
 						  (try_begin),
 						  (gt, ":num_peaces", 1),
 						  (call_script, "script_diplomacy_start_peace_between_kingdoms", ":kingdom", ":other_kingdom_no", 3),	
-					  	  (str_store_string, s8, "@{s8}^{s4} proposed peace to {s5} and it was accepted."),	
+					  	  (str_store_string_reg, s97, s8),
+					  	  (str_store_string, s8, "@{s97}^{s4} proposed peace to {s5} and it was accepted."),	
 						  (else_try),
 						  (assign, ":first_peace_1", ":kingdom"),
 						  (assign, ":first_peace_2", ":other_kingdom_no"),

@@ -65,10 +65,10 @@ MENUS = [
         (try_begin),
 		(eq, reg3, 1),
 	    (str_store_troop_name, s1, reg2),
-        (str_store_string, s2, "@One of your soldiers wish to end their contract, a {s1} ask you if they can go home and return to civil life."),
+        (str_store_string, s2, "@One of your soldiers wants out of the contract. A {s1} asks to go home and return to civilian life."),
 	    (else_try),
         (str_store_troop_name_plural, s1, reg2),
-        (str_store_string, s2, "@Some of your soldiers wish to end their contract, {reg3} {s1} ask you if they can go home and return to civil life."),
+        (str_store_string, s2, "@Some of your soldiers want out of the contract. {reg3} {s1} ask to go home and return to civilian life."),
         (try_end),
     ],
     [
@@ -84,7 +84,7 @@ MENUS = [
         (call_script, "script_sod_player_charge_gold", ":cost"),
 	    (call_script, "script_change_player_party_morale", 10),
         (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold to send them home with pay.", quest_fail_color),
         (call_script, "script_change_troop_renown", "trp_player", -5),
         (try_end),
 		(party_remove_members, "p_main_party", reg2, reg3),
@@ -118,7 +118,7 @@ MENUS = [
         ]
        ),
 
-	  ("choice_04g_5", [  ], "You will be whiped for asking this !",
+	  ("choice_04g_5", [  ], "You will be whipped for asking.",
        [
         (call_script, "script_change_player_party_morale", -15),
 		(call_script, "script_change_player_honor", -2),

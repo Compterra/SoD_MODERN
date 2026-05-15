@@ -7,7 +7,7 @@ DIALOGS = [
     (eq, "$g_sod_deshavi_trail_warning_pending", 1),
     (troop_slot_eq, "trp_npc7", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Deshavi, show me the trail before it goes cold.", "companion_depth_deshavi_tracks_pending",
+  "Deshavi, show me the trail before it fades.", "companion_depth_deshavi_tracks_pending",
   [
     (try_begin),
       (le, "$g_sod_deshavi_trail_focus_center", 0),

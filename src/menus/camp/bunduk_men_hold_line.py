@@ -44,7 +44,7 @@ MENUS = [
           (eq, "$g_sod_bunduk_line_pending", 1),
           (eq, "$g_sod_bunduk_line_witnessed", 1),
           (eq, "$g_sod_bunduk_line_confronted", 1),
-        ], "Make a practical compromise. Some complaints wait until after the campaign.",
+        ], "Fix what we can. Defer the rest.",
         [
           (assign, "$g_sod_bunduk_line_pending", 0),
           (assign, "$g_sod_bunduk_line_result_grade", 2),
@@ -63,7 +63,7 @@ MENUS = [
           (eq, "$g_sod_bunduk_line_pending", 1),
           (eq, "$g_sod_bunduk_line_witnessed", 1),
           (eq, "$g_sod_bunduk_line_confronted", 1),
-        ], "Enforce command authority. The line obeys first and complains later.",
+        ], "Order obedience first.",
         [
           (assign, "$g_sod_bunduk_line_pending", 0),
           (assign, "$g_sod_bunduk_line_result_grade", 1),
@@ -127,7 +127,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_train_troops, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc10"),
           (display_message, "@The attack finds a line awake enough to answer. Bunduk marks the watch bill with a grunt that is almost approval.", 0xCCCC66),
-          (jump_to_menu, "mnu_bunduk_men_hold_line"),
+          (start_map_conversation, "trp_npc10"),
         ]
       ),
       ("bunduk_line_test_drive", [
@@ -135,7 +135,7 @@ MENUS = [
           (eq, "$g_sod_bunduk_line_pending", 1),
           (eq, "$g_sod_bunduk_line_witnessed", 1),
           (eq, "$g_sod_bunduk_line_confronted", 0),
-        ], "Drive the tired line harder. They can rest after obedience.",
+        ], "Push the tired line harder.",
         [
           (assign, "$g_sod_bunduk_line_confronted", 1),
           (assign, "$g_sod_bunduk_line_result_grade", 1),
@@ -145,7 +145,7 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc10", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc10"),
           (display_message, "@The line holds because it must. Bunduk counts the cost before anyone counts the victory.", 0xCC9966),
-          (jump_to_menu, "mnu_bunduk_men_hold_line"),
+          (start_map_conversation, "trp_npc10"),
         ]
       ),
       ("bunduk_line_test_leave", [], "Return to camp.",
@@ -173,7 +173,7 @@ MENUS = [
     [
       ("bunduk_line_after", [], "Speak with Bunduk about the line.",
         [
-          (jump_to_menu, "mnu_bunduk_men_hold_line"),
+          (start_map_conversation, "trp_npc10"),
         ]
       ),
     ]
@@ -193,7 +193,7 @@ MENUS = [
     [
       ("bunduk_line_failed_after", [], "Face Bunduk's report.",
         [
-          (jump_to_menu, "mnu_bunduk_men_hold_line"),
+          (start_map_conversation, "trp_npc10"),
         ]
       ),
     ]

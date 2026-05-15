@@ -4,6 +4,7 @@ DIALOGS = [
                                                  (this_or_next|eq, "$g_gm_quest", "qst_bc_raise_troops"),
 												(this_or_next|eq, "$g_gm_quest", "qst_black_army_raise_troops"),
 												 (eq, "$g_gm_quest", "qst_conquistadors_raise_troops"),
+                                                 (check_quest_active, "$g_gm_quest"),
                                                  (quest_get_slot, ":quest_target_amount", "$g_gm_quest", slot_quest_target_amount),
 												 (quest_get_slot, ":quest_target_troop", "$g_gm_quest", slot_quest_target_troop),
                                                  (party_count_companions_of_type, ":num_companions", "p_main_party", ":quest_target_troop"),

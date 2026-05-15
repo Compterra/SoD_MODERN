@@ -10,12 +10,21 @@ def read(rel):
 
 def main():
     hire = read("src/scripts/ZI_campaign_ai/ai_hire_mercenaries.py")
+    pulse = read("src/scripts/ZY_helper_scripts/sod_merc_market_weekly_pulse.py")
+    bid = read("src/scripts/ZY_helper_scripts/sod_merc_market_generate_bid.py")
+    accept = read("src/scripts/ZY_helper_scripts/sod_merc_market_try_accept_bid.py")
     spawn = read("src/scripts/ZI_campaign_ai/cf_spawn_ai_mercs.py")
     sanitizer = read("src/scripts/ZC_parties/sod_sanitize_unique_hero_party_stacks.py")
 
     assert '(assign, ":faction", ":troop_faction")' not in hire, "AI merc hire can still use kingdom faction as roster"
-    assert '(is_between, ":faction", guilds_begin, guilds_end)' in hire, "AI merc hire must require a guild roster"
-    assert '(lt, ":rand", 75)' in hire, "AI merc hire should only use the active merc pact branch"
+    assert "script_sod_merc_market_weekly_pulse" in hire, "AI merc hire must delegate to the market pulse"
+    assert "script_cf_spawn_ai_mercs" not in hire, "AI merc hire must not spawn directly"
+    assert "(try_for_range, \":guild_faction\", guilds_begin, guilds_end)" in pulse, "AI merc market pulse must bid only over guild rosters"
+    assert "script_sod_merc_market_generate_bid" in pulse, "AI merc market pulse must generate guild bids"
+    assert "script_sod_merc_market_try_accept_bid" in pulse, "AI merc market pulse must accept through the guarded contract path"
+    assert '(call_script, "script_cf_sod_faction_is_merc_guild", ":guild_faction")' in bid, "bid generation must validate guild factions"
+    assert '(call_script, "script_cf_sod_faction_is_merc_guild", ":guild_faction")' in accept, "bid acceptance must validate guild factions"
+    assert '(call_script, "script_cf_spawn_ai_mercs", ":boss_troop", ":guild_faction", ":boss_party", ":company_size", ":kingdom_faction")' in accept, "accepted bids must pass the selected guild roster to spawning"
 
     assert '(is_between, ":faction", guilds_begin, guilds_end)' in spawn, "cf_spawn_ai_mercs must reject non-guild factions"
     assert '(party_set_name, ":mercs", "str_s5_mercs")' not in spawn, "AI merc party names must not keep a live {s5} template"

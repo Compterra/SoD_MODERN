@@ -17,8 +17,15 @@ DIALOGS = [
                        (val_min, ":mercenary_amount", ":cur_gold"),
                      (try_end),
                      (assign, "$temp", ":mercenary_amount"),
+                     (try_begin),
+                       (le, ":mercenary_amount", 1),
+                       (str_store_string, s68, "@Do you have a need for mercenaries, {sir/madam}?^ I am looking for a master.^ We'll join you for {reg5} denars."),
+                     (else_try),
+                       (eq, ":mercenary_amount", 2),
+                       (str_store_string, s68, "@Do you have a need for mercenaries, {sir/madam}?^ Me and one of my mates are looking for a master.^ We'll join you for {reg5} denars."),
+                     (else_try),
+                       (str_store_string, s68, "@Do you have a need for mercenaries, {sir/madam}?^ Me and {reg3} of my mates are looking for a master.^ We'll join you for {reg5} denars."),
+                     (try_end),
                      ],
-   "Do you have a need for mercenaries, {sir/madam}?\
- {reg3?Me and {reg4?{reg3} of my mates:one of my mates} are:I am} looking for a master.\
- We'll join you for {reg5} denars.", "mercenary_tavern_talk", []],
+   "{s68}", "mercenary_tavern_talk", []],
 ]

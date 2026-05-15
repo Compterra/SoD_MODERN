@@ -1,7 +1,7 @@
 MENUS = [
 (
     "event_04b", mnf_disable_all_keys,
-    "Your scouts have catched a fat merchant who was travelling without escort. He presents himself as a citizen of {s1} and ask you to let him go.",
+    "Your scouts have caught a wealthy merchant travelling without escort. He presents himself as a citizen of {s1} and asks you to let him go.",
     "none",
     [  (call_script, "script_get_closest_town", "p_main_party"),
        (assign, "$sod_event_relation_center", reg0),
@@ -26,7 +26,7 @@ MENUS = [
         (change_screen_return),
         ]
        ),
-	  ("choice_04b_2", [], "Steal his money and abandon him.",
+	  ("choice_04b_3", [], "Steal his money and abandon him.",
        [
        (call_script, "script_change_player_relation_with_center", "$sod_event_relation_center", -10),
        (store_random_in_range, ":rnd", 500, 1000),
@@ -35,7 +35,7 @@ MENUS = [
         (change_screen_return),
         ]
        ),
-      ("choice_04b_3", [], "Take his money and execute him.",
+      ("choice_04b_4", [], "Take his money and execute him.",
        [
        (call_script, "script_change_player_honor", -5),
        (store_random_in_range, ":rnd", 500, 1000),

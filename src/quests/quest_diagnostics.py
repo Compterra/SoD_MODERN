@@ -7,11 +7,13 @@ from typing import Any
 
 from src.quests.quest_generation import DynamicQuestTemplate, QUEST_GENERATION_INPUTS, QUEST_GENERATION_TYPES
 from .quest_domain import (
+    QUEST_BATTLE_OBJECTIVE_ACTION_KINDS,
     QuestBattleObjective,
     QuestNPCState,
     QuestStage,
     QuestTemplate,
     QuestWorldContext,
+    normalize_battle_objective_action_kind,
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -1376,23 +1378,16 @@ def diagnose_battle_objective(
             )
         )
 
-    known_action_kinds = {
-        "break_siege_line",
-        "capture_target",
-        "defeat_wave_objective",
-        "destroy_force",
-        "escort_during_battle",
-        "free_prisoner_during_mission",
-        "hold_position",
-        "kill_target",
-        "protect_target",
-        "rescue_allied_captain",
-        "rescue_target",
-        "survive_timer",
-    }
     if not action_kind:
         add("missing_battle_objective_kind", "Battle objective is missing an action kind.")
         return diagnostics
+    original_action_kind = action_kind
+    try:
+        action_kind = normalize_battle_objective_action_kind(action_kind)
+    except (TypeError, ValueError):
+        add("invalid_battle_action_kind", f"Unknown battle objective action kind {original_action_kind!r}.")
+        return diagnostics
+    known_action_kinds = set(QUEST_BATTLE_OBJECTIVE_ACTION_KINDS)
     if action_kind not in known_action_kinds:
         add("invalid_battle_action_kind", f"Unknown battle objective action kind {action_kind!r}.")
         return diagnostics

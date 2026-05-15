@@ -1073,7 +1073,7 @@ strings = [
   ("npc11_personalitymatch_speech", "Ach, {King/Queen} {playername}! A fight like that one sets my old joints a-creaking. Still, we licked them pretty good, didn't we?"),
   ("npc12_personalitymatch_speech", "A bloody business, {King/Queen} {playername}, a bloody business -- although a necessary one, of course. {s11}, I believe, shares my ambivalence about this constant fighting."),
   ("npc13_personalitymatch_speech", "You have earned your name today, oh valorous one! And {s11}, too! I like that one. She sings the songs of her Adenian ancestors as she goes into battle, which appeals to an artistic soul like my own."),
-  ("npc14_personalityclash_speech", "{King/Queen} {playername}. It is a pleasure going into battle with men like {s11} by my side."),
+  ("npc14_personalitymatch_speech", "{King/Queen} {playername}. It is a pleasure going into battle with men like {s11} by my side."),
   ("npc15_personalitymatch_speech", "{King/Queen} {playername}. I was just having a word with {s11} after our last battle, and it strikes me that the man has got a good head on his shoulders."),
   ("npc16_personalitymatch_speech", "Oy -- {King/Queen} {playername}. I was just having a chat with {s11}, as we picked through the bodies after our last little scrap."),
 
@@ -1090,7 +1090,7 @@ strings = [
   ("npc11_personalitymatch_speech_b", "Old {s11} in particular showed them a thing or two, I thought. Not bad for the pair of us, I thought, given that between us we've probably seen close to a hundred winters."),
   ("npc12_personalitymatch_speech_b", "It saddens him deeply to take the lives of his fellow men, however just the cause. He and I have talked together of a brighter future, of the need to unite these petty warring kingdoms of Calradia, so that we may be prepared for the Legion and bring this time of troubles to an end."),
   ("npc13_personalitymatch_speech_b", "Also, although I normally prefer the coy to the Amazonesque, I confess that I have also noticed the femininity she tries to hide beneath her martial demeanour. True, she is a bit aloof on the march and in camp, but perhaps my fair words can melt the Adenian ice around her heart."),
-  ("npc14_personalityclash_speech_b", "He is a professional soldier, and though he may not be as fast on his feet as some others, he knows the wisdom of holding together in a disciplined battle-line. You showed good sense in bringing him into this company."),
+  ("npc14_personalitymatch_speech_b", "He is a professional soldier, and though he may not be as fast on his feet as some others, he knows the wisdom of holding together in a disciplined battle-line. You showed good sense in bringing him into this company."),
   ("npc15_personalitymatch_speech_b", "War, like any other affair, requires careful planning and preparation, and a firm grasp of strategic principals. All other things being equal, the best trained army will win the battle, an observation that I think our last fight bears out. The men may curse him now, but they'll learn to thank him, I'll warrant."),
   ("npc16_personalitymatch_speech_b", "Have you heard her story? Can you believe her parents were slaves and what she over came? I tell you, it makes my blood boil and I find myself strangely excited."),
 
@@ -1356,9 +1356,6 @@ strings = [
   ("comment_you_helped_my_ally_spiteful",                     "I heard that you saved {s54} from a whipping. You should have let him learn his lesson, in my opinion."),
   ("comment_you_helped_my_ally_chivalrous",                   "I heard that you got {s54} out of a tight spot. That was a noble deed."),
   ("comment_you_helped_my_ally_default",                   "I heard that you got {s54} out of a tight spot. Good work!"),
-
-  ("comment_you_were_defeated_allied_unfriendly",             "I heard that {s54} defeated you. Look, try not to get too many of our men killed, will you?"),
-  ("comment_you_were_defeated_allied",                        "I heard that {s54} defeated you. But take heart -- the tables will soon be turned!"),
 
   ("comment_you_abandoned_us_unfriendly_spiteful",     "You worm! You left us alone to face {s54}, didn't you? I spit at you."),
   ("comment_you_abandoned_us_unfriendly_pitiless",     "Well... You abandoned me in the middle of a battle with {s54}, didn't you? I'll see you buried in a traitor's grave."),
@@ -1645,11 +1642,11 @@ strings = [
   ("rebellion_refuse_default",              "[liege]"),
   ("rebellion_refuse_martial",              "I am sorry. {s45} has a good claim, but it's not enough for me to turn my back on {s46}. I will remain loyal to my liege."),
   ("rebellion_refuse_quarrelsome",          "Nah. Your whelp {s45} doesn't have what it takes to rule this realm. I'm sticking with {s46}."),
-  ("rebellion_agree_pitiless",              "No. I will not join your rebellion. I count it little more than the tantrum of a child, denied a bauble which {reg3?she:he} thinks should be {reg3?hers:his}. I will stick with {s46}, whose ability to rule is well-tested."),
-  ("rebellion_agree_cunning",               "I am sorry. You do not give me reason for confidence that you will win. Many will die, but I do not wish to be among them. I will continue to back {s46}."),
-  ("rebellion_agree_sadistic",              "No. I won't play your little game. You grasp at a crown, but I think instead you'll get a quick trip to the scaffold, and I'll be there by {s46}'s side to watch the headsman's axe drop."),
-  ("rebellion_agree_goodnatured",           "I am sorry. I don't feel right turning my back on {s46}. No hard feelings when me meet on the battlefield."),
-  ("rebellion_agree_upstanding",            "I am sorry. {s45}'s claim is not strong enough for me to inflict the curse of civil disorder on the poor wretches of this land. I will continue to back {s46}. May the Heavens forgive me if I do wrong."),
+  ("rebellion_refuse_pitiless",             "No. I will not join your rebellion. I count it little more than the tantrum of a child, denied a bauble which {reg3?she:he} thinks should be {reg3?hers:his}. I will stick with {s46}, whose ability to rule is well-tested."),
+  ("rebellion_refuse_cunning",              "I am sorry. You do not give me reason for confidence that you will win. Many will die, but I do not wish to be among them. I will continue to back {s46}."),
+  ("rebellion_refuse_sadistic",             "No. I won't play your little game. You grasp at a crown, but I think instead you'll get a quick trip to the scaffold, and I'll be there by {s46}'s side to watch the headsman's axe drop."),
+  ("rebellion_refuse_goodnatured",          "I am sorry. I don't feel right turning my back on {s46}. No hard feelings when me meet on the battlefield."),
+  ("rebellion_refuse_upstanding",           "I am sorry. {s45}'s claim is not strong enough for me to inflict the curse of civil disorder on the poor wretches of this land. I will continue to back {s46}. May the Heavens forgive me if I do wrong."),
 
   ("talk_later_default",                    "[liege]"),
   ("talk_later_martial",                    "Now is not the time to talk politics! I am here today with my fellow lords, armed for battle. You'd better prepare to fight."),

@@ -36,6 +36,12 @@ SCRIPTS = [
               (party_slot_eq, ":party_no", slot_town_lord, "trp_player"),
               (assign, reg0, 1),
             (try_end),
+            (try_begin),
+              (eq, reg0, 1),
+              (str_store_string, s68, "@One of your prisoners, "),
+            (else_try),
+              (str_clear, s68),
+            (try_end),
             (store_troop_faction, ":troop_faction", ":stack_troop"),
             (str_store_faction_name_link, s3, ":troop_faction"),
             #MORDACHAI - hide/show messages
@@ -44,7 +50,7 @@ SCRIPTS = [
               (eq, reg0, 0),
               (set_show_messages, 0),
             (try_end),
-            (display_message, "@{reg0?One of your prisoners, :}{s1} has escaped from captivity!", warning_color),
+            (display_message, "@{s68}{s1} has escaped from captivity!", warning_color),
             #MORDACHAI - hide/show messages
             (try_begin),
               (this_or_next|eq, "$g_sod_hide_messages", -2),

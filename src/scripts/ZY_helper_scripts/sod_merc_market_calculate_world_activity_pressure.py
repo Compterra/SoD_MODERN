@@ -9,8 +9,7 @@ SCRIPTS = [
    (assign, ":report_flags", 0),
 
    (try_begin),
-     (is_between, ":faction_no", kingdoms_begin, kingdoms_end),
-     (neq, ":faction_no", "fac_kingdom_6"),
+     (is_between, ":faction_no", native_kingdoms_begin, native_kingdoms_end),
      (store_current_day, ":cur_day"),
      (faction_get_slot, ":memory_last_day", ":faction_no", slot_faction_diplomacy_memory_player_last_day),
      (store_sub, ":memory_age", ":cur_day", ":memory_last_day"),
@@ -24,8 +23,7 @@ SCRIPTS = [
    (try_end),
 
    (try_begin),
-     (is_between, ":faction_no", kingdoms_begin, kingdoms_end),
-     (neq, ":faction_no", "fac_kingdom_6"),
+     (is_between, ":faction_no", native_kingdoms_begin, native_kingdoms_end),
      (quest_slot_eq, "qst_regional_threat_contract", slot_quest_sod_threat_sponsor_faction, ":faction_no"),
      (quest_get_slot, ":threat_tier", "qst_regional_threat_contract", slot_quest_sod_threat_tier),
      (val_max, ":threat_tier", 1),
@@ -35,8 +33,7 @@ SCRIPTS = [
    (try_end),
 
    (try_begin),
-     (is_between, ":faction_no", kingdoms_begin, kingdoms_end),
-     (neq, ":faction_no", "fac_kingdom_6"),
+     (is_between, ":faction_no", native_kingdoms_begin, native_kingdoms_end),
      (store_current_day, ":cur_day"),
      (store_sub, ":days_since_incident", ":cur_day", "$g_sod_mini_faction_last_incident_day"),
      (is_between, ":days_since_incident", 0, 8),
@@ -49,8 +46,7 @@ SCRIPTS = [
    (try_end),
 
    (try_begin),
-     (is_between, ":faction_no", kingdoms_begin, kingdoms_end),
-     (neq, ":faction_no", "fac_kingdom_6"),
+     (is_between, ":faction_no", native_kingdoms_begin, native_kingdoms_end),
      (try_for_range, ":village_no", villages_begin, villages_end),
        (store_faction_of_party, ":village_faction", ":village_no"),
        (eq, ":village_faction", ":faction_no"),

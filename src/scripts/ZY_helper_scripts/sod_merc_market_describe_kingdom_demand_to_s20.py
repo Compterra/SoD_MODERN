@@ -6,10 +6,9 @@ SCRIPTS = [
 
    (str_store_string, s20, "@No active kingdom mercenary demand."),
    (try_begin),
-     (is_between, ":faction_no", kingdoms_begin, kingdoms_end),
-     (neq, ":faction_no", "fac_kingdom_6"),
+     (is_between, ":faction_no", native_kingdoms_begin, native_kingdoms_end),
      (faction_slot_eq, ":faction_no", slot_faction_state, sfs_active),
-     (call_script, "script_sod_merc_market_calculate_kingdom_demand", ":faction_no"),
+     (call_script, "script_sod_merc_market_calculate_kingdom_demand", ":faction_no", 0, 0, 0, 0),
      (assign, reg20, reg0),
      (assign, reg21, reg1),
      (assign, reg22, reg2),

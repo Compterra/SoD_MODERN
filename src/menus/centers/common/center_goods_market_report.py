@@ -1,9 +1,10 @@
 MENUS = [
 ("center_goods_market_report", mnf_enable_hot_keys,
-   "{s9}",
+   "{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
+      (str_clear, s98),
 
       (assign, ":first", 1),
       (assign, ":center_count", 0),
@@ -27,6 +28,8 @@ MENUS = [
         (assign, ":wealth_delta", reg7),
         (assign, ":prosperity_pressure", reg8),
         (assign, ":market_role", reg9),
+        (call_script, "script_sod_center_public_health_brief_to_s0", ":cur_center"),
+        (str_store_string_reg, s12, s0),
 
         (try_begin),
           (eq, ":market_role", 3),
@@ -105,22 +108,24 @@ MENUS = [
         (else_try),
           (str_store_string, s11, "@wealth should stay roughly steady"),
         (try_end),
-        (str_store_string, s8, "@{s1}: locally known as a {s23}; {s2}.^Goods: {s4}; {s5}; {s6}; {s7}.^Market mood: {s10}.^Outlook: {s11}; prosperity signal shows {s3}."),
+        (str_store_string, s8, "@{s1}: locally known as a {s23}; {s2}.^Goods: {s4}; {s5}; {s6}; {s7}.^Public health: {s12}.^Market mood: {s10}.^Outlook: {s11}; prosperity signal shows {s3}."),
 
         (try_begin),
           (eq, ":first", 1),
-          (str_store_string, s9, "@{s8}"),
+          (str_store_string, s98, "@{s8}"),
           (assign, ":first", 0),
         (else_try),
-          (str_store_string, s9, "@{s9}^^{s8}"),
+          (str_store_string_reg, s97, s98),
+          (str_store_string, s98, "@{s97}^^{s8}"),
         (try_end),
       (try_end),
 
       (try_begin),
         (eq, ":center_count", 0),
-        (str_store_string, s9, "@You do not personally hold any centers."),
+        (str_store_string, s98, "@You do not personally hold any centers."),
       (try_end),
-      (str_store_string, s9, "@Center Goods Market Report:^^This is a steward's summary, not fresh road gossip. Trade goods matter as consumption, caravan flow, and center wealth. Villages mainly export food and raw materials, towns turn rural surplus and services into coin, and castles consume food and strategic goods for military support. Scarcity raises demand, but sickness, poor security, and heavy tolls make merchants cautious.^^{s9}"),
+      (str_store_string_reg, s97, s98),
+      (str_store_string, s98, "@Center Goods Market Report:^^This is a steward's summary, not fresh road gossip. Trade goods matter as consumption, caravan flow, and center wealth. Villages mainly export food and raw materials, towns turn rural surplus and services into coin, and castles consume food and strategic goods for military support. Scarcity raises demand, but sickness, poor security, and heavy tolls make merchants cautious.^^{s97}"),
     ],
     [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_fief_reports")]),

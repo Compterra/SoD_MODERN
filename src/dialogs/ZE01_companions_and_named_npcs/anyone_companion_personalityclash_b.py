@@ -9,7 +9,7 @@ DIALOGS = [
         (main_party_has_troop, "$map_talk_troop"),
         (troop_get_slot, ":object", "$map_talk_troop", slot_troop_personalityclash_object),
         (main_party_has_troop, ":object"),
-    ], "I have been patient, but patience is not the same as approval. If tempers keep scraping the same stone, we will warn the camp before a spark becomes a fire.", "companion_personalityclash_response", [
+    ], "I have held my tongue long enough. This quarrel needs an answer before the camp inherits it.", "companion_personalityclash_response", [
         (assign, "$npc_with_personality_clash", 0),
     ]],
 ]

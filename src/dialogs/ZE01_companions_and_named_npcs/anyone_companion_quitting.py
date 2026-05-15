@@ -2,5 +2,5 @@ from header_dialogs import *
 from module_constants import *
 
 DIALOGS = [
-    [anyone, "companion_quitting_response", [], "If you have come to send me away, say it cleanly. I would rather a hard truth than a gentle lie. I have lived through both, and one of them always costs more. A company can survive hunger and arrows; it starts to fail when people stop trusting each other to speak plainly.", "companion_quitting_response", []],
+    [anyone, "companion_quitting", [], "If you mean to send me away, say it cleanly. I can take a hard order; I will not be managed out by silence.", "companion_quitting_2", []],
 ]

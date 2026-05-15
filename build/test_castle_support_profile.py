@@ -23,10 +23,10 @@ def main() -> int:
     recon = read("src/scripts/ZD_centers/update_center_recon_notes.py")
     garrison = read("src/triggers/ST03_daily/entry_0107.py")
     weekly_wealth = read("src/triggers/ST04_weekly/entry_0016.py")
-    food_resupply = read("src/triggers/ST03_daily/entry_0051.py")
+    food_resupply = read("src/scripts/ZD_centers/sod_center_daily_maintenance.py")
     grant = read("src/menus/centers/common/give_center_to_player_accept.py")
     confirm = read("src/menus/other/continue_19.py")
-    notes = read("docs/reports/castle_support_profile_audit.md")
+    notes = read("docs/reports/economy_settlements/castle_support_profile_audit.md")
 
     for token in (
         '"sod_get_castle_support_profile"',

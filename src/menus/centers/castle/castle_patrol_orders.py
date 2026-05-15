@@ -26,7 +26,7 @@ MENUS = [
         (eq, reg0, 1),
         (store_faction_of_party, ":castle_faction", "$current_town"),
         (assign, ":at_war", 0),
-        (try_for_range, ":faction_no", kingdoms_begin, kingdoms_end),
+        (try_for_range, ":faction_no", native_kingdoms_begin, native_kingdoms_end),
           (store_relation, ":relation", ":castle_faction", ":faction_no"),
           (lt, ":relation", 0),
           (assign, ":at_war", 1),

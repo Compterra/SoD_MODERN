@@ -145,7 +145,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_honorable_peace, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc9"),
           (display_message, "@The standard costs coin and pride in front of witnesses. Alayen looks relieved that honor has weight.", 0xCCCC66),
-          (jump_to_menu, "mnu_alayen_standard_self"),
+          (start_map_conversation, "trp_npc9"),
         ]
       ),
       ("alayen_test_command_prestige", [
@@ -162,7 +162,7 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc9", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc9"),
           (display_message, "@The crowd obeys the banner. Alayen sees the obedience and searches for the honor.", 0xCC9966),
-          (jump_to_menu, "mnu_alayen_standard_self"),
+          (start_map_conversation, "trp_npc9"),
         ]
       ),
       ("alayen_test_leave", [], "Return to camp.",
@@ -190,7 +190,7 @@ MENUS = [
     [
       ("alayen_standard_after", [], "Settle the oath with Alayen.",
         [
-          (jump_to_menu, "mnu_alayen_standard_self"),
+          (start_map_conversation, "trp_npc9"),
         ]
       ),
     ]
@@ -210,7 +210,7 @@ MENUS = [
     [
       ("alayen_standard_failed_after", [], "Face Alayen's standard.",
         [
-          (jump_to_menu, "mnu_alayen_standard_self"),
+          (start_map_conversation, "trp_npc9"),
         ]
       ),
     ]

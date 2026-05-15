@@ -44,6 +44,7 @@ def test_faith_ascension_cost_is_applied():
     menu = read("src/menus/other/sod_upgrade_continue.py")
     assert menu.count("script_sod_troop_apply_faith_ascension_cost") >= 2
     assert menu.count("(neq, reg0, sod_elite_tier_faith)") >= 4
+    assert "performed one soldier at a time" in menu
 
 
 def test_reports_explain_faith_costs():

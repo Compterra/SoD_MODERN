@@ -1,6 +1,6 @@
 MENUS = [
 ("realm_law_report", mnf_enable_hot_keys,
-    "{s1}",
+    "{s98}",
     "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),

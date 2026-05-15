@@ -5,6 +5,7 @@ MENUS = [
     "none",
     [
       (set_background_mesh, "mesh_pic_payment"),
+      (assign, reg6, "$g_sod_invested_gold"),
 
       # count the number of guilds in the player's kingdom
       (assign, ":guilds", 0),
@@ -33,7 +34,7 @@ MENUS = [
 
         # apply change
         (val_add, "$g_sod_invested_gold", ":gold"),
-        (troop_add_gold, "trp_player", "$g_sod_invested_gold"),
+        (assign, reg6, "$g_sod_invested_gold"),
 
         # menu strings
         (assign, reg1, ":gold"),
@@ -46,8 +47,7 @@ MENUS = [
       (else_try),
         # draw
         (eq, "$g_sod_invested_succes", 0),
-        # apply change
-        (troop_add_gold, "trp_player", "$g_sod_invested_gold"),
+        (assign, reg6, "$g_sod_invested_gold"),
         # menu strings
         (str_store_string, s1, "@broke even."),
       (else_try),
@@ -69,7 +69,7 @@ MENUS = [
 
         # apply change
         (val_sub, "$g_sod_invested_gold", ":gold"),
-        (troop_add_gold, "trp_player", "$g_sod_invested_gold"),
+        (assign, reg6, "$g_sod_invested_gold"),
 
         # menu strings
         (assign, reg1, ":gold"),
@@ -82,7 +82,14 @@ MENUS = [
       (try_end),
     ],
     [
-      ("choice_investment_report", [] , "Leave.", [(assign, "$g_sod_invested", 0), (assign, "$g_sod_invested_day", 0), (assign, "$g_sod_invested_gold", 0), (assign, "$g_sod_invested_succes", 0), (change_screen_return), ]),
+      ("choice_investment_report", [] , "Collect {reg6} denars and leave.", [
+        (troop_add_gold, "trp_player", "$g_sod_invested_gold"),
+        (assign, "$g_sod_invested", 0),
+        (assign, "$g_sod_invested_day", 0),
+        (assign, "$g_sod_invested_gold", 0),
+        (assign, "$g_sod_invested_succes", 0),
+        (change_screen_return),
+      ]),
     ]
   ),
 ]

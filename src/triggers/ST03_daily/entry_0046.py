@@ -21,8 +21,8 @@ SIMPLE_TRIGGERS = [
           (faction_slot_eq, "fac_kingdom_6", slot_faction_state, sfs_active),
           (faction_get_slot, ":central_center", "fac_kingdom_6", slot_faction_central_center),
           (try_begin),
-            (is_between, ":central_center", "p_village_16", "p_village_67"), # only if central center = entry point 
-            (troop_set_slot, ":troop_no", slot_troop_spawned_before, 0), #twan456b make them respawn with party 
+            (is_between, ":central_center", imperial_invasion_entry_villages_begin, imperial_invasion_entry_villages_end), # only if central center = entry point
+            (troop_set_slot, ":troop_no", slot_troop_spawned_before, 0), #twan456b make them respawn with party
             (call_script, "script_create_kingdom_hero_party", ":troop_no", ":central_center"),
           (try_end),
         # SoD Twan end (should make harder for the player to block the invasion at the first castle)

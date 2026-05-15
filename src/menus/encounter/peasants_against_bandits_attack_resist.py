@@ -12,7 +12,7 @@ MENUS = [
         "mnu_train_peasants_against_bandits_attack",
       ),
 
-      ("peasants_against_bandits_attack_resist", [(call_script, "script_cf_sod_battle_commander_can_start")], "Prepare for a fight ({s7} leads)!",
+      ("peasants_against_bandits_attack_resist", [(call_script, "script_cf_sod_battle_commander_can_start")], "Prepare for a fight ({s68} leads)!",
        [
         (store_random_in_range, ":random_no", 0, 3),
         (try_begin),

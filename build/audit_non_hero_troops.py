@@ -84,7 +84,7 @@ from module_constants import (  # type: ignore
 
 
 OUT_PATH = ROOT / "docs" / "reports" / "non_hero_troop_audit.md"
-KT0_OUT_PATH = ROOT / "docs" / "reports" / "kt0_autoresolve_audit.md"
+KT0_OUT_PATH = ROOT / "docs" / "reports" / "combat_equipment" / "kt0_autoresolve_audit.md"
 
 EXCLUDE_REASON_PATTERNS = [
     ("animal/non-troop party actor", re.compile(r"^cattle$")),

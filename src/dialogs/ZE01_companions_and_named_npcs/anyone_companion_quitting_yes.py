@@ -2,7 +2,7 @@ from header_dialogs import *
 from module_constants import *
 
 DIALOGS = [
-    [anyone, "companion_quitting_yes", [], "Then I will take you at your word. I will not call this a victory, but I will remember that you chose honesty over dragging the matter into ugliness.", "close_window", [
+    [anyone, "companion_quitting_yes", [], "Then I will take you at your word. No bitterness.", "close_window", [
         (assign, ":nearest_town", "p_town_1"),
         (assign, ":nearest_town_dist", 1000),
         (try_for_range, ":town_no", towns_begin, towns_end),

@@ -121,7 +121,7 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc8", 3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc8"),
           (display_message, "@Matheld hates the slow count until the line holds through it. Courage learns to breathe.", 0x99CCFF),
-          (jump_to_menu, "mnu_matheld_no_backward_step"),
+          (start_map_conversation, "trp_npc8"),
         ]
       ),
       ("matheld_test_hold_under_charge", [
@@ -159,7 +159,7 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc8", -3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc8"),
           (display_message, "@The charge feels brave. The line cheers, then looks back at the gap where discipline should have stood.", 0xCC9966),
-          (jump_to_menu, "mnu_matheld_no_backward_step"),
+          (start_map_conversation, "trp_npc8"),
         ]
       ),
       ("matheld_test_leave", [], "Return to camp.",
@@ -187,7 +187,7 @@ MENUS = [
     [
       ("matheld_shield_line_after", [], "Settle the shield-line lesson with Matheld.",
         [
-          (jump_to_menu, "mnu_matheld_no_backward_step"),
+          (start_map_conversation, "trp_npc8"),
         ]
       ),
     ]
@@ -207,7 +207,7 @@ MENUS = [
     [
       ("matheld_shield_line_failed_after", [], "Face Matheld after the broken line.",
         [
-          (jump_to_menu, "mnu_matheld_no_backward_step"),
+          (start_map_conversation, "trp_npc8"),
         ]
       ),
     ]

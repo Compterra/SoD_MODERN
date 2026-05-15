@@ -18,6 +18,7 @@ SCRIPTS = [
       (spawn_around_party, ":center_no", "pt_kingdom_hero_party"),
       (assign, "$pout_party", reg0),
       (gt, "$pout_party", 0),
+      (party_is_active, "$pout_party"),
 
       (party_set_faction, "$pout_party", ":troop_faction_no"),
       (party_set_slot, "$pout_party", slot_party_type, spt_kingdom_hero_party),

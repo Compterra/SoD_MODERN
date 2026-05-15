@@ -12,8 +12,13 @@ def test_noble_gather_target_can_use_player_realm_chapters_not_only_personal_fie
     text = read("src/scripts/ZY_helper_scripts/update_nobles_gather_at.py")
     assert '(store_faction_of_party, ":center_faction", ":center_no")' in text
     assert '(eq, ":center_faction", "fac_player_supporters_faction")' in text
-    assert '(party_slot_eq, ":center_no", slot_town_lord, "trp_player")' not in text
     assert '(val_add, ":score", 50)' in text
+    assert text.index('(eq, ":center_faction", "fac_player_supporters_faction")') < text.index(
+        '(party_slot_eq, ":center_no", slot_town_lord, "trp_player")'
+    )
+    assert text.index('(party_slot_eq, ":center_no", slot_town_lord, "trp_player")') < text.index(
+        '(val_add, ":score", 50)'
+    )
 
 
 def test_daily_noble_generation_requires_valid_gather_target():

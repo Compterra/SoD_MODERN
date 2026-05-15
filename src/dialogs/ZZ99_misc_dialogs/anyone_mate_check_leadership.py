@@ -12,7 +12,7 @@ DIALOGS = [
       (try_end),
       (gt, ":max_amount", reg0),
     ],
-    "Very well.", "close_window",
+    "I will take a patrol and keep close to the company.", "close_window",
     [
       (store_conversation_troop, ":soldier"),
       (spawn_around_party, "p_main_party", "pt_player_patrol"),
@@ -39,7 +39,7 @@ DIALOGS = [
         (party_set_ai_behavior, ":new_patrol", ai_bhvr_escort_party),
         (party_set_ai_object, ":new_patrol", "p_main_party"),
       (else_try),
-        (display_message, "@The patrol could not be placed on the map. Your companion remains with you.", 0xFFCC66),
+        (display_message, "@The patrol could not be placed on the map. Your soldier remains with you.", 0xFFCC66),
       (try_end),
     ]
   ],

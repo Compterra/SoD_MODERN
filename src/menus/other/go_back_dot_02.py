@@ -169,7 +169,7 @@ MENUS = [
       ),
 
 	    (
-        "bet_1000", [(store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 1000),  (ge, "$g_tournament_cur_tier", 1), (lt, reg9, 9) ],
+        "bet_1000_later", [(store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 1000),  (ge, "$g_tournament_cur_tier", 1), (lt, reg9, 9) ],
         "I bet 1,000 denars for 1,700.",
         [
 		  (call_script, "script_sod_player_charge_gold", 1000),
@@ -191,7 +191,7 @@ MENUS = [
       ),
 
 	  	  (
-        "bet_500", [ (ge, reg9, 8) ],   # if other bets aren't available there is always someone to accept that
+        "bet_500_last_bookmaker", [ (ge, reg9, 8) ],   # if other bets aren't available there is always someone to accept that
         "I bet 500 denars for 800.",
         [
 		  (call_script, "script_sod_player_charge_gold", 500),

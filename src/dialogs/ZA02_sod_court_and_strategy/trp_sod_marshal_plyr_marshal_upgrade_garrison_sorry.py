@@ -1,3 +1,3 @@
 DIALOGS = [
-[trp_sod_marshal|plyr, "marshal_upgrade_garrison_sorry", [], "Ahh..., I see.  I shall have to commision a new building project post haste!", "marshal_upgrade_garrison_check_again", []],
+[trp_sod_marshal|plyr, "marshal_upgrade_garrison_sorry", [], "Then this garrison needs the right facilities before those troops can be promoted.", "marshal_upgrade_garrison_check_again", []],
 ]

@@ -1,7 +1,7 @@
 MENUS = [
 (
     "collect_taxes", mnf_disable_all_keys,
-    "{reg3?You expect:{s1} expects} the tax collection to take {s2}.",
+    "{s68}",
     "none",
     [
       (set_background_mesh, "$g_sod_town_background"),
@@ -55,13 +55,20 @@ MENUS = [
          (val_mul, "$qst_collect_taxes_total_hours", ":tax_capacity_drag"),
          (val_div, "$qst_collect_taxes_total_hours", 100),
        (try_end),
+       (val_max, "$qst_collect_taxes_total_hours", 24),
 
        (quest_set_slot, "qst_collect_taxes", slot_quest_target_amount, "$qst_collect_taxes_total_hours"),
        (store_div, ":menu_begin_time", "$qst_collect_taxes_total_hours", 20), #between %5-%25
        (store_div, ":menu_end_time", "$qst_collect_taxes_total_hours", 4),
+       (val_max, ":menu_end_time", 2),
+       (val_min, ":menu_begin_time", ":menu_end_time"),
+       (val_sub, ":menu_begin_time", 1),
+       (val_max, ":menu_begin_time", 1),
        (assign, ":unrest_begin_time", ":menu_end_time"), #between %25-%75
        (store_mul, ":unrest_end_time", "$qst_collect_taxes_total_hours", 3),
        (val_div, ":unrest_end_time", 4),
+       (store_add, ":min_unrest_end_time", ":unrest_begin_time", 1),
+       (val_max, ":unrest_end_time", ":min_unrest_end_time"),
 
        (val_mul, ":tax_quest_expected_revenue", 2),
        (store_div, "$qst_collect_taxes_hourly_income", ":tax_quest_expected_revenue", "$qst_collect_taxes_total_hours"),
@@ -90,6 +97,12 @@ MENUS = [
         (str_store_string, s2, "@most of a week"),
       (else_try),
         (str_store_string, s2, "@a long and unpopular week or more"),
+      (try_end),
+      (try_begin),
+        (eq, ":max_skill_owner", "trp_player"),
+        (str_store_string, s68, "@You expect the tax collection to take {s2}."),
+      (else_try),
+        (str_store_string, s68, "@{s1} expects the tax collection to take {s2}."),
       (try_end),
     ],
     [

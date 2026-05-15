@@ -1,0 +1,40 @@
+# COST: trivial
+SCRIPTS = [
+("sod_center_store_identity_line_to_s23",
+  [
+    (store_script_param, ":center_no", 1),
+
+    (str_clear, s23),
+    (try_begin),
+      (is_between, ":center_no", centers_begin, centers_end),
+      (party_get_slot, ":center_lord", ":center_no", slot_town_lord),
+      (store_faction_of_party, ":center_faction", ":center_no"),
+      (str_store_faction_name, s24, ":center_faction"),
+      (call_script, "script_sod_get_center_security_profile", ":center_no"),
+      (assign, ":effective_threat", reg0),
+      (assign, ":security", reg1),
+      (assign, ":vulnerability", reg10),
+
+      (try_begin),
+        (party_slot_ge, ":center_no", slot_center_is_besieged_by, 0),
+        (str_store_string, s25, "@The gates are under siege."),
+      (else_try),
+        (gt, ":effective_threat", ":security"),
+        (str_store_string, s25, "@The watch is strained by road danger."),
+      (else_try),
+        (gt, ":vulnerability", 60),
+        (str_store_string, s25, "@The surrounding lands look exposed."),
+      (else_try),
+        (str_store_string, s25, "@The local watch has the roads in hand."),
+      (try_end),
+
+      (try_begin),
+        (is_between, ":center_lord", 0, "trp_last_troop"),
+        (call_script, "script_store_troop_name", s26, ":center_lord"),
+        (str_store_string, s23, "@ Authority: {s26} of {s24}. {s25}"),
+      (else_try),
+        (str_store_string, s23, "@ Authority: no recorded lord in {s24}. {s25}"),
+      (try_end),
+    (try_end),
+  ]),
+]

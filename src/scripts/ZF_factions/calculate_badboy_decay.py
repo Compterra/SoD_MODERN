@@ -29,7 +29,7 @@ SCRIPTS = [
 	(store_mul, ":difficulty_bonus", "$g_sod_diplomatic_difficulty", -15),
 	(val_add, ":badboy_decay", ":difficulty_bonus"),
 	
-	(try_for_range, ":kingdom_no", "fac_kingdom_1", "fac_kingdom_6"),  # relations effect on decay (effect of negative relations is limited as being at -100 is usual during a war)
+	(try_for_range, ":kingdom_no", native_kingdoms_begin, native_kingdoms_end),  # relations effect on decay (effect of negative relations is limited as being at -100 is usual during a war)
 	(store_relation, ":rln", ":kingdom_no", "fac_player_supporters_faction"),
 	(val_max, ":rln", -40),
 	(val_div, ":rln", 10),                                             # -4 to +10 twan new, it's still no more than +2,5 decay with +100 relations with all calradians  

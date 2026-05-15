@@ -68,7 +68,7 @@ SCRIPTS = [
     (val_max, ":cur_badboy", 0),
     (val_min, ":cur_badboy", 40),
     (assign, ":active_calradian_rivals", 0),
-    (try_for_range, ":kingdom_no", "fac_kingdom_1", "fac_kingdom_6"),
+    (try_for_range, ":kingdom_no", native_kingdoms_begin, native_kingdoms_end),
       (faction_slot_eq, ":kingdom_no", slot_faction_state, sfs_active),
       (try_for_range, ":center_no", centers_begin, centers_end),
         (store_faction_of_party, ":center_faction", ":center_no"),

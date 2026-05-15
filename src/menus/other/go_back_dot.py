@@ -1,11 +1,17 @@
 MENUS = [
 (
     "tournament_bet", 0,
-    "The odds against you are {reg5} to {reg6}{reg1? You have already made regular bets of {reg1} denars on yourself, and if you win, you will earn {reg2} denars.:}{s2}^^ How much do you want to bet?",
+    "The odds against you are {reg5} to {reg6}{s68}{s2}^^ How much do you want to bet?",
     "none",
     [
       (assign, reg1, "$g_tournament_bet_placed"),
       (store_add, reg2, "$g_tournament_bet_win_amount", "$g_tournament_bet_placed"),
+      (try_begin),
+        (gt, reg1, 0),
+        (str_store_string, s68, "@ You have already made regular bets of {reg1} denars on yourself, and if you win, you will earn {reg2} denars."),
+      (else_try),
+        (str_clear, s68),
+      (try_end),
       (call_script, "script_get_win_amount_for_tournament_bet"),
       (assign, ":player_odds", reg0),
       (assign, ":min_dif", 100000),

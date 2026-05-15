@@ -52,6 +52,7 @@ def test_trade_network_core_exists() -> None:
         "sod_trade_network_process_caravan_arrival",
         "sod_trade_network_describe_report_to_s20",
         "sod_trade_network_get_contract_terms_to_regs",
+        "cf_sod_trade_network_can_apply_strategy_action",
         "sod_trade_network_apply_strategy_action",
         "No player bargain is marked on this run",
         "Your funded guards are riding with this caravan",
@@ -204,6 +205,18 @@ def test_trade_network_dialogue_and_reports_exist() -> None:
     assert_contains(read("src/menus/reports/trade_network_report.py"), "Challenge Boar toll pressure")
     assert_contains(read("src/menus/reports/trade_network_report.py"), "Subsidize relief")
     assert_contains(read("src/menus/reports/trade_network_report.py"), "familiar caravan route")
+    assert_contains(read("src/menus/reports/trade_network_report.py"), "script_cf_sod_trade_network_can_apply_strategy_action")
+    assert_contains(read("src/menus/reports/trade_network_report.py"), "Road orders are already moving today.")
+    trade_report = read("src/scripts/ZY_helper_scripts/sod_trade_network.py")
+    assert_contains(trade_report, "$g_sod_trade_network_last_strategy_day")
+    assert_contains(trade_report, 'neq, "$g_sod_trade_network_last_strategy_day", ":cur_day"')
+    assert_contains(trade_report, 'store_current_day, "$g_sod_trade_network_last_strategy_day"')
+    assert_contains(trade_report, "Road pressure snapshot:")
+    assert_contains(trade_report, "Road recommendation:")
+    assert_contains(trade_report, "Highest hostile pressure {reg28}")
+    assert_contains(trade_report, "Black Khergit pressure is high")
+    assert_contains(trade_report, "Boar toll pressure is high")
+    assert_contains(trade_report, "captive traffic is heating the roads")
     assert_contains(read("src/menus/centers/common/center_goods_market_report.py"), "script_sod_trade_network_describe_center_identity_to_s23")
     assert_contains(read("src/menus/centers/common/center_goods_market_report.py"), "locally known as a {s23}")
     assert_contains(read("src/menus/reports/report_submenus.py"), "Read caravan road notes.")
@@ -214,12 +227,14 @@ def test_trade_network_dialogue_and_reports_exist() -> None:
 
 
 def test_farmer_trade_guards_home_center() -> None:
-    raw = read("src/triggers/ST02_every_hour/entry_0050.py")
+    trigger = read("src/triggers/ST02_every_hour/entry_0050.py")
+    raw = read("src/scripts/ZY_helper_scripts/sod_trade_network.py")
+    assert_contains(trigger, "script_sod_trade_network_process_farmer_arrival_tick")
     assert_contains(raw, "(party_get_slot, \":home_center\", \":party_no\", slot_party_home_center)")
     assert_contains(raw, "(is_between, \":home_center\", villages_begin, villages_end)")
     assert_contains(raw, "(is_between, \":cur_center\", centers_begin, centers_end)")
     assert_contains(raw, "(is_between, \":cur_ai_object\", towns_begin, towns_end)")
-    assert_contains(raw, "(else_try),\n               (party_set_slot, \":party_no\", slot_party_ai_object, \":home_center\")")
+    assert_contains(raw, '(call_script, "script_sod_trade_network_send_party_to_center", ":party_no", ":home_center", 0)')
 
 
 def test_farmer_encounter_names_are_guarded() -> None:
@@ -231,13 +246,49 @@ def test_farmer_encounter_names_are_guarded() -> None:
 
 
 def test_caravan_route_risk_affects_ai_departure() -> None:
-    raw = read("src/triggers/ST02_every_hour/entry_0049.py")
+    trigger = read("src/triggers/ST02_every_hour/entry_0049.py")
+    raw = read("src/scripts/ZY_helper_scripts/sod_trade_network.py")
+    assert_contains(trigger, "script_sod_trade_network_process_caravan_arrival_tick")
     assert_contains(raw, "script_sod_trade_network_evaluate_route")
     assert_contains(raw, "slot_party_sod_trade_route_risk")
     assert_contains(raw, "slot_party_sod_trade_recent_trouble")
     assert_contains(raw, ":route_departure_chance")
     assert_contains(raw, "sod_trade_result_delayed")
     assert_contains(raw, "slot_party_sod_trade_player_protection")
+
+
+def test_daily_caravan_spawn_pulse_is_extracted() -> None:
+    trigger = read("src/triggers/ST03_daily/entry_0165.py")
+    raw = read("src/scripts/ZY_helper_scripts/sod_trade_network.py")
+    assert_contains(trigger, "script_sod_trade_network_process_daily_caravan_spawn_pulse")
+    assert "try_for_range" not in trigger
+    for token in [
+        '"sod_trade_network_process_daily_caravan_spawn_pulse"',
+        "kingdoms_begin, kingdoms_end",
+        "slot_faction_state, sfs_active",
+        "slot_faction_num_towns",
+        "script_create_kingdom_party_if_below_limit",
+        "spt_kingdom_caravan",
+    ]:
+        assert_contains(raw, token)
+
+
+def test_daily_village_farmer_spawn_pulse_is_extracted() -> None:
+    trigger = read("src/triggers/ST03_daily/entry_0047.py")
+    raw = read("src/scripts/ZY_helper_scripts/sod_trade_network.py")
+    assert_contains(trigger, "script_sod_trade_network_process_daily_village_farmer_spawn_pulse")
+    assert "try_for_range" not in trigger
+    for token in [
+        '"sod_trade_network_process_daily_village_farmer_spawn_pulse"',
+        "villages_begin, villages_end",
+        "slot_village_state, svs_normal",
+        "slot_village_farmer_party",
+        "neg|party_is_active",
+        "(lt, \":random_no\", 30)",
+        "script_create_village_farmer_party",
+        "party_set_slot, \":village_no\", slot_village_farmer_party, reg0",
+    ]:
+        assert_contains(raw, token)
 
 
 if __name__ == "__main__":
@@ -247,6 +298,8 @@ if __name__ == "__main__":
     test_farmer_trade_guards_home_center()
     test_farmer_encounter_names_are_guarded()
     test_caravan_route_risk_affects_ai_departure()
+    test_daily_caravan_spawn_pulse_is_extracted()
+    test_daily_village_farmer_spawn_pulse_is_extracted()
     print("test_trade_network_static: OK")
 
 

@@ -1,6 +1,6 @@
 MENUS = [
 ("fief_under_construction_report", mnf_enable_hot_keys,
-   "Current Construction Report:^^{s2}",
+   "Current Construction Report:^^{s98}",
    "none",
     [
       (set_background_mesh, "mesh_pic_report_screen"),
@@ -9,9 +9,11 @@ MENUS = [
         (assign, "$g_sod_construction_report_return_menu", "mnu_fief_reports"),
       (try_end),
 
-      (str_clear, s1),
-      (str_clear, s2),
-      (str_clear, s20),
+      (str_clear, s68),
+      (str_clear, s69),
+      (str_clear, s97),
+      (str_clear, s98),
+      (str_clear, s99),
 
       (assign, ":no_centers", 0),
       (assign, ":num_in_report", 0),
@@ -30,16 +32,17 @@ MENUS = [
           (val_add, ":num_in_report", 1),
 
           # generate the report for this location
-          (call_script, "script_describe_current_project", s20, ":cur_center"),
-          (str_store_party_name, s1, ":cur_center"),
-          (str_store_string, s1, "@{s1}: {s20}"),
+          (call_script, "script_describe_current_project", s69, ":cur_center"),
+          (str_store_party_name, s68, ":cur_center"),
+          (str_store_string, s99, "@{s68}: {s69}"),
 
           # concatenate together
           (try_begin),
             (eq, ":num_in_report", 1),
-            (str_store_string_reg, s2, s1),
+            (str_store_string_reg, s98, s99),
           (else_try),
-            (str_store_string, s2, "@{s2}^^{s1}"),
+            (str_store_string_reg, s97, s98),
+            (str_store_string, s98, "@{s97}^^{s99}"),
           (try_end),
         (try_end),
       (try_end),
@@ -47,10 +50,10 @@ MENUS = [
       # store the final report
       (try_begin),
         (eq, ":no_centers", 0),
-        (str_store_string, s2, "@You do not currently control any manageable fiefs for construction."),
+        (str_store_string, s98, "@You do not currently control any manageable fiefs for construction."),
       (else_try),
         (eq, ":num_in_report", 0),
-        (str_store_string, s2, "@No construction projects are currently happening in any of your fiefs."),
+        (str_store_string, s98, "@No construction projects are currently underway in any of your fiefs."),
       (try_end),
     ],
     [

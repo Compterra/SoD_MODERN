@@ -1,8 +1,7 @@
 MENUS = [
 (
     "event_29", mnf_disable_all_keys,
-    "Some philosophers visit you. They complain about the strength of supersticion in your realm villages. They think you should publicly affirm that no god\
-or spirit exist and so condemn the priests of false religions and other magicians abusing your naive country men.",
+    "Some philosophers visit you. They complain about the strength of superstition in your villages. They want you to publicly declare that no gods or spirits exist, and to condemn priests and magicians who exploit common folk.",
     "none",
     [
     ],
@@ -24,7 +23,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (change_screen_return),
         ]
        ),
-             ("choice_29_2", [], "Condemn supersticion and bannish priests and magicians from your realm.", [
+             ("choice_29_2", [], "Condemn superstition and banish priests and magicians from your realm.", [
 			(val_add, "$g_sod_global_faith", 50),
 			(val_clamp, "$g_sod_global_faith", -2000, 2001),
 		    (val_add, "$g_sod_clergy_happines", 10),
@@ -40,7 +39,7 @@ or spirit exist and so condemn the priests of false religions and other magician
           (change_screen_return),
         ]
        ),
-             ("choice_29_3", [], "Ignore the philosophers request.", [
+             ("choice_29_3", [], "Ignore the philosophers' request.", [
 			(val_sub, "$g_sod_global_faith", 50),
 			(val_clamp, "$g_sod_global_faith", -2000, 2001),
 		    (val_sub, "$g_sod_clergy_happines", 10),

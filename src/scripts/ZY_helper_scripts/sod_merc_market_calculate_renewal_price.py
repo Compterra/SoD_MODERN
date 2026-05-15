@@ -19,7 +19,7 @@ SCRIPTS = [
        (party_get_slot, ":guild_faction", ":party_no", slot_party_orginal_faction),
      (try_end),
      (call_script, "script_cf_sod_faction_is_merc_guild", ":guild_faction"),
-     (call_script, "script_sod_merc_market_calculate_guild_supply", ":guild_faction"),
+     (call_script, "script_sod_merc_market_calculate_guild_supply", ":guild_faction", 0),
      (assign, ":price_pressure", reg3),
      (assign, ":long_contract_willingness", reg4),
      (assign, ":danger_willingness", reg5),

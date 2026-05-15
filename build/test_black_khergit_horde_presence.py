@@ -15,6 +15,11 @@ def assert_contains(raw: str, needle: str) -> None:
         raise AssertionError(f"Missing expected token: {needle}")
 
 
+def assert_not_contains(raw: str, needle: str) -> None:
+    if needle in raw:
+        raise AssertionError(f"Unexpected token: {needle}")
+
+
 def main() -> int:
     constants = read("src/constants/module_constants.py")
     troops = read("compile/module_troops.py")
@@ -28,6 +33,7 @@ def main() -> int:
     daily = read("src/triggers/ST03_daily/entry_0158.py")
     hourly = read("src/triggers/ST02_every_hour/entry_0159.py")
     weekly = read("src/triggers/ST04_weekly/entry_0126.py")
+    player_victory_event = read("src/scripts/ZC_parties/event_player_defeated_enemy_party.py")
     trigger_order = read("src/triggers/_order_simple_triggers.txt")
     dialogs_order = read("src/dialogs/_order_dialogs.txt")
     menus_order = read("src/menus/_order_game_menus.txt")
@@ -287,8 +293,18 @@ def main() -> int:
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_black_khergit_khan_duel.py"), "mnu_sod_black_khergit_khan_duel_prepare")
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_black_khergit_khan_duel.py"), "(finish_mission)")
     assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_black_khergit_camp_talk_02.py"), "sod_black_khergit_action_tribute")
-    assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_black_khergit_raider_talk_02.py"), "sod_black_khergit_action_defeat_raiders")
-    assert_contains(read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_black_khergit_guard_talk.py"), "sod_black_khergit_action_defeat_guards")
+    black_khergit_raider_attack = read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_black_khergit_raider_talk_02.py")
+    black_khergit_guard_attack = read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_black_khergit_guard_talk.py")
+    assert_contains(black_khergit_raider_attack, "encounter_attack")
+    assert_contains(black_khergit_guard_attack, "encounter_attack")
+    assert_not_contains(black_khergit_raider_attack, "sod_black_khergit_action_defeat_raiders")
+    assert_not_contains(black_khergit_guard_attack, "sod_black_khergit_action_defeat_guards")
+    assert_contains(player_victory_event, '(eq, ":enemy_template", "pt_black_khergit_raiders")')
+    assert_contains(player_victory_event, "sod_black_khergit_action_defeat_raiders")
+    assert_contains(player_victory_event, '(eq, ":enemy_template", "pt_black_khergit_night_guard")')
+    assert_contains(player_victory_event, "sod_black_khergit_action_defeat_guards")
+    assert_contains(player_victory_event, '(eq, ":enemy_template", "pt_black_khergit_horde_camp")')
+    assert_contains(player_victory_event, "sod_black_khergit_action_attack_camp")
     horde_report = read("src/menus/reports/black_khergit_horde_report.py")
     assert_contains(horde_report, "Black Khergit Moving Horde")
     assert_contains(horde_report, "black_khergit_horde_report_bribe")

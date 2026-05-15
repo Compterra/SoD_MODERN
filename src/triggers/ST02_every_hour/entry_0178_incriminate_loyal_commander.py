@@ -1,0 +1,31 @@
+SIMPLE_TRIGGERS = [
+(1,
+   [
+     (check_quest_active, "qst_incriminate_loyal_commander"),
+     (neg|check_quest_concluded, "qst_incriminate_loyal_commander"),
+     (quest_slot_eq, "qst_incriminate_loyal_commander", slot_quest_current_state, 2),
+     (quest_get_slot, ":messenger_party", "qst_incriminate_loyal_commander", slot_quest_target_party),
+     (quest_get_slot, ":target_center", "qst_incriminate_loyal_commander", slot_quest_target_center),
+     (gt, ":messenger_party", 0),
+     (party_is_active, ":messenger_party"),
+     (party_is_active, ":target_center"),
+     (party_get_template_id, ":messenger_template", ":messenger_party"),
+     (eq, ":messenger_template", "pt_sacrificed_messenger"),
+
+     (assign, ":arrived", 0),
+     (try_begin),
+       (party_is_in_town, ":messenger_party", ":target_center"),
+       (assign, ":arrived", 1),
+     (else_try),
+       (store_distance_to_party_from_party, ":distance", ":messenger_party", ":target_center"),
+       (le, ":distance", 2),
+       (assign, ":arrived", 1),
+     (try_end),
+     (eq, ":arrived", 1),
+
+     (remove_party, ":messenger_party"),
+     (quest_set_slot, "qst_incriminate_loyal_commander", slot_quest_target_party, -1),
+     (call_script, "script_succeed_quest", "qst_incriminate_loyal_commander"),
+     (display_message, "@Word reaches you: the false letter was delivered, and the trap has closed.", quest_success_color),
+     ]),
+]

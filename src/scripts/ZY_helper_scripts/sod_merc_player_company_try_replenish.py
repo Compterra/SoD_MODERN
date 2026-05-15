@@ -16,7 +16,7 @@ SCRIPTS = [
      (call_script, "script_cf_sod_faction_is_merc_guild", ":guild_faction"),
      (faction_get_slot, ":guild_manpower", ":guild_faction", slot_faction_sod_merc_manpower),
      (gt, ":guild_manpower", 0),
-     (call_script, "script_sod_merc_market_calculate_guild_supply", ":guild_faction"),
+     (call_script, "script_sod_merc_market_calculate_guild_supply", ":guild_faction", 0),
      (assign, ":available_companies", reg0),
      (assign, ":refusal_reason", reg6),
      (gt, ":available_companies", 0),

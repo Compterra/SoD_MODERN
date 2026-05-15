@@ -2,6 +2,9 @@ MENUS = [
 ("sod_merc_guild",mnf_disable_all_keys,
   "You approach a mercenary base. Drill sergeants bark orders over the ring of steel, and armed sellswords watch you from the yard as they weigh your purpose here.",
   "none",[
+    (store_sub, ":guild_faction", "$g_encountered_party", "p_sod_merc_guild_1"),
+    (val_add, ":guild_faction", "fac_sod_merc_guild1"),
+    (call_script, "script_sod_show_guild_contact_portrait", ":guild_faction"),
   ],
     [
       ("enter",[],"Step into the yard.",[

@@ -18,17 +18,18 @@ MERC_CAPTAIN_GUARD = [
 ]
 
 
-def main():
+def test_mercenary_party_limit_formula_matches_report_and_service_setup():
     limit = read("src/scripts/ZA_hardcoded_game_scripts/game_get_party_companion_limit.py")
     assert '(faction_slot_eq, "$players_kingdom", slot_faction_leader, "trp_player")' in limit
     for token in MERC_CAPTAIN_GUARD:
         assert token in limit, f"missing mercenary captain party-limit guard: {token}"
 
-    report = read("src/menus/camp/party_size_report.py")
+    report = read("src/menus/0000_hardcoded_mb1011/party_size_report.py")
     for token in [
         '(faction_slot_eq, "$players_kingdom", slot_faction_leader, "trp_player")',
         '(gt, "$mercenary_service_next_renew_day", ":cur_day")',
         '(val_mul, ":leadership", 2)',
+        '"{s98}"',
     ]:
         assert token in report, f"party size report should mirror limit formula: {token}"
 
@@ -36,8 +37,7 @@ def main():
     assert '(store_add, "$mercenary_service_next_renew_day", ":cur_day", ":renew_days")' in merc
     assert '(call_script, "script_player_join_faction", ":faction_no")' in merc
 
-    print("Mercenary party limit static checks passed")
-
 
 if __name__ == "__main__":
-    main()
+    test_mercenary_party_limit_formula_matches_report_and_service_setup()
+    print("Mercenary party limit static checks passed")

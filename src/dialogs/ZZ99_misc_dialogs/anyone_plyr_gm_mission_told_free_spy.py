@@ -18,6 +18,7 @@ DIALOGS = [
                                    (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_current_state, 0),
                                    (call_script, "script_store_troop_name_link", s9, "$g_talk_troop"),
                                    (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_target_party, ":quest_target_party"),
+                                   (party_add_prisoners, ":quest_target_party", "trp_sh_spy", 1),
                                    (party_set_ai_behavior, ":quest_target_party", ai_bhvr_hold),
                                    (party_set_ai_object, ":quest_target_party", "p_main_party"),
                                    (party_set_flags, ":quest_target_party", pf_default_behavior, 0),

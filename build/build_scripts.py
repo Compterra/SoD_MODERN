@@ -18,6 +18,7 @@ Ordering policy:
 """
 from __future__ import annotations
 
+import ast
 import re
 import json
 import hashlib
@@ -27,6 +28,7 @@ from typing import Dict, List, Optional, Tuple
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src" / "scripts"
 OUT = ROOT / "compile" / "module_scripts.py"
+OUT_IDS = ROOT / "compile" / "ids" / "ID_scripts.py"
 
 # Incremental build cache (v41B): skip regeneration if inputs unchanged
 CACHE_SCHEMA_VERSION = 1
@@ -177,6 +179,28 @@ def extract_script_name_from_fragment(raw: str) -> Optional[str]:
     return m.group(1) if m else None
 
 
+def extract_script_ids_from_inner(inner: str) -> List[str]:
+    try:
+        tree = ast.parse(f"_scripts = [{inner}]", mode="exec")
+    except SyntaxError:
+        return []
+    if not tree.body or not isinstance(tree.body[0], ast.Assign):
+        return []
+    value = tree.body[0].value
+    if not isinstance(value, ast.List):
+        return []
+    script_ids: List[str] = []
+    for node in value.elts:
+        if (
+            isinstance(node, ast.Tuple)
+            and node.elts
+            and isinstance(node.elts[0], ast.Constant)
+            and isinstance(node.elts[0].value, str)
+        ):
+            script_ids.append(node.elts[0].value)
+    return script_ids
+
+
 def _strip_legacy_import_shim_block(text: str) -> str:
     """
     Remove the old src.compiler / src.module_system compatibility shim from a
@@ -191,16 +215,21 @@ def _strip_legacy_import_shim_block(text: str) -> str:
     preambles are injected mid-file in the generated output.
     """
     lines = text.splitlines()
-    first_nonempty = None
+    shim_start = None
     for idx, line in enumerate(lines):
-        if line.strip():
-            first_nonempty = idx
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#"):
+            shim_start = idx
             break
 
-    if first_nonempty is None:
-        return ""
+    if shim_start is None:
+        cleaned = text.rstrip()
+        return "\n".join(
+            line for line in cleaned.splitlines()
+            if not line.lstrip().startswith("from __future__ import ")
+        ).rstrip()
 
-    first_line = lines[first_nonempty].strip()
+    first_line = lines[shim_start].strip()
     if not (
         first_line in ("try:", "except:", "except ImportError:")
         or "src.compiler" in first_line
@@ -212,9 +241,9 @@ def _strip_legacy_import_shim_block(text: str) -> str:
             if not line.lstrip().startswith("from __future__ import ")
         ).rstrip()
 
-    kept = []
+    kept = list(lines[:shim_start])
     skipping = True
-    for line in lines:
+    for line in lines[shim_start:]:
         stripped = line.strip()
         if skipping:
             if not stripped:
@@ -297,6 +326,33 @@ def _load_cache() -> Optional[dict]:
 def _write_cache(payload: dict) -> None:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     CACHE_FILE.write_text(json.dumps(payload, indent=2, sort_keys=False) + "\n", encoding="utf-8")
+
+
+def _convert_to_identifier(value: str) -> str:
+    identifier = str(value)
+    for old, new in (
+        (" ", "_"),
+        ("'", "_"),
+        ("`", "_"),
+        ("(", "_"),
+        (")", "_"),
+        ("-", "_"),
+        (",", ""),
+        ("|", ""),
+    ):
+        identifier = identifier.replace(old, new)
+    return identifier.lower()
+
+
+def _write_script_ids(script_ids: List[str]) -> None:
+    OUT_IDS.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        f"script_{_convert_to_identifier(script_id)} = {index}"
+        for index, script_id in enumerate(script_ids)
+    ]
+    tmp_out = OUT_IDS.with_name(f"{OUT_IDS.name}.tmp")
+    tmp_out.write_text("\n".join(lines) + "\n\n", encoding="utf-8")
+    tmp_out.replace(OUT_IDS)
 
 
 def build_index(all_files: List[Path]) -> List[str]:
@@ -433,7 +489,7 @@ def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
     all_files = apply_za_order(all_files)
 
     # v41B: Incremental cache (scripts only)
-    if use_cache and OUT.exists():
+    if use_cache and OUT.exists() and OUT_IDS.exists():
         preamble_files: List[Path] = []
         if PREAMBLE_DIR.exists():
             preamble_files = [p for p in PREAMBLE_DIR.glob("*.py") if p.is_file()]
@@ -486,12 +542,16 @@ def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
                     )
                 script_to_path[script_id] = fp
         else:
-            name = extract_script_name_from_fragment(raw)
-            if not name:
+            script_ids = extract_script_ids_from_inner(inner)
+            if not script_ids:
+                name = extract_script_name_from_fragment(raw)
+                script_ids = [name] if name else []
+            if not script_ids:
                 continue
-            if name in script_to_path:
-                raise SystemExit(f"Duplicate script fragment for '{name}':\n  {script_to_path[name]}\n  {fp}")
-            script_to_path[name] = fp
+            for script_id in script_ids:
+                if script_id in script_to_path:
+                    raise SystemExit(f"Duplicate script fragment for '{script_id}':\n  {script_to_path[script_id]}\n  {fp}")
+                script_to_path[script_id] = fp
 
     # Header + preamble imports
     preamble = load_preamble_lines()
@@ -527,6 +587,7 @@ def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
     ]
 
     entries: List[str] = []
+    script_ids: List[str] = []
     prev_top = prev_sub = None
 
     for fp in all_files:
@@ -565,6 +626,7 @@ def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
                 if emit_source_map:
                     entries.append(f"# [ {rel_posix} ]")
                 entries.append(block)
+                script_ids.extend(extract_script_ids_from_inner(inner))
             continue
 
         for chunk_text, s_line, e_line, sid in chunks:
@@ -573,9 +635,11 @@ def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
             if emit_source_map:
                 entries.append(f"# [ {rel_posix}:L{s_line}-L{e_line} ] {sid}")
             entries.append(chunk_text)
+            script_ids.append(sid)
 
     out_lines = header_lines + entries + ["]", "SCRIPTS = scripts", ""]
     OUT.write_text("\n".join(out_lines), encoding="cp1252", errors="replace")
+    _write_script_ids(script_ids)
 
     if use_cache:
         preamble_files: List[Path] = []
@@ -597,6 +661,7 @@ def build(use_cache: bool = True, emit_source_map: bool = True) -> None:
         _write_cache(payload)
 
     print(f"[build_scripts] Wrote {OUT}")
+    print(f"[build_scripts] Wrote {OUT_IDS}")
 
 
 if __name__ == "__main__":

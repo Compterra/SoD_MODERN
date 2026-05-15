@@ -1,12 +1,15 @@
 MENUS = [
 (
     "village", mnf_enable_hot_keys,
-    "{s10}{s11}{s17}{s15}{s16}{s6}{s7}{s21}{s20}",
+    "{s10}{s11}{s23}{s17}{s15}{s16}{s6}{s7}{s21}{s20}",
     "none",
     [
         (assign, "$current_town", "$g_encountered_party"),
+        (call_script, "script_sod_center_public_health_apply_player_visit_exposure", "$current_town"),
         (call_script, "script_update_center_recon_notes", "$current_town"),
         (assign, "$g_sod_town_background", "mesh_pic_village_p"),
+        (call_script, "script_sod_show_center_owner_portrait", "$current_town"),
+        (call_script, "script_sod_center_store_identity_line_to_s23", "$current_town"),
 
         (assign, "$g_defending_against_siege", 0), #required for bandit check
         (assign, "$g_battle_result", 0),
@@ -58,7 +61,8 @@ MENUS = [
         (try_begin),
           (neg|party_slot_eq, "$current_town", slot_village_state, svs_looted),
           (call_script, "script_describe_center_prosperity", s10, "$current_town"),
-          (str_store_string, s10, "@{s10} "),
+          (str_store_string_reg, s97, s10),
+          (str_store_string, s10, "@{s97} "),
         (try_end),
 
         (str_clear, s11),
@@ -195,7 +199,6 @@ MENUS = [
 
         (try_begin),
           (eq, "$g_player_raid_complete", 1),
-          (assign, "$g_player_raid_complete", 0),
           (jump_to_menu, "mnu_village_loot_complete"),
         (else_try),
           (party_get_slot, ":raider_party", "$current_town", slot_village_raided_by),
@@ -391,7 +394,7 @@ MENUS = [
       ("village_attack_bandits", [
 	  (party_slot_ge, "$current_town", slot_village_infested_by_bandits, 1),
         (call_script, "script_cf_sod_battle_commander_can_start"), ],
-       "Attack the bandits ({s7} leads).",
+       "Attack the bandits ({s68} leads).",
        [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
         (party_get_slot, ":scene_to_use", "$current_town", slot_castle_exterior),
         (modify_visitors_at_site, ":scene_to_use"),
@@ -428,7 +431,7 @@ MENUS = [
 		(quest_slot_eq, "qst_black_army_aid_warband", slot_quest_target_center, "$current_town"),
         (call_script, "script_cf_sod_battle_commander_can_start"),
 		],
-       "Attack the enemy forces ({s7} leads).",
+       "Attack the enemy forces ({s68} leads).",
        [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
         (party_get_slot, ":scene_to_use", "$current_town", slot_castle_exterior),
 		(try_begin),
@@ -477,7 +480,7 @@ MENUS = [
 		(quest_slot_eq, "qst_jotnar_clan_revenge", slot_quest_target_center, "$current_town"),
         (call_script, "script_cf_sod_battle_commander_can_start"),
 		],
-       "Attack them ({s7} leads).",
+       "Attack them ({s68} leads).",
        [(party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
         (party_get_slot, ":scene_to_use", "$current_town", slot_castle_exterior),
         (modify_visitors_at_site, ":scene_to_use"),
@@ -523,9 +526,9 @@ MENUS = [
 		(quest_slot_eq, "qst_slavers_deal_with_good_guys", slot_quest_target_center, "$current_town"),
         (call_script, "script_cf_sod_battle_commander_can_start"),
 		],
-       "Attack the band of self-proclaimed heroes ({s7} leads).",
+       "Attack the armed villagers ({s68} leads).",
        [
-		(call_script, "script_change_player_relation_with_center", "$g_encountered_party", -10),
+		(call_script, "script_change_player_relation_with_center", "$current_town", -10),
 		(call_script, "script_change_player_honor", -10),
 		(party_get_slot, ":scene_to_use", "$current_town", slot_castle_exterior),
 		(party_get_slot, ":population", "$current_town", slot_center_sod_local_population),
@@ -578,7 +581,13 @@ MENUS = [
                             (neg|quest_slot_eq, "qst_collect_taxes", slot_quest_current_state, 4),
                             (call_script, "script_store_troop_name", s1, ":quest_giver_troop"),
                             (quest_get_slot, reg5, "qst_collect_taxes", slot_quest_current_state),
-                            ], "{reg5?Continue collecting taxes:Collect taxes} due to {s1}.",
+                            (try_begin),
+                              (gt, reg5, 0),
+                              (str_store_string, s68, "@Continue collecting taxes"),
+                            (else_try),
+                              (str_store_string, s68, "@Collect taxes"),
+                            (try_end),
+                            ], "{s68} due to {s1}.",
        [(jump_to_menu, "mnu_collect_taxes"), ]),
 
       ("train_peasants_against_bandits_qst",
@@ -616,7 +625,13 @@ MENUS = [
           (else_try),
             # more left to do
             (party_get_slot, reg1, "$current_town", slot_center_current_improvement),
-            (str_store_string, s1, "@{reg1?Oversee the current:Commission a new} building project at this village."),
+            (try_begin),
+              (gt, reg1, 0),
+              (str_store_string, s68, "@Oversee the current"),
+            (else_try),
+              (str_store_string, s68, "@Commission a new"),
+            (try_end),
+            (str_store_string, s1, "@{s68} building project at this village."),
           (try_end),
         ]
         , "{s1}",

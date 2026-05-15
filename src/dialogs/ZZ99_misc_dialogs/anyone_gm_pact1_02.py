@@ -1,7 +1,7 @@
 DIALOGS = [
 [anyone, "gm_pact1",[
 	(assign, ":has_debt", 0),
-	(try_for_range, ":merc_guild", "fac_sod_merc_guild1", "fac_player_faction"),
+	(try_for_range, ":merc_guild", guilds_begin, guilds_end),
 		(eq, ":has_debt", 0),
 		(faction_get_slot, ":debt", ":merc_guild", player_debt_to_faction),
 		(gt, ":debt", 0),

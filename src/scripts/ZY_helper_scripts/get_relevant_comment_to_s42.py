@@ -75,7 +75,7 @@ SCRIPTS = [
                         (troop_get_slot, ":troop_object",          "trp_log_array_troop_object",          ":best_log_entry"),
                         (troop_get_slot, ":troop_object_faction",  "trp_log_array_troop_object_faction",  ":best_log_entry"),
                         (troop_get_slot, ":faction_object",        "trp_log_array_faction_object",        ":best_log_entry"),
-                        (str_store_string, s54, "@an unknown commander"),
+                        (str_store_string, s54, "@that commander"),
                         (try_begin),
                           (ge, ":actor", 0),
                           (call_script, "script_store_troop_name_link",   s50, ":actor"),

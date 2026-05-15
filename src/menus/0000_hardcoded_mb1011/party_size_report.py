@@ -1,6 +1,6 @@
 MENUS = [
 ("party_size_report", mnf_enable_hot_keys,
-   "{s1}",
+   "{s98}",
    "none",
    [
     (set_background_mesh, "mesh_pic_report_screen"),
@@ -47,7 +47,7 @@ MENUS = [
     (assign, reg1, ":leadership"),
     (assign, reg2, ":charisma"),
     (assign, reg3, ":renown"),
-    (str_store_string, s1, "@Current party size limit is {reg5}.^Current party size modifiers are:^^Base size:  +10^Leadership: {s2}{reg1}^Charisma: {s3}{reg2}^Renown: {s4}{reg3}^TOTAL:  {reg5}"),
+    (str_store_string, s98, "@Current party size limit is {reg5}.^Current party size modifiers are:^^Base size:  +10^Leadership: {s2}{reg1}^Charisma: {s3}{reg2}^Renown: {s4}{reg3}^TOTAL:  {reg5}"),
 
     (try_begin),
       (gt, "$players_kingdom", 0),
@@ -96,9 +96,11 @@ MENUS = [
       (try_end),
       (try_begin),
         (faction_slot_eq, "$players_kingdom", slot_faction_leader, "trp_player"),
-        (str_store_string, s1, "@{s1}^^Realm military law:^Authority: {s10}.^Levy system: {s11}.^Host balance: {s12}.^Political mood: {s13}.^^As ruler, centralization concentrates military support around your own host. Decentralization strengthens your vassals' estate armies."),
+        (str_store_string, s99, "@{s98}^^Realm military law:^Authority: {s10}.^Levy system: {s11}.^Host balance: {s12}.^Political mood: {s13}.^^As ruler, centralization concentrates military support around your own host. Decentralization strengthens your vassals' estate armies."),
+        (str_store_string_reg, s98, s99),
       (else_try),
-        (str_store_string, s1, "@{s1}^^Realm military law:^Authority: {s10}.^Levy system: {s11}.^Host balance: {s12}.^Political mood: {s13}.^^As a vassal, centralization pulls military support toward the crown. Decentralization gives landed nobles more room to raise estate armies."),
+        (str_store_string, s99, "@{s98}^^Realm military law:^Authority: {s10}.^Levy system: {s11}.^Host balance: {s12}.^Political mood: {s13}.^^As a vassal, centralization pulls military support toward the crown. Decentralization gives landed nobles more room to raise estate armies."),
+        (str_store_string_reg, s98, s99),
       (try_end),
     (try_end),
     ],

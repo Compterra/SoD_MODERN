@@ -5,7 +5,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def read(rel):
-    return (ROOT / rel).read_text(encoding="utf-8")
+    target = ROOT / rel
+    if not target.exists() and rel.startswith("docs/reports/"):
+        matches = sorted((ROOT / "docs" / "reports").rglob(Path(rel).name))
+        if len(matches) == 1:
+            target = matches[0]
+    return target.read_text(encoding="utf-8")
 
 
 def test_shield_audit_generator_exists():

@@ -11,7 +11,8 @@ MENUS = [
       (try_for_range, ":cur_slot", 0, ":num_participants"),
         (troop_get_slot, ":troop_no", "trp_tournament_participants", ":cur_slot"),
         (call_script, "script_store_troop_name", s12, ":troop_no"),
-        (str_store_string, s11, "@{s11}^{s12}"),
+        (str_store_string_reg, s97, s11),
+        (str_store_string, s11, "@{s97}^{s12}"),
       (try_end),
     ],
     [

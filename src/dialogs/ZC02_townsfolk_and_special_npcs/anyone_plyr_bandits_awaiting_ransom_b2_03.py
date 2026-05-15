@@ -1,4 +1,10 @@
 DIALOGS = [
-[anyone|plyr, "bandits_awaiting_ransom_b2", [],
-   "I have no intention to pay you anything. I demand that you release the girl now!", "bandits_awaiting_ransom_fight", []],
+[anyone|plyr, "bandits_awaiting_ransom_b2", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 1),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+],
+   "No ransom. Release her, or draw steel.", "bandits_awaiting_ransom_fight", []],
 ]

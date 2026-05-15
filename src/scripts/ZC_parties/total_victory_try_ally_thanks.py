@@ -5,6 +5,7 @@ SCRIPTS = [
       (try_begin),
         (eq, "$thanked_by_ally_leader", 0),
         (gt, "$g_ally_party", 0),
+        (party_is_active, "$g_ally_party"),
         (party_get_num_companion_stacks, ":num_ally_stacks", "$g_ally_party"),
         (gt, ":num_ally_stacks", 0),
 
@@ -31,8 +32,8 @@ SCRIPTS = [
 
         (store_faction_of_party, ":ally_faction", "$g_ally_party"),
         (call_script, "script_change_player_relation_with_faction", ":ally_faction", ":faction_reln_boost"),
-        (party_stack_get_troop_id, ":ally_leader", "$g_ally_party"),
-        (party_stack_get_troop_dna, ":ally_leader_dna", "$g_ally_party"),
+        (party_stack_get_troop_id, ":ally_leader", "$g_ally_party", 0),
+        (party_stack_get_troop_dna, ":ally_leader_dna", "$g_ally_party", 0),
         (try_begin),
           (troop_is_hero, ":ally_leader"),
           (troop_get_slot, ":hero_relation", ":ally_leader", slot_troop_player_relation),

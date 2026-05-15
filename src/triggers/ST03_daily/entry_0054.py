@@ -4,31 +4,11 @@ SIMPLE_TRIGGERS = [
     # only consume food if the player isn't a captive
     (eq, "$g_player_is_captive", 0),
 
-    # determine the number of troops with the player
-    (party_get_num_companion_stacks, ":num_stacks", "p_main_party"),
-    (assign, ":num_men", 0),
-    (try_for_range, ":i_stack", 0, ":num_stacks"),
-      (party_stack_get_size, ":stack_size", "p_main_party", ":i_stack"),
-      (val_add, ":num_men", ":stack_size"),
-    (try_end),
-
     #MORDACHAI - one unit of food per 5 troops (instead of per 3 troops)
-    (store_div, ":consumption_amount", ":num_men", 5),
-    (val_max, ":consumption_amount", 1),
-    (call_script, "script_sod_company_accounts_adjust_food_consumption_to_reg", ":consumption_amount"),
-    (assign, ":consumption_amount", reg0),
-    (try_begin),
-      (eq, "$g_camp_mode", 1),
-      (eq, "$g_player_icon_state", pis_camping),
-      (main_party_has_troop, "trp_npc2"),
-      (store_current_hours, ":cur_hours"),
-      (gt, "$g_sod_camp_marnid_food_until_hour", ":cur_hours"),
-      (gt, "$g_sod_camp_marnid_food_consumption_pct", 0),
-      (val_mul, ":consumption_amount", "$g_sod_camp_marnid_food_consumption_pct"),
-      (val_div, ":consumption_amount", 100),
-      (val_max, ":consumption_amount", 1),
-    (try_end),
-    (call_script, "script_sod_company_accounts_update_ration_pressure"),
+    (call_script, "script_sod_company_accounts_get_daily_food_consumption_to_regs"),
+    (assign, ":edible_food_before_consumption", reg31),
+    (assign, ":consumption_amount", reg32),
+    (call_script, "script_sod_company_accounts_update_ration_pressure_for_food_count", ":edible_food_before_consumption"),
 
     (assign, ":no_food_displayed", 0),
     (try_for_range, ":unused", 0, ":consumption_amount"),
@@ -60,20 +40,27 @@ SIMPLE_TRIGGERS = [
       (try_end),
     (try_end),
 
+    (assign, ":edible_food_after_consumption", -1),
+    (try_begin),
+      (this_or_next|eq, ":no_food_displayed", 0),
+      (eq, "$g_sod_debug", 1),
+      (call_script, "script_count_edible_food"),
+      (assign, ":edible_food_after_consumption", reg0),
+    (try_end),
+
     # MORDACHAI: warn the player when they're down to less than three days of rations
     (try_begin),
       (eq, ":no_food_displayed", 0),
-      (call_script, "script_count_edible_food"),
       (store_mul, reg1, ":consumption_amount", 3),
-      (lt, reg0, reg1),
+      (lt, ":edible_food_after_consumption", reg1),
       (display_message, "@Your stores are running low.", warning_color),
     (try_end),
 
     # debug
     (try_begin),
       (eq, "$g_sod_debug", 1),
-      (call_script, "script_count_edible_food"),
       (assign, reg1, ":consumption_amount"),
+      (assign, reg0, ":edible_food_after_consumption"),
       (lt, reg0, reg1),
       (display_message, "@The party is consuming {reg1} provisions each day. {reg0} remain.", debug_color),
     (try_end),

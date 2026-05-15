@@ -1,0 +1,22 @@
+DIALOGS = [
+[anyone, "town_dweller_ask_situation",
+  [
+    (is_between, "$current_town", centers_begin, centers_end),
+    (call_script, "script_sod_center_public_health_compute_causes", "$current_town"),
+    (assign, ":risk", reg4),
+    (party_get_slot, ":health", "$current_town", slot_center_sod_local_health),
+    (party_get_slot, ":outbreak", "$current_town", slot_center_health_outbreak_type),
+    (party_get_slot, ":quarantine", "$current_town", slot_center_health_quarantine),
+    (party_get_slot, ":aftermath", "$current_town", slot_center_health_recent_aftermath),
+    (this_or_next|gt, ":outbreak", sod_outbreak_none),
+    (this_or_next|gt, ":quarantine", 0),
+    (this_or_next|gt, ":aftermath", 0),
+    (this_or_next|ge, ":risk", 60),
+    (lt, ":health", 25),
+    (call_script, "script_sod_center_public_health_brief_to_s0", "$current_town"),
+    (str_store_string_reg, s12, s0),
+    (call_script, "script_sod_center_public_health_recommendation_to_s0", "$current_town"),
+    (str_store_string_reg, s13, s0),
+  ],
+   "{s12} Folk say this plainly now: {s13}", "town_dweller_talk", []],
+]

@@ -1,7 +1,7 @@
 MENUS = [
 (
     "event_holy", mnf_disable_all_keys,
-    "One of your noble elites requests a private audience. -My liege,- the veteran says, -I have served faithfully, but now I feel {s2}. If you grant leave, I will join {s1} and become a living standard for our cause.-",
+    "One of your noble veterans requests a private audience. -My liege,- the soldier says, -I have served faithfully, but now I feel {s2}. If you grant leave, I will join {s1} and serve our cause in a higher calling.-",
     "none",
     [
       (set_background_mesh, "mesh_pic_faith_zealot"),
@@ -30,12 +30,28 @@ MENUS = [
 	  (try_end),
     ],
     [
-      ("choice_event_holy_1", [(store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 200), (call_script, "script_sod_troop_get_effective_faith"), (ge, reg0, sod_zealot_min_faith)], "Go with my blessing. Serve the cause. (200 denars)",
+      ("choice_event_holy_1", [], "Go with my blessing. Serve the cause. (200 denars)",
        [
-		(party_remove_members, "p_main_party", "$g_sod_last_noble", 1),
-        (party_add_members , "p_main_party", "$g_sod_zealot", 1),             #twan456b
-        (call_script, "script_sod_troop_apply_faith_ascension_cost", 1),
-        (call_script, "script_sod_player_charge_gold", 200),
+        (store_troop_gold, ":gold", "trp_player"),
+        (party_count_members_of_type, ":noble_count", "p_main_party", "$g_sod_last_noble"),
+        (call_script, "script_sod_troop_get_effective_faith"),
+        (try_begin),
+          (ge, ":gold", 200),
+          (ge, reg0, sod_zealot_min_faith),
+          (gt, ":noble_count", 0),
+		  (party_remove_members, "p_main_party", "$g_sod_last_noble", 1),
+          (party_add_members , "p_main_party", "$g_sod_zealot", 1),             #twan456b
+          (call_script, "script_sod_troop_apply_faith_ascension_cost", 1),
+          (call_script, "script_sod_player_charge_gold", 200),
+        (else_try),
+          (le, ":noble_count", 0),
+          (display_message, "@The noble veteran is no longer with your party.", quest_fail_color),
+        (else_try),
+          (lt, ":gold", 200),
+          (display_message, "@You don't have enough gold to sponsor the ascension.", quest_fail_color),
+        (else_try),
+          (display_message, "@Your realm lacks the faith needed for such an ascension.", quest_fail_color),
+        (try_end),
         (change_screen_return),
         ]
        ),
@@ -51,11 +67,17 @@ MENUS = [
        ),
       ("choice_event_holy_3", [], "I release you from your oath. Preach among the people.",
        [
-       (call_script, "script_change_player_honor", 2),
-       (val_add, "$g_sod_global_faith", 50),
-       (val_clamp, "$g_sod_global_faith", -2000, 2001),
-       #MORDACHAI - bug fix: was failing to actually remove the unit who presumably goes off to become a priest or librarian
-       (party_remove_members , "p_main_party", "$g_sod_last_noble", 1), #twan456b
+       (party_count_members_of_type, ":noble_count", "p_main_party", "$g_sod_last_noble"),
+       (try_begin),
+         (gt, ":noble_count", 0),
+         (call_script, "script_change_player_honor", 2),
+         (val_add, "$g_sod_global_faith", 50),
+         (val_clamp, "$g_sod_global_faith", -2000, 2001),
+         #MORDACHAI - bug fix: was failing to actually remove the unit who presumably goes off to become a priest or librarian
+         (party_remove_members , "p_main_party", "$g_sod_last_noble", 1), #twan456b
+       (else_try),
+         (display_message, "@The noble veteran is no longer with your party.", quest_fail_color),
+       (try_end),
        (change_screen_return),
         ]
        ),

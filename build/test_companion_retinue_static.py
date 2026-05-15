@@ -238,6 +238,39 @@ def test_retinue_storage_transfer_and_treasury_helpers_exist() -> None:
         assert_contains(retinues, token)
 
 
+def test_retinue_text_reports_do_not_self_append_visible_s1() -> None:
+    retinues = read("src/scripts/ZC_parties/sod_companion_retinues.py")
+
+    transfer_start = retinues.index('"sod_companion_retinue_describe_transfer_to_s1"')
+    transfer_end = retinues.index('"sod_companion_retinue_get_weekly_wage"')
+    transfer = retinues[transfer_start:transfer_end]
+    assert_contains(transfer, '(str_store_string_reg, s98, s1)')
+    assert_contains(transfer, '(str_store_string_reg, s1, s98)')
+    for stale in [
+        '@{s1}^^Selected from your company',
+        '@{s1}^^Selected from this retinue',
+        '@{s1}^Warning:',
+        '@{s1}^^No regular troop stacks',
+        '@{s1}^^This retinue has no regular troop stacks',
+    ]:
+        assert_not_contains(transfer, stale)
+
+    report_start = retinues.index('"sod_companion_retinue_describe_report_to_s1"')
+    report_end = retinues.index('"sod_companion_retinue_describe_focus_to_s1"')
+    report = retinues[report_start:report_end]
+    assert_contains(report, '(str_store_string_reg, s97, s1)')
+    assert_contains(report, '(str_store_string_reg, s1, s98)')
+    assert_contains(report, "@{s97}Command distinction:")
+    assert_contains(report, "@{s97}Post-battle retinue hiring:")
+    for stale in [
+        '@{s1}Command distinction:',
+        '@{s1}Post-battle retinue hiring:',
+        '@{s1}^{s2}:',
+        '@{s1}No companions in the company',
+    ]:
+        assert_not_contains(report, stale)
+
+
 def test_retinues_are_not_external_follower_parties() -> None:
     start = read("src/dialogs/ZA01_startup_and_dispatch/anyone_start_151.py")
     retinues = read("src/scripts/ZC_parties/sod_companion_retinues.py")
@@ -608,10 +641,13 @@ def test_retinue_management_menu_is_safe_and_reachable() -> None:
     assert_contains(camp, "Review companion retinues.")
     assert_contains(order, "camp/companion_retinue_report.py")
     assert_contains(dialog_order, "ZZ99_misc_dialogs/anyone_plyr_regular_member_retinue_command.py")
-    assert_contains(dialog, "Let's speak about the troops under your command.")
+    assert_contains(dialog, '[anyone|plyr, "member_talk"')
+    assert_not_contains(dialog, '[anyone|plyr, "regular_member_talk"')
+    assert_contains(dialog, "Let's review your retinue.")
     assert_contains(dialog, "regular_member_retinue_command")
     assert_contains(dialog, "script_sod_companion_retinue_describe_dialogue_to_s28")
-    assert_contains(dialog, "Show me your command rolls.")
+    assert_contains(dialog, "Open your command rolls.")
+    assert_contains(dialog, '"That is enough for now.", "member_talk"')
     assert_contains(dialog, "is_between, \"$g_talk_troop\", companions_begin, companions_end")
     assert_contains(dialog, "main_party_has_troop, \"$g_talk_troop\"")
     assert_contains(dialog, "mnu_companion_retinue_manage")
@@ -861,8 +897,13 @@ def test_retinue_battle_bridge_uses_hidden_allied_parties_not_main_party_merge()
     fallback_end = retinues.index('("sod_companion_retinue_join_current_battle"')
     fallback = retinues[fallback_start:fallback_end]
     assert_contains(fallback, "script_cf_sod_companion_retinue_can_merge_fallback")
+    store_spawn_index = fallback.index('spawn_around_party, "p_main_party", "pt_sod_companion_retinue"')
+    store_active_index = fallback.index('party_is_active, ":store_party"', store_spawn_index)
+    store_clear_index = fallback.index('party_clear, ":store_party"', store_spawn_index)
+    assert store_spawn_index < store_active_index < store_clear_index
     assert_contains(fallback, "disable_party, \":store_party\"")
     assert_not_contains(fallback, "party_quick_attach_to_current_battle")
+    assert join_bridge.count('party_slot_eq, ":retinue_party", slot_party_sod_retinue_owner_troop, ":companion"') == 1
 
     assert_contains(simple_encounter, "script_sod_companion_retinue_join_current_battle")
     assert_contains(simple_encounter, "script_sod_companion_retinue_finish_battle_bridge")
@@ -994,6 +1035,8 @@ def test_retinue_exploit_and_edge_case_controls_are_hardened() -> None:
     sanitize = retinues[retinues.index('"sod_companion_retinue_sanitize_state"'):retinues.index('"sod_companion_retinue_get_capacity"')]
     for token in [
         "val_clamp, \":approval\", 0, 101",
+        "script_sod_companion_get_approval_band_to_reg",
+        "slot_troop_companion_trust_tier",
         "sod_companion_warning_none",
         "sod_companion_warning_broken",
         "sod_companion_quest_none",
@@ -1038,6 +1081,12 @@ def test_retinue_exploit_and_edge_case_controls_are_hardened() -> None:
 
     ensure = retinues[retinues.index('"sod_companion_retinue_ensure_party"'):retinues.index('"sod_companion_retinue_get_size"')]
     assert_contains(ensure, "script_sod_companion_retinue_sanitize_state")
+    spawn_index = ensure.index('spawn_around_party, "p_main_party", "pt_sod_companion_retinue"')
+    active_index = ensure.index('party_is_active, ":retinue_party"', spawn_index)
+    name_index = ensure.index('party_set_name, ":retinue_party"', spawn_index)
+    assert spawn_index < active_index < name_index
+    assert_contains(ensure, '(troop_set_slot, ":companion", slot_troop_sod_retinue_party, 0)')
+    assert_contains(ensure, 'party_slot_eq, ":retinue_party", slot_party_type, spt_companion_retinue')
     assert_contains(ensure, "slot_party_ai_state, spai_undefined")
     assert_contains(ensure, "slot_party_ai_object, -1")
     assert_contains(ensure, "slot_party_ai_substate, 0")

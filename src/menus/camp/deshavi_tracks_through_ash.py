@@ -143,7 +143,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_safe_roadcraft, 2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc7"),
           (display_message, "@Deshavi turns the pursuers' own impatience against them. Some captives scatter, but the chase breaks.", 0xCCCC66),
-          (jump_to_menu, "mnu_deshavi_tracks_through_ash"),
+          (start_map_conversation, "trp_npc7"),
         ]
       ),
       ("deshavi_trail_hunt_first", [
@@ -160,10 +160,10 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc7", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc7"),
           (display_message, "@The pursuers die quickly. Deshavi marks every track left by people who had to save themselves.", 0xCC9966),
-          (jump_to_menu, "mnu_deshavi_tracks_through_ash"),
+          (start_map_conversation, "trp_npc7"),
         ]
       ),
-      ("deshavi_trail_leave", [], "Return to the village.",
+      ("deshavi_trail_leave", [], "Leave the trail for now.",
         [
           (jump_to_menu, "mnu_village"),
         ]
@@ -189,7 +189,7 @@ MENUS = [
     [
       ("deshavi_rescue_aftermath", [], "Speak with Deshavi about the trail.",
         [
-          (jump_to_menu, "mnu_deshavi_tracks_through_ash"),
+          (start_map_conversation, "trp_npc7"),
         ]
       ),
     ]
@@ -209,7 +209,7 @@ MENUS = [
     [
       ("deshavi_rescue_failed_aftermath", [], "Face Deshavi's judgment.",
         [
-          (jump_to_menu, "mnu_deshavi_tracks_through_ash"),
+          (start_map_conversation, "trp_npc7"),
         ]
       ),
     ]

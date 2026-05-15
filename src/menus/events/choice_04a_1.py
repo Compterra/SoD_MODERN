@@ -1,13 +1,13 @@
 MENUS = [
 (
     "event_04a", mnf_disable_all_keys,
-    "You encounter the child of one of your soldiers. He explains you that his mother is ill and begs you to release his father from the contract. Harvest was poor and his wages can't feed the whole family. If he could come back and work on the field they might survive.",
+    "You encounter the child of one of your soldiers. His mother is ill, the harvest was poor, and his father's wages no longer feed the family. He begs you to release his father from the contract so he can return to the fields.",
     "none",
     [
 
     ],
     [
-      ("choice_04a_1", [], "This can't be! Here take 100 denars.",
+      ("choice_04a_1", [], "Give the family 100 denars.",
        [
        (store_troop_gold, ":gold", "trp_player"),
        (try_begin),
@@ -15,14 +15,14 @@ MENUS = [
         (call_script, "script_change_player_honor", 1),
         (call_script, "script_sod_player_charge_gold", 100),
         (else_try),
-        (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+        (display_message, "@You don't have enough gold to help the family.", quest_fail_color),
         (call_script, "script_change_troop_renown", "trp_player", -5),
         (try_end),
           (change_screen_return),
         ]
        ),
 
-      ("choice_04a_2", [], "Pacta sunt servanda!",
+      ("choice_04a_2", [], "A contract is a contract.",
        [(call_script, "script_change_player_honor", -1),
         (change_screen_return),
         ]

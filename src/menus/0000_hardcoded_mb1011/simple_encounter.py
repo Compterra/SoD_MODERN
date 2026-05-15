@@ -171,7 +171,7 @@ MENUS = [
         (eq, "$encountered_party_friendly", 0),
         (call_script, "script_cf_sod_battle_commander_can_start"),
       ],
-      "Charge the enemy ({s7} leads).", [
+      "Charge the enemy ({s68} leads).", [
         (assign, "$g_battle_result", 0),
         (assign, "$g_engaged_enemy", 1),
         (call_script, "script_calculate_renown_value"),

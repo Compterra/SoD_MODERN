@@ -859,6 +859,7 @@ SCRIPTS = [
       (try_begin),
         (eq, ":result", 2),
         (party_stack_get_troop_id, ":looter_troop", ":looter_party", 0),
+        (neg|troop_is_hero, ":looter_troop"),
         (store_party_size, ":party_size", ":looter_party"),
         (store_div, ":losses", ":party_size", 4),
         (val_clamp, ":losses", 4, 18),

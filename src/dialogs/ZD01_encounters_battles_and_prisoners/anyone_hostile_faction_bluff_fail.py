@@ -1,5 +1,7 @@
 DIALOGS = [
 [anyone, "hostile_faction_bluff", [], "A banner is cloth. Men bleed through cloth all the same.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
 ]],
 ]

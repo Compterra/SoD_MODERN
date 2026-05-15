@@ -2,5 +2,5 @@ from header_dialogs import *
 from module_constants import *
 
 DIALOGS = [
-    [anyone, "companion_rehire", [], "No. You dismissed me once, and I will not pretend that meant nothing. I may forgive a debt, but I do not forget the hand that shoved me out of the door.", "close_window", []],
+    [anyone, "companion_rehire_refused", [], "Then call me when you mean it. I was dismissed once; I will not wait on a half-open door.", "close_window", []],
 ]

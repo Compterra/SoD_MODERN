@@ -29,7 +29,7 @@ MENUS = [
           (quest_set_slot, "qst_companion_firentis_debt_restitution", slot_quest_sod_runtime_metadata, 3),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
           (display_message, "@Firentis accepts that penance must become shelter, coin, and restraint. Debt of the Sword remembers restitution.", 0x99CCFF),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc6"),
         ]
       ),
       ("firentis_restitution_confess", [
@@ -54,7 +54,7 @@ MENUS = [
           (quest_set_slot, "qst_companion_firentis_debt_restitution", slot_quest_sod_runtime_metadata, 2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
           (display_message, "@The answer is not clean, but it is honest. Firentis hears judgment without reaching for steel.", 0xCCCC66),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc6"),
         ]
       ),
       ("firentis_restitution_silence", [
@@ -72,7 +72,7 @@ MENUS = [
           (quest_set_slot, "qst_companion_firentis_debt_restitution", slot_quest_sod_runtime_metadata, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
           (display_message, "@Firentis obeys. Debt of the Sword remembers silence as another wound.", 0xCC6666),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc6"),
         ]
       ),
       ("firentis_restitution_leave", [], "Return to camp.",
@@ -136,7 +136,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_debt_honesty, 2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
           (display_message, "@Firentis lets the accusation stand in daylight. The village hears truth before it hears promises.", 0xCCCC66),
-          (jump_to_menu, "mnu_village"),
+          (start_map_conversation, "trp_npc6"),
         ]
       ),
       ("firentis_hearing_silence", [
@@ -155,7 +155,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_hard_compromise, 2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
           (display_message, "@The hearing ends under armed quiet. Firentis follows, but the village now knows which truth was too costly.", 0xCC6666),
-          (jump_to_menu, "mnu_village"),
+          (start_map_conversation, "trp_npc6"),
         ]
       ),
       ("firentis_hearing_leave", [], "Step back from the hearing.",
@@ -180,7 +180,7 @@ MENUS = [
       (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
     ],
     [
-      ("continue", [], "Continue...", [(jump_to_menu, "mnu_village")]),
+      ("continue", [], "Speak with Firentis.", [(start_map_conversation, "trp_npc6")]),
     ]
   ),
 ("firentis_restitution_defense_failed", mnf_disable_all_keys,
@@ -195,7 +195,7 @@ MENUS = [
       (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc6"),
     ],
     [
-      ("continue", [], "Continue...", [(jump_to_menu, "mnu_village")]),
+      ("continue", [], "Speak with Firentis.", [(start_map_conversation, "trp_npc6")]),
     ]
   ),
 ]

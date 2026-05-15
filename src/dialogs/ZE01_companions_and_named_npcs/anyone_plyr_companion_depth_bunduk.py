@@ -6,7 +6,7 @@ DIALOGS = [
     (eq, "$g_sod_bunduk_line_pending", 1),
     (troop_slot_eq, "trp_npc10", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Bunduk, bring me the line's grievance plainly.", "companion_depth_bunduk_line_pending",
+  "Bunduk, bring me the line's grievance.", "companion_depth_bunduk_line_pending",
   []],
 
 [anyone|plyr, "member_talk",

@@ -1,7 +1,7 @@
 MENUS = [
 (
     "construct_siege_tower", mnf_enable_hot_keys,
-    "As the party member with the highest Engineer skill ({reg2}), {reg3?you estimate:{s3} estimates} that building a siege tower will take {reg4} hours.",
+    "{s68}",
     "none",
     [
       (set_background_mesh, "mesh_pic_construction"),
@@ -18,9 +18,11 @@ MENUS = [
       (try_begin),
         (eq, ":max_skill_owner", "trp_player"),
         (assign, reg3, 1),
+        (str_store_string, s68, "@As the party member with the highest Engineer skill ({reg2}), you estimate that building a siege tower will take {reg4} hours."),
       (else_try),
         (assign, reg3, 0),
         (call_script, "script_store_troop_name", s3, ":max_skill_owner"),
+        (str_store_string, s68, "@As the party member with the highest Engineer skill ({reg2}), {s3} estimates that building a siege tower will take {reg4} hours."),
       (try_end),
     ],
     [

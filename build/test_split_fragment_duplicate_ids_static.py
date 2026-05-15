@@ -69,8 +69,38 @@ def test_builders_check_all_split_fragment_ids_not_only_first_id() -> None:
     assert "for pid in ids" in presentations_builder
 
 
+def test_script_builder_strips_legacy_import_shim_after_comments() -> None:
+    raw = """# COST: documented preamble
+try:
+    from src.compiler import *
+except ImportError:
+    from src.module_system import *
+
+from src.constants.module_constants import *
+
+SCRIPTS = [
+("sample", []),
+]
+"""
+    preamble = build_scripts.extract_fragment_preamble_block(raw)
+
+    assert "# COST: documented preamble" in preamble
+    assert "from src.constants.module_constants import *" in preamble
+    assert "src.compiler" not in preamble
+    assert "src.module_system" not in preamble
+
+
+def test_generated_scripts_do_not_embed_legacy_src_import_shims() -> None:
+    generated = (ROOT / "compile" / "module_scripts.py").read_text(encoding="utf-8", errors="replace")
+
+    assert "from src.compiler import *" not in generated
+    assert "from src.module_system import *" not in generated
+
+
 if __name__ == "__main__":
     test_src_scripts_export_unique_script_ids()
     test_src_presentations_export_unique_presentation_ids()
     test_builders_check_all_split_fragment_ids_not_only_first_id()
+    test_script_builder_strips_legacy_import_shim_after_comments()
+    test_generated_scripts_do_not_embed_legacy_src_import_shims()
     print("test_split_fragment_duplicate_ids_static: OK")

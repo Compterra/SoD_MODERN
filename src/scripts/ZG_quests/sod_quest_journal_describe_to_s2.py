@@ -5,8 +5,9 @@ from src.constants.module_constants import *
 
 def _append_line(text):
     return [
-        (str_store_string, s0, text),
-        (str_store_string, s2, "@{s2}{s0}^"),
+        (str_store_string, s68, text),
+        (str_store_string_reg, s97, s2),
+        (str_store_string, s2, "@{s97}{s68}^"),
     ]
 
 
@@ -16,9 +17,10 @@ def _append_heading(text):
 
 def _append_journal_entry(prefix, include_archive_day=False):
     lines = [
-        (str_store_string, s1, "@    [{prefix}] "),
-        (str_store_quest_name, s0, ":quest_no"),
-        (str_store_string, s2, "@{s2}{s1}{s0}^"),
+        (str_store_string, s69, "@    [{prefix}] "),
+        (str_store_quest_name, s68, ":quest_no"),
+        (str_store_string_reg, s97, s2),
+        (str_store_string, s2, "@{s97}{s69}{s68}^"),
         (quest_get_slot, reg0, ":quest_no", slot_quest_sod_runtime_stage),
         (quest_get_slot, reg1, ":quest_no", slot_quest_sod_journal_chain_progress),
         (quest_get_slot, reg2, ":quest_no", slot_quest_sod_runtime_state),
@@ -26,13 +28,15 @@ def _append_journal_entry(prefix, include_archive_day=False):
     if include_archive_day:
         lines += [
             (quest_get_slot, reg3, ":quest_no", slot_quest_sod_journal_archive_day),
-            (str_store_string, s0, "@        Stage {reg0} | Chain {reg1} | State {reg2} | Archived day {reg3}"),
-            (str_store_string, s2, "@{s2}{s0}^"),
+            (str_store_string, s68, "@        Stage {reg0} | Chain {reg1} | State {reg2} | Archived day {reg3}"),
+            (str_store_string_reg, s97, s2),
+            (str_store_string, s2, "@{s97}{s68}^"),
         ]
     else:
         lines += [
-            (str_store_string, s0, "@        Stage {reg0} | Chain {reg1} | State {reg2}"),
-            (str_store_string, s2, "@{s2}{s0}^"),
+            (str_store_string, s68, "@        Stage {reg0} | Chain {reg1} | State {reg2}"),
+            (str_store_string_reg, s97, s2),
+            (str_store_string, s2, "@{s97}{s68}^"),
         ]
     return lines
 
@@ -50,8 +54,9 @@ def _append_journal_section(category, prefix, empty_message, include_archive_day
         (try_end),
         (try_begin),
             (eq, reg7, 0),
-            (str_store_string, s0, empty_message),
-            (str_store_string, s2, "@{s2}{s0}^"),
+            (str_store_string, s68, empty_message),
+            (str_store_string_reg, s97, s2),
+            (str_store_string, s2, "@{s97}{s68}^"),
         (try_end),
     ]
 
@@ -63,25 +68,25 @@ def _append_companion_arc_entry(quest_id, companion_label, opening, field_test, 
         (try_begin),
             (gt, ":companion_state", 0),
             (assign, reg7, 1),
-            (str_store_quest_name, s0, quest_id),
+            (str_store_quest_name, s68, quest_id),
             (try_begin),
                 (eq, ":companion_stage", sod_companion_quest_trust_unlocked),
-                (str_store_string, s1, opening),
+                (str_store_string, s69, opening),
             (else_try),
                 (eq, ":companion_stage", sod_companion_quest_test_started),
-                (str_store_string, s1, field_test),
+                (str_store_string, s69, field_test),
             (else_try),
                 (eq, ":companion_stage", sod_companion_quest_resolved_good),
-                (str_store_string, s1, resolved_good),
+                (str_store_string, s69, resolved_good),
             (else_try),
                 (eq, ":companion_stage", sod_companion_quest_resolved_hard),
-                (str_store_string, s1, resolved_hard),
+                (str_store_string, s69, resolved_hard),
             (else_try),
-                (str_store_string, s1, "@Dormant: waiting for trust or a world trigger"),
+                (str_store_string, s69, "@Dormant: waiting for trust or a world trigger"),
             (try_end),
             (assign, reg0, ":companion_stage"),
             (assign, reg1, ":companion_state"),
-            (str_store_string, s2, f"@{{s2}}    [COMPANION] {companion_label} - {{s0}}^        {{s1}} | Stage {{reg0}} | Runtime state {{reg1}}^"),
+            (str_store_string, s2, f"@{{s2}}    [COMPANION] {companion_label} - {{s68}}^        {{s69}} | Stage {{reg0}} | Runtime state {{reg1}}^"),
         (try_end),
     ]
 
@@ -113,8 +118,9 @@ def _append_companion_arc_section():
     lines += [
         (try_begin),
             (eq, reg7, 0),
-            (str_store_string, s0, "@    No companion personal arcs have entered the quest framework yet."),
-            (str_store_string, s2, "@{s2}{s0}^"),
+            (str_store_string, s68, "@    No companion personal arcs have entered the quest framework yet."),
+            (str_store_string_reg, s97, s2),
+            (str_store_string, s2, "@{s97}{s68}^"),
         (try_end),
     ]
     return lines

@@ -2,6 +2,11 @@ SCRIPTS = [
 ("party_calculate_regular_strength",
     [
       (store_script_param_1, ":party"), #Party_id
+      (assign, reg(0),0),
+	  
+      (try_begin),
+      (gt, ":party", 0),
+      (party_is_active, ":party"),
 	  
 	  (party_get_attached_to, ":attached_to", ":party"),  # SoD twan
 	  
@@ -14,7 +19,6 @@ SCRIPTS = [
 	  (assign, ":siege", 0),
 	  (try_end),
       
-      (assign, reg(0),0),
       (party_get_num_companion_stacks, ":num_stacks",":party"),
       (try_for_range, ":i_stack", 0, ":num_stacks"),
         (party_stack_get_troop_id, ":stack_troop",":party",":i_stack"),
@@ -86,6 +90,7 @@ SCRIPTS = [
         (val_max, ":stack_size", 0),
         (val_mul, ":stack_strength", ":stack_size"),
         (val_add,reg(0), ":stack_strength"),
+      (try_end),
       (try_end),
   ]),
 ]

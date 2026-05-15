@@ -12,5 +12,5 @@ DIALOGS = [
 			(val_add, ":total", ":troop_count"),
 	  (try_end),
       (eq, ":total", 0),
-    ], "All of your troops have been upgraded, your majesty.", "marshal_talk", []],
+    ], "Every eligible troop in your party has been promoted, my liege.", "marshal_talk", []],
 ]

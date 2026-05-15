@@ -9,8 +9,7 @@ SCRIPTS = [
    (assign, ":reserve", 0),
 
    (try_begin),
-     (is_between, ":faction_no", kingdoms_begin, kingdoms_end),
-     (neq, ":faction_no", "fac_kingdom_6"),
+     (is_between, ":faction_no", native_kingdoms_begin, native_kingdoms_end),
      (faction_slot_eq, ":faction_no", slot_faction_state, sfs_active),
      (faction_get_slot, ":economic_strength", ":faction_no", slot_faction_economic_strength),
      (faction_get_slot, ":demand", ":faction_no", slot_faction_sod_merc_demand_score),

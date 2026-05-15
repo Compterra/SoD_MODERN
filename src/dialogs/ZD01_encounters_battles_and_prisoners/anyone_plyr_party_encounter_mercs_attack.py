@@ -1,5 +1,5 @@
 DIALOGS = [
-[anyone|plyr, "party_encounter_mercs_attack", [],
+[anyone, "party_encounter_mercs_attack", [],
   "So be it. Defend yourself!", "close_window", [
   (try_begin),
     (gt, "$g_encountered_party", 0),
@@ -7,8 +7,16 @@ DIALOGS = [
     (party_is_active, "$g_encountered_party"),
     (party_get_num_companions, ":num_companions", "$g_encountered_party"),
     (gt, ":num_companions", 0),
+    (party_get_slot, ":troop", "$g_encountered_party", slot_party_boss),
+    (try_begin),
+      (is_between, ":troop", 0, "trp_last_troop"),
+      (store_troop_faction, ":troop_fac", ":troop"),
+      (is_between, ":troop_fac", 0, "fac_factions_end"),
+      (call_script, "script_make_kingdom_hostile_to_player", ":troop_fac", -3),
+    (try_end),
     (assign, "$g_enemy_party", "$g_encountered_party"),
     (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+    (encounter_attack),
   (else_try),
     (gt, "$g_encountered_party", 0),
     (neq, "$g_encountered_party", "p_main_party"),

@@ -49,13 +49,15 @@ def test_boar_clan_hire_price_is_persisted_and_clamped():
 def test_boar_clan_hire_payment_never_spends_raw_register_value():
     text = read("src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_boar_clan_recruit_3.py")
     helper = read("src/scripts/ZY_helper_scripts/sod_boar_clan_encounter.py")
-    remove = '(call_script, "script_sod_player_charge_gold", reg5)'
+    remove = '(call_script, "script_sod_player_charge_gold", ":hire_cost")'
     first_load = '(assign, reg5, "$g_sod_boar_hire_cost")'
     clamp = "(val_clamp, reg5, 1, 20001)"
+    preserve = '(assign, ":hire_cost", reg5)'
     assert first_load in text
     assert clamp in text
+    assert preserve in text
     assert remove in text
-    assert text.index(first_load) < text.index(clamp) < text.index(remove)
+    assert text.index(first_load) < text.index(clamp) < text.index(preserve) < text.index(remove)
     assert '(assign, "$g_sod_boar_hire_cost", 0)' in text
     assert '(call_script, "script_sod_boar_clan_convert_to_player_mercenaries")' in text
     assert '(spawn_around_party, "$g_encountered_party", "pt_player_mercenaries")' in helper

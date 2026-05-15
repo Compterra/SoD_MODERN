@@ -7,7 +7,7 @@ DIALOGS = [
     (eq, "$g_sod_nizar_charge_confronted", 1),
     (troop_slot_eq, "trp_npc13", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Nizar, show me this impossible charge before it becomes a song.", "companion_depth_nizar_charge_pending",
+  "Nizar, show me the charge before it becomes a song.", "companion_depth_nizar_charge_pending",
   []],
 
 [anyone|plyr, "member_talk",

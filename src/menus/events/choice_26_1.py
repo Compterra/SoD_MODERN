@@ -1,14 +1,13 @@
 MENUS = [
 (
     "event_26", mnf_disable_all_keys,
-    "Some {s2} visit you. They think that the public sacrifice of goats in all the towns and villages of your realm will help your religion to spread.\
-People not sharing your faith will probably don't appreciate this.",
+    "Some {s2} visit you. They believe public goat sacrifices in every town and village would help your religion spread. Those who do not share your faith are unlikely to welcome it.",
     "none",
     [    (try_begin),
 	    (eq, "$g_sod_faith", cb_the_void),
 		(str_store_string, s2, "@priests of the Void"),
 		(else_try),
-		(str_store_string, s2, "@priests of the Old Golds"),
+		(str_store_string, s2, "@priests of the Old Gods"),
 		(try_end),
     ],
     [
@@ -38,7 +37,7 @@ People not sharing your faith will probably don't appreciate this.",
 			(try_end),
 			
             (else_try),
-            (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+            (display_message, "@You don't have enough gold to buy the sacrificial animals.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -5),
             (val_sub, "$g_sod_global_faith", 50),
             (val_clamp, "$g_sod_global_faith", -2000, 2001),
@@ -75,7 +74,7 @@ People not sharing your faith will probably don't appreciate this.",
           (change_screen_return),
         ]
        ),
-             ("choice_26_3", [], "Buy for 500 denars of goats and only make sacrifices where your faith is strong.", [
+             ("choice_26_3", [], "Buy 500 denars of goats and sacrifice only where your faith is strong.", [
 			 (store_troop_gold, ":gold", "trp_player"),
 			(try_begin),
             (ge, ":gold", 500),
@@ -100,7 +99,7 @@ People not sharing your faith will probably don't appreciate this.",
 			(val_add, "$g_sod_global_faith", ":global_faith_effect"),
 			(val_clamp, "$g_sod_global_faith", -2000, 2001),
           (else_try),
-            (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+            (display_message, "@You don't have enough gold to buy the sacrificial animals.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -5),
             (val_sub, "$g_sod_global_faith", 50),
             (val_clamp, "$g_sod_global_faith", -2000, 2001),

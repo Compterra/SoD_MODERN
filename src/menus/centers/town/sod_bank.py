@@ -4,12 +4,17 @@ MENUS = [
     "none",
     [
       (set_background_mesh, "mesh_pic_town_1_aerial"),
+      (call_script, "script_sod_show_center_market_contact_portrait", "$current_town"),
       (call_script, "script_sod_bank_store_report_registers"),
       (str_store_string, s1, "@The town bank keeps its ledgers behind heavy shutters. {s21}^^Cash on hand: {reg1} denars.^Deposited: {reg2} denars.^Weekly interest: {reg3}/10000.^Expected next interest: {reg4} denars."),
     ],
     [
       ("sod_bank_finance_report", [], "View finance report.",
        [(jump_to_menu, "mnu_sod_bank_finance_report")]),
+      ("sod_bank_withdraw_for_warnings",
+       [(call_script, "script_sod_bank_store_report_registers"), (gt, reg12, 0)],
+       "Withdraw {reg12} denars for current warnings.",
+       [(call_script, "script_sod_bank_store_report_registers"), (call_script, "script_sod_bank_withdraw", reg12), (jump_to_menu, "mnu_sod_bank")]),
       ("sod_bank_deposit_1000",
        [(store_troop_gold, ":gold", "trp_player"), (ge, ":gold", 1000)],
        "Deposit 1,000 denars.",
@@ -51,7 +56,7 @@ MENUS = [
     [
       (set_background_mesh, "mesh_pic_report_screen"),
       (call_script, "script_sod_bank_store_report_registers"),
-      (str_store_string, s1, "@Finance Report^^{s21}^^Cash on hand: {reg1} denars.^Bank balance: {reg2} denars.^Weekly interest rate: {reg3}/10000.^Expected next interest: {reg4} denars.^Projected balance after interest: {reg9} denars.^^{s20}"),
+      (str_store_string, s1, "@Finance Report^^{s21}^^Cash on hand: {reg1} denars.^Bank balance: {reg2} denars.^Weekly interest rate: {reg3}/10000.^Expected next interest: {reg4} denars.^Projected balance after interest: {reg9} denars.^^Outstanding obligations: {reg10} denars.^Cash shortfall: {reg11} denars.^^{s20}^^{s22}"),
     ],
     [
       ("sod_bank_finance_report_back", [], "Back to the bank.", [(jump_to_menu, "mnu_sod_bank")]),

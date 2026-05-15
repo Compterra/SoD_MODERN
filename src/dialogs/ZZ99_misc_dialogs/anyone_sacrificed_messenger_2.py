@@ -1,4 +1,4 @@
 DIALOGS = [
 [anyone, "sacrificed_messenger_2", [],
-   "Yes {sir/madam}. You can trust me. I will not fail you.", "sacrificed_messenger_3", []],
+   "Understood. I will keep the seal closed and my mouth shut.", "sacrificed_messenger_3", []],
 ]

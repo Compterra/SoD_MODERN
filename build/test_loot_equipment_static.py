@@ -39,10 +39,12 @@ def main() -> int:
     recover = read("src/scripts/ZB_economy_and_trade/sod_recover_protected_items_from_loot_pool.py")
     auto_loot_all = read("src/scripts/ZZ_common_array_processing/auto_loot_all.py")
     auto_loot = read("src/scripts/ZH_heroes/auto_loot_troop.py")
+    loot_player_items = read("src/scripts/ZB_economy_and_trade/loot_player_items.py")
     scan = read("src/scripts/ZB_economy_and_trade/scan_for_best_item_of_type.py")
     menu = read("src/menus/prisoners/manage_loot_pool.py")
     town_trade = read("src/menus/centers/town/trade_with_arms_merchant.py")
     total_victory = read("src/menus/other/continue_06.py")
+    total_defeat = read("src/menus/other/total_defeat.py")
     weapon_dialog = read("src/dialogs/ZC01_centers_and_economy/anyone_plyr_town_merchant_talk.py")
     armor_dialog = read("src/dialogs/ZC01_centers_and_economy/anyone_plyr_town_merchant_talk_02.py")
     horse_dialog = read("src/dialogs/ZC01_centers_and_economy/anyone_plyr_town_merchant_talk_03.py")
@@ -89,7 +91,8 @@ def main() -> int:
     assert_contains(auto_loot, "script_sod_transfer_inventory_slot_to_free_inventory")
     assert_contains(auto_loot, "script_sod_transfer_inventory_slot_to_slot")
     assert_contains(auto_loot, 'item_slot_eq, ":item", slot_item_cant_use_on_horseback, 0')
-    assert_contains(auto_loot_all, "(assign, \":debug\", 0)")
+    assert_contains(auto_loot_all, "script_auto_loot_troop")
+    assert_contains(auto_loot_all, "slot_troop_restrict_mounted")
     assert_contains(auto_loot_all, "Companions choose in party order and make two redistribution passes")
     assert_contains(auto_loot_all, "item(s) equipped")
     assert_contains(scan, "script_sod_auto_loot_item_is_protected")
@@ -124,7 +127,10 @@ def main() -> int:
     assert_contains(value, "(store_div, reg0, \":cost\", 100)")
 
     for token in (
+        "sod_describe_auto_loot_item_evaluation_to_s68",
         "sod_describe_auto_loot_item_evaluation_to_s0",
+        "script_sod_describe_auto_loot_item_evaluation_to_s68",
+        "(str_store_string_reg, s0, s68)",
         "protected from automation",
         "cannot be used on horseback",
         "requirements are not met",
@@ -132,6 +138,8 @@ def main() -> int:
         "modifier-adjusted value {reg22} denars",
     ):
         assert_contains(evaluation, token)
+    if "(str_store_string, s0," in evaluation:
+        raise AssertionError("auto-loot evaluation should compose feature text in s68 before compatibility copying to s0")
 
     for token in (
         "sod_auto_sell_item_is_allowed",
@@ -168,7 +176,8 @@ def main() -> int:
         "script_game_get_item_buy_price_factor",
         "script_sod_transfer_inventory_slot_to_free_inventory",
         "store_free_inventory_capacity",
-        "troop_remove_gold",
+        "script_sod_player_charge_gold",
+        "(eq, reg1, 1)",
         "troop_add_gold",
         "target_variety",
         "max_purchases",
@@ -229,7 +238,8 @@ def main() -> int:
         "script_sod_get_item_repair_cost",
         "ek_item_0",
         "ek_food",
-        "troop_remove_gold",
+        "script_sod_player_charge_gold",
+        "(eq, reg1, 1)",
         "troop_set_inventory_slot_modifier",
         "imod_plain",
         "gt, \":repair_cost\", 0",
@@ -284,6 +294,34 @@ def main() -> int:
         assert_contains(town_trade, token)
 
     assert_contains(total_victory, "script_sod_degrade_player_party_equipment_after_battle")
+
+    for token in (
+        '(assign, ":defeat_enemy_valid", 0)',
+        '(party_is_active, "$g_enemy_party")',
+        '(assign, "$g_enemy_party", -1)',
+        '(eq, ":defeat_enemy_valid", 1)',
+        '(party_get_num_companion_stacks, ":num_enemy_stacks", "$g_enemy_party")',
+        '(distribute_party_among_party_group, "p_temp_party", "$g_enemy_party")',
+        '(party_clear, "p_temp_party")',
+    ):
+        assert_contains(total_defeat, token)
+    assert total_defeat.index('(party_is_active, "$g_enemy_party")') < total_defeat.index('(party_stack_get_troop_id, ":captor_troop", "$g_enemy_party", 0)')
+    assert total_defeat.index('(eq, ":defeat_enemy_valid", 1)') < total_defeat.index('(distribute_party_among_party_group, "p_temp_party", "$g_enemy_party")')
+    assert total_defeat.index('(eq, ":defeat_enemy_valid", 1)') < total_defeat.index('(call_script, "script_loot_player_items", "$g_enemy_party")')
+
+    for token in (
+        "(store_script_param, \":enemy_party_no\", 1)",
+        "(party_is_active, \":enemy_party_no\")",
+        "(gt, \":cur_gold\", 0)",
+        "(val_max, \":max_lost\", 1)",
+        "(val_min, \":max_lost\", \":cur_gold\")",
+        "(val_min, \":min_lost\", \":max_lost\")",
+        "(eq, \":min_lost\", \":max_lost\")",
+        "(assign, \":lost_gold\", \":max_lost\")",
+        "(store_random_in_range, \":lost_gold\", \":min_lost\", \":max_lost\")",
+    ):
+        assert_contains(loot_player_items, token)
+    assert loot_player_items.index("(party_is_active, \":enemy_party_no\")") < loot_player_items.index("(party_get_slot, \":cur_loot_slot\", \":enemy_party_no\", slot_party_next_looted_item_slot)")
     assert_contains(weapon_dialog, "My company's weapons have earned scars. Put an edge back on them.")
     assert_contains(weapon_dialog, "slot_center_has_blacksmith")
     assert_contains(armor_dialog, "My company's armor has taken honest blows. Make it fit for another fight.")
@@ -322,7 +360,9 @@ def main() -> int:
         "- [x] Prevent auto-buy food",
         "- [x] Add regression tests for modifier preservation",
         "slot_item_sod_auto_loot_protected",
+        "script_sod_describe_auto_loot_item_evaluation_to_s68",
         "script_sod_describe_auto_loot_item_evaluation_to_s0",
+        "compatibility wrapper",
         "script_sod_auto_sell_item_is_allowed",
     ):
         assert_contains(doc, token)

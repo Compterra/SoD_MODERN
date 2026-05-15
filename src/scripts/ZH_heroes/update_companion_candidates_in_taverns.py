@@ -22,14 +22,6 @@ SCRIPTS = [
             (assign, ":found_town", 1),
           (try_end),
 
-          (try_begin),
-            (eq, "$cheat_mode", 1),
-            (troop_get_slot, ":town_no", ":troop_no", slot_troop_cur_center),
-            (gt, ":town_no", 0),
-            (call_script, "script_store_troop_name_link", 4, ":troop_no"),
-            (str_store_party_name_link, 5, ":town_no"),
-            (display_message, "@Companion tavern debug: {s4} is in {s5}", debug_color),
-          (try_end),
         (try_end),
     ]),
 ]

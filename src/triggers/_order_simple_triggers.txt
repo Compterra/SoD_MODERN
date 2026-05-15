@@ -177,3 +177,6 @@ ST02_every_hour/entry_0172.py
 ST02_every_hour/entry_0173_string_probe.py
 ST04_weekly/entry_0174.py
 ST01_every_frame/entry_0175_sod_battle_commander_reset.py
+ST04_weekly/entry_0176_public_health.py
+ST03_daily/entry_0177_public_health.py
+ST02_every_hour/entry_0178_incriminate_loyal_commander.py

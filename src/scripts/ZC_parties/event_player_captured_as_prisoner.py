@@ -34,6 +34,7 @@ SCRIPTS = [
           (try_for_range, ":troop_no", kingdom_heroes_begin, kingdom_heroes_end),
             (troop_get_slot, ":party_no", ":troop_no", slot_troop_leaded_party),
             (gt, ":party_no", 0),
+            (party_is_active, ":party_no"),
             (party_slot_eq, ":party_no", slot_party_commander_party, "p_main_party"),
             (call_script, "script_party_set_ai_state", ":party_no", spai_undefined, -1),
             (party_set_slot, ":party_no", slot_party_commander_party, -1),

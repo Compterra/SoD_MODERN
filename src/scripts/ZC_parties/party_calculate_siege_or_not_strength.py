@@ -5,6 +5,9 @@ SCRIPTS = [
       (store_script_param_2, ":siege"),
 	  
       (assign, reg(0),0),
+      (try_begin),
+      (gt, ":party", 0),
+      (party_is_active, ":party"),
       (party_get_num_companion_stacks, ":num_stacks",":party"),
       (assign, ":first_stack", 0),
 	  
@@ -88,6 +91,7 @@ SCRIPTS = [
         (try_end),
 		
       (val_add,reg(0), ":stack_strength"),
+      (try_end),
       (try_end),
   ]),
 ]

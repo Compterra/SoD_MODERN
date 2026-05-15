@@ -8,7 +8,7 @@ DIALOGS = [
     (faction_get_slot, ":last_offer_time", "$g_talk_troop_faction", slot_faction_last_mercenary_offer_time),
 
     (assign, ":num_enemies", 0),
-    (try_for_range, ":faction_no", kingdoms_begin, kingdoms_end),
+    (try_for_range, ":faction_no", native_kingdoms_begin, native_kingdoms_end),
       (faction_slot_eq, "$g_talk_troop_faction", slot_faction_state, sfs_active),
       (store_relation, ":reln", "$g_talk_troop_faction", ":faction_no"),
       (lt, ":reln", 0),

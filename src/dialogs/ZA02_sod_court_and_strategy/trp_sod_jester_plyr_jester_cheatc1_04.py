@@ -1,6 +1,9 @@
 DIALOGS = [
-[trp_sod_jester|plyr, "jester_cheatc1", [], "ADD ARMORS", "jester_else", [
-  (try_for_range, ":item_no", "itm_leather_vest", "itm_turret_hat_ruby"),
+[trp_sod_jester|plyr, "jester_cheatc1", [
+  (this_or_next|eq, "$cheat_mode", 1),
+  (eq, "$g_sod_cheat_mode", 1),
+], "ADD ARMORS", "jester_else", [
+  (try_for_range, ":item_no", armors_begin, armors_end),
   (troop_add_item, "trp_player", ":item_no", 0),
   (try_end),
   (val_add, "$g_sod_cheat_mode_used", 1)

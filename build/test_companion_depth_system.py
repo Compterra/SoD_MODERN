@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,13 +21,71 @@ def assert_not_contains(raw: str, needle: str) -> None:
         raise AssertionError(f"Unexpected stale token: {needle}")
 
 
-def assert_script_has_membership_guard(raw: str, script_name: str) -> None:
+def assert_menu_option_contains(raw: str, option_id: str, needle: str) -> None:
+    marker = f'("{option_id}",'
+    start = raw.find(marker)
+    if start < 0:
+        raise AssertionError(f"Missing menu option: {option_id}")
+    next_start = raw.find('\n      ("', start + len(marker))
+    block = raw[start:] if next_start < 0 else raw[start:next_start]
+    assert_contains(block, needle)
+
+
+def assert_menu_option_not_contains(raw: str, option_id: str, needle: str) -> None:
+    marker = f'("{option_id}",'
+    start = raw.find(marker)
+    if start < 0:
+        raise AssertionError(f"Missing menu option: {option_id}")
+    next_start = raw.find('\n      ("', start + len(marker))
+    block = raw[start:] if next_start < 0 else raw[start:next_start]
+    assert_not_contains(block, needle)
+
+
+def assert_companion_qa_options_are_debug_gated(raw: str) -> None:
+    for match in re.finditer(r'\("(?P<option>qa_[^"]+)",', raw):
+        option_id = match.group("option")
+        if option_id == "qa_return":
+            continue
+        start = match.start()
+        next_start = raw.find('\n      ("', start + 1)
+        block = raw[start:] if next_start < 0 else raw[start:next_start]
+        if '(eq, "$g_sod_debug", 1)' not in block:
+            line_no = raw.count("\n", 0, start) + 1
+            raise AssertionError(f"Companion QA option lacks debug guard: {option_id} at line {line_no}")
+
+
+def assert_player_state_does_not_call(raw: str, state: str, call: str) -> None:
+    pattern = re.compile(rf'\[anyone\|plyr,\s*"{re.escape(state)}"')
+    for match in pattern.finditer(raw):
+        start = match.start()
+        next_start = raw.find("\n[anyone", start + 1)
+        block = raw[start:] if next_start < 0 else raw[start:next_start]
+        if call in block:
+            line_no = raw.count("\n", 0, start) + 1
+            raise AssertionError(f"Player state {state} calls {call} at line {line_no}")
+
+
+def script_body(raw: str, script_name: str) -> str:
     marker = f'("{script_name}",'
     start = raw.find(marker)
     if start < 0:
         raise AssertionError(f"Missing script: {script_name}")
     next_start = raw.find('\n("', start + len(marker))
-    body = raw[start:] if next_start < 0 else raw[start:next_start]
+    return raw[start:] if next_start < 0 else raw[start:next_start]
+
+
+def assert_script_contains_in_order(raw: str, script_name: str, needles: tuple[str, ...]) -> None:
+    body = script_body(raw, script_name)
+    cursor = -1
+    for needle in needles:
+        next_pos = body.find(needle, cursor + 1)
+        if next_pos < 0:
+            raise AssertionError(f"Missing ordered token in {script_name}: {needle}")
+        cursor = next_pos
+
+
+def assert_script_has_membership_guard(raw: str, script_name: str) -> None:
+    body = script_body(raw, script_name)
     assert_contains(body, "(is_between, \":companion\", companions_begin, companions_end)")
     assert_contains(body, "(main_party_has_troop, \":companion\")")
 
@@ -36,6 +95,12 @@ def assert_role_reader_has_party_guard(path: str) -> None:
     if "slot_troop_companion_role" not in raw:
         raise AssertionError(f"Expected companion role reader in {path}")
     assert_contains(raw, "main_party_has_troop")
+
+
+def assert_effective_role_reader_requires_trust(path: str) -> None:
+    raw = read(path)
+    assert_contains(raw, "slot_troop_companion_role")
+    assert_contains(raw, "(troop_slot_ge, \":companion\", slot_troop_companion_approval, 45)")
 
 
 def assert_cleanup_after_removal(path: str) -> None:
@@ -53,6 +118,44 @@ def assert_companion_depth_player_entries_are_party_guarded() -> None:
         assert_contains(raw, "main_party_has_troop")
 
 
+def assert_companion_depth_choice_entries_are_party_guarded() -> None:
+    pattern = re.compile(r'\[anyone\|plyr,\s*"companion_depth_[^"]*_choice"')
+    for path in (ROOT / "src/dialogs/ZE01_companions_and_named_npcs").glob("anyone_companion_depth_*.py"):
+        raw = path.read_text(encoding="utf-8", errors="replace")
+        for match in pattern.finditer(raw):
+            start = match.start()
+            next_start = raw.find("\n[anyone", start + 1)
+            block = raw[start:] if next_start < 0 else raw[start:next_start]
+            conditions = block.split('"member_talk"', 1)[0]
+            if "main_party_has_troop" not in conditions:
+                line_no = raw.count("\n", 0, start) + 1
+                raise AssertionError(
+                    f"Companion depth choice lacks party guard: {path.relative_to(ROOT)}:{line_no}"
+                )
+
+
+def assert_companion_depth_warning_branches_exclude_settled_states() -> None:
+    pattern = re.compile(
+        r'\(troop_slot_ge,\s*"(?P<troop>trp_npc\d+)",\s*slot_troop_companion_warning_state,\s*sod_companion_warning_pending\)'
+    )
+    for path in (ROOT / "src/dialogs/ZE01_companions_and_named_npcs").glob("anyone_companion_depth_*.py"):
+        raw = path.read_text(encoding="utf-8", errors="replace")
+        for match in pattern.finditer(raw):
+            start = match.start()
+            next_start = raw.find("\n[anyone", start + 1)
+            block = raw[start:] if next_start < 0 else raw[start:next_start]
+            troop = match.group("troop")
+            settled_guard = (
+                f'(neg|troop_slot_ge, "{troop}", '
+                "slot_troop_companion_warning_state, sod_companion_warning_redeemed)"
+            )
+            if settled_guard not in block:
+                line_no = raw.count("\n", 0, start) + 1
+                raise AssertionError(
+                    f"Companion warning branch catches redeemed/broken state: {path.relative_to(ROOT)}:{line_no}"
+                )
+
+
 def assert_companion_setup_call_is_party_guarded(path: str) -> None:
     raw = read(path)
     assert_contains(raw, "script_setup_talk_info_companions")
@@ -60,9 +163,68 @@ def assert_companion_setup_call_is_party_guarded(path: str) -> None:
     assert_contains(raw, '(main_party_has_troop, "$g_talk_troop")')
 
 
+def assert_no_negative_action_dispatch_weights() -> None:
+    pattern = re.compile(
+        r'script_sod_(?:companion_dispatch_player_action|companion_apply_player_action|strategy_advisor_apply_player_action)"[^\n)]*,\s*-'
+    )
+    for path in (ROOT / "src").rglob("*.py"):
+        raw = path.read_text(encoding="utf-8", errors="replace")
+        match = pattern.search(raw)
+        if match:
+            raise AssertionError(f"Negative action-dispatch weight in {path.relative_to(ROOT)}: {match.group(0)}")
+
+
+def assert_named_companion_incident_starters_are_party_guarded(scripts: str) -> None:
+    for script_name, troop_ref in (
+        ("sod_companion_start_borcha_road_incident", "trp_npc1"),
+        ("sod_companion_start_marnid_market_incident", "trp_npc2"),
+        ("sod_companion_try_ymira_refugee_incident", "trp_npc3"),
+        ("sod_companion_try_ymira_refugee_expedience", "trp_npc3"),
+        ("sod_companion_try_lezalit_ief_discipline_incident", "trp_npc14"),
+        ("sod_companion_try_bunduk_line_incident", "trp_npc10"),
+        ("sod_companion_try_jeremus_triage_incident", "trp_npc12"),
+        ("sod_companion_try_firentis_restitution_incident", "trp_npc6"),
+        ("sod_companion_try_katrin_last_coin_incident", "trp_npc11"),
+        ("sod_companion_try_deshavi_trail_warning_incident", "trp_npc7"),
+        ("sod_companion_try_klethi_old_job_incident", "trp_npc16"),
+        ("sod_companion_try_rolf_name_challenge_incident", "trp_npc4"),
+        ("sod_companion_try_alayen_standard_incident", "trp_npc9"),
+        ("sod_companion_try_nizar_charge_incident", "trp_npc13"),
+        ("sod_companion_try_baheshtur_saddle_incident", "trp_npc5"),
+        ("sod_companion_try_matheld_no_backward_step_incident", "trp_npc8"),
+        ("sod_companion_try_artimenner_siege_incident", "trp_npc15"),
+    ):
+        marker = f'("{script_name}",'
+        start = scripts.find(marker)
+        if start < 0:
+            raise AssertionError(f"Missing companion incident starter: {script_name}")
+        next_start = scripts.find('\n("', start + len(marker))
+        body = scripts[start:] if next_start < 0 else scripts[start:next_start]
+        assert_contains(body, f'(main_party_has_troop, "{troop_ref}")')
+
+
+def assert_companion_trust_unlocks_sync_quest_framework() -> None:
+    paths = list((ROOT / "src/dialogs/ZE01_companions_and_named_npcs").glob("*.py"))
+    paths.append(ROOT / "src/scripts/ZY_helper_scripts/sod_companion_depth.py")
+    for path in paths:
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+        for index, line in enumerate(lines):
+            if "(troop_set_slot" not in line:
+                continue
+            if "slot_troop_companion_personal_quest_stage, sod_companion_quest_trust_unlocked" not in line:
+                continue
+            followup = "\n".join(lines[index + 1:index + 4])
+            if "script_sod_companion_sync_personal_quest_framework" not in followup:
+                line_no = index + 1
+                raise AssertionError(
+                    f"Trust unlock does not sync quest framework: {path.relative_to(ROOT)}:{line_no}"
+                )
+
+
 def main() -> int:
     constants = read("src/constants/module_constants.py")
     scripts = read("src/scripts/ZY_helper_scripts/sod_companion_depth.py")
+    camp_jobs = read("src/scripts/ZY_helper_scripts/sod_camp_jobs.py")
     game_start = read("src/scripts/ZA_hardcoded_game_scripts/game_start.py")
     daily = read("src/triggers/ST03_daily/entry_0158.py")
     camp_action = read("src/menus/0000_hardcoded_mb1011/camp_action.py")
@@ -85,6 +247,12 @@ def main() -> int:
     katrin_supply_mission = read("src/mission_templates/0071_companion_katrin_supply_watch/companion_katrin_supply_watch.py")
     nizar_lane_mission = read("src/mission_templates/0072_companion_nizar_charge_lane/companion_nizar_charge_lane.py")
     campfire = read("src/menus/camp/companion_campfire.py")
+    companion_quest_branches = read("src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_quest_branches.py")
+    companion_role_assign = read("src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_role_assign.py")
+    companion_warning_reconciliation = (
+        read("src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_warning_reconciliation.py")
+        + read("src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_warning_reconciliation.py")
+    )
     ymira_mercy_menu = read("src/menus/camp/ymira_mercy_under_arms.py")
     lezalit_discipline_menu = read("src/menus/camp/lezalit_discipline_without_chains.py")
     bunduk_line_menu = read("src/menus/camp/bunduk_men_hold_line.py")
@@ -103,6 +271,7 @@ def main() -> int:
     matheld_step_menu = read("src/menus/camp/matheld_no_backward_step.py")
     artimenner_siege_menu = read("src/menus/camp/artimenner_siege_that_should.py")
     depth_report = read("src/menus/camp/companion_depth_report.py")
+    retinue_report = read("src/menus/camp/companion_retinue_report.py")
     company_report = read("src/scripts/ZY_helper_scripts/companion_describe_company_report.py")
     quitting_yes = read("src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting_yes.py")
     quitting_no_confirmed = read("src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_quitting_no_confirmed.py")
@@ -115,7 +284,14 @@ def main() -> int:
     interactive_quest_playtest = read("docs/COMPANION_INTERACTIVE_QUEST_PLAYTEST_MATRIX.md")
     interactive_quest_qa_commands = read("docs/COMPANION_INTERACTIVE_QUEST_QA_COMMANDS.md")
     companion_quests = read("src/quests/0012_companion_personal_quests.py")
+    companion_depth_dialogs = "\n".join(
+        path.read_text(encoding="utf-8", errors="replace")
+        for path in (ROOT / "src/dialogs/ZE01_companions_and_named_npcs").glob("anyone_companion_depth_*.py")
+    )
 
+    assert_companion_depth_choice_entries_are_party_guarded()
+    assert_companion_depth_warning_branches_exclude_settled_states()
+    assert_companion_trust_unlocks_sync_quest_framework()
     assert_not_contains(companion_quests, "    qf_random_quest,")
     assert_contains(companion_quests, "deliberately dormant at game start")
     assert_contains(companion_quests, "script_sod_companion_sync_personal_quest_framework")
@@ -132,11 +308,71 @@ def main() -> int:
     assert_contains(scripts, 'script_sod_companion_cleanup_departed_companion", ":companion"')
     assert_contains(scripts, '(assign, "$g_sod_ymira_refugee_focus_center", 0)')
     assert_contains(scripts, '(assign, "$g_sod_klethi_old_job_contacted", 0)')
+    for klethi_global in (
+        "$g_sod_klethi_old_job_focus_center",
+        "$g_sod_klethi_old_job_clue_bits",
+        "$g_sod_klethi_old_job_confronted",
+        "$g_sod_klethi_old_job_result_grade",
+    ):
+        assert_contains(scripts, f'(assign, "{klethi_global}", 0)')
     assert_contains(scripts, '(assign, "$g_sod_marnid_market_contacted", 0)')
     assert_contains(scripts, "(troop_set_slot, \":companion\", slot_troop_companion_role, sod_companion_role_none)")
     assert_contains(scripts, "(neq, \":warning_state\", sod_companion_warning_broken)")
     assert_contains(scripts, "(troop_set_slot, \":companion\", slot_troop_companion_warning_state, sod_companion_warning_none)")
+    assert_contains(scripts, "(is_between, \":warning_state\", sod_companion_warning_pending, sod_companion_warning_redeemed)")
+    assert_contains(scripts, "(troop_set_slot, \":companion\", slot_troop_companion_warning_state, sod_companion_warning_redeemed)")
     assert_contains(scripts, "(is_between, \":role\", sod_companion_role_none, sod_companion_role_spymaster + 1)")
+    assert_contains(scripts, '"sod_companion_role_eligibility_to_reg"')
+    assign_role = script_body(scripts, "sod_companion_assign_role")
+    assert_contains(assign_role, "(this_or_next|is_between, \":companion\", companions_begin, companions_end)")
+    assert_contains(assign_role, "(is_between, \":companion\", special_companions_begin, special_companions_end)")
+    assert_script_contains_in_order(
+        scripts,
+        "sod_companion_assign_role",
+        (
+            "(is_between, \":role\", sod_companion_role_none, sod_companion_role_spymaster + 1)",
+            "(call_script, \"script_sod_companion_role_eligibility_to_reg\", \":companion\", \":role\")",
+            "(eq, reg0, 1)",
+            "(this_or_next|eq, \":role\", sod_companion_role_none)",
+            "(troop_slot_ge, \":companion\", slot_troop_companion_approval, 45)",
+            "(troop_set_slot, \":companion\", slot_troop_companion_role, \":role\")",
+        ),
+    )
+    assert_contains(assign_role, "(assign, reg0, 0)")
+    assert_contains(assign_role, "(assign, reg0, 1)")
+    assert_contains(assign_role, "will not take a new camp office until trust is repaired")
+    role_eligibility = script_body(scripts, "sod_companion_role_eligibility_to_reg")
+    for role_guard in (
+        "(eq, \":role\", sod_companion_role_none)",
+        "(eq, \":companion\", \"trp_npc1\")",
+        "(this_or_next|eq, \":role\", sod_companion_role_scout)",
+        "(eq, \":role\", sod_companion_role_quartermaster)",
+        "(eq, \":companion\", \"trp_npc8\")",
+        "(eq, \":role\", sod_companion_role_captain)",
+        "(eq, \":companion\", \"trp_npc16\")",
+        "(this_or_next|eq, \":role\", sod_companion_role_spymaster)",
+        "(call_script, \"script_sod_special_companion_role_eligibility_to_reg\", \":companion\", \":role\")",
+    ):
+        assert_contains(role_eligibility, role_guard)
+    company_depth = script_body(scripts, "sod_companion_describe_company_depth_to_s30")
+    if company_depth.count("(try_for_range, \":companion\", companions_begin, special_companions_end)") < 2:
+        raise AssertionError("Depth report should count special companions for presence and office status")
+    assert_contains(company_depth, "(assign, \":strained_roles\", 0)")
+    assert_contains(company_depth, "(ge, \":approval\", 45)")
+    assert_contains(company_depth, "(assign, reg38, \":strained_roles\")")
+    assert_contains(company_depth, "Effective camp offices")
+    assert_contains(company_depth, "strained offices")
+    special_daily = script_body(scripts, "sod_special_companion_process_daily")
+    assert_script_contains_in_order(
+        scripts,
+        "sod_special_companion_process_daily",
+        (
+            '(troop_set_slot, "trp_diego_companion", slot_troop_companion_approval, ":approval")',
+            '(call_script, "script_sod_companion_get_approval_band_to_reg", "trp_diego_companion")',
+            '(troop_set_slot, "trp_diego_companion", slot_troop_companion_trust_tier, reg0)',
+        ),
+    )
+    assert_contains(special_daily, '(main_party_has_troop, "trp_diego_companion")')
     assert_contains(scripts, '(eq, "$npc_with_grievance", ":companion")')
     assert_contains(scripts, '(assign, "$npc_with_grievance", 0)')
     assert_contains(scripts, '(eq, "$npc_with_personality_clash", ":companion")')
@@ -159,9 +395,8 @@ def main() -> int:
     assert_contains(post_battle_clash, '(main_party_has_troop, "$npc_with_personality_match")')
     assert_contains(post_battle_clash, '(assign, "$npc_with_personality_clash_2", 0)')
     assert_contains(post_battle_clash, '(assign, "$npc_with_personality_match", 0)')
-    personality_match_entry = read("src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_08.py")
-    assert_contains(personality_match_entry, '(main_party_has_troop, "$map_talk_troop")')
-    assert_contains(personality_match_entry, '(main_party_has_troop, ":object")')
+    dialog_order = read("src/dialogs/_order_dialogs.txt")
+    assert_not_contains(dialog_order, "ZA01_startup_and_dispatch/anyone_event_triggered_08.py")
     morality_grievance_entry = read("src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_05.py")
     assert_contains(morality_grievance_entry, '(main_party_has_troop, "$map_talk_troop")')
     home_intro_entry = read("src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_09.py")
@@ -203,6 +438,18 @@ def main() -> int:
         "src/scripts/ZB_economy_and_trade/do_merchant_town_trade.py",
     ):
         assert_role_reader_has_party_guard(role_reader)
+    prisoner_economy = read("src/scripts/ZY_helper_scripts/sod_prisoner_economy.py")
+    assert_not_contains(prisoner_economy, "sod_companion_action_free_captives, -")
+    assert_contains(prisoner_economy, "sod_companion_action_carry_slaves")
+    assert_effective_role_reader_requires_trust("src/scripts/ZY_helper_scripts/sod_prisoner_economy.py")
+    assert_effective_role_reader_requires_trust("src/scripts/ZY_helper_scripts/sod_get_companion_patrol_role_bonus.py")
+    assert_no_negative_action_dispatch_weights()
+    assert_named_companion_incident_starters_are_party_guarded(scripts)
+    apply_start = scripts.find('("sod_companion_apply_player_action",')
+    advisor_call = scripts.find('(call_script, "script_sod_strategy_advisor_apply_player_action", ":action", ":weight")', apply_start)
+    weight_clamp = scripts.find('(val_min, ":weight", 20)', apply_start)
+    if apply_start < 0 or advisor_call < 0 or weight_clamp < 0 or not weight_clamp < advisor_call:
+        raise AssertionError("companion action weights must be clamped before advisor dispatch")
 
     for token in (
         "slot_troop_companion_approval",
@@ -256,16 +503,24 @@ def main() -> int:
 
     for script_name in (
         '"sod_companion_initialize_depth"',
+        '"sod_companion_get_approval_band_to_reg"',
+        '"sod_companion_get_approval_band_to_s68"',
         '"sod_companion_apply_player_action"',
         '"sod_companion_get_approval_band"',
+        '"sod_special_companion_role_eligibility_to_reg"',
+        '"sod_companion_role_eligibility_to_reg"',
+        '"sod_companion_role_to_s68"',
         '"sod_companion_warning_to_s0"',
+        '"sod_companion_warning_to_s68"',
         '"sod_companion_reconciliation_to_s0"',
+        '"sod_companion_reconciliation_to_s68"',
         '"sod_companion_warning_state_to_s3"',
         '"sod_companion_quest_stage_to_s5"',
         '"sod_companion_role_bonus_to_s6"',
         '"sod_companion_role_status_to_s7"',
         '"sod_companion_role_inactive_to_s6"',
         '"sod_companion_report_line_to_s0"',
+        '"sod_companion_report_line_to_s68"',
         '"sod_companion_describe_triangles_to_s27"',
         '"sod_companion_describe_banter_seeds_to_s28"',
         '"sod_companion_describe_late_reflections_to_s29"',
@@ -336,6 +591,32 @@ def main() -> int:
         '"sod_companion_klethi_describe_to_s16"',
     ):
         assert_contains(scripts, script_name)
+    for stale_self_append in (
+        '(str_store_string, s27, "@{s27}',
+        '(str_store_string, s28, "@{s28}',
+        '(str_store_string, s29, "@{s29}',
+        '(str_store_string, s32, "@{s32}',
+        '(str_store_string, s33, "@{s33}',
+    ):
+        assert_not_contains(scripts, stale_self_append)
+    assert_contains(scripts, "(str_store_string_reg, s97, s27)")
+    assert_contains(scripts, "(str_store_string_reg, s97, s28)")
+    assert_contains(scripts, "(str_store_string_reg, s97, s29)")
+    assert_contains(scripts, "(str_store_string_reg, s97, s32)")
+    assert_contains(scripts, "(str_store_string_reg, s97, s33)")
+    assert_contains(scripts, '(str_store_string, s27, "@{s97}^Cassian, Lezalit, and Ymira:')
+    assert_contains(scripts, '(str_store_string, s28, "@{s97}^Stage banter - Borcha and Marnid:')
+    assert_contains(scripts, '(str_store_string, s29, "@{s97}^Repeated value - Borcha:')
+    assert_contains(scripts, '(str_store_string, s32, "@{s97}^Slaver Web:')
+    assert_contains(scripts, '(str_store_string, s33, "@{s97}^Quest journal - Bunduk:')
+    assert_contains(scripts, '(call_script, "script_sod_companion_get_approval_band_to_reg", ":companion")')
+    assert_contains(scripts, '(call_script, "script_sod_companion_get_approval_band_to_s68", ":companion")')
+    assert_contains(scripts, '(str_store_string_reg, s2, s68)')
+    assert_contains(camp_jobs, '"sod_camp_passive_job_dialogue_to_s68"')
+    assert_contains(camp_jobs, '(str_store_string_reg, s0, s68)')
+    assert_contains(companion_depth_dialogs, 'script_sod_companion_get_approval_band_to_s68')
+    assert_not_contains(companion_depth_dialogs, '(call_script, "script_sod_companion_get_approval_band",')
+    assert_not_contains(companion_depth_dialogs, 's0')
 
     assert_contains(scripts, "trp_npc1")
     assert_contains(scripts, "trp_npc2")
@@ -353,94 +634,163 @@ def main() -> int:
     assert_contains(scripts, "trp_npc14")
     assert_contains(scripts, "trp_npc15")
     assert_contains(scripts, "trp_npc16")
-    assert_contains(campfire, "The Road Keeps Its Own")
-    assert_contains(campfire, "The Honest Price")
-    assert_contains(campfire, "sod_companion_action_safe_roadcraft")
-    assert_contains(campfire, "sod_companion_action_orderly_profit")
-    assert_contains(campfire, "companion_campfire_ymira_mercy_spare")
-    assert_contains(campfire, "companion_campfire_ymira_mercy_hard")
-    assert_contains(campfire, "Mercy Under Arms")
-    assert_contains(campfire, "A Name Worth Wearing")
-    assert_contains(campfire, "companion_campfire_rolf_name_earn")
-    assert_contains(campfire, "companion_campfire_rolf_name_hard")
-    assert_contains(campfire, "The Unbroken Saddle")
-    assert_contains(campfire, "companion_campfire_baheshtur_saddle_free")
-    assert_contains(campfire, "companion_campfire_baheshtur_saddle_hard")
-    assert_contains(campfire, "Debt of the Sword")
-    assert_contains(campfire, "companion_campfire_firentis_debt_restitution")
-    assert_contains(campfire, "companion_campfire_firentis_debt_hard")
-    assert_contains(campfire, "Hands That Will Not Harden")
-    assert_contains(campfire, "companion_campfire_jeremus_hands_civilians")
-    assert_contains(campfire, "companion_campfire_jeremus_hands_hard")
-    assert_contains(campfire, "companion_campfire_lezalit_discipline_reform")
-    assert_contains(campfire, "companion_campfire_lezalit_discipline_hard")
-    assert_contains(campfire, "Discipline Without Chains")
-    assert_contains(campfire, "The Siege That Should Have Worked")
-    assert_contains(campfire, "companion_campfire_artimenner_siege_prepare")
-    assert_contains(campfire, "companion_campfire_artimenner_siege_hard")
-    assert_contains(campfire, "Tracks Through Ash")
-    assert_contains(campfire, "companion_campfire_deshavi_tracks_rescue")
-    assert_contains(campfire, "companion_campfire_deshavi_tracks_hard")
-    assert_contains(campfire, "The Men Who Hold the Line")
-    assert_contains(campfire, "companion_campfire_bunduk_line_advocate")
-    assert_contains(campfire, "companion_campfire_bunduk_line_hard")
-    assert_contains(campfire, "The Last Coin in Camp")
-    assert_contains(campfire, "companion_campfire_katrin_coin_stores")
-    assert_contains(campfire, "companion_campfire_katrin_coin_hard")
-    assert_contains(campfire, "No Backward Step")
-    assert_contains(campfire, "companion_campfire_matheld_step_stand")
-    assert_contains(campfire, "companion_campfire_matheld_step_hard")
-    assert_contains(campfire, "The Standard and the Self")
-    assert_contains(campfire, "companion_campfire_alayen_standard_duty")
-    assert_contains(campfire, "companion_campfire_alayen_standard_hard")
-    assert_contains(campfire, "The Impossible Charge")
-    assert_contains(campfire, "companion_campfire_nizar_charge_daring")
-    assert_contains(campfire, "companion_campfire_nizar_charge_hard")
-    assert_contains(campfire, "A Knife With a Name")
-    assert_contains(campfire, "companion_campfire_klethi_knife_protect")
-    assert_contains(campfire, "companion_campfire_klethi_knife_hard")
+    assert_contains(companion_quest_branches, "The Road Keeps Its Own")
+    assert_contains(companion_quest_branches, "The Honest Price")
+    assert_contains(companion_quest_branches, "sod_companion_action_safe_roadcraft")
+    assert_contains(companion_quest_branches, "sod_companion_action_orderly_profit")
+    assert_contains(companion_quest_branches, "Mercy Under Arms")
+    assert_contains(companion_depth_dialogs, "companion_depth_ymira_captive_choice")
+    assert_contains(companion_quest_branches, "A Name Worth Wearing")
+    assert_contains(companion_quest_branches, "A name is proven by conduct")
+    assert_contains(companion_depth_dialogs, "companion_depth_rolf_name_choice")
+    assert_contains(companion_quest_branches, "The Unbroken Saddle")
+    assert_contains(companion_quest_branches, "Free riders may swear")
+    assert_contains(companion_depth_dialogs, "companion_depth_baheshtur_saddle_choice")
+    assert_contains(companion_quest_branches, "Debt of the Sword")
+    assert_contains(companion_quest_branches, "Make restitution")
+    assert_contains(companion_depth_dialogs, "companion_depth_firentis_restitution_choice")
+    assert_contains(companion_quest_branches, "Hands That Will Not Harden")
+    assert_contains(companion_quest_branches, "Civilians and helpless wounded come first")
+    assert_contains(companion_depth_dialogs, "companion_depth_jeremus_triage_choice")
+    assert_contains(companion_quest_branches, "Discipline Without Chains")
+    assert_contains(companion_quest_branches, "Reform the drills without softening standards")
+    assert_contains(companion_depth_dialogs, "companion_depth_lezalit_drill_choice")
+    assert_contains(companion_quest_branches, "The Siege That Should Have Worked")
+    assert_contains(companion_quest_branches, "Take the time and materials")
+    assert_contains(companion_depth_dialogs, "companion_depth_artimenner_siege_choice")
+    assert_contains(companion_quest_branches, "Tracks Through Ash")
+    assert_contains(companion_quest_branches, "Follow the trail to rescue survivors")
+    assert_contains(companion_depth_dialogs, "companion_depth_deshavi_tracks_choice")
+    assert_contains(companion_quest_branches, "The Men Who Hold the Line")
+    assert_contains(companion_quest_branches, "Speak for the common soldiers")
+    assert_contains(companion_depth_dialogs, "companion_depth_bunduk_line_choice")
+    assert_contains(companion_quest_branches, "The Last Coin in Camp")
+    assert_contains(companion_quest_branches, "Spend it on stores")
+    assert_contains(companion_depth_dialogs, "companion_depth_katrin_coin_choice")
+    assert_contains(companion_quest_branches, "No Backward Step")
+    assert_contains(companion_quest_branches, "Stand firm and answer the threat")
+    assert_contains(companion_depth_dialogs, "companion_depth_matheld_step_choice")
+    assert_contains(companion_quest_branches, "The Standard and the Self")
+    assert_contains(companion_quest_branches, "Honor means duty beneath the banner")
+    assert_contains(companion_depth_dialogs, "companion_depth_alayen_standard_choice")
+    assert_contains(companion_quest_branches, "The Impossible Charge")
+    assert_contains(companion_quest_branches, "Take the daring rescue now")
+    assert_contains(companion_depth_dialogs, "companion_depth_nizar_charge_choice")
+    assert_contains(companion_quest_branches, "A Knife With a Name")
+    assert_contains(companion_quest_branches, "I will protect you from the old accusation")
+    assert_contains(companion_depth_dialogs, "companion_depth_klethi_knife_choice")
+    assert_not_contains(campfire, "Ask Borcha to serve as Scout")
+    assert_not_contains(campfire, "Speak with Ymira about Mercy Under Arms")
     assert_contains(game_start, "script_sod_companion_initialize_depth")
     assert_contains(daily, "script_sod_companion_process_daily_depth")
     assert_contains(camp_action, "mnu_companion_campfire")
     assert_contains(camp_action, "mnu_companion_depth_report")
-    assert_contains(camp_action, "mnu_borcha_road_keeps_own")
-    assert_contains(camp_action, "Speak with Borcha about the hidden road")
-    assert_contains(camp_action, "mnu_marnid_honest_price")
-    assert_contains(camp_action, "Speak with Marnid about the suspect contract")
-    assert_contains(camp_action, "mnu_ymira_mercy_under_arms")
-    assert_contains(camp_action, "Speak with Ymira about the captives")
-    assert_contains(camp_action, "mnu_lezalit_discipline_without_chains")
-    assert_contains(camp_action, "Speak with Lezalit about the captured Imperial drill")
-    assert_contains(camp_action, "mnu_bunduk_men_hold_line")
-    assert_contains(camp_action, "Speak with Bunduk about the line's grievance")
-    assert_contains(camp_action, "mnu_jeremus_hands_triage")
-    assert_contains(camp_action, "Speak with Jeremus among the wounded")
-    assert_contains(camp_action, "mnu_firentis_debt_restitution")
-    assert_contains(camp_action, "Speak with Firentis about restitution")
-    assert_contains(camp_action, "mnu_katrin_last_coin")
-    assert_contains(camp_action, "Speak with Katrin about the last coin")
-    assert_contains(camp_action, "mnu_deshavi_tracks_through_ash")
-    assert_contains(camp_action, "Speak with Deshavi about the trail warning")
-    assert_contains(camp_action, "mnu_klethi_knife_with_name")
-    assert_contains(camp_action, "Speak with Klethi about the old job")
-    assert_contains(camp_action, "mnu_rolf_name_worth_wearing")
-    assert_contains(camp_action, "Speak with Rolf about the public challenge")
-    assert_contains(camp_action, "mnu_alayen_standard_self")
-    assert_contains(camp_action, "Speak with Alayen about the standard oath")
-    assert_contains(camp_action, "mnu_nizar_impossible_charge")
-    assert_contains(camp_action, "Speak with Nizar about the impossible charge")
-    assert_contains(camp_action, "mnu_baheshtur_unbroken_saddle")
-    assert_contains(camp_action, "Speak with Baheshtur about the saddle oath")
-    assert_contains(camp_action, "mnu_matheld_no_backward_step")
-    assert_contains(camp_action, "Speak with Matheld about the shield challenge")
-    assert_contains(camp_action, "mnu_artimenner_siege_that_should")
-    assert_contains(camp_action, "Speak with Artimenner about the siege design")
+    for companion_menu_option in (
+        "camp_companion_campfire",
+        "camp_companion_depth_report",
+        "camp_companion_retinue_report",
+    ):
+        assert_menu_option_contains(camp_action, companion_menu_option, '(try_for_range, ":companion", companions_begin, companions_end)')
+        assert_menu_option_contains(camp_action, companion_menu_option, '(main_party_has_troop, ":companion")')
+        assert_menu_option_not_contains(camp_action, companion_menu_option, "party_get_num_companion_stacks")
+    for companion_report_option in (
+        "camp_companion_campfire",
+        "camp_companion_depth_report",
+    ):
+        assert_menu_option_contains(camp_action, companion_report_option, '(try_for_range, ":companion", special_companions_begin, special_companions_end)')
+    assert_menu_option_not_contains(camp_action, "camp_companion_retinue_report", "special_companions_begin")
+    assert_menu_option_contains(camp_action, "camp_companion_campfire", '(assign, "$g_sod_companion_campfire_return_menu", "mnu_camp_action")')
+    assert_menu_option_contains(depth_report, "companion_depth_report_campfire", '(try_for_range, ":companion", companions_begin, companions_end)')
+    assert_menu_option_contains(depth_report, "companion_depth_report_campfire", '(try_for_range, ":companion", special_companions_begin, special_companions_end)')
+    assert_menu_option_contains(depth_report, "companion_depth_report_campfire", '(main_party_has_troop, ":companion")')
+    assert_menu_option_not_contains(depth_report, "companion_depth_report_campfire", "party_get_num_companion_stacks")
+    assert_menu_option_contains(depth_report, "companion_depth_report_campfire", '(assign, "$g_sod_companion_campfire_return_menu", "mnu_companion_depth_report")')
+    assert_menu_option_contains(campfire, "companion_campfire_back", '(assign, ":sod_campfire_back_menu", "$g_sod_companion_campfire_return_menu")')
+    assert_menu_option_contains(campfire, "companion_campfire_back", '(assign, "$g_sod_companion_campfire_return_menu", 0)')
+    assert_menu_option_contains(campfire, "companion_campfire_back", '(jump_to_menu, ":sod_campfire_back_menu")')
+    assert_menu_option_contains(campfire, "companion_campfire_back", '(jump_to_menu, "mnu_camp_action")')
+    assert_menu_option_contains(retinue_report, "companion_retinue_manage_back", '(assign, ":sod_retinue_back_menu", "$g_sod_retinue_return_menu")')
+    assert_menu_option_contains(retinue_report, "companion_retinue_manage_back", '(assign, "$g_sod_retinue_return_menu", 0)')
+    assert_menu_option_contains(retinue_report, "companion_retinue_manage_back", '(jump_to_menu, ":sod_retinue_back_menu")')
+    assert_not_contains(campfire, '":return_menu"')
+    assert_not_contains(retinue_report, '":return_menu"')
+    for stale_camp_shortcut in (
+        "camp_ymira_mercy_under_arms",
+        "Speak with Ymira about the captives",
+        "camp_borcha_road_keeps_own",
+        "Speak with Borcha about the hidden road",
+        "camp_marnid_honest_price",
+        "Speak with Marnid about the suspect contract",
+        "camp_lezalit_discipline_without_chains",
+        "Speak with Lezalit about the captured Imperial drill",
+        "camp_lezalit_drill_trial",
+        "Run Lezalit's captured drill trial",
+        "camp_bunduk_men_hold_line",
+        "Speak with Bunduk about the line's grievance",
+        "camp_bunduk_line_test",
+        "Run Bunduk's watch-line test",
+        "camp_jeremus_hands_triage",
+        "Speak with Jeremus among the wounded",
+        "camp_jeremus_infirmary_crisis",
+        "Face Jeremus' infirmary crisis",
+        "camp_firentis_debt_restitution",
+        "Speak with Firentis about restitution",
+        "camp_katrin_last_coin",
+        "Speak with Katrin about the last coin",
+        "camp_katrin_supply_watch",
+        "Run Katrin's supply watch",
+        "camp_deshavi_tracks_through_ash",
+        "Speak with Deshavi about the trail warning",
+        "camp_klethi_knife_with_name",
+        "Speak with Klethi about the old job",
+        "camp_rolf_name_worth_wearing",
+        "Speak with Rolf about the public challenge",
+        "camp_rolf_public_proof",
+        "Stage Rolf's public proof",
+        "camp_alayen_standard_self",
+        "Speak with Alayen about the standard oath",
+        "camp_alayen_standard_test",
+        "Stand Alayen's public standard test",
+        "camp_nizar_impossible_charge",
+        "Speak with Nizar about the impossible charge",
+        "camp_nizar_charge_lane_test",
+        "Run Nizar's charge-lane test",
+        "camp_baheshtur_unbroken_saddle",
+        "Speak with Baheshtur about the saddle oath",
+        "camp_baheshtur_rider_oath_trial",
+        "Run Baheshtur's rider-oath trial",
+        "camp_matheld_no_backward_step",
+        "Speak with Matheld about the shield challenge",
+        "camp_matheld_shield_line_test",
+        "Run Matheld's shield-line test",
+        "camp_artimenner_siege_that_should",
+        "Speak with Artimenner about the siege design",
+        "camp_artimenner_repair_watch",
+        "Guard Artimenner's repair watch",
+    ):
+        assert_not_contains(camp_action, stale_camp_shortcut)
+    for direct_dialogue_target in (
+        "mnu_borcha_road_counter_ambush",
+        "mnu_marnid_price_warehouse",
+        "mnu_lezalit_drill_trial",
+        "mnu_bunduk_line_test",
+        "mnu_jeremus_triage_infirmary",
+        "mnu_katrin_supply_watch",
+        "mnu_rolf_public_proof",
+        "mnu_alayen_standard_test",
+        "mnu_nizar_charge_lane_test",
+        "mnu_baheshtur_rider_oath_trial",
+        "mnu_matheld_shield_line_test",
+        "mnu_artimenner_repair_watch",
+    ):
+        assert_contains(companion_depth_dialogs, direct_dialogue_target)
     assert_contains(camp_action, "camp_companion_depth_debug")
     assert_contains(camp_action, "camp_companion_interactive_quest_qa")
     assert_contains(camp_action, "DEBUG: Companion interactive quest QA.")
     assert_contains(menu_order, "camp/companion_interactive_quest_qa.py")
     assert_contains(companion_qa_menu, '"companion_interactive_quest_qa"')
     assert_contains(companion_qa_menu, '(neq, "$g_sod_debug", 1)')
+    assert_companion_qa_options_are_debug_gated(companion_qa_menu)
     assert_contains(companion_qa_menu, "script_sod_companion_qa_recruit_roster")
     assert_contains(companion_qa_menu, "script_sod_companion_qa_prime_interactive_quest")
     assert_contains(companion_qa_menu, "ready for road climax")
@@ -449,6 +799,26 @@ def main() -> int:
     assert_contains(companion_qa_menu, "trp_npc16")
     assert_contains(scripts, '"sod_companion_qa_recruit_roster"')
     assert_contains(scripts, '"sod_companion_qa_prime_interactive_quest"')
+    assert_script_contains_in_order(
+        scripts,
+        "sod_companion_qa_recruit_roster",
+        (
+            '(eq, "$g_sod_debug", 1)',
+            "(troop_set_slot, \":companion\", slot_troop_companion_approval, 60)",
+            "(call_script, \"script_sod_companion_get_approval_band_to_reg\", \":companion\")",
+            "(troop_set_slot, \":companion\", slot_troop_companion_trust_tier, reg0)",
+            'display_message, "@QA: companion roster recruited',
+        ),
+    )
+    assert_script_contains_in_order(
+        scripts,
+        "sod_companion_qa_prime_interactive_quest",
+        (
+            "(troop_set_slot, \":companion\", slot_troop_companion_approval, 60)",
+            "(call_script, \"script_sod_companion_get_approval_band_to_reg\", \":companion\")",
+            "(troop_set_slot, \":companion\", slot_troop_companion_trust_tier, reg0)",
+        ),
+    )
     assert_contains(scripts, '(eq, "$g_sod_debug", 1)')
     assert_contains(scripts, "QA: companion roster recruited")
     assert_contains(scripts, "QA: {s1} is primed for the live interactive quest climax.")
@@ -701,14 +1071,87 @@ def main() -> int:
     assert_contains(quitting_yes, "sod_companion_role_none")
     assert_contains(quitting_no_confirmed, "sod_companion_warning_acknowledged")
     assert_contains(quitting_persuasion, "sod_companion_warning_acknowledged")
-    assert_contains(campfire, "script_sod_companion_assign_role")
-    assert_contains(campfire, "script_sod_companion_advance_personal_quest")
-    assert_contains(campfire, "script_sod_companion_warning_to_s0")
-    assert_contains(campfire, "script_sod_companion_reconciliation_to_s0")
-    assert_contains(campfire, "companion_campfire_repair_acknowledged_warnings")
-    assert_contains(campfire, ":has_pending_warning")
-    assert_contains(campfire, ":has_named_warning")
+    for reconciliation_dialog in (quitting_no_confirmed, quitting_persuasion):
+        assert_contains(reconciliation_dialog, 'script_sod_companion_get_approval_band_to_reg')
+        assert_contains(reconciliation_dialog, 'slot_troop_companion_trust_tier')
+    assert_contains(companion_role_assign, "script_sod_companion_assign_role")
+    assert_contains(companion_role_assign, "Let's talk company duties.")
+    assert_contains(companion_role_assign, '"companion_role_discuss"')
+    assert_contains(companion_role_assign, "What do you need from me?")
+    assert_contains(companion_role_assign, "Not while this sits between us.")
+    assert_contains(companion_role_assign, "Trust is thin.")
+    assert_contains(companion_role_assign, '"companion_role_low_trust_options"')
+    assert_contains(companion_role_assign, "Stand down until trust is repaired.")
+    assert_contains(companion_role_assign, "Leave it for now.")
+    assert_contains(companion_role_assign, "(troop_slot_ge, \"$g_talk_troop\", slot_troop_companion_approval, 45)")
+    assert_contains(companion_role_assign, '"companion_role_options"')
+    assert_contains(companion_role_assign, '"Leave the offices as they are.", "member_talk"')
+    assert_player_state_does_not_call(companion_role_assign, "member_talk", "script_sod_companion_assign_role")
+    assert_contains(companion_role_assign, "Stand down from your camp office for now.")
+    assert_contains(companion_role_assign, '"companion_role_stood_down"')
+    assert_contains(companion_role_assign, "Understood. I will see it done.")
+    assert_contains(companion_role_assign, "Understood. I will stand down for now.")
+    assert_contains(companion_role_assign, "sod_companion_role_none")
+    assert_not_contains(companion_role_assign, "script_sod_companion_role_to_s68")
+    assert_not_contains(companion_role_assign, "{s68}. I understand.")
+    assert_contains(scripts, "stands down from camp office duties for now")
+    assert_contains(companion_quest_branches, "script_sod_companion_sync_personal_quest_framework")
+    assert_contains(companion_quest_branches, '"companion_quest_branch_reply"')
+    assert_contains(companion_quest_branches, "Let's settle the matter you raised.")
+    assert_contains(companion_quest_branches, '"companion_quest_branch_prompt"')
+    assert_contains(companion_quest_branches, "Tell me how you want it handled.")
+    assert_contains(companion_quest_branches, '"companion_quest_branch_choice"')
+    assert_contains(companion_quest_branches, '"Not yet.", "member_talk"')
+    assert_player_state_does_not_call(companion_quest_branches, "member_talk", '"companion_quest_branch_reply"')
+    assert_contains(companion_quest_branches, "(str_store_string, s68")
+    assert_not_contains(companion_quest_branches, "display_message")
+    assert_not_contains(companion_quest_branches, "sod_companion_quest_test_started")
+    for incident_script in (
+        "script_sod_companion_start_borcha_road_incident",
+        "script_sod_companion_start_marnid_market_incident",
+        "script_sod_companion_try_ymira_refugee_incident",
+        "script_sod_companion_try_rolf_name_challenge_incident",
+        "script_sod_companion_try_baheshtur_saddle_incident",
+        "script_sod_companion_try_firentis_restitution_incident",
+        "script_sod_companion_try_jeremus_triage_incident",
+        "script_sod_companion_try_bunduk_line_incident",
+        "script_sod_companion_try_katrin_last_coin_incident",
+        "script_sod_companion_try_matheld_no_backward_step_incident",
+        "script_sod_companion_try_alayen_standard_incident",
+        "script_sod_companion_try_nizar_charge_incident",
+        "script_sod_companion_try_lezalit_ief_discipline_incident",
+        "script_sod_companion_try_artimenner_siege_incident",
+        "script_sod_companion_try_deshavi_trail_warning_incident",
+        "script_sod_companion_try_klethi_old_job_incident",
+    ):
+        assert_contains(companion_quest_branches, incident_script)
+    assert_contains(companion_depth_dialogs, "script_sod_companion_advance_personal_quest")
+    assert_not_contains(campfire, "script_sod_companion_assign_role")
+    assert_not_contains(campfire, "script_sod_companion_advance_personal_quest")
+    assert_contains(companion_warning_reconciliation, "script_sod_companion_warning_to_s68")
+    assert_contains(companion_warning_reconciliation, "script_sod_companion_reconciliation_to_s68")
+    assert_contains(companion_warning_reconciliation, "You have a grievance. Speak plainly.")
+    assert_contains(companion_warning_reconciliation, "We need to mend this.")
+    assert_contains(companion_warning_reconciliation, "I hear you. I will prove it.")
+    assert_contains(companion_warning_reconciliation, "sod_companion_warning_redeemed")
+    assert_contains(companion_warning_reconciliation, "sod_companion_warning_none")
+    assert_contains(companion_warning_reconciliation, "slot_troop_companion_last_reaction_day")
+    assert_contains(companion_warning_reconciliation, "(ge, \":approval\", 45)")
+    assert_contains(companion_warning_reconciliation, "sod_companion_warning_acknowledged")
+    assert_not_contains(companion_warning_reconciliation, "I hear you. I will answer it with deeds.")
+    assert_not_contains(campfire, "script_sod_companion_warning_to_s68")
+    assert_not_contains(campfire, "script_sod_companion_reconciliation_to_s68")
+    assert_not_contains(campfire, "script_sod_companion_warning_to_s0")
+    assert_not_contains(campfire, "script_sod_companion_reconciliation_to_s0")
+    assert_not_contains(campfire, "companion_campfire_acknowledge_warnings")
+    assert_not_contains(campfire, "companion_campfire_repair_acknowledged_warnings")
+    assert_not_contains(campfire, ":has_pending_warning")
+    assert_not_contains(campfire, ":has_named_warning")
     assert_contains(company_report, "script_sod_companion_describe_company_depth_to_s30")
+    assert_contains(dialog_order, "ZE01_companions_and_named_npcs/anyone_plyr_companion_quest_branches.py")
+    assert_contains(dialog_order, "ZE01_companions_and_named_npcs/anyone_plyr_companion_role_assign.py")
+    assert_contains(dialog_order, "ZE01_companions_and_named_npcs/anyone_plyr_companion_warning_reconciliation.py")
+    assert_contains(dialog_order, "ZE01_companions_and_named_npcs/anyone_companion_warning_reconciliation.py")
     assert_contains(menu_order, "camp/companion_campfire.py")
     assert_contains(menu_order, "camp/companion_depth_report.py")
     assert_contains(menu_order, "camp/borcha_road_keeps_own.py")
@@ -894,7 +1337,8 @@ def main() -> int:
     assert_contains(scripts, "slot_faction_jotnar_target_center")
     assert_contains(scripts, "slot_faction_elephant_guard_target_center")
     assert_contains(scripts, "slot_faction_black_khergit_target_center")
-    assert_contains(scripts, "Her warning waits at the campfire")
+    assert_contains(scripts, "Speak with her directly before the wound hardens")
+    assert_not_contains(scripts, "Her warning waits at the campfire")
     assert_contains(scripts, "orderly refuge column")
     assert_contains(ymira_mercy_menu, "ymira_mercy_under_arms_protect")
     assert_contains(ymira_mercy_menu, "ymira_mercy_under_arms_ransom")
@@ -906,6 +1350,14 @@ def main() -> int:
     assert_contains(ymira_mercy_menu, "mt_companion_ymira_refugee_defense")
     assert_contains(ymira_mercy_menu, "Mercy needs guards now")
     assert_contains(ymira_mercy_menu, "Mercy Under Arms remembers expedience")
+    assert_contains(ymira_mercy_menu, "Choose a refuge before release.")
+    assert_contains(ymira_mercy_menu, "Shelter the weakest first.")
+    assert_contains(ymira_mercy_menu, "Keep the captives under guard.")
+    assert_contains(ymira_mercy_menu, "Give names; spare the village.")
+    assert_not_contains(ymira_mercy_menu, "Let Ymira choose a refuge before anyone is released.")
+    assert_not_contains(ymira_mercy_menu, "Ask Ymira where the weakest could be sheltered first.")
+    assert_not_contains(ymira_mercy_menu, "Keep them chained. The army needs every advantage.")
+    assert_not_contains(ymira_mercy_menu, "Give the riders names and keep the village out of it.")
     assert_contains(scripts, "Discipline Without Chains has found its field test")
     assert_contains(scripts, "$g_sod_lezalit_ief_discipline_pending")
     assert_contains(scripts, "captured Imperial drill into hard standards")
@@ -920,8 +1372,8 @@ def main() -> int:
     assert_contains(lezalit_discipline_menu, "$g_sod_lezalit_ief_discipline_confronted")
     assert_contains(lezalit_discipline_menu, "captured Imperial drill")
     assert_contains(lezalit_discipline_menu, "Lezalit breaks the captured Imperial drill")
-    assert_contains(camp_action, "camp_lezalit_drill_trial")
-    assert_contains(camp_action, "Run Lezalit's captured drill trial")
+    assert_not_contains(camp_action, "camp_lezalit_drill_trial")
+    assert_not_contains(camp_action, "Run Lezalit's captured drill trial")
     assert_contains(mission_order, "0065_companion_lezalit_drill_trial/companion_lezalit_drill_trial.py")
     assert_contains(lezalit_drill_mission, '"companion_lezalit_drill_trial"')
     assert_contains(lezalit_drill_mission, "mnu_lezalit_drill_trial_succeeded")
@@ -939,8 +1391,14 @@ def main() -> int:
     assert_contains(bunduk_line_menu, "mt_companion_bunduk_line_test")
     assert_contains(bunduk_line_menu, "$g_sod_bunduk_line_confronted")
     assert_contains(bunduk_line_menu, "The line gets better watches")
-    assert_contains(camp_action, "camp_bunduk_line_test")
-    assert_contains(camp_action, "Run Bunduk's watch-line test")
+    assert_contains(bunduk_line_menu, "Fix what we can. Defer the rest.")
+    assert_contains(bunduk_line_menu, "Order obedience first.")
+    assert_contains(bunduk_line_menu, "Push the tired line harder.")
+    assert_not_contains(bunduk_line_menu, "Make a practical compromise. Some complaints wait until after the campaign.")
+    assert_not_contains(bunduk_line_menu, "Enforce command authority. The line obeys first and complains later.")
+    assert_not_contains(bunduk_line_menu, "Drive the tired line harder. They can rest after obedience.")
+    assert_not_contains(camp_action, "camp_bunduk_line_test")
+    assert_not_contains(camp_action, "Run Bunduk's watch-line test")
     assert_contains(mission_order, "0063_companion_bunduk_line_test/companion_bunduk_line_test.py")
     assert_contains(bunduk_line_mission, '"companion_bunduk_line_test"')
     assert_contains(bunduk_line_mission, "mnu_bunduk_line_test_succeeded")
@@ -958,8 +1416,8 @@ def main() -> int:
     assert_contains(jeremus_triage_menu, "mt_companion_jeremus_infirmary")
     assert_contains(jeremus_triage_menu, "$g_sod_jeremus_triage_confronted")
     assert_contains(jeremus_triage_menu, "too many wounded and too little time")
-    assert_contains(camp_action, "camp_jeremus_infirmary_crisis")
-    assert_contains(camp_action, "Face Jeremus' infirmary crisis")
+    assert_not_contains(camp_action, "camp_jeremus_infirmary_crisis")
+    assert_not_contains(camp_action, "Face Jeremus' infirmary crisis")
     assert_contains(mission_order, "0064_companion_jeremus_infirmary/companion_jeremus_infirmary.py")
     assert_contains(jeremus_infirmary_mission, '"companion_jeremus_infirmary"')
     assert_contains(jeremus_infirmary_mission, "mnu_jeremus_infirmary_succeeded")
@@ -1000,8 +1458,8 @@ def main() -> int:
     assert_contains(katrin_last_coin_menu, "mt_companion_katrin_supply_watch")
     assert_contains(katrin_last_coin_menu, "$g_sod_katrin_last_coin_confronted")
     assert_contains(katrin_last_coin_menu, "The Last Coin in Camp remembers practical care")
-    assert_contains(camp_action, "camp_katrin_supply_watch")
-    assert_contains(camp_action, "Run Katrin's supply watch")
+    assert_not_contains(camp_action, "camp_katrin_supply_watch")
+    assert_not_contains(camp_action, "Run Katrin's supply watch")
     assert_contains(mission_order, "0071_companion_katrin_supply_watch/companion_katrin_supply_watch.py")
     assert_contains(katrin_supply_mission, '"companion_katrin_supply_watch"')
     assert_contains(katrin_supply_mission, "mnu_katrin_supply_watch_succeeded")
@@ -1023,6 +1481,9 @@ def main() -> int:
     assert_contains(deshavi_tracks_menu, "mt_companion_deshavi_trail_rescue")
     assert_contains(deshavi_tracks_menu, "$g_sod_deshavi_trail_confronted")
     assert_contains(deshavi_tracks_menu, "Tracks Through Ash remembers shelter")
+    assert_menu_option_contains(deshavi_tracks_menu, "deshavi_trail_leave", "Leave the trail for now.")
+    assert_menu_option_contains(deshavi_tracks_menu, "deshavi_trail_leave", '(jump_to_menu, "mnu_village")')
+    assert_menu_option_not_contains(deshavi_tracks_menu, "deshavi_trail_leave", "Return to the village.")
     assert_contains(scripts, "$g_sod_deshavi_trail_focus_center")
     assert_contains(read("src/menus/centers/village/recruit_volunteers.py"), "village_deshavi_follow_trail")
     assert_contains(read("src/menus/centers/village/recruit_volunteers.py"), "Follow Deshavi's trail beyond the village")
@@ -1045,6 +1506,13 @@ def main() -> int:
     assert_contains(borcha_road_menu, "borcha_counter_ambush_sell_route")
     assert_contains(borcha_road_menu, "mt_companion_borcha_counter_ambush")
     assert_contains(borcha_road_menu, "The hidden route is marked")
+    assert_contains(borcha_road_menu, "Hold the counter-ambush until the road is clean.")
+    assert_contains(borcha_road_menu, "Use the route for profit first.")
+    assert_menu_option_contains(borcha_road_menu, "borcha_counter_ambush_leave", "Leave the side road for now.")
+    assert_menu_option_contains(borcha_road_menu, "borcha_counter_ambush_leave", '(jump_to_menu, "mnu_town")')
+    assert_menu_option_not_contains(borcha_road_menu, "borcha_counter_ambush_leave", "Return to town.")
+    assert_not_contains(borcha_road_menu, "Keep Borcha's counter-ambush standing until the road is clean.")
+    assert_not_contains(borcha_road_menu, "Use the route for profit before anyone else learns it is safe.")
     assert_contains(town_menu, "town_borcha_counter_ambush")
     assert_contains(town_menu, "Ride Borcha's side road before the ambush closes")
     assert_contains(town_menu, '"script_cf_sod_companion_campaign_available", "trp_npc1", sod_companion_campaign_mode_scene')
@@ -1066,6 +1534,15 @@ def main() -> int:
     assert_contains(marnid_price_menu, "marnid_warehouse_blackmail")
     assert_contains(marnid_price_menu, "mt_companion_marnid_warehouse")
     assert_contains(marnid_price_menu, "profit that does not need hiding")
+    assert_contains(marnid_price_menu, "Expose the contract; compensate the laborers.")
+    assert_contains(marnid_price_menu, "Repay the cheated and keep clean terms.")
+    assert_contains(marnid_price_menu, "Use the evidence for a discount.")
+    assert_menu_option_contains(marnid_price_menu, "marnid_warehouse_leave", "Leave the warehouse for now.")
+    assert_menu_option_contains(marnid_price_menu, "marnid_warehouse_leave", '(jump_to_menu, "mnu_town")')
+    assert_menu_option_not_contains(marnid_price_menu, "marnid_warehouse_leave", "Return to town.")
+    assert_not_contains(marnid_price_menu, "Expose the dirty contract and pay compensation from the seized goods.")
+    assert_not_contains(marnid_price_menu, "Repay the cheated laborers and keep the clean part of the contract.")
+    assert_not_contains(marnid_price_menu, "Use the evidence for leverage and take the discount.")
     assert_contains(town_menu, "town_marnid_warehouse")
     assert_contains(town_menu, "Inspect Marnid's suspect warehouse")
     assert_contains(town_menu, '"script_cf_sod_companion_campaign_available", "trp_npc2", sod_companion_campaign_mode_scene')
@@ -1113,6 +1590,9 @@ def main() -> int:
     assert_contains(ymira_refugee_mission, '"companion_ymira_refugee_defense"')
     assert_contains(ymira_refugee_mission, "mnu_ymira_refugee_defense_succeeded")
     assert_contains(ymira_refugee_mission, "mnu_ymira_refugee_defense_failed")
+    assert_menu_option_contains(ymira_mercy_menu, "ymira_refugee_standoff_leave", "Step back from the standoff.")
+    assert_menu_option_contains(ymira_mercy_menu, "ymira_refugee_standoff_leave", '(jump_to_menu, "mnu_village")')
+    assert_menu_option_not_contains(ymira_mercy_menu, "ymira_refugee_standoff_leave", "Step back for now.")
     assert_contains(scripts, "$g_sod_rolf_name_challenge_pending")
     assert_contains(scripts, "Rolf hears his name cheered")
     assert_contains(scripts, "public dignity into useful ceremony")
@@ -1127,8 +1607,8 @@ def main() -> int:
     assert_contains(rolf_name_menu, "mt_companion_rolf_public_proof")
     assert_contains(rolf_name_menu, "$g_sod_rolf_name_challenge_confronted")
     assert_contains(rolf_name_menu, "A Name Worth Wearing remembers earned dignity")
-    assert_contains(camp_action, "camp_rolf_public_proof")
-    assert_contains(camp_action, "Stage Rolf's public proof")
+    assert_not_contains(camp_action, "camp_rolf_public_proof")
+    assert_not_contains(camp_action, "Stage Rolf's public proof")
     assert_contains(mission_order, "0068_companion_rolf_public_proof/companion_rolf_public_proof.py")
     assert_contains(rolf_public_mission, '"companion_rolf_public_proof"')
     assert_contains(rolf_public_mission, "mnu_rolf_public_proof_succeeded")
@@ -1147,8 +1627,8 @@ def main() -> int:
     assert_contains(alayen_standard_menu, "mt_companion_alayen_standard_test")
     assert_contains(alayen_standard_menu, "$g_sod_alayen_standard_confronted")
     assert_contains(alayen_standard_menu, "The Standard and the Self remembers duty")
-    assert_contains(camp_action, "camp_alayen_standard_test")
-    assert_contains(camp_action, "Stand Alayen's public standard test")
+    assert_not_contains(camp_action, "camp_alayen_standard_test")
+    assert_not_contains(camp_action, "Stand Alayen's public standard test")
     assert_contains(mission_order, "0067_companion_alayen_standard_test/companion_alayen_standard_test.py")
     assert_contains(alayen_standard_mission, '"companion_alayen_standard_test"')
     assert_contains(alayen_standard_mission, "mnu_alayen_standard_test_succeeded")
@@ -1166,8 +1646,8 @@ def main() -> int:
     assert_contains(nizar_charge_menu, "mt_companion_nizar_charge_lane")
     assert_contains(nizar_charge_menu, "$g_sod_nizar_charge_confronted")
     assert_contains(nizar_charge_menu, "The Impossible Charge remembers glory with survivors")
-    assert_contains(camp_action, "camp_nizar_charge_lane_test")
-    assert_contains(camp_action, "Run Nizar's charge-lane test")
+    assert_not_contains(camp_action, "camp_nizar_charge_lane_test")
+    assert_not_contains(camp_action, "Run Nizar's charge-lane test")
     assert_contains(mission_order, "0072_companion_nizar_charge_lane/companion_nizar_charge_lane.py")
     assert_contains(nizar_lane_mission, '"companion_nizar_charge_lane"')
     assert_contains(nizar_lane_mission, "mnu_nizar_charge_lane_succeeded")
@@ -1186,8 +1666,8 @@ def main() -> int:
     assert_contains(baheshtur_saddle_menu, "mt_companion_baheshtur_rider_oath")
     assert_contains(baheshtur_saddle_menu, "$g_sod_baheshtur_saddle_confronted")
     assert_contains(baheshtur_saddle_menu, "The Unbroken Saddle remembers chosen loyalty")
-    assert_contains(camp_action, "camp_baheshtur_rider_oath_trial")
-    assert_contains(camp_action, "Run Baheshtur's rider-oath trial")
+    assert_not_contains(camp_action, "camp_baheshtur_rider_oath_trial")
+    assert_not_contains(camp_action, "Run Baheshtur's rider-oath trial")
     assert_contains(mission_order, "0069_companion_baheshtur_rider_oath/companion_baheshtur_rider_oath.py")
     assert_contains(baheshtur_oath_mission, '"companion_baheshtur_rider_oath"')
     assert_contains(baheshtur_oath_mission, "mnu_baheshtur_rider_oath_succeeded")
@@ -1206,8 +1686,8 @@ def main() -> int:
     assert_contains(matheld_step_menu, "mt_companion_matheld_shield_line")
     assert_contains(matheld_step_menu, "$g_sod_matheld_no_backward_step_confronted")
     assert_contains(matheld_step_menu, "No Backward Step remembers courage with teeth")
-    assert_contains(camp_action, "camp_matheld_shield_line_test")
-    assert_contains(camp_action, "Run Matheld's shield-line test")
+    assert_not_contains(camp_action, "camp_matheld_shield_line_test")
+    assert_not_contains(camp_action, "Run Matheld's shield-line test")
     assert_contains(mission_order, "0070_companion_matheld_shield_line/companion_matheld_shield_line.py")
     assert_contains(matheld_line_mission, '"companion_matheld_shield_line"')
     assert_contains(matheld_line_mission, "mnu_matheld_shield_line_succeeded")
@@ -1226,8 +1706,8 @@ def main() -> int:
     assert_contains(artimenner_siege_menu, "mt_companion_artimenner_repair_watch")
     assert_contains(artimenner_siege_menu, "$g_sod_artimenner_siege_confronted")
     assert_contains(artimenner_siege_menu, "The Siege That Should Have Worked remembers respected design")
-    assert_contains(camp_action, "camp_artimenner_repair_watch")
-    assert_contains(camp_action, "Guard Artimenner's repair watch")
+    assert_not_contains(camp_action, "camp_artimenner_repair_watch")
+    assert_not_contains(camp_action, "Guard Artimenner's repair watch")
     assert_contains(mission_order, "0066_companion_artimenner_repair_watch/companion_artimenner_repair_watch.py")
     assert_contains(artimenner_repair_mission, '"companion_artimenner_repair_watch"')
     assert_contains(artimenner_repair_mission, "mnu_artimenner_repair_watch_succeeded")
@@ -1253,17 +1733,17 @@ def main() -> int:
     assert_contains(lezalit_dialog, "The captured Imperial drill is waiting")
     assert_contains(lezalit_dialog, "They no longer need chains")
     assert_contains(lezalit_dialog, "Do not confuse that with loyalty")
-    assert_contains(bunduk_dialog, "The men are listening for your answer")
+    assert_contains(bunduk_dialog, "The men are listening, even the ones pretending")
     assert_contains(bunduk_dialog, "instead of ammunition")
     assert_contains(bunduk_dialog, "being led and being used")
     assert_contains(jeremus_dialog, "too many wounded and too little time")
-    assert_contains(jeremus_dialog, "rank or usefulness")
-    assert_contains(jeremus_dialog, "left waiting were only numbers")
+    assert_contains(jeremus_dialog, "rank and usefulness did not decide")
+    assert_contains(jeremus_dialog, "So do the people left waiting")
     assert_contains(firentis_dialog, "Restitution did not raise the dead")
     assert_contains(firentis_dialog, "village is saved")
     assert_contains(firentis_dialog, "changed hands or merely changed banners")
-    assert_contains(borcha_dialog, "Road says")
-    assert_contains(borcha_dialog, "road witness")
+    assert_contains(borcha_dialog, "The route runs from")
+    assert_contains(borcha_dialog, "I want a witness before I trust it")
     assert_contains(borcha_dialog, "ambush show its teeth")
     for rel, tokens in (
         (
@@ -1436,7 +1916,7 @@ def main() -> int:
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_borcha.py",
-            ("companion_depth_borcha_road_choice", "$g_sod_borcha_road_witnessed", "$g_sod_borcha_road_confronted", "Ask in", "ambush show its teeth", "Mark it safe", "counter-ambush", "Use the route for profit"),
+            ("companion_depth_borcha_road_choice", "$g_sod_borcha_road_witnessed", "$g_sod_borcha_road_confronted", "I want a witness before I trust it", "ambush show its teeth", "Mark it safe", "counter-ambush", "Profit from the route"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_marnid.py",
@@ -1444,7 +1924,7 @@ def main() -> int:
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_marnid.py",
-            ("companion_depth_marnid_price_choice", "$g_sod_marnid_market_evidence", "$g_sod_marnid_market_confronted", "goods merchant", "warehouse", "Expose the contract", "Repay the losses", "Use the evidence for leverage"),
+            ("companion_depth_marnid_price_choice", "$g_sod_marnid_market_evidence", "$g_sod_marnid_market_confronted", "goods merchant", "warehouse", "Expose the contract", "Repay the losses", "Make them pay us to stay quiet"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_ymira.py",
@@ -1452,7 +1932,7 @@ def main() -> int:
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_ymira.py",
-            ("companion_depth_ymira_captive_choice", "$g_sod_ymira_refugee_focus_center", "$g_sod_ymira_refugee_witnessed", "mercy has witnesses", "shelter means reaching", "We are close enough", "Guard, feed, and release them", "Ransom the able-bodied", "Keep them chained"),
+            ("companion_depth_ymira_captive_choice", "$g_sod_ymira_refugee_focus_center", "$g_sod_ymira_refugee_witnessed", "wait on your order", "shelter means reaching", "We are close enough", "Guard, feed, and release them", "Ransom the able-bodied", "Keep them chained"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_lezalit.py",
@@ -1460,7 +1940,7 @@ def main() -> int:
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_lezalit.py",
-            ("companion_depth_lezalit_drill_choice", "$g_sod_lezalit_ief_discipline_witnessed", "$g_sod_lezalit_ief_discipline_confronted", "captured drill trial", "Reform the Imperial drill", "Use fear", "Refuse the lesson"),
+            ("companion_depth_lezalit_drill_choice", "$g_sod_lezalit_ief_discipline_witnessed", "$g_sod_lezalit_ief_discipline_confronted", "captured drill trial", "Reform the Imperial drill", "Use fear", "Refuse it"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_bunduk.py",
@@ -1468,7 +1948,7 @@ def main() -> int:
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_bunduk.py",
-            ("companion_depth_bunduk_line_choice", "$g_sod_bunduk_line_witnessed", "$g_sod_bunduk_line_confronted", "test the watch line", "I back you", "Make a practical compromise", "Enforce command authority"),
+            ("companion_depth_bunduk_line_choice", "$g_sod_bunduk_line_witnessed", "$g_sod_bunduk_line_confronted", "test the watch line", "I back you", "Compromise", "The line obeys first"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_jeremus.py",
@@ -1480,19 +1960,19 @@ def main() -> int:
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_firentis.py",
-            ("restitution still asks", "companion_depth_firentis_restitution_pending"),
+            ("what does restitution ask", "companion_depth_firentis_restitution_pending"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_firentis.py",
-            ("companion_depth_firentis_restitution_choice", "$g_sod_firentis_restitution_focus_center", "$g_sod_firentis_restitution_witnessed", "$g_sod_firentis_restitution_confronted", "hearing tested us", "Leave guards, coin, and supplies", "Let truth be spoken", "Say nothing more"),
+            ("companion_depth_firentis_restitution_choice", "$g_sod_firentis_restitution_focus_center", "$g_sod_firentis_restitution_witnessed", "$g_sod_firentis_restitution_confronted", "restitution needs more than words", "Leave guards, coin, and supplies", "Let truth be spoken", "Stay silent"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_katrin.py",
-            ("put the ledger in my hands", "companion_depth_katrin_coin_pending"),
+            ("show me the ledger", "companion_depth_katrin_coin_pending"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_katrin.py",
-            ("companion_depth_katrin_coin_choice", "$g_sod_katrin_last_coin_witnessed", "$g_sod_katrin_last_coin_confronted", "supply watch", "food, medicine, and honest arrears", "Stretch the stores", "Spend for momentum"),
+            ("companion_depth_katrin_coin_choice", "$g_sod_katrin_last_coin_witnessed", "$g_sod_katrin_last_coin_confronted", "supply watch", "food, medicine, and honest arrears", "Stretch the stores", "Spend for speed"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_deshavi.py",
@@ -1500,7 +1980,7 @@ def main() -> int:
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_deshavi.py",
-            ("companion_depth_deshavi_tracks_choice", "$g_sod_deshavi_trail_focus_center", "$g_sod_deshavi_trail_witnessed", "$g_sod_deshavi_trail_confronted", "follow me beyond the village", "trail bends toward", "Ask the living first", "shelter the vulnerable", "set an ambush", "Hunt the pursuers"),
+            ("companion_depth_deshavi_tracks_choice", "$g_sod_deshavi_trail_focus_center", "$g_sod_deshavi_trail_witnessed", "$g_sod_deshavi_trail_confronted", "follow me beyond the village", "trail bends toward", "Ask the living first", "Shelter the vulnerable", "Set an ambush", "Hunt the pursuers"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_klethi.py",
@@ -1508,27 +1988,27 @@ def main() -> int:
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_klethi.py",
-            ("companion_depth_klethi_knife_choice", "$g_sod_klethi_old_job_contacted", "$g_sod_klethi_old_job_confronted", "witness outside my own mouth", "nearest useful witness", "Handle it on your own terms", "protect you", "Use the old secret"),
+            ("companion_depth_klethi_knife_choice", "$g_sod_klethi_old_job_contacted", "$g_sod_klethi_old_job_confronted", "witness outside my own mouth", "nearest useful witness", "Handle it on your own terms", "protect you", "Use the secret"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_rolf.py",
-            ("answer the question about your name", "companion_depth_rolf_name_pending"),
+            ("answer the question of your name", "companion_depth_rolf_name_pending"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_rolf.py",
-            ("companion_depth_rolf_name_choice", "$g_sod_rolf_name_challenge_witnessed", "$g_sod_rolf_name_challenge_confronted", "public proof", "Answer with service", "defend your dignity", "Strip away the performance"),
+            ("companion_depth_rolf_name_choice", "$g_sod_rolf_name_challenge_witnessed", "$g_sod_rolf_name_challenge_confronted", "public proof", "Answer with service", "defend your dignity", "Strip the performance"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_alayen.py",
-            ("standard is asking", "companion_depth_alayen_standard_pending"),
+            ("what does the standard ask", "companion_depth_alayen_standard_pending"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_alayen.py",
-            ("companion_depth_alayen_standard_choice", "$g_sod_alayen_standard_witnessed", "$g_sod_alayen_standard_confronted", "public standard test", "promise to protect", "Keep the oath publicly", "obedience and prestige"),
+            ("companion_depth_alayen_standard_choice", "$g_sod_alayen_standard_witnessed", "$g_sod_alayen_standard_confronted", "public standard test", "Make the standard protect", "Keep the oath", "obedience and prestige"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_nizar.py",
-            ("impossible charge before it becomes a song", "companion_depth_nizar_charge_pending"),
+            ("the charge before it becomes a song", "companion_depth_nizar_charge_pending"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_nizar.py",
@@ -1544,7 +2024,7 @@ def main() -> int:
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_matheld.py",
-            ("what the line learned", "companion_depth_matheld_step_pending"),
+            ("what did the line learn", "companion_depth_matheld_step_pending"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_matheld.py",
@@ -1552,11 +2032,11 @@ def main() -> int:
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_plyr_companion_depth_artimenner.py",
-            ("weak point before it kills anyone", "companion_depth_artimenner_siege_pending"),
+            ("show me the weak point", "companion_depth_artimenner_siege_pending"),
         ),
         (
             "src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_depth_artimenner.py",
-            ("companion_depth_artimenner_siege_choice", "$g_sod_artimenner_siege_witnessed", "$g_sod_artimenner_siege_confronted", "repair watch", "rebuild the works properly", "Improvise a leaner plan", "answer for it if the works fail"),
+            ("companion_depth_artimenner_siege_choice", "$g_sod_artimenner_siege_witnessed", "$g_sod_artimenner_siege_confronted", "repair watch", "Rebuild the works properly", "Use a leaner plan", "answer for it"),
         ),
     ):
         raw = read(rel)
@@ -1586,14 +2066,14 @@ def main() -> int:
     assert_contains(katrin_dialog, "coins, bread, and promises")
     assert_contains(katrin_dialog, "cooking pot")
     assert_contains(katrin_dialog, "patched the consequences")
-    assert_contains(deshavi_dialog, "trail outside camp")
+    assert_contains(deshavi_dialog, "trail outside our camp")
     assert_contains(deshavi_dialog, "before they disappear")
     assert_contains(deshavi_dialog, "Dead hunters cannot chase anyone")
     assert_contains(klethi_dialog, "Old work found my knife")
     assert_contains(klethi_dialog, "opened door means")
     assert_contains(klethi_dialog, "secret bought what you wanted")
     assert_contains(rolf_dialog, "applause and questions")
-    assert_contains(rolf_dialog, "name can also be made heavier")
+    assert_contains(rolf_dialog, "conduct can make a name heavier")
     assert_contains(rolf_dialog, "bruised banner")
     assert_contains(alayen_dialog, "duty or display")
     assert_contains(alayen_dialog, "who is the banner for")
@@ -1627,8 +2107,11 @@ def main() -> int:
     assert_contains(read("src/scripts/ZY_helper_scripts/sod_black_khergit_horde.py"), "sod_companion_action_black_khergit_camp_defeat")
     assert_contains(read("src/scripts/ZY_helper_scripts/sod_black_khergit_horde.py"), "Borcha finds a hidden road")
     assert_contains(read("src/scripts/ZY_helper_scripts/sod_black_khergit_horde.py"), "sod_companion_role_scout")
+    assert_contains(read("src/scripts/ZY_helper_scripts/sod_black_khergit_horde.py"), '(troop_slot_ge, "trp_npc1", slot_troop_companion_approval, 45)')
+    assert_contains(read("src/scripts/ZY_helper_scripts/sod_black_khergit_horde.py"), '(troop_slot_ge, "trp_npc7", slot_troop_companion_approval, 45)')
     assert_contains(read("src/scripts/ZB_economy_and_trade/do_merchant_town_trade.py"), "sod_companion_role_quartermaster")
     assert_contains(read("src/scripts/ZB_economy_and_trade/do_merchant_town_trade.py"), "sod_companion_quest_resolved_good")
+    assert_contains(read("src/scripts/ZB_economy_and_trade/do_merchant_town_trade.py"), '(troop_slot_ge, "trp_npc2", slot_troop_companion_approval, 45)')
     assert_contains(read("src/scripts/ZY_helper_scripts/sod_black_army_world_presence.py"), "sod_companion_action_black_army_security")
     assert_contains(read("src/menus/other/continue_35.py"), "sod_companion_action_tournament_glory")
     assert_contains(read("src/dialogs/ZB01_lords_politics_and_family/anyone_lady_qst_duel_for_lady_succeeded_2.py"), "sod_companion_action_tournament_glory")
@@ -1860,7 +2343,7 @@ def main() -> int:
         "| Marnid - The Honest Price | `$g_sod_marnid_market_contacted`; center trade identity derived at goods merchant |",
         "| Lezalit - Discipline Without Chains | `$g_sod_lezalit_ief_discipline_pending`; `$g_sod_lezalit_ief_discipline_witnessed` |",
         "| Artimenner - The Siege That Should Have Worked | `$g_sod_artimenner_siege_pending`; `$g_sod_artimenner_siege_cause`; `$g_sod_artimenner_siege_witnessed` |",
-        "Direct companion dialogue after witness, with camp fallback",
+        "Direct companion dialogue after witness",
     ):
         assert_contains(companion_immersion_audit, token)
 
@@ -1944,11 +2427,13 @@ def main() -> int:
     ):
         assert_contains(interactive_quest_qa_commands, token)
 
-    assert_contains(campfire, "Make amends for named grievances")
-    assert_contains(campfire, "companion_campfire_ymira_mercy_spare")
-    assert_contains(campfire, "companion_campfire_ymira_mercy_hard")
-    assert_contains(campfire, "companion_campfire_marnid_honest_price_clean")
-    assert_contains(campfire, "companion_campfire_marnid_honest_price_hard")
+    assert_not_contains(campfire, "Make amends for named grievances")
+    assert_not_contains(scripts, "campfire amends talk")
+    assert_contains(scripts, "Speak with them directly before the road closes")
+    assert_contains(companion_quest_branches, "The helpless will be protected")
+    assert_contains(companion_quest_branches, "Back your clean trade contacts")
+    assert_contains(companion_depth_dialogs, "companion_depth_ymira_captive_choice")
+    assert_contains(companion_depth_dialogs, "companion_depth_marnid_price_choice")
     assert_contains(scripts, "sod_companion_quest_resolved_good")
     assert_contains(scripts, "sod_companion_quest_resolved_hard")
     assert_contains(read("src/scripts/ZG_quests/cf_sod_companion_campaign_available.py"), '"cf_sod_companion_campaign_available"')
@@ -2000,4 +2485,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

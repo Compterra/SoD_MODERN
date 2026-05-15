@@ -1,3 +1,7 @@
 DIALOGS = [
-[anyone|plyr, "bandit_talk", [], "You want my purse? Earn it through my shield.", "close_window", [[encounter_attack]]],
+[anyone|plyr, "bandit_talk", [], "You want my purse? Earn it through my shield.", "close_window", [
+  (assign, "$g_enemy_party", "$g_encountered_party"),
+  (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+  (encounter_attack),
+]],
 ]

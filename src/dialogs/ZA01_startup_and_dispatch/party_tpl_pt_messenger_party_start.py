@@ -1,5 +1,81 @@
 DIALOGS = [
 [party_tpl|pt_messenger_party, "start", [
+    (party_slot_eq, "$g_encountered_party", slot_party_sod_messenger_role, sod_messenger_role_public_health_relief),
+    (party_get_slot, ":origin_center", "$g_encountered_party", slot_party_sod_public_health_origin),
+    (party_get_slot, ":destination", "$g_encountered_party", slot_party_sod_public_health_destination),
+    (try_begin),
+      (is_between, ":origin_center", centers_begin, centers_end),
+      (str_store_party_name, s1, ":origin_center"),
+      (call_script, "script_sod_center_public_health_relief_institution_to_s0", ":origin_center"),
+      (str_store_string_reg, s3, s0),
+    (else_try),
+      (str_store_string, s1, "@a house of care"),
+      (str_store_string, s3, "@the care houses of"),
+    (try_end),
+    (try_begin),
+      (is_between, ":destination", centers_begin, centers_end),
+      (str_store_party_name, s2, ":destination"),
+    (else_try),
+      (str_store_string, s2, "@a sick settlement"),
+    (try_end),
+], "We carry healers, clean cloth, bitter draughts, and prayers from {s3} {s1} to {s2}. Our escort keeps steel sheathed unless someone bars the sick from mercy.", "public_health_relief_talk", []],
+
+[anyone|plyr, "public_health_relief_talk", [], "Ride on. The sick need you more than I do.", "close_window", [
+    (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_help_village, 1),
+    (assign, "$g_leave_encounter", 1),
+]],
+
+[anyone|plyr, "public_health_relief_talk", [], "Take these supplies and hurry. (300 denars)", "close_window", [
+    (store_troop_gold, ":gold", "trp_player"),
+    (try_begin),
+      (ge, ":gold", 300),
+      (call_script, "script_sod_player_charge_gold", 300),
+      (party_get_slot, ":payload", "$g_encountered_party", slot_party_sod_public_health_health_payload),
+      (val_add, ":payload", 1),
+      (party_set_slot, "$g_encountered_party", slot_party_sod_public_health_health_payload, ":payload"),
+      (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_build_healing, 1),
+      (display_message, "@The relief party adds your supplies to its litters and presses on.", 0x66CC66),
+    (else_try),
+      (display_message, "@You do not have enough coin to supply the relief party.", 0xCC3333),
+    (try_end),
+    (assign, "$g_leave_encounter", 1),
+]],
+
+[anyone|plyr, "public_health_relief_talk", [
+    (party_get_slot, ":origin_faith", "$g_encountered_party", slot_party_sod_public_health_origin_faith),
+    (is_between, ":origin_faith", sod_faiths_begin, sod_faiths_end),
+    (eq, ":origin_faith", "$g_sod_faith"),
+    (store_troop_gold, ":gold", "trp_player"),
+    (ge, ":gold", 700),
+    (store_current_day, ":cur_day"),
+    (store_sub, ":days_since_blessing", ":cur_day", "$g_sod_public_health_last_clergy_blessing_day"),
+    (this_or_next|ge, ":days_since_blessing", 7),
+    (lt, "$g_sod_public_health_last_clergy_blessing_day", 1),
+], "Offer alms and ask for a blessing. (700 denars)", "public_health_relief_blessing", [
+    (call_script, "script_sod_player_charge_gold", 700),
+    (store_current_day, "$g_sod_public_health_last_clergy_blessing_day"),
+    (call_script, "script_sod_center_public_health_apply_player_clergy_blessing", 2),
+]],
+
+[anyone, "public_health_relief_blessing", [], "Then walk lighter, and let mercy find roads faster than fear.", "close_window", [
+    (assign, "$g_leave_encounter", 1),
+]],
+
+[anyone|plyr, "public_health_relief_talk", [
+    (party_get_slot, ":origin_faith", "$g_encountered_party", slot_party_sod_public_health_origin_faith),
+    (is_between, ":origin_faith", sod_faiths_begin, sod_faiths_end),
+    (neq, ":origin_faith", "$g_sod_faith"),
+], "This road will not carry a rival faith's mercy. Defend yourselves.", "close_window", [
+    (call_script, "script_change_badboy_rating", 6),
+    (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_abuse_village, 2),
+    (call_script, "script_sod_companion_dispatch_player_action", sod_companion_action_dirty_profit, 1),
+    (display_message, "@Word spreads that you attacked a clergy relief party on the road.", 0xCC3333),
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
+    (encounter_attack),
+]],
+
+[party_tpl|pt_messenger_party, "start", [
     (party_slot_eq, "$g_encountered_party", slot_party_sod_messenger_role, sod_messenger_role_tax_courier),
     (party_slot_eq, "$g_encountered_party", slot_party_sod_tax_courier_recipient_troop, "trp_player"),
     (party_get_slot, ":origin_center", "$g_encountered_party", slot_party_sod_tax_courier_origin_center),
@@ -122,10 +198,14 @@ DIALOGS = [
 ]],
 
 [anyone, "tax_courier_surrender_demand", [], "No. If I return empty by choice, I am dead anyway. Better to earn it honestly. The chest reaches its lord or we die around it.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
 ]],
 
 [anyone|plyr, "tax_courier_hostile_talk", [], "Then defend it.", "close_window", [
+    (assign, "$g_enemy_party", "$g_encountered_party"),
+    (call_script, "script_let_nearby_parties_join_current_battle", 0, 0),
     (encounter_attack),
 ]],
 

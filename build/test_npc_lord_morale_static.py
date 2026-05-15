@@ -15,6 +15,10 @@ def assert_contains(raw: str, token: str) -> None:
     assert token in raw, f"missing token: {token}"
 
 
+def assert_not_contains(raw: str, token: str) -> None:
+    assert token not in raw, f"stale token remains: {token}"
+
+
 def test_constants_exist() -> None:
     raw = read("src/constants/module_constants.py")
     for token in [
@@ -313,6 +317,10 @@ def test_reports_and_notes_expose_lord_morale() -> None:
     notes = read("src/scripts/ZH_heroes/update_troop_notes.py")
     helper = read("src/scripts/ZY_helper_scripts/sod_lord_party_morale.py")
     assert_contains(readiness, "script_sod_lord_store_morale_report_text")
+    assert_contains(readiness, "script_store_troop_name\", s68")
+    assert_contains(readiness, "Battle readiness report for {s68}")
+    assert_not_contains(readiness, "@{s2} is a prisoner")
+    assert_not_contains(readiness, "@{s2} has no troops")
     assert_contains(notes, "Household morale")
     assert_contains(notes, "script_sod_lord_store_morale_report_text")
     assert_contains(helper, "Morale: {s61}")

@@ -8,6 +8,10 @@ SCRIPTS = [
       # clear out our return
       (assign, reg0, 0),
 
+      (try_begin),
+      (gt, ":party", 0),
+      (party_is_active, ":party"),
+
       # figure out which stack to start with and how many we have
       (party_get_num_companion_stacks, ":num_stacks", ":party"),
       (assign, ":first_stack", 0),
@@ -33,6 +37,7 @@ SCRIPTS = [
                (val_add, reg0, ":stack_size"),
             (try_end),
          (try_end),
+      (try_end),
       (try_end),
 
       # reg0 should have the battle-ready count

@@ -1108,4 +1108,5 @@ trp_sod_zer_1_noble1 = 1106
 trp_sod_zer_2_noble1 = 1107
 trp_black_khergit_khan = 1108
 trp_sod_bankvault_possessions = 1109
-trp_last_troop = 1110
+trp_sod_public_health_clergy = 1110
+trp_last_troop = 1111

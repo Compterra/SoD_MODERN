@@ -1,4 +1,10 @@
 DIALOGS = [
-[anyone, "bandits_awaiting_ransom_no_money", [],
-   "Are you testing our patience or something?  Go and bring that money here quickly.", "close_window", [(assign, "$g_leave_encounter", 1)]],
+[anyone, "bandits_awaiting_ransom_no_money", [
+   (check_quest_active, "qst_kidnapped_girl"),
+   (neg|check_quest_concluded, "qst_kidnapped_girl"),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_current_state, 1),
+   (quest_slot_eq, "qst_kidnapped_girl", slot_quest_target_party, "$g_encountered_party"),
+   (party_is_active, "$g_encountered_party"),
+],
+   "Then move. Come back empty-handed and the bargain changes.", "close_window", [(assign, "$g_leave_encounter", 1)]],
 ]

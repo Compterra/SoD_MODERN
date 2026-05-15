@@ -2,6 +2,11 @@
 SCRIPTS = [
 ("sod_store_nemesis_memory_report",
  [
+   (assign, reg17, "$g_sod_nemesis_intensity"),
+   (assign, reg18, "$g_sod_nemesis_last_day"),
+   (assign, reg16, "$g_sod_nemesis_last_troop"),
+   (assign, reg19, "$g_sod_nemesis_last_party"),
+   (assign, reg20, "$g_sod_nemesis_last_template"),
    (try_begin),
      (le, "$g_sod_nemesis_state", sod_nemesis_state_none),
      (str_store_string, s17, "@Nemesis memory: none active."),

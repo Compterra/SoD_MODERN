@@ -1,21 +1,6 @@
 SIMPLE_TRIGGERS = [
 (5,
   [
-	(eq, "$g_custom_banner", 1),
-	(troop_get_slot, ":flag_icon", "trp_player", slot_troop_custom_banner_map_flag_type),
-	(val_max, ":flag_icon", 0),
-	(val_add, ":flag_icon", custom_banner_map_icons_begin),
-	(call_script, "script_sod_apply_player_banner_map_icon", ":flag_icon"),
-	(try_for_parties, ":cur_party"),
-		(call_script, "script_cf_is_patrol", ":cur_party"),
-		(eq, reg0, 0),
-		(party_set_banner_icon, ":cur_party", ":flag_icon"),
-	(try_end),
-	(try_for_range, ":cur_center", walled_centers_begin, walled_centers_end),
-		(try_begin),
-			(party_slot_eq, ":cur_center", slot_town_lord, "trp_player"),
-			(party_set_banner_icon, ":cur_center", ":flag_icon"),
-		(try_end),
-	(try_end),
+	(call_script, "script_sod_world_map_refresh_custom_banner_parties"),
   ]),
 ]

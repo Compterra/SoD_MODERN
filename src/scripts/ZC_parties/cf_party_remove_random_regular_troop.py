@@ -1,6 +1,9 @@
 SCRIPTS = [
 ("cf_party_remove_random_regular_troop",
         [(store_script_param_1, ":party_no"),
+          (assign, reg0, -1),
+          (gt, ":party_no", 0),
+          (party_is_active, ":party_no"),
           (party_get_num_companion_stacks, ":num_stacks", ":party_no"),
           (assign, ":num_troops", 0),
           (try_for_range, ":i_stack", 0, ":num_stacks"),
@@ -9,7 +12,6 @@ SCRIPTS = [
             (party_stack_get_size, ":stack_size", ":party_no", ":i_stack"),
             (val_add, ":num_troops", ":stack_size"),
           (try_end),
-          (assign, reg0, -1),
           (gt, ":num_troops", 0),
           (store_random_in_range, ":random_troop", 0, ":num_troops"),
           (try_for_range, ":i_stack", 0, ":num_stacks"),

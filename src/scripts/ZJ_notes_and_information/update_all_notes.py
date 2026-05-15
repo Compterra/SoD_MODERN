@@ -15,7 +15,7 @@ SCRIPTS = [
           (call_script, "script_update_faction_notes", ":faction_no"),
           (call_script, "script_update_faction_traveler_notes", ":faction_no"),
         (try_end),
-		(try_for_range, ":faction_no", "fac_sod_merc_guild1", "fac_kingdom_6_mercenaries"),
+		(try_for_range, ":faction_no", guilds_begin, guilds_end),
           (call_script, "script_update_faction_notes", ":faction_no"),
           (call_script, "script_update_faction_traveler_notes", ":faction_no"),
         (try_end),

@@ -14,7 +14,7 @@ SCRIPTS = [
    (store_faction_of_party, ":center_faction", ":center_no"),
    (faction_get_slot, ":pact_guild", ":center_faction", slot_faction_merc_pact),
    (eq, ":pact_guild", ":troop_faction"),
-   (call_script, "script_sod_merc_market_calculate_guild_supply", ":troop_faction"),
+   (call_script, "script_sod_merc_market_calculate_guild_supply", ":troop_faction", 0),
    (assign, ":available_companies", reg0),
    (assign, ":max_company_size", reg1),
    (assign, ":refusal_reason", reg6),

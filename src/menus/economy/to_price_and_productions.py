@@ -6,6 +6,7 @@ MENUS = [
     [(party_get_slot, ":town_food_store", "$g_encountered_party", slot_party_food_store),
      (call_script, "script_center_get_food_consumption", "$g_encountered_party"),
      (assign, ":food_consumption", reg0),
+     (val_max, ":food_consumption", 1),
      (store_div, reg3, ":town_food_store", ":food_consumption"),
      (try_begin),
        (lt, reg3, 3),

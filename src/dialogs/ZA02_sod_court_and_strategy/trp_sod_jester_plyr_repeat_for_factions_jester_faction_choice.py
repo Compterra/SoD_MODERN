@@ -1,6 +1,8 @@
 DIALOGS = [
 [trp_sod_jester|plyr|repeat_for_factions, "jester_faction_choice", 
-	[ (store_repeat_object, ":faction_no"),
+	[ (this_or_next|eq, "$cheat_mode", 1),
+	(eq, "$g_sod_cheat_mode", 1),
+	(store_repeat_object, ":faction_no"),
 	(neq, ":faction_no", "fac_player_supporters_faction"),
 	(neq, ":faction_no", "fac_player_faction"),
 	(str_store_faction_name, s1, ":faction_no")], "{s1}.", "jester_relations", [

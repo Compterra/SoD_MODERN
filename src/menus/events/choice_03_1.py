@@ -1,13 +1,13 @@
 MENUS = [
 (
     "event_03", mnf_disable_all_keys,
-    "Young noble spreads rumors about one of the ladies from your court. Accusations of working in the world's oldest job are the most delicate ones.",
+    "A young noble has been spreading foul rumors about one of the ladies of your court. The accusation is crude, public, and dangerous enough to demand an answer.",
     "none",
     [
 
     ],
     [
-      ("choice_03_1", [], "Challenge him for a duel!",
+      ("choice_03_1", [], "Challenge him to a duel.",
        [
     (assign, ":arena_scene", "scn_random_scene"),
     (try_begin),
@@ -38,12 +38,12 @@ MENUS = [
   #  (try_end),
         ]
        ),
-      ("choice_03_2", [], "I'm not a nanny for God's sake! It's none of my business.",
+      ("choice_03_2", [], "This is a court quarrel. I will not intervene.",
        [
         (change_screen_return),
         ]
        ),
-      ("choice_03_3", [(eq, "$character_gender", tf_male), (eq, "$g_sod_parental_advisory", 0)], "Make sure he accidentaly encounters a loose falling brick. And call the lady to my room, she forgot her suspenders yesterday.",
+      ("choice_03_3", [(eq, "$character_gender", tf_male), (eq, "$g_sod_parental_advisory", 0)], "Arrange for him to meet with an accident.",
        [
        (call_script, "script_change_player_honor", -3),
        (change_screen_return),

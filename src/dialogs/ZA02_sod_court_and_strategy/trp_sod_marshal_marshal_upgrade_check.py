@@ -12,5 +12,5 @@ DIALOGS = [
 			(val_add, ":total", ":troop_count"),
 	  (try_end),
       (eq, ":total", 0),
-    ], "None of your troops are ready to upgrade, my liege.  Please return to me when your troops have become more experienced.", "marshal_talk_again", []],
+    ], "No troops in your party can be promoted, my liege. Bring me trained soldiers with a valid promotion path.", "marshal_talk_again", []],
 ]

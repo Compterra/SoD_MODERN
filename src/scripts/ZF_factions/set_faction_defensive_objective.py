@@ -108,7 +108,7 @@ SCRIPTS = [
 		(else_try),
 		(str_store_string, s12, "@none"),
 		(try_end),
-		(display_log_message, "@{s11} has chosen a defensive objective : {s12}.", debug_color),
+		(display_log_message, "@{s11} has chosen a defensive objective: {s12}.", debug_color),
     (try_end),
 		]),
 ]

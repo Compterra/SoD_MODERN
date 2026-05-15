@@ -63,7 +63,9 @@ SCRIPTS = [
     (assign, reg10, ":ascension_ready_centers"),
     (assign, reg11, ":strained_faith_centers"),
 
-    (str_store_string, s1, "@{s1}^Chapter houses under your banner: {reg0}.^^Faith ledger:^Raw faith: {reg1}. Holy burden: {reg2}. Effective faith: {reg3}. Required for ascension: {reg4}. Religious seats: {reg8}. Town local faith needed: {reg9}. Ascension-ready seats: {reg10}. Strained seats: {reg11}. Ascension outlook: {s3}.^^Homeland noble doctrine:"),
+    (str_store_string_reg, s97, s1),
+
+    (str_store_string, s1, "@{s97}^Chapter houses under your banner: {reg0}.^^Faith ledger:^Raw faith: {reg1}. Holy burden: {reg2}. Effective faith: {reg3}. Required for ascension: {reg4}. Religious seats: {reg8}. Town local faith needed: {reg9}. Ascension-ready seats: {reg10}. Strained seats: {reg11}. Ascension outlook: {s3}.^^Homeland noble doctrine:"),
 
     (try_begin),
       (eq, "$g_sod_country", cb_antares),
@@ -110,6 +112,8 @@ SCRIPTS = [
       (str_store_string, s7, "@Not enough effective faith"),
     (try_end),
 
-    (str_store_string, s1, "@{s1}^{s4}: noble elite. Status: {s6}.^Faith ascension: {s5}. Status: {s7}. Requires chapel or temple support, an eligible noble, sufficient effective faith, strong player-faith support, and manageable local faith tension. Each ascension adds holy burden, making the next one harder until the realm rebuilds faith.^^Royal legitimacy:^Artifact doctrine discount: {reg5}%. Duel inspiration batches remaining: {reg6}. Matching recovered or vaulted royal artifacts can reduce elite training costs; wearing three or more matching royal set pieces adds a small regalia bonus, capped with the reliquary discount. Commander duel victories can inspire a few veteran upgrades. None of this bypasses buildings, faith, or culture gates.^^Doctrine notes:^Infantry, ranged, and mounted troops still require barracks, range, and stables. Nobles remain the second-best troop tier. Faith elites remain the best-in-game tier."),
+    (str_store_string_reg, s97, s1),
+
+    (str_store_string, s1, "@{s97}^{s4}: noble elite. Status: {s6}.^Faith ascension: {s5}. Status: {s7}. Requires chapel or temple support, an eligible noble, sufficient effective faith, strong player-faith support, and manageable local faith tension. Each ascension adds holy burden, making the next one harder until the realm rebuilds faith.^^Royal legitimacy:^Artifact doctrine discount: {reg5}%. Duel inspiration batches remaining: {reg6}. Matching recovered or vaulted royal artifacts can reduce elite training costs; wearing three or more matching royal set pieces adds a small regalia bonus, capped with the reliquary discount. Commander duel victories can inspire a few veteran upgrades. None of this bypasses buildings, faith, or culture gates.^^Doctrine notes:^Infantry, ranged, and mounted troops still require barracks, range, and stables. Nobles remain the second-best troop tier. Faith elites remain the best-in-game tier."),
   ]),
 ]

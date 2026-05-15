@@ -3,7 +3,17 @@ MENUS = [
       "order_attack_2",mnf_disable_all_keys,
       "{s4}^^Your casualties: {s8}^^Enemy casualties: {s9}^^Allied line: {s10}^Enemy line: {s11}",
       "none",
-      [  (try_begin),
+      [
+         (assign, ":encountered_party_valid", 0),
+         (try_begin),
+            (gt, "$g_encountered_party", 0),
+            (party_is_active, "$g_encountered_party"),
+            (assign, ":encountered_party_valid", 1),
+         (else_try),
+            (party_clear, "p_collective_enemy"),
+         (try_end),
+
+         (try_begin),
          (eq, "$g_sod_autoresolve", 1),
          # kt0:  heavily modified to use the new strength calculation stuff.
          # Antigravity: Fixed massive auto-resolve exploit! Automatically detect if the player is assaulting a Town/Castle.
@@ -11,6 +21,7 @@ MENUS = [
          (assign, ":is_siege_atk", 0),
          (assign, ":is_siege_def", 0),
          (try_begin),
+            (eq, ":encountered_party_valid", 1),
             (this_or_next|party_slot_eq, "$g_encountered_party", slot_party_type, spt_castle),
             (party_slot_eq, "$g_encountered_party", slot_party_type, spt_town),
             (assign, ":is_siege_atk", 2),
@@ -42,11 +53,16 @@ MENUS = [
          (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
          (str_store_string_reg, s8, s0),
 
-         (inflict_casualties_to_party_group, "$g_encountered_party", ":player_party_strength", "p_temp_casualties"),
-         (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
-         (str_store_string_reg, s9, s0),
+         (try_begin),
+            (eq, ":encountered_party_valid", 1),
+            (inflict_casualties_to_party_group, "$g_encountered_party", ":player_party_strength", "p_temp_casualties"),
+            (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
+            (str_store_string_reg, s9, s0),
+            (party_collect_attachments_to_party, "$g_encountered_party", "p_collective_enemy"),  # KT0 IMPROVED AUTORESOLVE ENDS
+         (else_try),
+            (str_store_string, s9, "@None"),
+         (try_end),
 
-         (party_collect_attachments_to_party, "$g_encountered_party", "p_collective_enemy"),  # KT0 IMPROVED AUTORESOLVE ENDS
            
          (else_try),   # native/native improved autoresolve are the same here
 
@@ -63,11 +79,15 @@ MENUS = [
         (str_store_string_reg, s8, s0),
                                     
 ####                                    (call_script,"script_inflict_casualties_to_party", "$g_encountered_party", ":player_party_strength"),
-        (inflict_casualties_to_party_group, "$g_encountered_party", ":player_party_strength", "p_temp_casualties"),
-        (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
-        (str_store_string_reg, s9, s0),
-
-        (party_collect_attachments_to_party, "$g_encountered_party", "p_collective_enemy"),
+        (try_begin),
+          (eq, ":encountered_party_valid", 1),
+          (inflict_casualties_to_party_group, "$g_encountered_party", ":player_party_strength", "p_temp_casualties"),
+          (call_script, "script_print_casualties_to_s0", "p_temp_casualties", 0),
+          (str_store_string_reg, s9, s0),
+          (party_collect_attachments_to_party, "$g_encountered_party", "p_collective_enemy"),
+        (else_try),
+          (str_store_string, s9, "@None"),
+        (try_end),
 
          (try_end),   # autoresolves end
 

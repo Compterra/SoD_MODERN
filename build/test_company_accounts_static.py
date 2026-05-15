@@ -155,9 +155,11 @@ def test_company_account_scripts_exist() -> None:
         "sod_company_accounts_apply_faith_conduct",
         "sod_company_accounts_record_company_growth",
         "sod_company_accounts_get_battle_morale_context_to_regs",
+        "sod_company_accounts_roster_snapshot_is_current_to_reg",
         "sod_company_accounts_apply_ration_feast",
         "sod_company_accounts_apply_victory_feast",
         "sod_company_accounts_update_ration_pressure",
+        "sod_company_accounts_update_ration_pressure_for_food_count",
         "sod_company_accounts_adjust_food_consumption_to_reg",
         "sod_company_accounts_describe_rations_to_s23",
         "sod_company_accounts_get_ration_confidence_band_to_reg",
@@ -325,6 +327,11 @@ def test_company_accounts_menu_is_reachable() -> None:
     assert_contains(camp_action, "mnu_company_rations")
     assert_contains(camp_action, "mnu_company_recreation")
     assert_contains(reports, "mnu_company_accounts")
+    assert_contains(camp_action, '(assign, "$g_sod_company_accounts_return_menu", "mnu_camp_action")')
+    assert_contains(reports, '(assign, "$g_sod_company_accounts_return_menu", "mnu_reports")')
+    assert_contains(menu, '(assign, "$g_sod_company_accounts_return_menu", "mnu_camp")')
+    assert_contains(menu, '(assign, ":sod_company_accounts_back_menu", "$g_sod_company_accounts_return_menu")')
+    assert_contains(menu, '(jump_to_menu, ":sod_company_accounts_back_menu")')
     for token in (
         "company_accounts_pay_full",
         "company_accounts_pay_half",
@@ -378,14 +385,11 @@ def test_company_accounts_menu_is_reachable() -> None:
         "script_sod_company_accounts_describe_recreation_to_s26",
         "script_sod_company_accounts_describe_tavern_rumors_to_s30",
         "script_sod_company_accounts_describe_petition_to_s36",
-        "script_sod_company_accounts_describe_desertion_to_s40",
-        "script_sod_company_accounts_describe_mutiny_to_s44",
-        "script_sod_company_accounts_apply_pay_choice",
-        "script_sod_company_accounts_apply_casualty_compensation",
-        "script_sod_company_accounts_apply_hazard_pay",
-        "script_sod_company_accounts_apply_victory_reward",
-        "script_sod_company_accounts_apply_victory_feast",
-        "script_sod_company_accounts_refuse_public_spectacle",
+            "script_sod_company_accounts_describe_desertion_to_s40",
+            "script_sod_company_accounts_describe_mutiny_to_s44",
+            "script_sod_company_accounts_apply_pay_choice",
+            "script_sod_company_accounts_apply_hazard_pay",
+            "script_sod_company_accounts_apply_victory_feast",
         "script_sod_company_accounts_apply_petition_response",
         "script_sod_company_accounts_find_petition_mediator_to_regs",
         "script_sod_company_accounts_resolve_desertion",
@@ -459,8 +463,18 @@ def test_company_wage_debt_uses_live_main_party_payroll() -> None:
         'le, ":current_company_weekly_wage", 0',
         'assign, "$g_player_debt_to_party_members", 0',
         'store_mul, ":max_live_debt", ":current_company_weekly_wage", 3',
+        'assign, ":weekly_expense_entries", 0',
+        'Over the past week you recorded no hiring, upgrade, or construction spending',
+        'Companion command cost: {reg10} denars^',
+        'Command purses paid {reg9} denars^',
+        'Retinue shortages covered by this wage bill: {reg12} denars^',
+        'Unpaid retinue shortages: {reg13} denars^',
     ):
         assert_contains(payday, token)
+    assert_not_contains(payday, "{reg0?{reg0}")
+    assert_not_contains(payday, "{reg9?Command purses")
+    assert_not_contains(payday, "{reg12?Retinue shortages")
+    assert_not_contains(payday, "{reg13?Unpaid retinue")
 
 
 def test_ration_policy_hooks_are_wired() -> None:
@@ -468,8 +482,18 @@ def test_ration_policy_hooks_are_wired() -> None:
     morale = read("src/scripts/ZC_parties/get_player_party_morale_values.py")
     scripts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
     companion_depth = read("src/scripts/ZY_helper_scripts/sod_companion_depth.py")
-    assert_contains(food_trigger, "script_sod_company_accounts_adjust_food_consumption_to_reg")
-    assert_contains(food_trigger, "script_sod_company_accounts_update_ration_pressure")
+    assert_contains(food_trigger, "script_sod_company_accounts_get_daily_food_consumption_to_regs")
+    assert_contains(food_trigger, "assign, \":edible_food_before_consumption\", reg31")
+    assert_contains(food_trigger, "assign, \":consumption_amount\", reg32")
+    assert_contains(food_trigger, "assign, \":edible_food_after_consumption\", -1")
+    assert_contains(food_trigger, "assign, \":edible_food_after_consumption\", reg0")
+    assert_contains(food_trigger, "lt, \":edible_food_after_consumption\", reg1")
+    assert food_trigger.count("script_count_edible_food") == 1
+    assert_not_contains(food_trigger, "party_get_num_companion_stacks")
+    assert_contains(scripts, "script_sod_company_accounts_adjust_food_consumption_to_reg")
+    assert_contains(food_trigger, "script_sod_company_accounts_update_ration_pressure_for_food_count")
+    assert_contains(scripts, "script_sod_company_accounts_update_ration_pressure")
+    assert_contains(scripts, "script_sod_company_accounts_update_ration_pressure_for_food_count")
     assert_contains(morale, "$g_player_party_morale_modifier_rations")
     assert_contains(morale, "$g_sod_company_ration_policy")
     assert_contains(morale, "sod_company_ration_policy_thin")
@@ -759,6 +783,50 @@ def test_company_petition_pressure_is_wired() -> None:
         assert_contains(menu, token)
 
 
+def test_company_voice_report_reuses_snapshot_class_counts() -> None:
+    scripts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
+    start = scripts.index('("sod_company_accounts_describe_class_voices_to_s52"')
+    end = scripts.index('("sod_company_accounts_get_class_wages_to_regs"', start)
+    voices = scripts[start:end]
+    for token in (
+        "script_sod_company_accounts_count_noble_troops_to_regs",
+        "assign, reg52, reg42",
+        "assign, reg53, reg39",
+        "assign, reg54, reg40",
+        "assign, reg55, reg41",
+        "val_sub, reg54, reg55",
+        "Company voices",
+    ):
+        assert_contains(voices, token)
+    assert_not_contains(voices, "party_get_num_companion_stacks")
+    assert_not_contains(voices, "script_sod_company_accounts_get_troop_class")
+
+
+def test_roster_snapshot_fast_path_avoids_food_count_for_roster_values() -> None:
+    scripts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
+    start = scripts.index('("sod_company_accounts_roster_snapshot_is_current_to_reg"')
+    end = scripts.index('("sod_company_accounts_refresh_halfday_snapshot"', start)
+    roster_current = scripts[start:end]
+    for token in (
+        "$g_sod_company_snapshot_hour",
+        "$g_sod_company_snapshot_stack_count",
+        "$g_sod_company_snapshot_party_size",
+        "party_get_num_companion_stacks",
+        "party_get_num_companions",
+    ):
+        assert_contains(roster_current, token)
+    assert_not_contains(roster_current, "script_count_edible_food")
+    for script_id in (
+        '("sod_company_accounts_get_current_company_weekly_wage_to_reg"',
+        '("sod_company_accounts_count_noble_troops_to_regs"',
+        '("sod_company_accounts_get_class_wages_to_regs"',
+    ):
+        block_start = scripts.index(script_id)
+        block_end = scripts.index(']),', block_start)
+        block = scripts[block_start:block_end]
+        assert_contains(block, "script_sod_company_accounts_roster_snapshot_is_current_to_reg")
+
+
 def test_peaceful_desertion_request_is_wired() -> None:
     scripts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
     menu = read("src/menus/camp/company_accounts.py")
@@ -788,7 +856,9 @@ def test_peaceful_desertion_request_is_wired() -> None:
         "trade_goods_begin",
         "trade_goods_end",
         "horses_begin",
-        "horses_end",
+        "itm_items_end",
+        "item_get_type",
+        "itp_type_horse",
         "sod_company_desertion_response_paid",
         "sod_company_desertion_response_persuade",
         "sod_company_desertion_response_unpaid",

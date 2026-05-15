@@ -1,6 +1,5 @@
 DIALOGS = [
-[anyone, "arena_master_ask_tournaments", [], "{reg2?There won't be any tournaments any time soon.:{reg1?Tournaments are:A tournament is} going to be held at {s15}.}", "arena_master_talk",
-   [
+[anyone, "arena_master_ask_tournaments", [
        (assign, ":num_tournaments", 0),
        (try_for_range_backwards, ":town_no", towns_begin, towns_end),
          (party_slot_ge, ":town_no", slot_town_has_tournament, 1),
@@ -23,5 +22,15 @@ DIALOGS = [
          (assign, reg2, 0),
          (store_sub, reg1, ":num_tournaments", 1),
        (try_end),
-   ]],
+       (try_begin),
+         (eq, ":num_tournaments", 0),
+         (str_store_string, s68, "@There won't be any tournaments any time soon."),
+       (else_try),
+         (eq, ":num_tournaments", 1),
+         (str_store_string, s68, "@A tournament is going to be held at {s15}."),
+       (else_try),
+         (str_store_string, s68, "@Tournaments are going to be held at {s15}."),
+       (try_end),
+   ], "{s68}", "arena_master_talk",
+   []],
 ]

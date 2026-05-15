@@ -13,6 +13,7 @@ SCRIPTS = [
       (try_end),
 
       (try_for_parties, ":party_no"),
+        (party_is_active, ":party_no"),
         (store_faction_of_party, ":party_faction", ":party_no"),
         (this_or_next|eq, ":party_faction", ":faction_no_1"),
         (this_or_next|eq, ":party_faction", ":faction_no_2"),

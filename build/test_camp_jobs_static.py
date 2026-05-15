@@ -12,6 +12,10 @@ def assert_contains(text: str, needle: str) -> None:
     assert needle in text, f"Missing expected text: {needle}"
 
 
+def assert_not_contains(text: str, needle: str) -> None:
+    assert needle not in text, f"Stale text remains: {needle}"
+
+
 def test_camp_jobs_have_constants_and_state_contracts():
     constants = read("src/constants/module_constants.py")
     for name in [
@@ -190,7 +194,9 @@ def test_camp_jobs_menu_reports_passive_roles_manpower_progress_and_blockers():
     assert_contains(scripts, "no lame horses")
     assert_contains(scripts, "no wounded troops")
     assert_contains(scripts, "needs nearby hostile center")
-    assert_contains(scripts, '(str_store_string, s1, "@{s1}^^{s2}")')
+    assert_contains(scripts, '(str_store_string_reg, s97, s1)')
+    assert_contains(scripts, '(str_store_string, s1, "@{s97}^^{s2}")')
+    assert_not_contains(scripts, '(str_store_string, s1, "@{s1}^^{s2}")')
 
 
 def test_companions_can_reveal_camp_jobs_through_member_dialogue():
@@ -204,11 +210,13 @@ def test_companions_can_reveal_camp_jobs_through_member_dialogue():
     response_line = read("src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_camp_job_reveal.py")
     assert_contains(player_line, '"What work do you take up when we make camp?"')
     assert_contains(player_line, '"companion_camp_job_reveal"')
-    assert_contains(response_line, '(call_script, "script_sod_camp_passive_job_dialogue_to_s0", "$g_talk_troop")')
-    assert_contains(response_line, '"{s0}"')
+    assert_contains(response_line, '(call_script, "script_sod_camp_passive_job_dialogue_to_s68", "$g_talk_troop")')
+    assert_contains(response_line, '"{s68}"')
 
     scripts = read("src/scripts/ZY_helper_scripts/sod_camp_jobs.py")
+    assert_contains(scripts, '"sod_camp_passive_job_dialogue_to_s68"')
     assert_contains(scripts, '"sod_camp_passive_job_dialogue_to_s0"')
+    assert_contains(scripts, '(str_store_string_reg, s0, s68)')
     assert_contains(scripts, '(call_script, "script_sod_camp_passive_job_name_to_s4", ":job_type")')
     assert_contains(scripts, '(call_script, "script_sod_camp_passive_job_progress_to_s5", ":companion")')
     assert_contains(scripts, '(call_script, "script_sod_camp_passive_job_condition_text_to_s6", ":companion", ":job_type")')

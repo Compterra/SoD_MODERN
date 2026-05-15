@@ -4,6 +4,8 @@ MENUS = [
    "none",
    [
      (call_script, "script_sod_center_refresh_mercenary_guild_hall_stock", "$current_town"),
+     (party_get_slot, ":guild", "$current_town", slot_center_sod_merc_hall_guild),
+     (call_script, "script_sod_show_guild_contact_portrait", ":guild"),
      (call_script, "script_sod_center_describe_mercenary_guild_hall_to_s20", "$current_town"),
    ],
    [

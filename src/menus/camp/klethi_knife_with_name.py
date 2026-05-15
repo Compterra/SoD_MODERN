@@ -46,7 +46,7 @@ MENUS = [
         [
           (str_store_party_name, s4, "$g_sod_klethi_old_job_focus_center"),
           (display_message, "@Klethi taps the mark twice. The old job has a witness in {s4}; bring her there before choosing what the secret buys.", 0x99CCFF),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc16"),
         ]
       ),
       ("klethi_knife_follow_mark", [
@@ -60,7 +60,7 @@ MENUS = [
         [
           (str_store_party_name, s4, "$g_sod_klethi_old_job_focus_center"),
           (display_message, "@The tavernkeeper's witness points to an alley in {s4}. Travel there with Klethi and follow the old mark before settling the price.", 0x99CCFF),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc16"),
         ]
       ),
       ("klethi_knife_choose", [
@@ -76,7 +76,7 @@ MENUS = [
           (call_script, "script_sod_companion_advance_personal_quest", "trp_npc16", 1),
           (call_script, "script_sod_companion_klethi_apply_old_job_payoff"),
           (display_message, "@Klethi chooses the door, the knife, and the mercy herself. A Knife With a Name remembers chosen belonging.", 0x99CCFF),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc16"),
         ]
       ),
       ("klethi_knife_protect", [
@@ -99,7 +99,7 @@ MENUS = [
             (call_script, "script_sod_companion_klethi_apply_old_job_payoff"),
           (try_end),
           (display_message, "@The old job is cut loose without selling Klethi with it. She calls that almost decent.", 0xCCCC66),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc16"),
         ]
       ),
       ("klethi_knife_sellout", [
@@ -115,7 +115,7 @@ MENUS = [
           (call_script, "script_sod_companion_advance_personal_quest", "trp_npc16", 0),
           (troop_set_slot, "trp_npc16", slot_troop_companion_warning_state, sod_companion_warning_pending),
           (display_message, "@The secret buys leverage. Klethi buys distance. A Knife With a Name remembers the price tag.", 0xCC6666),
-          (jump_to_menu, "mnu_camp_action"),
+          (start_map_conversation, "trp_npc16"),
         ]
       ),
       ("klethi_knife_leave", [], "Return to camp.",
@@ -155,7 +155,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_stealth_success, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc16"),
           (display_message, "@Klethi trades two old phrases and one quiet threat. The contact leaves the name in her hands.", 0x99CCFF),
-          (jump_to_menu, "mnu_town"),
+          (start_map_conversation, "trp_npc16"),
         ]
       ),
       ("klethi_alley_protect", [
@@ -200,7 +200,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_betray_autonomy, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc16"),
           (display_message, "@The broker buys silence with names and routes. Klethi watches which hand you used to take them.", 0xCC6666),
-          (jump_to_menu, "mnu_town"),
+          (start_map_conversation, "trp_npc16"),
         ]
       ),
       ("klethi_alley_leave", [], "Step back from the alley.",
@@ -226,7 +226,7 @@ MENUS = [
       (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc16"),
     ],
     [
-      ("continue", [], "Continue...", [(jump_to_menu, "mnu_town")]),
+      ("continue", [], "Speak with Klethi.", [(start_map_conversation, "trp_npc16")]),
     ]
   ),
 ("klethi_knife_alley_failed", mnf_disable_all_keys,
@@ -239,7 +239,7 @@ MENUS = [
       (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc16"),
     ],
     [
-      ("continue", [], "Continue...", [(jump_to_menu, "mnu_town")]),
+      ("continue", [], "Speak with Klethi.", [(start_map_conversation, "trp_npc16")]),
     ]
   ),
 ]

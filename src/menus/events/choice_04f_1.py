@@ -1,6 +1,6 @@
 MENUS = [
 ( "event_04f", mnf_disable_all_keys,
-    "A rich merchant from {s1} come to you and offer {reg1} denars to free his daughter. You discover that some of your soldiers had kidnapped her and asked for ransom.",
+    "A rich merchant from {s1} comes to you and offers {reg1} denars to free his daughter. You discover that some of your soldiers kidnapped her and demanded ransom.",
     "none",
     [  	    (call_script, "script_get_closest_town", "p_main_party"),
             (assign, "$sod_event_relation_center", reg0),
@@ -13,7 +13,7 @@ MENUS = [
 			(val_mul, reg1, 100),
     ],
     [
-      ("choice_04f_1", [], "Whip the guilties and free her.",
+      ("choice_04f_1", [], "Punish the guilty men and free her.",
        [
         (call_script, "script_change_player_honor", 4),
 		(assign, "$g_whiped_for_example", 1),
@@ -31,7 +31,7 @@ MENUS = [
         ]
        ),
 
-	  ("choice_04f_3", [], "Take the ransom for you, free her and punish your men.",
+	  ("choice_04f_3", [], "Take the ransom, free her, and punish your men.",
        [(troop_add_gold, "trp_player", reg1),
 	    (call_script, "script_change_player_honor", -4),
 	    (call_script, "script_change_player_party_morale", -10),
@@ -41,7 +41,7 @@ MENUS = [
         ]
        ),
 
-	  ("choice_04f_3", [], "Just take the ransom and free her.",
+	  ("choice_04f_4", [], "Just take the ransom and free her.",
        [(troop_add_gold, "trp_player", reg1),
 	    (call_script, "script_change_player_honor", -5),
 	    (call_script, "script_change_player_relation_with_center", "$sod_event_relation_center", -5),
@@ -49,7 +49,7 @@ MENUS = [
         ]
        ),
 
-	  ("choice_04f_4", [], "Let your men have the ransom.",
+	  ("choice_04f_5", [], "Let your men have the ransom.",
        [(call_script, "script_change_player_honor", -4),
 	   	(call_script, "script_change_player_party_morale", 10),
 	    (call_script, "script_change_player_relation_with_center", "$sod_event_relation_center", -5),

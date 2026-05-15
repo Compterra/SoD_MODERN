@@ -3624,7 +3624,13 @@ troops.append(["black_khergit_khan", "Temujin Black Sky", "Temujin Black Sky", t
    def_attrib|level(36), expert_archer(36)|expert_melee(36), knows_riding_7|knows_horse_archery_7|knows_power_draw_7|knows_power_strike_6|knows_ironflesh_6|knows_weapon_master_6|knows_shield_4|knows_tactics_4, khergit_face_older_1, khergit_face_old_2])
 
 # Player banking vault. Kept near the tail to avoid shifting legacy troop ids.
-troops.append(["sod_bankvault_possessions", "{!}sod_bankvault_possessions", "{!}sod_bankvault_possessions", tf_hero|tf_inactive|tf_is_merchant, no_scene, reserved, fac_neutral, [], def_attrib|level(18), wp(60), knows_inventory_management_10, 0])
+troops.append(["sod_bankvault_possessions", "{!}sod_bankvault_possessions", "{!}sod_bankvault_possessions", tf_hero|tf_inactive|tf_is_merchant, no_scene, reserved, fac_neutral, [], def_attrib|level(18), wp_all(60), knows_inventory_management_10, 0])
+
+# Public health relief civilian. Kept near the tail to avoid shifting legacy troop ids.
+troops.append(["sod_public_health_clergy", "Relief Cleric", "Relief Clergy", tf_guarantee_boots|tf_guarantee_armor, no_scene, reserved, fac_commoners,
+   [itm_staff, itm_quarter_staff, itm_wooden_stick, itm_club,
+    itm_robe, itm_pilgrim_hood, itm_wrapping_boots],
+   def_attrib|int_12|cha_10|level(8), weak_melee(8), knows_first_aid_2|knows_surgery_1|knows_wound_treatment_2, man_face_middle_1, man_face_old_2])
 
 # for iterating thru experienced troops
 troops.append(["last_troop", "last_troop", "last_troop", tf_hero|tf_inactive, 0, reserved,  fac_neutral, [], def_attrib|level(18), regular_melee(18), knows_common, 0])

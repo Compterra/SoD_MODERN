@@ -97,7 +97,7 @@ def test_classic_employer_rotation_uses_market_scoring() -> None:
     assert_contains(legacy, "script_sod_merc_market_calculate_kingdom_guild_weight")
     assert_contains(legacy, "slot_faction_sod_merc_preferred_guild")
     assert_contains(legacy, "slot_faction_sod_merc_last_hired_guild")
-    assert_contains(legacy, "fac_kingdom_6")
+    assert_contains(legacy, "native_kingdoms_begin, native_kingdoms_end")
     assert_contains(legacy, ":best_candidate")
     assert_not_contains(legacy, "store_random_in_range")
     assert_not_contains(legacy, ":start_offset")
@@ -110,6 +110,28 @@ def test_weekly_rotation_uses_explicit_classic_guild_predicate() -> None:
     assert_contains(weekly, "script_cf_sod_merc_guild_uses_classic_employer_rotation")
     assert_contains(weekly, "guilds_begin, guilds_end")
     assert_not_contains(weekly, 'guilds_begin, "fac_sod_merc_guild6"')
+
+
+def test_daily_contract_expiry_triggers_delegate_to_helpers() -> None:
+    player_trigger = read("src/triggers/ST03_daily/entry_0118.py")
+    ai_trigger = read("src/triggers/ST03_daily/entry_0120.py")
+    helper = read("src/scripts/ZY_helper_scripts/sod_merc_contract_daily.py")
+
+    assert_contains(player_trigger, "script_sod_merc_process_player_contract_expiry")
+    assert_contains(ai_trigger, "script_sod_merc_process_ai_contract_expiry")
+    assert_not_contains(player_trigger, "try_for_parties")
+    assert_not_contains(ai_trigger, "try_for_parties")
+    for token in [
+        '"sod_merc_process_player_contract_expiry"',
+        '"sod_merc_process_ai_contract_expiry"',
+        "spt_player_mercenaries",
+        "spt_ai_mercenaries",
+        "slot_party_merc_contract",
+        "slot_party_merc_asked",
+        "mnu_contract_fulfilled",
+        "script_merc_party_change_state",
+    ]:
+        assert_contains(helper, token)
 
 
 def test_ledger_repair_tags_active_contract_parties() -> None:
@@ -153,6 +175,7 @@ def test_supply_demand_and_report_helpers_exist() -> None:
     contract_board = read("src/scripts/ZY_helper_scripts/merc_describe_contract_board.py")
     player_replenish = read("src/scripts/ZY_helper_scripts/sod_merc_player_company_try_replenish.py")
     daily_replenish = read("src/triggers/ST03_daily/entry_0122.py")
+    daily_contracts = read("src/scripts/ZY_helper_scripts/sod_merc_contract_daily.py")
     player_wage = read("src/scripts/ZB_economy_and_trade/calculate_player_faction_wage.py")
     hire_dialog = read("src/dialogs/ZZ99_misc_dialogs/anyone_gm_hire8.py")
     hire_accept = read("src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_hire9.py")
@@ -179,6 +202,7 @@ def test_supply_demand_and_report_helpers_exist() -> None:
     merc_lord_spawn = read("src/scripts/ZY_helper_scripts/sod_merc_lord_try_spawn_for_troop.py")
     merc_lord_outcome = read("src/scripts/ZY_helper_scripts/sod_merc_lord_note_battle_outcome.py")
     merc_lord_trigger = read("src/triggers/ST03_daily/entry_0129.py")
+    merc_daily = read("src/scripts/ZY_helper_scripts/sod_merc_contract_daily.py")
     player_victory = read("src/scripts/ZC_parties/event_player_defeated_enemy_party.py")
     simulate_battle = read("src/scripts/ZA_hardcoded_game_scripts/game_event_simulate_battle.py")
     report = read("src/scripts/ZY_helper_scripts/sod_merc_guild_describe_ledger_to_s20.py")
@@ -211,7 +235,7 @@ def test_supply_demand_and_report_helpers_exist() -> None:
     assert_contains(demand, "sod_merc_contract_role_patrol")
     assert_contains(demand, "sod_merc_contract_role_escort")
     assert_contains(demand, "sod_merc_contract_role_garrison_support")
-    assert_contains(demand, '"fac_kingdom_6"')
+    assert_contains(demand, "native_kingdoms_begin, native_kingdoms_end")
     assert_contains(demand, "script_sod_merc_market_calculate_village_patrol_demand")
     assert_contains(demand, "script_sod_merc_market_calculate_world_activity_pressure")
     assert_contains(demand, "sod_merc_contract_role_special_world_activity")
@@ -239,7 +263,7 @@ def test_supply_demand_and_report_helpers_exist() -> None:
     assert_contains(guild_weight, "loss_penalty")
     assert_contains(preferred_guild, "script_sod_merc_market_calculate_kingdom_guild_weight")
     assert_contains(refresh, "script_sod_merc_market_calculate_kingdom_demand")
-    assert_contains(refresh, '"fac_kingdom_6"')
+    assert_contains(refresh, "native_kingdoms_begin, native_kingdoms_end")
     assert_contains(demand_report, "script_sod_merc_market_calculate_kingdom_demand")
     assert_contains(demand_report, "Village patrol pressure")
     assert_contains(demand_report, "Favored guild")
@@ -364,8 +388,13 @@ def test_supply_demand_and_report_helpers_exist() -> None:
     assert_contains(player_replenish, "player_debt_to_faction")
     assert_contains(player_replenish, "$g_sod_merc_weekly_paiment_not_paid_in_a_row")
     assert_contains(player_replenish, "store_relation")
-    assert_contains(daily_replenish, "script_sod_merc_player_company_try_replenish")
-    assert_contains(daily_replenish, "neg|party_slot_eq, \":cur_party\", slot_party_type, spt_player_mercenaries")
+    assert_contains(daily_replenish, "script_sod_merc_process_daily_reinforcement_and_xp")
+    assert_not_contains(daily_replenish, "try_for_parties")
+    assert_contains(daily_contracts, "script_sod_merc_player_company_try_replenish")
+    assert_contains(daily_contracts, "neg|party_slot_eq, \":cur_party\", slot_party_type, spt_player_mercenaries")
+    assert_contains(daily_contracts, "spt_mercenary_lord_party")
+    assert_contains(daily_contracts, "script_cf_party_upgrade_with_xp")
+    assert_contains(daily_contracts, "script_merc_apply_daily_standing_perks")
     assert_contains(player_wage, "spt_player_mercenaries")
     assert_contains(hire_dialog, "The retainer")
     assert_contains(hire_dialog, "{s54}^{s55}^{s56}^{s57}^{s58}")
@@ -454,8 +483,11 @@ def test_supply_demand_and_report_helpers_exist() -> None:
     assert_contains(return_contract, "slot_party_commander_party")
     assert_contains(return_contract, "ai_bhvr_patrol_party")
     assert_contains(return_contract, "script_sod_merc_lord_note_battle_outcome")
-    assert_contains(merc_lord_trigger, "script_sod_merc_lord_try_spawn_for_troop")
-    assert_contains(merc_lord_trigger, "script_sod_merc_guild_repair_ledgers")
+    assert_contains(merc_lord_trigger, "script_sod_merc_process_lord_market_pass")
+    assert_not_contains(merc_lord_trigger, "try_for_range")
+    assert_contains(merc_daily, "script_sod_merc_lord_try_spawn_for_troop")
+    assert_contains(merc_daily, "script_sod_merc_guild_repair_ledgers")
+    assert_contains(merc_daily, "Mercenary lord market pass complete.")
     assert_contains(merc_lord_spawn, "script_sod_merc_market_calculate_guild_supply")
     assert_contains(merc_lord_spawn, "slot_faction_sod_merc_support_capacity")
     assert_contains(merc_lord_spawn, "slot_faction_sod_merc_treasury")
@@ -491,6 +523,11 @@ def test_supply_demand_and_report_helpers_exist() -> None:
     assert_contains(report, "Refusing work")
     assert_contains(report, "priority")
     assert_contains(guild_report, "script_sod_merc_guild_describe_ledger_to_s20")
+    assert_contains(guild_report, '"{s98}"')
+    assert_contains(guild_report, "str_store_string_reg, s96, s97")
+    assert_contains(guild_report, "^{s97}")
+    assert_not_contains(guild_report, '"{s1}"')
+    assert_not_contains(guild_report, "@{s2}^")
     assert_contains(market_report, "script_sod_merc_market_describe_overview_to_s20")
     assert_contains(market_report, "mnu_mercenary_status_report")
     assert_contains(market_report, "mnu_mercenary_world_activity_report")

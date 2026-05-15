@@ -1,8 +1,6 @@
 SIMPLE_TRIGGERS = [
 (24,
    [
-       (try_for_range, ":faction_no", kingdoms_begin, kingdoms_end),
-         (call_script, "script_faction_recalculate_strength", ":faction_no"),
-       (try_end),
+       (call_script, "script_sod_faction_daily_recalculate_strengths"),
     ]),
 ]

@@ -38,7 +38,34 @@ def main() -> None:
     for needle in stale_needles:
         assert needle not in combined, needle
 
+    test_training_ground_result_text_uses_high_scratch_registers()
+
     print("test_training_ground_static: OK")
+
+
+def test_training_ground_result_text_uses_high_scratch_registers() -> None:
+    result_menu = RESULT_MENU.read_text(encoding="utf-8")
+
+    for needle in [
+        '"{s98}{s97}"',
+        "(str_clear, s97)",
+        "str_store_string_reg, s96, s97",
+        "str_store_troop_name_by_count, s68",
+        "script_store_troop_name\", s68",
+        "^{reg1} {s68} earned {reg0} experience.",
+        "^{s68} earned an additional {reg0} experience.",
+        "^You earned {reg0} experience.{s96}",
+    ]:
+        assert needle in result_menu, needle
+
+    for stale in [
+        '"{s7}{s2}"',
+        "(str_clear, s2)",
+        "@{s2}^{reg1}",
+        "@{s2}^{s1}",
+        "@^You earned {reg0} experience.{s2}",
+    ]:
+        assert stale not in result_menu, stale
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ MENUS = [
       ("disembark_yes", [], "Yes.",
        [(assign, "$g_player_icon_state", pis_normal),
         (party_set_flags, "p_main_party", pf_is_ship, 0),
+        (call_script, "script_sod_refresh_player_map_icon"),
         (party_get_position, pos1, "p_main_party"),
         (party_set_position, "p_main_party", pos0),
         (try_begin),

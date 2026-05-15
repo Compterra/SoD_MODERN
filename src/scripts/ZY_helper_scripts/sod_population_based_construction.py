@@ -394,6 +394,7 @@ SCRIPTS = [
     (party_set_slot, ":center_no", slot_center_construction_last_progress, 0),
     (party_set_slot, ":center_no", slot_center_improvement_end_hour, 0),
     (call_script, "script_get_improvement_details", ":cur_improvement"),
+    (str_store_string_reg, s68, s0),
 
     (try_begin),
       (gt, "$g_sod_hide_messages", -2),
@@ -403,7 +404,7 @@ SCRIPTS = [
       (this_or_next|eq, ":owner", "trp_player"),
       (eq, ":fac", "fac_player_supporters_faction"),
       (str_store_party_name_link, s4, ":center_no"),
-      (display_log_message, "@Work on the {s0} in {s4} has been completed.", build_color),
+      (display_log_message, "@Work on the {s68} in {s4} has been completed.", build_color),
     (try_end),
 
     (try_begin),

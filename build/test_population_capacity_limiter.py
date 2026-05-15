@@ -18,7 +18,10 @@ def assert_contains(raw: str, needle: str) -> None:
 
 def main() -> int:
     profile = read("src/scripts/ZY_helper_scripts/sod_center_population_capacity.py")
-    taxes = read("src/triggers/ST04_weekly/entry_0038.py")
+    taxes = (
+        read("src/triggers/ST04_weekly/entry_0038.py")
+        + read("src/scripts/ZY_helper_scripts/sod_center_simulation_pipeline.py")
+    )
     collect = read("src/menus/start_game/start_collecting.py")
     food = read("src/scripts/ZD_centers/center_get_food_consumption.py")
     population = read("src/scripts/ZZ_common_array_processing/update_center_population_supply.py")

@@ -54,7 +54,13 @@ def test_faith_buildings_feed_local_support_not_direct_global_faith():
 
 def test_faith_ledger_is_debug_only_and_camp_rites_do_not_explain_hidden_gain():
     reports = read("src/menus/reports/report_submenus.py")
-    assert_contains(reports, '("view_faith_world_report", [(eq, "$cheat_mode", 1)], "Debug faith and institution ledgers."')
+    assert_contains(reports, '("view_faith_world_report", [')
+    assert_contains(reports, '(this_or_next|eq, "$cheat_mode", 1)')
+    assert_contains(reports, '(eq, "$g_sod_cheat_mode", 1)')
+    faith_menu = read("src/menus/reports/faith_world_report.py")
+    assert_contains(faith_menu, '(neq, "$cheat_mode", 1)')
+    assert_contains(faith_menu, '(neq, "$g_sod_cheat_mode", 1)')
+    assert_contains(faith_menu, 'jump_to_menu, "mnu_reports"')
 
     camp_jobs = read("src/scripts/ZY_helper_scripts/sod_camp_jobs.py")
     assert "Faith rises slowly" not in camp_jobs

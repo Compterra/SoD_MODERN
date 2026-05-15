@@ -6,7 +6,7 @@ DIALOGS = [
     (eq, "$g_sod_marnid_market_pending", 1),
     (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Marnid, walk me through the suspect contract.", "companion_depth_marnid_price_pending",
+  "Marnid, show me the suspect contract.", "companion_depth_marnid_price_pending",
   [
     (try_begin),
       (le, "$g_sod_marnid_market_focus_center", 0),

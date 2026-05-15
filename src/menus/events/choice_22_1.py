@@ -68,17 +68,18 @@ MENUS = [
         (str_store_string, s2, "@a {s1} has deserted and left your party"),
 	    (else_try),
         (str_store_troop_name_plural, s1, reg2),
-        (str_store_string, s2, "@some of your soldiers have deserted : {reg3} {s1} have left the party"),
+        (str_store_string, s2, "@{reg3} {s1} have deserted and left your party"),
         (try_end),
-		(party_remove_members, "p_main_party", reg2, reg3),
     ],
     [
-      ("choice_22_1", [], "It's sad.", [
+      ("choice_22_1", [], "Regrettable, but done.", [
+          (party_remove_members, "p_main_party", reg2, reg3),
 	      (call_script, "script_change_player_party_morale", -5),
           (change_screen_return),
         ]
        ),
              ("choice_22_2", [], "Give my remaining soldiers a bonus of 20 denars each.", [
+             (party_remove_members, "p_main_party", reg2, reg3),
 			 (party_get_num_companions, ":cost", "p_main_party"),
 			 (val_mul, ":cost", 20),
 			 (store_troop_gold, ":gold", "trp_player"),
@@ -87,7 +88,7 @@ MENUS = [
             (call_script, "script_change_player_party_morale", 10),
             (call_script, "script_sod_player_charge_gold", ":cost"),
             (else_try),
-            (display_message, "@You don't have enough gold. How embarassing!", quest_fail_color),
+            (display_message, "@You don't have enough gold to pay the bonus.", quest_fail_color),
             (call_script, "script_change_troop_renown", "trp_player", -5),
             (call_script, "script_change_player_party_morale", -5),
              (try_end),
@@ -96,7 +97,8 @@ MENUS = [
           (change_screen_return),
         ]
        ),
-         ("choice_22_1", [], "Whip some of your remaining soldiers they must have stopped the deserter.", [
+         ("choice_22_3", [], "Whip a few of the remaining soldiers for letting deserters slip away.", [
+			(party_remove_members, "p_main_party", reg2, reg3),
 			(call_script, "script_change_player_party_morale", -10),
 			(assign, "$g_whiped_for_example", 1),
           (change_screen_return),

@@ -122,12 +122,15 @@ MENUS = [
         (store_div, ":food_days", ":town_food_store", ":food_consumption"),
         (try_begin),
           (le, ":food_days", 3),
-          (str_store_string, s3, "@{s3} Its food stores look dangerously thin."),
+          (str_store_string_reg, s97, s3),
+          (str_store_string, s3, "@{s97} Its food stores look dangerously thin."),
         (else_try),
           (le, ":food_days", 10),
-          (str_store_string, s3, "@{s3} Its food stores look strained."),
+          (str_store_string_reg, s97, s3),
+          (str_store_string, s3, "@{s97} Its food stores look strained."),
         (else_try),
-          (str_store_string, s3, "@{s3} Its food stores look ready for a siege."),
+          (str_store_string_reg, s97, s3),
+          (str_store_string, s3, "@{s97} Its food stores look ready for a siege."),
         (try_end),
       (try_end),
 
@@ -276,10 +279,6 @@ MENUS = [
 
          (try_end),
          (eq, ":can_siege", 1),
-
-         #MORDACHAI - allow sieges against what what a neutral or friendly faction (acts as a declaration of war)
-         #(store_relation, ":reln", "$g_encountered_party_faction", "fac_player_supporters_faction"),
-         #(lt, ":reln", 0),
 
          #MORDACHAI - but also disallow you from attacking your own kingdom's centers!
          (store_faction_of_party, ":center_faction", "$g_encountered_party"),

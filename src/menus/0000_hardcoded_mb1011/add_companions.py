@@ -1,30 +1,31 @@
 MENUS = [
 ("add_companions", mnf_scale_picture|mnf_enable_hot_keys,
-   "{s1}.^^Who would you like to add?",
+   "{s98}.^^Who would you like to add?",
    "none",
     [
       (set_background_mesh, "mesh_pic_payment"),
       # generate a list of your hero companions and their current levels.
       (party_get_num_companion_stacks, ":i", "p_main_party"),
       (assign, ":count", 0),
-      (str_store_string, s2, "@Nobody"),
+      (str_store_string, s69, "@Nobody"),
       (try_for_range, ":stack_no", 0, ":i"),
         (party_stack_get_troop_id, ":troop_id", "p_main_party", ":stack_no"),
         (is_between, ":troop_id", companions_begin, companions_end),
         # get the companion's name and level
-        (call_script, "script_store_troop_name", s1, ":troop_id"),
+        (call_script, "script_store_troop_name", s68, ":troop_id"),
         (store_character_level, reg1, ":troop_id"),
-        (str_store_string, s1, "@{s1} (lvl {reg1})"),
+        (str_store_string, s70, "@{s68} (lvl {reg1})"),
         # build up the list from right to left
         (try_begin),
           (eq, ":count", 0),
-          (str_store_string, s2, "@{s1}"),
+          (str_store_string_reg, s69, s70),
         (else_try),
-          (str_store_string, s2, "@{s1}^{s2}"),
+          (str_store_string, s97, "@{s70}^{s69}"),
+          (str_store_string_reg, s69, s97),
         (try_end),
         (val_add, ":count", 1),
       (try_end),
-      (str_store_string, s1, "@You are travelling with:^{s2}"),
+      (str_store_string, s98, "@You are travelling with:^{s69}"),
 
       # generate the list of heros that aren't currently in your party, and let the player select them
       # concept & basic code ripped from - Fisheye's Autoloot -
@@ -89,10 +90,17 @@ MENUS = [
       (try_end),
       # reg10 now contains total num of heroes available to interact with (not yet in party)
 
-      (store_add, reg1, "$inventory_menu_offset", 1),
-      (store_add, reg2, "$inventory_menu_offset", 6),
-      (val_min, reg2, reg10),
-      (str_store_string, s1, "@{s1}^^(showing {reg1} through {reg2} of {reg10})"),
+      (try_begin),
+        (gt, reg10, 0),
+        (store_add, reg1, "$inventory_menu_offset", 1),
+        (store_add, reg2, "$inventory_menu_offset", 6),
+        (val_min, reg2, reg10),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^^(showing {reg1} through {reg2} of {reg10})"),
+      (else_try),
+        (str_store_string_reg, s97, s98),
+        (str_store_string, s98, "@{s97}^^No unjoined companions are currently available."),
+      (try_end),
     ],
     [
       ("npc_1", [(gt, reg11, 0)], "{s11}", [(call_script, "script_setup_troop_meeting", reg11, 0)]),

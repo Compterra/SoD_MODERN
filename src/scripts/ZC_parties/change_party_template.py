@@ -19,6 +19,7 @@ SCRIPTS = [
 			(spawn_around_party, ":party_no", ":template_no"),
 			(assign, ":new_party", reg0),
 			(gt, ":new_party", 0),
+			(party_is_active, ":new_party"),
 			(party_set_name, ":new_party", s19),
 			(assign, "$g_move_heroes", 1), #twan new
 			(call_script, "script_party_add_party", ":new_party", ":party_no"),

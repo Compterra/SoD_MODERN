@@ -18,6 +18,8 @@ def assert_contains(raw: str, needle: str) -> None:
 
 def main() -> int:
     defenders = read("src/scripts/ZD_centers/refresh_village_defenders.py")
+    defender_trigger = read("src/triggers/ST03_daily/entry_0035.py")
+    maintenance = read("src/scripts/ZD_centers/sod_village_daily_maintenance.py")
     security = read("src/scripts/ZY_helper_scripts/sod_center_security_profile.py")
     player_volunteers = read("src/scripts/ZD_centers/update_volunteer_troops_in_village.py")
     npc_volunteers = read("src/scripts/ZD_centers/update_npc_volunteer_troops_in_village.py")
@@ -38,6 +40,17 @@ def main() -> int:
         "slot_center_sod_local_population",
     ):
         assert_contains(defenders, token)
+
+    assert_contains(defender_trigger, "script_sod_village_refresh_defenders_and_cattle_flags")
+    if "try_for_range" in defender_trigger:
+        raise AssertionError("entry_0035.py should stay a thin dispatcher")
+    for token in (
+        '"sod_village_refresh_defenders_and_cattle_flags"',
+        "villages_begin, villages_end",
+        "script_refresh_village_defenders",
+        "slot_village_player_can_not_steal_cattle",
+    ):
+        assert_contains(maintenance, token)
 
     for token in (
         "(party_get_num_companions, \":village_garrison\", \":center_no\")",

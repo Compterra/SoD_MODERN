@@ -1,3 +1,3 @@
 DIALOGS = [
-[anyone, "follow_spy_talk_2", [], "You won't get me alive!", "close_window", []],
+[anyone, "follow_spy_talk_2", [], "Then you will have to catch me breathing or dead.", "close_window", []],
 ]

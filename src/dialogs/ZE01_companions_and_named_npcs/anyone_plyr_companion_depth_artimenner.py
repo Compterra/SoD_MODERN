@@ -7,7 +7,7 @@ DIALOGS = [
     (eq, "$g_sod_artimenner_siege_confronted", 1),
     (troop_slot_eq, "trp_npc15", slot_troop_companion_personal_quest_stage, sod_companion_quest_test_started),
   ],
-  "Artimenner, show me the weak point before it kills anyone.", "companion_depth_artimenner_siege_pending",
+  "Artimenner, show me the weak point.", "companion_depth_artimenner_siege_pending",
   []],
 
 [anyone|plyr, "member_talk",

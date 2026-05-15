@@ -130,6 +130,7 @@ SCRIPTS = [
                     (this_or_next|eq, ":faction_a", "fac_kingdom_6"),
                     (this_or_next|eq, ":faction_b", "fac_kingdom_6"),
                     (eq, ":war_reason", sod_diplomacy_war_reason_broken_treaty),
+                    (eq, "$g_sod_debug", 1),
                     (str_store_faction_name, s1, ":faction_a"),
                     (str_store_faction_name, s2, ":faction_b"),
                     (display_message, "@Diplomatic dispatch: {s1} and {s2} are at war. {s39}", 0xFF8844),

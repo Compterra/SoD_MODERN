@@ -24,6 +24,7 @@ SCRIPTS = [
 
         (try_begin),
           (gt, "$g_ally_party", 0),
+          (party_is_active, "$g_ally_party"),
           (distribute_party_among_party_group, "p_temp_party_2", "$g_ally_party"),
         (try_end),
       (try_end),

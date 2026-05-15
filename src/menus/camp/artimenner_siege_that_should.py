@@ -140,7 +140,7 @@ MENUS = [
           (call_script, "script_sod_companion_apply_player_action", sod_companion_action_siege_preparation, 1),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc15"),
           (display_message, "@The works become less elegant and more honest. Artimenner calls that an improvement over beautiful collapse.", 0xCCCC66),
-          (jump_to_menu, "mnu_artimenner_siege_that_should"),
+          (start_map_conversation, "trp_npc15"),
         ]
       ),
       ("artimenner_watch_blame_workers", [
@@ -157,7 +157,7 @@ MENUS = [
           (call_script, "script_sod_companion_shift_approval", "trp_npc15", -2),
           (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc15"),
           (display_message, "@The workers measure twice because they fear what happens if they do not. Artimenner measures the cost and says nothing flattering.", 0xCC9966),
-          (jump_to_menu, "mnu_artimenner_siege_that_should"),
+          (start_map_conversation, "trp_npc15"),
         ]
       ),
       ("artimenner_watch_leave", [], "Return to camp.",
@@ -185,7 +185,7 @@ MENUS = [
     [
       ("artimenner_watch_after", [], "Settle the siege design with Artimenner.",
         [
-          (jump_to_menu, "mnu_artimenner_siege_that_should"),
+          (start_map_conversation, "trp_npc15"),
         ]
       ),
     ]
@@ -205,7 +205,7 @@ MENUS = [
     [
       ("artimenner_watch_failed_after", [], "Face Artimenner's report.",
         [
-          (jump_to_menu, "mnu_artimenner_siege_that_should"),
+          (start_map_conversation, "trp_npc15"),
         ]
       ),
     ]

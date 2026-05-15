@@ -8,6 +8,7 @@ MISSPELLINGS = (
     "definately",
     "adress",
     "adition",
+    "closet",
     "diseaster",
     "immidiately",
     "oders",

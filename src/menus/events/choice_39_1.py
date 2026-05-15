@@ -6,9 +6,9 @@ MENUS = [
     [
     ],
     [
-      ("choice_39_1", [], "RESERVED", [(change_screen_return), ]),
-      ("choice_39_1", [], "RESERVED", [(change_screen_return), ]),
-      ("choice_39_1", [], "RESERVED", [(change_screen_return), ]),
+      ("choice_39_2", [], "RESERVED", [(change_screen_return), ]),
+      ("choice_39_3", [], "RESERVED", [(change_screen_return), ]),
+      ("choice_39_4", [], "RESERVED", [(change_screen_return), ]),
       ("choice_39_1", [], "RESERVED", [(change_screen_return), ]),
     ]
   ),

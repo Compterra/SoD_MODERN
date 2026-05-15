@@ -539,6 +539,8 @@ slot_faction_serpent_target_center = 292
 slot_faction_serpent_last_spawn_day = 293
 
 # Boar Clan frontier toll bands. Used by fac_sod_merc_guild7 only.
+slot_faction_boar_pressure_relief_until = 462
+slot_faction_boar_pressure_relief = 463
 slot_faction_boar_frontier_pressure = 296
 slot_faction_boar_active_parties = 297
 slot_faction_boar_target_center = 298
@@ -568,6 +570,9 @@ slot_faction_black_khergit_safe_passage_until = 313
 slot_faction_black_khergit_camp_disrupted_until = 314
 slot_faction_black_khergit_last_raid_report_day = 315
 slot_faction_black_khergit_last_pressure_day = 316
+slot_faction_black_khergit_last_response_hour = 464
+slot_faction_black_khergit_last_camp_response_hour = 465
+slot_faction_black_khergit_last_harassment_day = 466
 
 # Imperial Expeditionary Force campaign state. Used by fac_kingdom_6 only.
 slot_faction_imperial_expedition_pressure = 317
@@ -1058,9 +1063,27 @@ slot_faction_sod_merc_village_patrol_budget = 458
 slot_faction_sod_merc_village_patrol_target = 459
 slot_faction_sod_merc_village_patrol_urgency = 460
 slot_faction_sod_merc_world_activity_pressure = 461
+slot_faction_sod_merc_weekly_contract_income_cache = 467
+slot_faction_sod_merc_weekly_contract_loss_cache = 468
+slot_faction_sod_merc_contract_value_cache = 469
 slot_faction_sod_merc_population_shortage = 470
 slot_faction_sod_merc_lord_wealth_score = 471
 slot_faction_sod_merc_gold_manpower_pressure = 472
+slot_faction_sod_merc_kingdom_guild_service_days_cache_begin = 473
+slot_faction_sod_merc_kingdom_guild_value_cache_begin = 480
+slot_faction_sod_merc_kingdom_guild_loss_cache_begin = 487
+slot_faction_sod_merc_kingdom_guild_count_cache_begin = 494
+slot_faction_sod_merc_weekly_supply_available_cache = 501
+slot_faction_sod_merc_weekly_supply_max_size_cache = 502
+slot_faction_sod_merc_weekly_supply_quality_cache = 503
+slot_faction_sod_merc_weekly_supply_price_pressure_cache = 504
+slot_faction_sod_merc_weekly_supply_long_willingness_cache = 505
+slot_faction_sod_merc_weekly_supply_danger_willingness_cache = 506
+slot_faction_sod_merc_weekly_supply_refusal_reason_cache = 507
+slot_faction_sod_merc_active_support_cache = 508
+slot_faction_sod_merc_lord_wealth_total_cache = 509
+slot_faction_sod_merc_lord_wealth_count_cache = 510
+slot_faction_sod_merc_ruler_wealth_cache = 511
 #SoD Population
 slot_center_sod_local_population = 246
 slot_center_sod_local_health = 247
@@ -1222,6 +1245,16 @@ slot_party_sod_prisoner_bandit_count = 396
 slot_party_sod_prisoner_civilian_count = 397
 slot_party_sod_prisoner_created_day = 398
 slot_party_sod_prisoner_expected_arrival_day = 399
+slot_party_sod_lord_snapshot_weekly_wage = 400
+slot_party_sod_lord_snapshot_regular_count = 401
+slot_party_sod_lord_snapshot_merc_pct = 402
+slot_party_sod_lord_snapshot_noble_pct = 403
+slot_party_sod_lord_snapshot_faith_pct = 404
+slot_party_sod_lord_snapshot_party_size = 405
+slot_party_sod_lord_snapshot_stack_count = 406
+slot_party_sod_lord_snapshot_merc_count = 407
+slot_party_sod_lord_snapshot_noble_count = 408
+slot_party_sod_lord_snapshot_faith_count = 409
 slot_party_sod_support_origin = 420
 slot_party_sod_support_target = 421
 slot_party_sod_support_commander = 422
@@ -1274,6 +1307,14 @@ slot_party_sod_trade_captain_seed = 468
 slot_party_sod_trade_house_style = 469
 slot_party_sod_trade_player_trust = 470
 slot_party_sod_trade_route_reputation = 471
+slot_party_sod_public_health_origin = 472
+slot_party_sod_public_health_destination = 473
+slot_party_sod_public_health_origin_faith = 474
+slot_party_sod_public_health_health_payload = 475
+slot_party_sod_public_health_faith_payload = 476
+slot_party_sod_public_health_started_day = 477
+slot_party_sod_public_health_expiry_day = 478
+slot_party_sod_public_health_status = 479
 
 slot_center_sod_looter_raid_cooldown_until = 420
 slot_center_sod_looter_raid_pressure = 421
@@ -1288,6 +1329,83 @@ slot_center_sod_looter_militia_losses_recent = 429
 slot_center_sod_active_tax_courier = 430
 slot_center_sod_last_tax_courier_day = 431
 slot_center_sod_tax_courier_losses = 432
+slot_center_health_sanitation = 480
+slot_center_health_crowding = 481
+slot_center_health_food_quality = 482
+slot_center_health_healer_capacity = 483
+slot_center_health_disease_risk = 484
+slot_center_health_outbreak_type = 485
+slot_center_health_outbreak_severity = 486
+slot_center_health_outbreak_days = 487
+slot_center_health_last_report_day = 488
+slot_center_health_last_intervention_day = 489
+slot_center_health_quarantine = 490
+slot_center_health_refugee_pressure = 491
+slot_center_health_war_damage_pressure = 492
+slot_center_health_trade_exposure = 493
+slot_center_health_recent_aftermath = 494
+slot_center_health_relief_cooldown_until = 495
+slot_center_health_active_relief_party = 496
+slot_center_health_player_investment = 497
+slot_center_health_recent_exposure = 498
+slot_center_health_last_player_exposure_day = 499
+slot_center_health_resistance_memory = 500
+slot_center_health_last_owner_response_day = 501
+slot_center_sod_weekly_profile_day = 502
+slot_center_sod_weekly_population = 503
+slot_center_sod_weekly_prosperity = 504
+slot_center_sod_weekly_health = 505
+slot_center_sod_weekly_food_store = 506
+slot_center_sod_weekly_food_store_limit = 507
+slot_center_sod_weekly_food_consumption = 508
+slot_center_sod_weekly_food_capacity_ratio = 509
+slot_center_sod_weekly_food_security = 510
+slot_center_sod_weekly_relation = 511
+slot_center_sod_weekly_lord = 512
+slot_center_sod_trade_departure_profile_day = 513
+slot_center_sod_trade_departure_move_adjust = 514
+slot_center_sod_merc_nearby_patrol_cache = 515
+slot_party_black_khergit_response_candidate_hour = 516
+slot_party_black_khergit_response_faction_cache = 517
+slot_party_black_khergit_response_base_score_cache = 518
+slot_party_black_khergit_threat_scan_hour = 519
+slot_party_black_khergit_threat_target_cache = 520
+slot_party_black_khergit_threat_faction_cache = 521
+slot_center_sod_siege_attacker_strength_cache = 522
+slot_center_sod_siege_marshall_attacking_cache = 523
+
+sod_outbreak_none = 0
+sod_outbreak_camp_fever = 1
+sod_outbreak_flux = 2
+sod_outbreak_pox = 3
+sod_outbreak_famine_sickness = 4
+sod_outbreak_siege_rot = 5
+sod_outbreak_refugee_sickness = 6
+
+sod_health_band_plague_ridden = 0
+sod_health_band_failing = 1
+sod_health_band_sickly = 2
+sod_health_band_strained = 3
+sod_health_band_sound = 4
+sod_health_band_flourishing = 5
+
+sod_public_health_intervention_fund_healers = 1
+sod_public_health_intervention_distribute_grain = 2
+sod_public_health_intervention_clean_wells = 3
+sod_public_health_intervention_repair_water = 4
+sod_public_health_intervention_establish_quarantine = 5
+sod_public_health_intervention_lift_quarantine = 6
+sod_public_health_intervention_shelter_refugees = 7
+sod_public_health_intervention_move_refugees = 8
+sod_public_health_intervention_request_temple_aid = 9
+sod_public_health_intervention_burial_cleanup = 10
+sod_public_health_intervention_medicine_shipment = 11
+sod_public_health_intervention_grain_shipment = 12
+
+sod_messenger_role_public_health_relief = 2
+sod_public_health_relief_status_traveling = 1
+sod_public_health_relief_status_arrived = 2
+sod_public_health_relief_status_lost = 3
 
 sod_looter_raid_state_none = 0
 sod_looter_raid_state_gathering = 1
@@ -2399,6 +2517,9 @@ slot_troop_sod_times_took_command = 387
 slot_troop_sod_post_fall_victories = 388
 slot_troop_sod_post_fall_failures = 389
 slot_troop_sod_last_took_command_hours = 390
+slot_troop_sod_lord_ai_commanding_party = 391
+slot_troop_sod_lord_retreat_target_cache = 392
+slot_troop_sod_lord_retreat_target_cache_hour = 393
 duel_daily_limit = 4
 
 sod_house_rank_none = 0
@@ -3565,6 +3686,11 @@ secret_signs_end = countersigns_begin
 kingdoms_begin = "fac_player_supporters_faction"
 kingdoms_end = "fac_kingdoms_end"
 
+pre_invasion_realms_begin = kingdoms_begin
+pre_invasion_realms_end = "fac_kingdom_6"
+native_kingdoms_begin = "fac_kingdom_1"
+native_kingdoms_end = "fac_kingdom_6"
+
 guilds_begin = "fac_sod_merc_guild1"
 guilds_end = "fac_kingdom_6_mercenaries"
 
@@ -3578,7 +3704,7 @@ kingdom_heroes_begin = "trp_kingdom_1_lord"
 kingdom_heroes_end = "trp_black_army_guild_master"
 
 guild_masters_begin = "trp_black_army_guild_master"
-guild_masters_end = "trp_knight_1_1_wife"
+guild_masters_end = "trp_slave_hero"
 
 heroes_begin = kingdom_heroes_begin
 heroes_end = kingdom_ladies_end
@@ -3658,8 +3784,11 @@ walled_centers_end   = castles_end
 centers_begin = towns_begin
 centers_end   = villages_end
 
+imperial_invasion_entry_villages_begin = "p_village_16"
+imperial_invasion_entry_villages_end   = "p_village_67"
+
 training_grounds_begin   = "p_training_ground_1"
-training_grounds_end     = "p_Bridge_1"
+training_grounds_end     = "p_bridge_1"
 
 scenes_begin = "scn_town_1_center"
 scenes_end = "scn_castle_1_exterior"
@@ -3670,10 +3799,10 @@ spawn_points_end = "p_spawn_points_end"
 regular_troops_begin       = "trp_novice_fighter"
 regular_troops_end         = "trp_tournament_master"
 
-swadian_merc_parties_begin = "p_town_1_mercs"
-swadian_merc_parties_end   = "p_town_8_mercs"
+swadian_merc_parties_begin = "p_town_merc_1"
+swadian_merc_parties_end   = "p_town_merc_8"
 
-vaegir_merc_parties_begin  = "p_town_8_mercs"
+vaegir_merc_parties_begin  = "p_town_merc_8"
 vaegir_merc_parties_end    = "p_zendar"
 
 arena_masters_begin    = "trp_town_1_arena_master"
@@ -3713,7 +3842,7 @@ mayors_begin           = "trp_town_1_mayor"
 mayors_end             = "trp_village_1_elder"
 
 village_elders_begin   = "trp_village_1_elder"
-village_elders_end     = "trp_merchants_end"
+village_elders_end     = "trp_rtc_garran_ashwake"
 
 
 average_price_factor = 1000
@@ -3735,15 +3864,15 @@ readable_books_end   = reference_books_begin
 books_begin = readable_books_begin
 books_end = reference_books_end
 horses_begin = "itm_sumpter_horse"
-horses_end = "itm_arrows"
+horses_end = "itm_leather_gloves"
 weapons_begin = "itm_wooden_stick"
 weapons_end = "itm_wooden_shield"
-ranged_weapons_begin = "itm_jarid"
-ranged_weapons_end = "itm_great_lancec"
+ranged_weapons_begin = "itm_arrows"
+ranged_weapons_end = "itm_wooden_stick"
 armors_begin = "itm_leather_gloves"
-armors_end = "itm_wooden_stick"
+armors_end = "itm_arrows"
 shields_begin = "itm_wooden_shield"
-shields_end = "itm_jarid"
+shields_end = "itm_bascinetnasal"
 
 # Banner constants
 
@@ -3921,6 +4050,7 @@ sod_boar_action_pay_toll = 1
 sod_boar_action_hire_band = 2
 sod_boar_action_defy_toll = 3
 sod_boar_action_frontier_tribute = 4
+sod_boar_action_defeat_band = 5
 
 sod_black_army_action_security_contract = 1
 sod_black_army_action_hire_patrol = 2
@@ -3976,6 +4106,7 @@ sod_trade_route_luxury = 5
 sod_trade_route_grain = 6
 sod_trade_route_strategic = 7
 sod_trade_route_starving = 8
+sod_trade_route_sickness = 9
 
 sod_trade_contract_none = 0
 sod_trade_contract_guards = 1

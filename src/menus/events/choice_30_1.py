@@ -1,11 +1,11 @@
 MENUS = [
 (
     "event_30", mnf_disable_all_keys,
-    "Some disciples of the Inner Light visit you. They complain about your calradian subject love for alcohol. They think you should prohibit vine and beer.",
+    "Disciples of the Inner Light visit you. They complain that your Calradian subjects drink too much wine and beer, and urge you to restrict alcohol throughout the realm.",
     "none",
     [
     ],
-   [   ("choice_30_1", [], "Prohibit alcohol in your realm, and condemn some known drinkers for example.", [
+   [   ("choice_30_1", [], "Prohibit alcohol and punish a few known drunkards as examples.", [
          (val_add, "$g_sod_global_health", 20),
 		 (val_min, "$g_sod_global_health", 100),
 		 (val_add, "$g_sod_global_faith", 100),
@@ -31,7 +31,7 @@ MENUS = [
       (change_screen_return),
         ]
        ),
-         ("choice_30_2", [], "Remind your subjects drinking is bad for soul and body.", [
+         ("choice_30_2", [], "Warn your subjects that drink harms body and soul.", [
 	     (val_add, "$g_sod_global_health", 5),
 		 (val_min, "$g_sod_global_health", 100),
 		 (val_add, "$g_sod_global_faith", 50),
@@ -54,7 +54,7 @@ MENUS = [
         ]
        ),
 	   
-           ("choice_30_3", [], "Ignore the disciples request.", [
+           ("choice_30_3", [], "Ignore the disciples' request.", [
 			(val_sub, "$g_sod_clergy_happines", 15),
 			(val_sub, "$g_sod_global_faith", 100), 
 			(val_clamp, "$g_sod_global_faith", -2000, 2001),

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import importlib
 import shutil
 import sys
 from datetime import datetime, timezone
@@ -23,6 +24,53 @@ from audit_string_registers import main as audit_string_registers_main
 ROOT = Path(__file__).resolve().parents[1]
 COMPILE_DIR = ROOT / "compile"
 BACKUP_ROOT = ROOT / "_export" / "compile_backups"
+
+
+def _validate_generated_compile_imports() -> None:
+    """
+    Catch generated Python name/import errors before the process pipeline.
+
+    The fragment builders can produce syntactically valid files that still fail
+    when imported by process_*.py. Validate the highest-risk generated modules
+    before marking compile/module_*.py as a successful build snapshot.
+    """
+    import_paths = [
+        COMPILE_DIR / "ids",
+        COMPILE_DIR,
+        COMPILE_DIR / "headers",
+        COMPILE_DIR / "process",
+        ROOT,
+    ]
+    added_paths: list[str] = []
+    for path in import_paths:
+        path_str = str(path)
+        if path_str not in sys.path:
+            sys.path.insert(0, path_str)
+            added_paths.append(path_str)
+
+    module_names = [
+        "module_troops",
+        "module_scripts",
+        "module_dialogs",
+        "module_game_menus",
+        "module_presentations",
+        "module_mission_templates",
+        "module_simple_triggers",
+    ]
+    try:
+        for module_name in module_names:
+            sys.modules.pop(module_name, None)
+            importlib.import_module(module_name)
+    except Exception as exc:
+        raise SystemExit(f"[build_all] Generated compile import failed: {module_name}: {exc}") from exc
+    finally:
+        for path_str in added_paths:
+            try:
+                sys.path.remove(path_str)
+            except ValueError:
+                pass
+
+    print(f"[build_all] Generated compile import check OK: {len(module_names)} module(s).")
 
 
 def _backup_successful_compile(profile: str) -> None:
@@ -80,6 +128,7 @@ def main() -> None:
     print(f"[doctor] M&B 1.011 compile-source hardcoded contract OK: {len(contract_warnings)} warning(s).")
 
     audit_string_registers_main()
+    _validate_generated_compile_imports()
     _backup_successful_compile(profile)
 
 

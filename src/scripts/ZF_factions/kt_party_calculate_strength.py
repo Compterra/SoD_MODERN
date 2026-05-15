@@ -11,6 +11,10 @@ SCRIPTS = [
       (assign, reg1, 0),
       (assign, reg2, 0),
 
+      (try_begin),
+      (gt, ":party", 0),
+      (party_is_active, ":party"),
+
       # figure out which stack to start with and how many we have
       (party_get_num_companion_stacks, ":num_stacks", ":party"),
       (assign, ":first_stack", 0),
@@ -166,6 +170,7 @@ SCRIPTS = [
          (val_add, reg0, ":o_val"),
          (val_add, reg1, ":d_val"),
          (val_add, reg2, ":stack_size"),
+      (try_end),
       (try_end),
 
       # calculate damage redux from defense

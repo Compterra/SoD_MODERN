@@ -1,12 +1,15 @@
 MENUS = [
 (
     "town", mnf_enable_hot_keys,
-    "{s10}{s11}{s17}{s15}{s16}{s12}{s21}{s13}{s40}",
+    "{s10}{s11}{s23}{s17}{s15}{s16}{s12}{s21}{s13}{s40}",
     "none",
     [
       (store_encountered_party, "$current_town"),
+      (call_script, "script_sod_center_public_health_apply_player_visit_exposure", "$current_town"),
       (call_script, "script_update_center_recon_notes", "$current_town"),
       (assign, "$g_sod_town_background", "mesh_pic_town_1_aerial"),
+      (call_script, "script_sod_show_center_owner_portrait", "$current_town"),
+      (call_script, "script_sod_center_store_identity_line_to_s23", "$current_town"),
       (try_begin),
         (eq, "$sneaked_into_town", 1),
         (call_script, "script_music_set_situation_with_culture", mtf_sit_town_infiltrate),
@@ -99,7 +102,8 @@ MENUS = [
       (try_begin),
         (party_slot_eq, "$current_town", slot_party_type, spt_town),
         (call_script, "script_describe_center_prosperity", s10, "$current_town"),
-        (str_store_string, s10, "@{s10} "),
+        (str_store_string_reg, s97, s10),
+        (str_store_string, s10, "@{s97} "),
       (else_try),
         (str_store_string, s10, "@You are at {s2}. "),
       (try_end),
@@ -177,7 +181,8 @@ MENUS = [
         (party_slot_ge, "$current_town", slot_town_has_tournament, 1),
         (neg|is_currently_night),
         (party_set_slot, "$current_town", slot_town_has_tournament, 1),
-        (str_store_string, s13, "@{s13} A tournament will be held here soon."),
+        (str_store_string_reg, s97, s13),
+        (str_store_string, s13, "@{s97} A tournament will be held here soon."),
       (try_end),
 
       (assign, "$castle_undefended", 0),
@@ -729,12 +734,18 @@ MENUS = [
             # more left to do
             (try_begin),
               (party_slot_eq, "$current_town", slot_party_type, spt_town),
-              (assign, reg0, 1),
+              (str_store_string, s69, "@town"),
             (else_try),
-              (assign, reg0, 0),
+              (str_store_string, s69, "@castle"),
             (try_end),
             (party_get_slot, reg1, "$current_town", slot_center_current_improvement),
-            (str_store_string, s1, "@{reg1?Oversee the current:Commission a new} building project at this {reg0?town:castle}."),
+            (try_begin),
+              (gt, reg1, 0),
+              (str_store_string, s68, "@Oversee the current"),
+            (else_try),
+              (str_store_string, s68, "@Commission a new"),
+            (try_end),
+            (str_store_string, s1, "@{s68} building project at this {s69}."),
 
             # can't start construction while under siege
             (try_begin),
@@ -823,8 +834,14 @@ MENUS = [
           (quest_get_slot, ":quest_giver_troop", "qst_collect_taxes", slot_quest_giver_troop),
           (call_script, "script_store_troop_name", s1, ":quest_giver_troop"),
           (quest_get_slot, reg5, "qst_collect_taxes", slot_quest_current_state),
+          (try_begin),
+            (gt, reg5, 0),
+            (str_store_string, s68, "@Continue collecting taxes"),
+          (else_try),
+            (str_store_string, s68, "@Collect taxes"),
+          (try_end),
         ],
-        "{reg5?Continue collecting taxes:Collect taxes} due to {s1}.",
+        "{s68} due to {s1}.",
         [
           (jump_to_menu, "mnu_collect_taxes"),
         ]
@@ -941,6 +958,7 @@ MENUS = [
         [
           (assign, "$g_player_icon_state", pis_ship),
           (party_set_flags, "p_main_party", pf_is_ship, 1),
+          (call_script, "script_sod_refresh_player_map_icon"),
           (party_get_position, pos1, "p_main_party"),
           (map_get_water_position_around_position, pos2, pos1, 6),
           (party_set_position, "p_main_party", pos2),

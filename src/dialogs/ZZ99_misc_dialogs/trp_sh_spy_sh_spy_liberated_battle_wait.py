@@ -1,0 +1,16 @@
+DIALOGS = [
+[trp_sh_spy, "sh_spy_liberated_battle_wait", [], "I will keep my head down. Do not take long.",
+   "close_window", [(set_spawn_radius, 1),
+                    (spawn_around_party, "p_main_party", "pt_sh_spy"),
+                    (assign, ":spy_party", reg0),
+                    (try_begin),
+                      (gt, ":spy_party", 0),
+                      (party_is_active, ":spy_party"),
+                      (party_set_ai_behavior, ":spy_party", ai_bhvr_hold),
+                      (party_set_flags, ":spy_party", pf_default_behavior, 0),
+                      (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_target_party, ":spy_party"),
+                      (quest_set_slot, "qst_serpent_host_free_spy", slot_quest_current_state, 1),
+                    (else_try),
+                      (display_message, "@The freed spy could not find a safe place on the map. Make room before leaving the area.", 0xFFCC66),
+                    (try_end)]],
+]

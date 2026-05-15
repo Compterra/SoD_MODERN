@@ -24,6 +24,7 @@ def main() -> int:
     report = read("src/scripts/ZY_helper_scripts/merc_describe_standing_report.py")
     notes = read("src/scripts/ZF_factions/update_faction_notes.py")
     order = read("src/dialogs/_order_dialogs.txt")
+    defeat_event = read("src/scripts/ZC_parties/event_player_defeated_enemy_party.py")
 
     assert_contains(constants, "slot_faction_elephant_guard_devotion")
     assert_contains(constants, "slot_faction_elephant_guard_supplies")
@@ -59,16 +60,22 @@ def main() -> int:
     assert_contains(order, "party_tpl_pt_elephant_guard_sanctuary_patrol_start.py")
     assert_contains(order, "party_tpl_pt_elephant_guard_relic_procession_start.py")
     assert_contains(order, "anyone_elephant_guard_world_rites_about.py")
+    assert_contains(defeat_event, '"pt_elephant_guard_sanctuary_patrol"')
+    assert_contains(defeat_event, '"pt_elephant_guard_relic_procession"')
+    assert_contains(defeat_event, 'script_change_player_relation_with_faction", "fac_sod_merc_guild3", -3')
 
     patrol_dialog = read("src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_elephant_guard_sanctuary_patrol_start.py")
     procession_dialog = read("src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_elephant_guard_relic_procession_start.py")
     about_dialog = read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_elephant_guard_world_rites_about.py")
+    attack_dialog = read("src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_plyr_elephant_guard_world_talk_05.py")
     assert_contains(patrol_dialog, "pt_elephant_guard_sanctuary_patrol")
     assert_contains(procession_dialog, "pt_elephant_guard_relic_procession")
     assert_contains(about_dialog, "script_sod_elephant_guard_describe_status_to_s21")
 
     if "party_set_faction, \":new_party\", \":employer_faction\"" in presence:
         raise AssertionError("Elephant Guard world parties must not inherit employer faction wars")
+    if "script_change_player_relation_with_faction" in attack_dialog:
+        raise AssertionError("Elephant Guard attack dialogue must not apply victory consequences before combat")
 
     print("[elephant_guard_world_presence] OK")
     return 0

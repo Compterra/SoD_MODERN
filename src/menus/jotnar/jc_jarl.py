@@ -1,7 +1,7 @@
 MENUS = [
 (
     "jc_choose_opponent", 0,
-    "Choose your next opponent. The challanged person has the right to select wepons, armors and possibly horses.^The values in brackets describe points gain/loss per won/lost duel.",
+    "Choose your next opponent. The challenged fighter chooses the weapons, armor, and horses.^^The values in brackets show standing gained or lost after the duel.",
     "none",
     [],
     [
@@ -30,7 +30,7 @@ MENUS = [
        [
 	   (quest_set_slot, "qst_jotnar_clan_competition", slot_quest_target_troop, "trp_jotnar_clan_disir"),
 	   (assign, "$sod_jc_competition_win_value", 2),
-	   (assign, "$sod_jc_competition_lose_value", -1),
+	   (assign, "$sod_jc_competition_lose_value", -2),
 	   (jump_to_menu, "mnu_jc_choose_bet"),
         ]),
 	  ("back", [], "Back.",

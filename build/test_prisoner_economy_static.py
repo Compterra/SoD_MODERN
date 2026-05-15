@@ -16,6 +16,10 @@ def assert_contains(raw: str, token: str) -> None:
     assert token in raw, f"missing token: {token}"
 
 
+def assert_not_contains(raw: str, token: str) -> None:
+    assert token not in raw, f"stale token remains: {token}"
+
+
 def test_prisoner_economy_constants_exist() -> None:
     raw = read("src/constants/module_constants.py")
     for token in [
@@ -64,6 +68,7 @@ def test_prisoner_economy_helpers_exist() -> None:
     for token in [
         '"sod_classify_prisoner_troop"',
         '"sod_center_recalculate_prisoner_pressure"',
+        '"sod_center_prisoner_pressure_cached_to_regs"',
         '"sod_deposit_party_prisoners_to_center_pool"',
         '"sod_withdraw_prisoners_from_center_pool"',
         '"sod_center_prisoner_report_to_s20"',
@@ -87,6 +92,7 @@ def test_prisoner_economy_helpers_exist() -> None:
         '"sod_prisoner_train_arrive"',
         '"sod_prisoner_train_destroyed"',
         '"sod_process_prisoner_trains"',
+        '"sod_prisoner_logistics_snapshot_to_regs"',
         "pt_prisoner_train_party",
         "slot_faction_slaver_market_supply",
         "slot_faction_slaver_market_heat",
@@ -117,6 +123,49 @@ def test_prisoner_economy_helpers_exist() -> None:
         "sod_prisoner_category_elite",
     ]:
         assert_contains(raw, token)
+
+
+def test_hero_prisoner_escape_trigger_is_a_thin_dispatcher() -> None:
+    trigger = read("src/triggers/ST03_daily/entry_0044.py")
+    helper = read("src/scripts/ZC_parties/sod_prisoner_daily_maintenance.py")
+    assert_contains(trigger, "script_sod_prisoner_process_hero_escape_checks")
+    assert_not_contains(trigger, "try_for_range")
+    assert_not_contains(trigger, "script_randomly_make_prisoner_heroes_escape_from_party")
+    for token in [
+        '"sod_prisoner_process_hero_escape_checks"',
+        "script_randomly_make_prisoner_heroes_escape_from_party",
+        '"p_main_party", 50',
+        "walled_centers_begin, walled_centers_end",
+        "(assign, \":chance\", 15)",
+        "(assign, \":chance\", 2)",
+        "slot_center_has_prisoner_tower",
+        "slot_troop_centurion_personality",
+        "slcp_crusader",
+        "slcp_imperialist",
+    ]:
+        assert_contains(helper, token)
+
+
+def test_hero_prisoner_ransom_offer_trigger_is_a_thin_dispatcher() -> None:
+    trigger = read("src/triggers/ST03_daily/entry_0060.py")
+    helper = read("src/scripts/ZC_parties/sod_prisoner_daily_maintenance.py")
+    assert_contains(trigger, "script_sod_prisoner_process_daily_ransom_offer")
+    assert_not_contains(trigger, "try_for_range")
+    assert_not_contains(trigger, "script_offer_ransom_amount_to_player_for_prisoners_in_party")
+    for token in [
+        '"sod_prisoner_process_daily_ransom_offer"',
+        "neq, \"$g_ransom_offer_rejected\", 1",
+        "script_offer_ransom_amount_to_player_for_prisoners_in_party",
+        '"p_main_party"',
+        "eq, reg0, 0",
+        "walled_centers_begin, \":end_cond\"",
+        "slot_town_lord, \"trp_player\"",
+        "eq, reg0, 1",
+        "(assign, \":end_cond\", 0)",
+    ]:
+        assert_contains(helper, token)
+    offer = read("src/scripts/ZC_parties/offer_ransom_amount_to_player_for_prisoners_in_party.py")
+    assert offer.index('(party_is_active, ":party_no")') < offer.index('(party_get_num_prisoner_stacks, ":num_stacks", ":party_no")')
 
 
 def test_prisoner_train_outcomes_touch_economy_population_and_law() -> None:
@@ -465,6 +514,12 @@ def test_prisoner_train_creation_sources_are_policy_and_marshal_aware() -> None:
         "sod_prisoner_train_purpose_trial",
         "slot_party_type, spt_patrol",
         "slot_party_type, spt_player_patrol",
+        "lt, \":active_trains\", peak_prisoner_trains",
+        "faction_get_slot, \":patrol_active_trains\", \":patrol_faction\", slot_faction_sod_active_prisoner_trains",
+        "lt, \":patrol_active_trains\", peak_prisoner_trains",
+        "store_add, \":pool_total\", \":common\", \":military\"",
+        "val_add, \":pool_total\", \":laborers\"",
+        "ge, \":pool_total\", 20",
         "script_sod_maybe_create_prisoner_train_from_party",
         "@Prisoner logistics demand created {reg5} center train(s) and {reg6} patrol trial train(s).",
     ]:
@@ -505,6 +560,94 @@ def test_prisoner_train_daily_processor_is_wired() -> None:
     assert_contains(helper, "slot_center_sod_prisoner_capacity")
 
 
+def test_prisoner_train_daily_processor_uses_snapshot_gates() -> None:
+    helper = read("src/scripts/ZY_helper_scripts/sod_prisoner_economy.py")
+    snapshot_start = helper.index('("sod_prisoner_logistics_snapshot_to_regs"')
+    processor_start = helper.index('("sod_process_prisoner_trains"', snapshot_start)
+    snapshot = helper[snapshot_start:processor_start]
+    processor = helper[processor_start:]
+    for token in [
+        "script_sod_count_active_prisoner_trains_to_regs",
+        "$g_sod_prisoner_logistics_snapshot_day",
+        "$g_sod_prisoner_active_trains",
+        "$g_sod_prisoner_overflow_candidate_centers",
+        "$g_sod_prisoner_policy_candidate_centers",
+        "$g_sod_prisoner_patrol_scan_allowed",
+        "slot_center_sod_common_prisoners",
+        "slot_center_sod_military_prisoners",
+        "slot_center_sod_bandit_prisoners",
+        "slot_center_sod_slave_laborers",
+        "slot_center_has_prisoner_tower",
+        "slot_faction_sod_prisoner_exchange_pressure",
+        "slot_faction_sod_prisoner_demand",
+        "slot_faction_diplomacy_policy_slavery",
+        "slot_faction_sod_prisoner_labor_policy",
+        "assign, reg1, \":overflow_candidate_centers\"",
+        "assign, reg2, \":policy_candidate_centers\"",
+        "assign, reg3, \":patrol_scan_allowed\"",
+    ]:
+        assert_contains(snapshot, token)
+    for token in [
+        "script_sod_prisoner_logistics_snapshot_to_regs",
+        "assign, \":overflow_candidate_centers\", reg1",
+        "assign, \":policy_candidate_centers\", reg2",
+        "assign, \":patrol_scan_allowed\", reg3",
+        "gt, \":overflow_candidate_centers\", 0",
+        "gt, \":policy_candidate_centers\", 0",
+        "gt, \":patrol_scan_allowed\", 0",
+    ]:
+        assert_contains(processor, token)
+    assert processor.index("gt, \":overflow_candidate_centers\", 0") < processor.index("script_sod_maybe_create_prisoner_train_from_center_overcapacity")
+    assert processor.index("gt, \":policy_candidate_centers\", 0") < processor.index("script_sod_maybe_create_prisoner_train_from_center_policy_demand")
+    assert processor.index("gt, \":patrol_scan_allowed\", 0") < processor.index("script_sod_maybe_create_prisoner_train_from_party")
+
+
+def test_prisoner_destination_uses_cached_pressure_profile() -> None:
+    helper = read("src/scripts/ZY_helper_scripts/sod_prisoner_economy.py")
+    cache_start = helper.index('("sod_center_prisoner_pressure_cached_to_regs"')
+    deposit_start = helper.index('("sod_deposit_party_prisoners_to_center_pool"', cache_start)
+    cache = helper[cache_start:deposit_start]
+    destination_start = helper.index('("sod_find_prisoner_train_destination"')
+    factory_start = helper.index('("cf_sod_create_prisoner_train"', destination_start)
+    destination = helper[destination_start:factory_start]
+    over_start = helper.index('("sod_maybe_create_prisoner_train_from_center_overcapacity"')
+    policy_start = helper.index('("sod_maybe_create_prisoner_train_from_center_policy_demand"', over_start)
+    overcapacity = helper[over_start:policy_start]
+    for token in [
+        "slot_center_sod_prisoner_last_update_day",
+        "script_sod_center_recalculate_prisoner_pressure",
+        "slot_center_sod_prisoner_capacity",
+        "slot_center_sod_prisoner_unrest_pressure",
+        "slot_center_sod_prisoner_escape_pressure",
+        "assign, reg0, \":total\"",
+        "assign, reg1, \":capacity\"",
+        "assign, reg2, \":unrest\"",
+        "assign, reg3, \":escape\"",
+    ]:
+        assert_contains(cache, token)
+    assert_contains(destination, "script_sod_center_prisoner_pressure_cached_to_regs")
+    assert_contains(overcapacity, "script_sod_center_prisoner_pressure_cached_to_regs")
+
+
+def test_weekly_prisoner_pressure_skips_empty_centers_before_recalculation() -> None:
+    helper = read("src/scripts/ZY_helper_scripts/sod_prisoner_economy.py")
+    start = helper.index('("sod_process_center_prisoner_weekly_pressure"')
+    end = helper.index('("sod_process_prisoner_weekly_pressure"', start)
+    weekly = helper[start:end]
+    for token in [
+        "party_get_slot, \":common\", \":center_no\", slot_center_sod_common_prisoners",
+        "party_get_slot, \":military\", \":center_no\", slot_center_sod_military_prisoners",
+        "party_get_slot, \":bandits\", \":center_no\", slot_center_sod_bandit_prisoners",
+        "party_get_slot, \":laborers\", \":center_no\", slot_center_sod_slave_laborers",
+        "store_add, \":pool_total\", \":common\", \":military\"",
+        "val_add, \":pool_total\", \":laborers\"",
+        "gt, \":pool_total\", 0",
+        "script_sod_center_recalculate_prisoner_pressure",
+    ]:
+        assert_contains(weekly, token)
+    assert weekly.index("gt, \":pool_total\", 0") < weekly.index("script_sod_center_recalculate_prisoner_pressure")
+
+
 def test_prisoner_train_daily_processor_handles_invalid_destinations() -> None:
     helper = read("src/scripts/ZY_helper_scripts/sod_prisoner_economy.py")
     for token in [
@@ -531,6 +674,14 @@ def test_prisoner_train_map_ai_handles_threat_refuge_and_escorts() -> None:
         '"sod_prisoner_train_update_map_ai"',
         "slot_party_sod_prisoner_value",
         "slot_party_sod_prisoner_guard_quality",
+        '"sod_prisoner_train_scan_nearby_parties_to_regs"',
+        "call_script, \"script_sod_prisoner_train_scan_nearby_parties_to_regs\"",
+        "assign, \":hunter_party\", reg2",
+        "assign, \":bandit_party\", reg3",
+        "assign, \":escort_party\", reg4",
+        "assign, \":near_anti_slaver\", reg5",
+        "is_between, \":nearby_party\", walled_centers_begin, walled_centers_end",
+        "assign, \":scan_anti_slaver_centers\", 1",
         "script_get_center_threat_level",
         "assign, \":nearest_enemy\"",
         "lt, \":nearby_relation\", 0",
@@ -603,6 +754,45 @@ def test_prisoner_train_interception_resolves_captive_outcomes() -> None:
         assert_contains(checklist, token)
 
 
+def test_slaver_black_market_uses_daily_cache_and_dirty_refresh() -> None:
+    raw = read("src/scripts/ZY_helper_scripts/sod_slavers_black_market.py")
+    refresh_start = raw.index('("sod_slavers_refresh_market_state_to_regs"')
+    update_start = raw.index('("sod_slavers_update_market_state"', refresh_start)
+    dirty_start = raw.index('("sod_slavers_mark_market_dirty"', update_start)
+    action_start = raw.index('("sod_slavers_apply_player_action"', dirty_start)
+    refresh = raw[refresh_start:update_start]
+    update = raw[update_start:dirty_start]
+    dirty = raw[dirty_start:action_start]
+    describe_start = raw.index('("sod_slavers_describe_status_to_s20"')
+    describe = raw[describe_start:]
+    for token in [
+        "try_for_range, \":center_no\", towns_begin, towns_end",
+        "try_for_parties, \":party_no\"",
+        "$g_sod_slaver_market_cache_day",
+        "$g_sod_slaver_market_cache_dirty",
+        "$g_sod_slaver_market_active_web_parties",
+        "assign, reg4, \":active_web_parties\"",
+    ]:
+        assert_contains(refresh, token)
+    for token in [
+        "gt, \"$g_sod_slaver_market_cache_day\", 0",
+        "eq, \"$g_sod_slaver_market_cache_day\", \":cur_day\"",
+        "eq, \"$g_sod_slaver_market_cache_dirty\", 0",
+        "script_sod_slavers_refresh_market_state_to_regs",
+        "assign, \":active_web_parties\", \"$g_sod_slaver_market_active_web_parties\"",
+        "assign, reg4, \":active_web_parties\"",
+    ]:
+        assert_contains(update, token)
+    assert_contains(dirty, "assign, \"$g_sod_slaver_market_cache_dirty\", 1")
+    for token in [
+        "script_sod_slavers_mark_market_dirty",
+        "script_sod_slavers_update_market_state",
+    ]:
+        assert_contains(raw, token)
+    assert_contains(describe, "assign, reg24, reg4")
+    assert_not_contains(describe, "try_for_parties")
+
+
 def test_player_prisoner_train_orders_are_wired() -> None:
     helper = read("src/scripts/ZY_helper_scripts/sod_prisoner_economy.py")
     order = read("src/menus/_order_game_menus.txt")
@@ -640,6 +830,8 @@ def test_player_prisoner_train_orders_are_wired() -> None:
     for token in [
         '("prisoner_train_orders"',
         '("prisoner_train_order_confirm"',
+        '"{s98}"',
+        "str_store_string_reg, s97, s98",
         "sod_prisoner_train_purpose_imprisonment",
         "sod_prisoner_train_purpose_ransom",
         "sod_prisoner_train_purpose_labor",
@@ -652,6 +844,8 @@ def test_player_prisoner_train_orders_are_wired() -> None:
         "Warning: anti-slavery companions object strongly to slave labor and slaver sales.",
     ]:
         assert_contains(menu, token)
+    assert_not_contains(menu, '"{s9}"')
+    assert_not_contains(menu, '@{s9}')
     for token in [
         "- [x] Add ruler/marshal command to form a prisoner train from a fief.",
         "- [x] Let the player choose purpose: move to prison, ransom/exchange, labor, sell to slavers, or free/resettle captives.",
@@ -680,7 +874,7 @@ def test_prisoner_train_failure_modes_are_handled() -> None:
         "slot_center_sod_prisoner_unrest_pressure",
         "slot_center_sod_prisoner_escape_pressure",
         "sod_prisoner_train_fail_no_prisoners",
-        "party_get_num_prisoner_stacks, \":representative_stacks\"",
+        "party_get_num_prisoner_stacks, \":representative_stacks\", \":train_party\"",
         "pool-only arrival accounting",
         "peak_prisoner_trains",
         "script_party_add_party_companions",
@@ -910,12 +1104,28 @@ def test_prisoner_economy_fief_report_is_wired() -> None:
     assert_contains(fief, "mnu_prisoner_economy_report")
     for token in [
         '("prisoner_economy_report"',
+        '"{s98}"',
+        "str_store_string_reg, s97, s98",
+        "$g_sod_prisoner_logistics_snapshot_day",
+        "$g_sod_prisoner_active_trains",
+        "$g_sod_prisoner_overflow_candidate_centers",
+        "$g_sod_prisoner_policy_candidate_centers",
+        "$g_sod_prisoner_patrol_scan_allowed",
+        "Last logistics snapshot",
+        "active trains {reg21}",
+        "overflow centers {reg22}",
+        "policy-demand centers {reg23}",
+        "patrol scan {reg24?open:closed}",
+        "^{s97}",
+        "{s96}^^{s97}",
         "script_sod_center_prisoner_report_to_s20",
         "escape pressure",
         "overcrowded holdings can create unrest",
         "mnu_fief_reports",
     ]:
         assert_contains(report, token)
+    assert_not_contains(report, '"{s9}"')
+    assert_not_contains(report, '@{s9}')
 
 
 def test_prisoner_player_interaction_policy_and_hooks_are_wired() -> None:
@@ -989,6 +1199,7 @@ def test_prisoner_companion_morality_and_roles_are_wired() -> None:
         '"sod_prisoner_apply_companion_role_pressure_modifiers"',
         '"sod_prisoner_apply_companion_morality_for_outcome"',
         '"sod_prisoner_maybe_trigger_companion_incident"',
+        "(troop_slot_ge, \":companion\", slot_troop_companion_approval, 45)",
         "sod_companion_role_quartermaster",
         "sod_companion_role_surgeon",
         "sod_companion_role_envoy",

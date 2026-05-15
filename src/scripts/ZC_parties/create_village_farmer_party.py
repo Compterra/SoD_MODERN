@@ -13,6 +13,7 @@ SCRIPTS = [
         (spawn_around_party, ":village_no", "pt_village_farmers"),
         (assign, ":new_party", reg0),
         (gt, ":new_party", 0),
+        (party_is_active, ":new_party"),
 
         (party_get_slot, ":population", ":village_no", slot_center_sod_local_population),
         (party_get_slot, ":health", ":village_no", slot_center_sod_local_health),
@@ -58,6 +59,7 @@ SCRIPTS = [
           (try_for_range_backwards, ":stack_no", 0, ":num_stacks"),
             (gt, ":farmers_to_remove", 0),
             (party_stack_get_troop_id, ":stack_troop", ":new_party", ":stack_no"),
+            (neg|troop_is_hero, ":stack_troop"),
             (party_stack_get_size, ":stack_size", ":new_party", ":stack_no"),
             (assign, ":remove_count", ":stack_size"),
             (val_min, ":remove_count", ":farmers_to_remove"),
