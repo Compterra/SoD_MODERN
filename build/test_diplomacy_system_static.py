@@ -152,7 +152,7 @@ def main() -> int:
         "fac_kingdom_6",
         "Imperial conquest doctrine",
         "script_diplomacy_start_peace_between_kingdoms",
-        "script_sod_slavers_update_market_state",
+        "script_sod_slavers_apply_market_delta",
         "slot_faction_black_khergit_pressure",
         "slot_faction_black_army_security_fund",
         "Slaver",
@@ -245,7 +245,7 @@ def main() -> int:
     assert_contains(propose_peace, "script_sod_diplomacy_score_treaty")
     assert_contains(propose_peace, "sod_diplomacy_treaty_truce")
     assert_contains(propose_peace, "truce_acceptance_score")
-    assert_contains(scripts, "slot_faction_slaver_market_heat")
+    assert_contains(scripts, "script_sod_slavers_apply_market_delta")
     assert_contains(scripts, "slot_faction_black_khergit_pressure")
     assert_contains(slavers, "sod_diplomacy_memory_slaver_cooperation")
     assert_contains(slavers, "sod_diplomacy_memory_anti_slaver_action")
@@ -276,7 +276,9 @@ def main() -> int:
     assert_contains(scripts, "Caravan Protection Charter")
     assert_contains(scripts, "current target: {s21}")
     assert_contains(scripts, "no declared target")
-    assert_contains(scripts, "have signed a {s37}")
+    assert_contains(scripts, "script_sod_report_record_faction_event")
+    assert_contains(scripts, "sod_report_reason_realm_treaty")
+    assert_contains(scripts, "sod_report_reason_realm_war")
     assert_contains(scripts, "honors its pact")
     assert_contains(scripts, "sod_diplomacy_treaty_defensive_pact")
     assert_contains(scripts, "sod_diplomacy_treaty_border_security_pact")

@@ -361,6 +361,7 @@ camp/matheld_no_backward_step.py
 camp/artimenner_siege_that_should.py
 camp/companion_interactive_quest_qa.py
 reports/quest_journal_report.py
+reports/campaign_dispatch.py
 reports/elite_doctrine_report.py
 reports/realm_law_report.py
 reports/noble_houses_report.py

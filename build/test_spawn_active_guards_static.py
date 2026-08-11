@@ -268,7 +268,7 @@ def test_spawned_persistent_parties_are_active_before_mutation():
                 '(assign, ":new_party", reg0)',
                 '(gt, ":new_party", 0)',
                 '(party_is_active, ":new_party")',
-                '(party_set_faction, ":new_party", "fac_sod_merc_guild3")',
+                '(call_script, "script_sod_elephant_guard_configure_activity_party", ":new_party", ":destination", ":activity_type")',
             ),
         ),
         (
@@ -394,12 +394,9 @@ def test_slaver_world_spawn_names_and_messages_are_guarded():
     active = raw.index('(party_is_active, ":web_party")')
     name = raw.index('(party_set_name, ":web_party", s60)')
     faction = raw.index('(party_set_faction, ":web_party", "fac_sod_merc_guild6")')
-    recovery_message = raw.index("Slaver recovery parties are moving")
-    caravan_message = raw.index("Slaver caravans are expanding")
-    if not (active < name < recovery_message < faction):
-        raise AssertionError("slaver recovery spawn message/name should be behind the active-party guard")
-    if not (active < caravan_message < faction):
-        raise AssertionError("slaver caravan spawn message should be behind the active-party guard")
+    dispatch_record = raw.index("sod_report_reason_slaver_market")
+    if not (active < name < faction < dispatch_record):
+        raise AssertionError("slaver world dispatch record should be behind the active-party guard and party setup")
     last_assign = raw.rindex('(assign, ":web_party", reg0)')
     if not (last_assign < active):
         raise AssertionError("slaver caravan branch should be guarded before shared party setup")

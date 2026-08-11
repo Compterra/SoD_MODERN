@@ -45,9 +45,9 @@ SCRIPTS = [
      (party_set_slot, ":cur_party", slot_party_sod_merc_contract_employer, ":boss_faction"),
      (party_set_slot, ":cur_party", slot_party_sod_merc_contract_guild, ":guild_faction"),
      (party_set_slot, ":cur_party", slot_party_sod_merc_contract_value, ":renewal_price"),
-     (call_script, "script_party_set_ai_state", ":cur_party", spai_accompanying_army, ":boss_party"),
-     (party_set_slot, ":cur_party", slot_party_commander_party, ":boss_party"),
      (party_set_faction, ":cur_party", ":boss_faction"),
+     (party_get_slot, ":contract_role", ":cur_party", slot_party_sod_merc_contract_role),
+     (call_script, "script_sod_merc_market_deploy_ai_contract", ":cur_party", ":boss_faction", ":contract_role", ":boss_party"),
      (assign, ":assigned", 1),
    (try_end),
 

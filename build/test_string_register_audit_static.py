@@ -115,7 +115,8 @@ def main() -> int:
         raise AssertionError("build_module.bat must audit exported text after process pipeline and before postprocess doctor")
 
     assert_not_contains(horde, "The Black Khergit horde is moving toward the rich roads around {s60}.")
-    assert_contains(horde, 'The Black Khergit horde packs its tents and rides toward another rich trade road.')
+    assert_contains(horde, 'script_sod_report_record_center_event')
+    assert_contains(horde, 'sod_report_reason_black_khergit_raid')
     assert_not_contains(horde, "(display_message, s2, 0x222222)")
     for helper in (
         "src/scripts/ZH_heroes/store_troop_name_link.py",
@@ -139,15 +140,13 @@ def main() -> int:
     assert_contains(companion_depth, '("sod_companion_describe_campfire_to_s1",')
     assert_contains(companion_depth, '(str_store_string_reg, s1, s68)')
     for raw_world_events in (weekly_migration, weekly_desperation):
-        assert_contains(raw_world_events, "(str_store_party_name_link, s68,")
-        assert_contains(raw_world_events, "{s68}")
-        assert_not_contains(raw_world_events, "(str_store_party_name_link, s1, \":source_no\")")
-        assert_not_contains(raw_world_events, "(str_store_party_name_link, s2, \":dest_no\")")
+        assert_contains(raw_world_events, "script_sod_report_record_center_event")
+        assert_not_contains(raw_world_events, "display_message")
+        assert_not_contains(raw_world_events, "str_store_party_name_link")
         assert_not_contains(raw_world_events, "Word spreads that {reg0} villagers have left {s1}")
         assert_not_contains(raw_world_events, "Word spreads that {reg0} townsfolk have left {s1}")
         assert_not_contains(raw_world_events, "Word spreads that {reg0} townsfolk have departed {s1}")
-    assert_contains(weekly_desperation, "Desperation grips {s68}")
-    assert_not_contains(weekly_desperation, "Desperation grips {s1}")
+    assert_not_contains(weekly_desperation, "Desperation grips")
     assert_no_source_sreg_display()
     assert_no_source_unsupported_direct_s_placeholder()
 

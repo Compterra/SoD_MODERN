@@ -1079,6 +1079,10 @@ slot_faction_sod_merc_active_support_cache = 508
 slot_faction_sod_merc_lord_wealth_total_cache = 509
 slot_faction_sod_merc_lord_wealth_count_cache = 510
 slot_faction_sod_merc_ruler_wealth_cache = 511
+# Cached settlement resilience inputs for kingdom mercenary demand.
+slot_faction_sod_merc_health_pressure = 512
+slot_faction_sod_merc_food_pressure = 513
+slot_faction_sod_merc_outbreak_pressure = 514
 #SoD Population
 slot_center_sod_local_population = 246
 slot_center_sod_local_health = 247
@@ -1368,6 +1372,14 @@ slot_party_black_khergit_threat_target_cache = 520
 slot_party_black_khergit_threat_faction_cache = 521
 slot_center_sod_siege_attacker_strength_cache = 522
 slot_center_sod_siege_marshall_attacking_cache = 523
+# Daily markers use current_day + 1 so an uninitialized slot remains distinct on day zero.
+slot_center_sod_jotnar_hearth_support_day = 524
+slot_center_sod_jotnar_wintering_support_day = 525
+# Weekly AI investment snapshots are refreshed explicitly before lord spending.
+slot_center_sod_investment_need_cache = 526
+slot_center_sod_investment_mode_cache = 527
+# Daily marker that caps paid supply-column food deliveries per center.
+slot_center_sod_merc_supply_relief_day = 528
 
 sod_outbreak_none = 0
 sod_outbreak_camp_fever = 1
@@ -2515,6 +2527,93 @@ slot_troop_sod_last_took_command_hours = 390
 slot_troop_sod_lord_ai_commanding_party = 391
 slot_troop_sod_lord_retreat_target_cache = 392
 slot_troop_sod_lord_retreat_target_cache_hour = 393
+
+# Campaign Dispatch is player-owned report state.  These slots are deliberately
+# contiguous so one O(1) recorder can aggregate simulation events without
+# borrowing transient temp-array slots.
+slot_troop_sod_report_pending_base = 400
+slot_troop_sod_report_archive_base = 504
+slot_troop_sod_report_archive_head_base = 824
+slot_troop_sod_report_category_unread_base = 832
+slot_troop_sod_report_slots_end = 840
+
+sod_report_category_none = 0
+sod_report_category_settlements = 1
+sod_report_category_health = 2
+sod_report_category_roads = 3
+sod_report_category_security = 4
+sod_report_category_captives = 5
+sod_report_category_contracts = 6
+sod_report_category_realm = 7
+sod_report_category_world = 8
+sod_report_category_end = 9
+
+sod_report_severity_none = 0
+sod_report_severity_routine = 1
+sod_report_severity_notable = 2
+sod_report_severity_urgent = 3
+sod_report_severity_critical = 4
+sod_report_severity_end = 5
+
+sod_report_subject_none = 0
+sod_report_subject_center = 1
+sod_report_subject_party = 2
+sod_report_subject_faction = 3
+sod_report_subject_troop = 4
+
+sod_report_reason_none = 0
+sod_report_reason_hunger = 1
+sod_report_reason_sickness = 2
+sod_report_reason_unrest = 3
+sod_report_reason_poverty = 4
+sod_report_reason_looter_formation = 5
+sod_report_reason_outbreak = 6
+sod_report_reason_relief = 7
+sod_report_reason_tax_departure = 8
+sod_report_reason_tax_delivery = 9
+sod_report_reason_prisoner_arrival = 10
+sod_report_reason_prison_pressure = 11
+sod_report_reason_black_khergit_raid = 12
+sod_report_reason_world_incident = 13
+sod_report_reason_contract = 14
+sod_report_reason_trade = 15
+sod_report_reason_realm_treaty = 16
+sod_report_reason_realm_war = 17
+sod_report_reason_slaver_market = 18
+sod_report_reason_end = 19
+
+sod_report_delivery_standard = 0
+sod_report_delivery_quiet = 1
+sod_report_delivery_archive_only = 2
+
+sod_report_pending_field_count = 0
+sod_report_pending_field_total_magnitude = 1
+sod_report_pending_field_max_severity = 2
+sod_report_pending_field_headline_magnitude = 3
+sod_report_pending_field_primary_kind = 4
+sod_report_pending_field_primary_id = 5
+sod_report_pending_field_secondary_kind = 6
+sod_report_pending_field_secondary_id = 7
+sod_report_pending_field_reason = 8
+sod_report_pending_field_first_day = 9
+sod_report_pending_field_last_day = 10
+sod_report_pending_field_unread = 11
+sod_report_pending_field_alert_day = 12
+sod_report_pending_stride = 13
+
+sod_report_archive_entries = 4
+sod_report_archive_field_day = 0
+sod_report_archive_field_count = 1
+sod_report_archive_field_total_magnitude = 2
+sod_report_archive_field_max_severity = 3
+sod_report_archive_field_headline_magnitude = 4
+sod_report_archive_field_primary_kind = 5
+sod_report_archive_field_primary_id = 6
+sod_report_archive_field_secondary_kind = 7
+sod_report_archive_field_secondary_id = 8
+sod_report_archive_field_reason = 9
+sod_report_archive_stride = 10
+sod_report_archive_category_stride = 40
 duel_daily_limit = 4
 
 sod_house_rank_none = 0
@@ -4040,6 +4139,7 @@ sod_slaver_action_carry_slaves = 8
 
 sod_elephant_guard_activity_patrol = 1
 sod_elephant_guard_activity_procession = 2
+sod_world_presence_activity_contract_days = 35
 
 sod_boar_action_pay_toll = 1
 sod_boar_action_hire_band = 2

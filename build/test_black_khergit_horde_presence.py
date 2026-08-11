@@ -109,6 +109,7 @@ def main() -> int:
         '"sod_black_khergits_initialize_world_presence"',
         '"sod_black_khergits_process_pressure_economy"',
         '"sod_black_khergits_lock_camped_ai"',
+        '"cf_sod_black_khergits_party_is_camped"',
         '"sod_black_khergits_spawn_or_recover_camp"',
         '"sod_black_khergits_process_day_cycle"',
         '"sod_black_khergits_spawn_raids"',
@@ -157,6 +158,9 @@ def main() -> int:
     assert_contains(scripts, '(party_slot_eq, ":camp_party", slot_party_black_khergit_target, ":target_center")')
     assert_contains(scripts, '(gt, ":camp_target_dist", 3)')
     assert_contains(scripts, '(party_set_ai_object, ":camp_party", ":target_center")')
+    day_cycle = scripts.split('(\"sod_black_khergits_process_day_cycle\"', 1)[1].split('(\"sod_black_khergits_spawn_raids\"', 1)[0]
+    if day_cycle.count('(party_set_ai_behavior, ":camp_party", ai_bhvr_travel_to_party)') != 2:
+        raise AssertionError("A camp may travel only while approaching or deliberately relocating, never while camped")
     assert_contains(scripts, '(party_get_attached_to, ":attached_to", ":guard_party")')
     assert_contains(scripts, '(party_detach, ":guard_party")')
     assert_contains(scripts, '(party_set_ai_behavior, ":guard_party", ai_bhvr_travel_to_party)')
@@ -231,17 +235,20 @@ def main() -> int:
     assert_contains(scripts, "camp disrupted until day")
     assert_contains(scripts, "days remaining")
     assert_contains(scripts, "last reported raid day")
-    assert_contains(scripts, "Black Khergit raiders are stripping wealth")
-    assert_contains(scripts, "Black Khergit riders have found a caravan")
+    assert_contains(scripts, "script_sod_report_record_center_event")
+    assert_contains(scripts, "sod_report_category_security")
+    assert_contains(scripts, "sod_report_category_roads")
+    assert_contains(scripts, "sod_report_reason_black_khergit_raid")
     assert_contains(scripts, "script_sod_black_khergits_process_pressure_economy")
     assert_contains(scripts, "script_sod_black_khergits_refresh_active_parties")
     assert_contains(scripts, "spai_patrolling_around_center")
-    assert_contains(spawns, "script_sod_black_khergits_spawn_or_recover_camp")
     assert_contains(spawns, "script_sod_black_khergits_spawn_raids")
+    spawn_raids_script = scripts.split('(\"sod_black_khergits_spawn_raids\"', 1)[1].split('(\"sod_black_khergits_apply_safe_passage_to_party\"', 1)[0]
+    assert_contains(spawn_raids_script, "script_sod_black_khergits_spawn_or_recover_camp")
     assert_contains(hourly, "script_sod_black_khergits_process_day_cycle")
     assert_contains(hourly, "script_sod_black_khergits_process_ai_responses")
     assert_contains(trigger_order, "ST02_every_hour/entry_0159.py")
-    assert_contains(weekly, "script_sod_black_khergits_spawn_or_recover_camp")
+    assert_contains(weekly, "script_sod_black_khergits_spawn_raids")
     assert_contains(daily, "script_sod_black_khergits_spawn_raids")
 
     for dialog in (
@@ -322,12 +329,11 @@ def main() -> int:
     assert_contains(faction_notes, "script_sod_black_khergits_describe_status_to_s27")
 
     camp_start = read("src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_black_khergit_horde_camp_start.py")
-    assert_contains(camp_start, "store_current_hours")
-    assert_contains(camp_start, "(store_mod, \":hour_of_day\", \":cur_hours\", 24)")
-    assert_contains(camp_start, "(eq, \":is_night\", 1)")
+    assert_contains(camp_start, 'script_cf_sod_black_khergits_party_is_camped')
     assert_contains(camp_start, '"black_khergit_camp_talk"')
-    assert_contains(camp_start, "(eq, \":is_night\", 0)")
     assert_contains(camp_start, '"black_khergit_khan_field_audience"')
+    if "store_current_hours" in camp_start:
+        raise AssertionError("Camp dialogue must use the horde's actual camped state, not time of day")
     for dialog in (
         "anyone_black_khergit_khan_field_audience_blood_respected.py",
         "anyone_black_khergit_khan_field_audience.py",

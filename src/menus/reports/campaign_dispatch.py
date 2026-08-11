@@ -1,0 +1,55 @@
+MENUS = [
+("campaign_dispatch", mnf_enable_hot_keys,
+    "{s68}",
+    "none",
+    [
+      (set_background_mesh, "mesh_pic_report_screen"),
+      (call_script, "script_sod_report_describe_overview_to_s68"),
+    ],
+    [
+      ("campaign_dispatch_settlements", [], "Settlements and population.", [(assign, "$g_sod_report_selected_category", sod_report_category_settlements), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_health", [], "Health and relief.", [(assign, "$g_sod_report_selected_category", sod_report_category_health), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_roads", [], "Roads and treasury.", [(assign, "$g_sod_report_selected_category", sod_report_category_roads), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_security", [], "Security and raids.", [(assign, "$g_sod_report_selected_category", sod_report_category_security), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_captives", [], "Captives and prisoner logistics.", [(assign, "$g_sod_report_selected_category", sod_report_category_captives), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_contracts", [], "Mercenaries and contracts.", [(assign, "$g_sod_report_selected_category", sod_report_category_contracts), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_realm", [], "Realm and diplomacy.", [(assign, "$g_sod_report_selected_category", sod_report_category_realm), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_world", [], "World activity.", [(assign, "$g_sod_report_selected_category", sod_report_category_world), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_settings", [], "Dispatch delivery settings.", [(jump_to_menu, "mnu_campaign_dispatch_settings")]),
+      ("campaign_dispatch_back", [], "Back.", [(jump_to_menu, "mnu_reports")]),
+    ]),
+
+("campaign_dispatch_detail", mnf_enable_hot_keys,
+    "{s68}",
+    "none",
+    [
+      (set_background_mesh, "mesh_pic_report_screen"),
+      (call_script, "script_sod_report_describe_category_to_s68"),
+      (call_script, "script_sod_report_mark_category_read", "$g_sod_report_selected_category"),
+    ],
+    [
+      ("campaign_dispatch_detail_health_report", [(eq, "$g_sod_report_selected_category", sod_report_category_health)], "Open public health report.", [(jump_to_menu, "mnu_center_public_health_report")]),
+      ("campaign_dispatch_detail_roads_report", [(eq, "$g_sod_report_selected_category", sod_report_category_roads)], "Open caravan road notes.", [(jump_to_menu, "mnu_trade_network_report")]),
+      ("campaign_dispatch_detail_security_report", [(eq, "$g_sod_report_selected_category", sod_report_category_security)], "Open Black Khergit horde report.", [(jump_to_menu, "mnu_black_khergit_horde_report")]),
+      ("campaign_dispatch_detail_captives_report", [(eq, "$g_sod_report_selected_category", sod_report_category_captives)], "Open prisoner economy report.", [(jump_to_menu, "mnu_prisoner_economy_report")]),
+      ("campaign_dispatch_detail_contracts_report", [(eq, "$g_sod_report_selected_category", sod_report_category_contracts)], "Open mercenary market report.", [(jump_to_menu, "mnu_mercenary_market_report")]),
+      ("campaign_dispatch_detail_realm_report", [(eq, "$g_sod_report_selected_category", sod_report_category_realm)], "Open diplomatic dispatches.", [(jump_to_menu, "mnu_sod_diplomacy_report")]),
+      ("campaign_dispatch_detail_world_report", [(eq, "$g_sod_report_selected_category", sod_report_category_world)], "Open mercenary world activity report.", [(jump_to_menu, "mnu_mercenary_world_activity_report")]),
+      ("campaign_dispatch_detail_back", [], "Back to campaign dispatches.", [(jump_to_menu, "mnu_campaign_dispatch")]),
+      ("campaign_dispatch_detail_reports", [], "Other reports.", [(jump_to_menu, "mnu_reports")]),
+    ]),
+
+("campaign_dispatch_settings", mnf_enable_hot_keys,
+    "{s68}",
+    "none",
+    [
+      (set_background_mesh, "mesh_pic_report_screen"),
+      (call_script, "script_sod_report_describe_settings_to_s68"),
+    ],
+    [
+      ("campaign_dispatch_settings_standard", [(neq, "$g_sod_report_delivery_mode", sod_report_delivery_standard)], "Use standard dispatches.", [(assign, "$g_sod_report_delivery_mode", sod_report_delivery_standard), (jump_to_menu, "mnu_campaign_dispatch_settings")]),
+      ("campaign_dispatch_settings_quiet", [(neq, "$g_sod_report_delivery_mode", sod_report_delivery_quiet)], "Use quiet dispatches.", [(assign, "$g_sod_report_delivery_mode", sod_report_delivery_quiet), (jump_to_menu, "mnu_campaign_dispatch_settings")]),
+      ("campaign_dispatch_settings_archive", [(neq, "$g_sod_report_delivery_mode", sod_report_delivery_archive_only)], "Use archive-only dispatches.", [(assign, "$g_sod_report_delivery_mode", sod_report_delivery_archive_only), (jump_to_menu, "mnu_campaign_dispatch_settings")]),
+      ("campaign_dispatch_settings_back", [], "Back.", [(jump_to_menu, "mnu_campaign_dispatch")]),
+    ]),
+]

@@ -340,8 +340,10 @@ def test_legacy_message_feed_boar_toll_and_battle_count_bugfixes() -> None:
     assert_contains(boar_attack, "(encounter_attack)")
 
     debrief = read("src/menus/other/continue_05.py")
-    assert_contains(debrief, "Enemy Casualties:{s9}")
-    assert_contains(debrief, "Fit to continue: your side {reg10}, enemy side {reg11}.")
+    assert_contains(debrief, "Company casualties{s8}{s10}")
+    assert_contains(debrief, "Enemy casualties{s9}")
+    assert_contains(debrief, "Allied casualties{s68}")
+    assert_not_contains(debrief, "Fit to continue: your side")
 
 
 def test_legacy_enemy_reinforcement_auto_dismount_bugfix() -> None:
@@ -528,8 +530,14 @@ def test_legacy_neutral_town_siege_entry_bugfix() -> None:
     assert_contains(outside, '"castle_start_siege"')
     assert_contains(town, '"town_start_siege_from_inside"')
     assert_contains(town, "Neutral or friendly towns auto-enter this menu, unlike castles.")
-    assert_contains(town, '(this_or_next|party_slot_eq, "$current_town", slot_center_is_besieged_by, -1)')
-    assert_contains(town, '(neq, ":center_faction", "$players_kingdom")')
+    assert_contains(town, '(call_script, "script_cf_sod_center_player_can_start_siege", "$current_town")')
+    assert_contains(outside, '(call_script, "script_cf_sod_center_player_can_start_siege", "$g_encountered_party")')
+    stale_safe = read("src/scripts/ZD_centers/cf_sod_center_player_can_start_siege.py")
+    assert_contains(stale_safe, '(party_set_slot, ":center_no", slot_center_is_besieged_by, -1)')
+    assert_contains(stale_safe, '(neg|party_is_active, ":siege_party")')
+    assert_contains(town, '(store_relation, ":center_relation", ":center_faction", "fac_player_supporters_faction")')
+    assert_contains(town, '(this_or_next|neq, ":center_faction", "$players_kingdom")')
+    assert_contains(town, '(lt, ":center_relation", 0)')
     assert_contains(town, '(jump_to_menu, "mnu_castle_siege_confirm")')
     assert_contains(town, '(assign, "$g_player_besiege_town", "$current_town")')
     assert_contains(town, '(call_script, "script_make_kingdom_hostile_to_player", ":center_faction", -10)')
@@ -866,7 +874,8 @@ def test_slavers_black_market_web_exists() -> None:
     assert_contains(read("src/triggers/ST03_daily/entry_0157.py"), "script_sod_slavers_process_player_slave_burden")
     assert_contains(read("src/triggers/_order_simple_triggers.txt"), "ST03_daily/entry_0156.py")
     assert_contains(read("src/triggers/_order_simple_triggers.txt"), "ST03_daily/entry_0157.py")
-    assert_contains(scripts, "Slaver black market transport")
+    assert_contains(scripts, "sod_report_category_captives")
+    assert_contains(scripts, "sod_report_reason_slaver_market")
     assert_contains(scripts, "remove_party")
     assert_contains(scripts, "party_add_members, \"p_main_party\", \"trp_slave\"")
     assert (
@@ -944,10 +953,12 @@ def test_elephant_guard_sacred_warden_world_presence_exists() -> None:
         "slot_party_sod_elephant_guard_activity",
         "sod_elephant_guard_activity_patrol",
         "sod_elephant_guard_activity_procession",
+        "sod_world_presence_activity_contract_days",
     ):
         assert_contains(constants, token)
     for script_name in (
         '"sod_elephant_guard_update_sacred_state"',
+        '"sod_elephant_guard_configure_activity_party"',
         '"sod_elephant_guard_spawn_world_activity"',
         '"sod_elephant_guard_process_world_activity"',
         '"sod_elephant_guard_apply_player_support"',
@@ -992,10 +1003,13 @@ def test_elephant_guard_sacred_warden_world_presence_exists() -> None:
     assert_contains(scripts, "trp_elephant_guard_fighter")
     assert_contains(scripts, "script_sod_slavers_apply_player_action")
     assert_contains(scripts, "sod_slaver_action_free_runaways")
-    assert_contains(scripts, "slot_faction_slaver_market_heat")
+    assert_contains(world_presence_helpers, "slot_faction_slaver_market_heat")
     assert_contains(scripts, "script_sod_world_presence_store_slaver_pressure_to_reg")
     assert_contains(scripts, "script_sod_world_presence_try_interdict_slaver_to_reg")
+    assert_contains(scripts, "sod_world_presence_activity_contract_days")
     assert_contains(world_presence_helpers, "slot_party_sod_slaver_web_activity")
+    assert_contains(world_presence_helpers, "slot_party_merc_contract")
+    assert_contains(world_presence_helpers, "sod_world_presence_activity_contract_days")
     assert_contains(scripts, "slot_faction_elephant_guard_slaver_alarm")
     assert_contains(world_presence_helpers, "ai_bhvr_attack_party")
     assert_contains(world_presence_helpers, "sod_slaver_action_hostile")
@@ -1015,6 +1029,11 @@ def test_elephant_guard_sacred_warden_world_presence_exists() -> None:
         or "script_sod_player_charge_gold" in warden_report
     ), "Elephant Guard relief donation must charge the player"
     assert_contains(read("src/menus/_order_game_menus.txt"), "reports/elephant_guard_warden_report.py")
+    process_start = scripts.index('("sod_elephant_guard_process_world_activity"')
+    process_end = scripts.index('("sod_elephant_guard_apply_player_support"', process_start)
+    process = scripts[process_start:process_end]
+    assert_contains(process, 'script_sod_elephant_guard_configure_activity_party", ":party_no"')
+    assert_contains(process, 'party_get_template_id, ":template", ":party_no"')
 
 
 def test_jotnar_hearthbound_kin_world_presence_exists() -> None:
@@ -1035,6 +1054,9 @@ def test_jotnar_hearthbound_kin_world_presence_exists() -> None:
         "slot_faction_jotnar_target_center",
         "slot_faction_jotnar_slaver_pressure",
         "slot_party_sod_jotnar_hearth_activity",
+        "slot_center_sod_jotnar_hearth_support_day",
+        "slot_center_sod_jotnar_wintering_support_day",
+        "sod_world_presence_activity_contract_days",
     ):
         assert_contains(constants, token)
     for script_name in (
@@ -1054,6 +1076,9 @@ def test_jotnar_hearthbound_kin_world_presence_exists() -> None:
     assert_contains(scripts, "script_sod_slavers_apply_player_action")
     assert_contains(scripts, "script_sod_world_presence_store_slaver_pressure_to_reg")
     assert_contains(scripts, "script_sod_world_presence_try_interdict_slaver_to_reg")
+    assert_contains(scripts, "sod_world_presence_activity_contract_days")
+    assert_contains(world_presence_helpers, "slot_party_merc_contract")
+    assert_contains(world_presence_helpers, "sod_world_presence_activity_contract_days")
     assert_contains(world_presence_helpers, "slot_party_sod_slaver_web_activity")
     assert_contains(world_presence_helpers, "ai_bhvr_attack_party")
     assert_contains(scripts, "Jotnar hearth guards are shadowing Slaver traffic")
@@ -1087,6 +1112,14 @@ def test_jotnar_hearthbound_kin_world_presence_exists() -> None:
     assert_contains(read("src/menus/_order_game_menus.txt"), "reports/jotnar_hearth_report.py")
     assert_contains(slavers, "fac_sod_merc_guild4")
     assert_contains(slavers, "sod_slaver_action_buy_slaves")
+    process_start = scripts.index('("sod_jotnar_process_world_activity"')
+    process_end = scripts.index('("sod_jotnar_apply_player_support"', process_start)
+    process = scripts[process_start:process_end]
+    assert_contains(process, "slot_center_sod_jotnar_hearth_support_day")
+    assert_contains(process, "slot_center_sod_jotnar_wintering_support_day")
+    assert process.index('(try_for_parties, ":jotnar_party")') < process.index(
+        '(try_for_range, ":center_no", villages_begin, villages_end)'
+    )
 
 
 def test_black_khergit_moving_horde_exists() -> None:
@@ -1296,8 +1329,10 @@ def test_mini_faction_dashboard_links_reports() -> None:
         assert_contains(read(path), "@hostile")
     assert_contains(read("src/scripts/ZY_helper_scripts/sod_black_army_world_presence.py"), "slot_faction_black_khergit_pressure")
     assert_contains(read("src/scripts/ZY_helper_scripts/sod_serpent_host_world_presence.py"), "sod_serpent_action_track_horde")
-    assert_contains(read("src/scripts/ZY_helper_scripts/sod_jotnar_world_presence.py"), "slot_faction_slaver_market_supply")
-    assert_contains(read("src/scripts/ZY_helper_scripts/sod_elephant_guard_world_presence.py"), "slot_faction_slaver_market_supply")
+    slaver_market = read("src/scripts/ZY_helper_scripts/sod_slavers_black_market.py")
+    assert_contains(slaver_market, "slot_faction_slaver_market_supply")
+    assert_contains(read("src/scripts/ZY_helper_scripts/sod_jotnar_world_presence.py"), "script_sod_slavers_apply_market_delta")
+    assert_contains(read("src/scripts/ZY_helper_scripts/sod_elephant_guard_world_presence.py"), "script_sod_slavers_apply_market_delta")
     assert_contains(read("src/menus/reports/black_army_security_report.py"), "road-threat interdiction")
     assert_contains(read("src/menus/reports/black_army_security_report.py"), "share one 7-day contract cooldown")
     assert_contains(read("src/menus/reports/serpent_host_route_report.py"), "Black Khergit horde tracking")
@@ -1625,6 +1660,7 @@ def test_battle_commander_selection_uses_custom_commander_style_flow() -> None:
     menu_preamble = read("src/menus/_preamble/00_imports.py")
     selector = read("src/menus/other/sod_battle_commander_select.py")
     debrief = read("src/menus/other/continue_05.py")
+    casualty_counter = read("src/scripts/ZG_quests/count_mission_casualties_from_agents.py")
     trigger_order = read("src/triggers/_order_simple_triggers.txt")
     reset_trigger = read("src/triggers/ST01_every_frame/entry_0175_sod_battle_commander_reset.py")
     mission_preamble = read("src/mission_templates/_preamble/00_imports.py")
@@ -1660,6 +1696,18 @@ def test_battle_commander_selection_uses_custom_commander_style_flow() -> None:
     assert_contains(selector, '"sod_battle_commander_select"')
     assert_contains(selector, "If you cannot fight, select a fit companion.")
     assert_contains(debrief, '(call_script, "script_sod_battle_commander_restore_player_health")')
+    assert_contains(debrief, '(call_script, "script_sod_battle_commander_reset")')
+    assert debrief.index('script_sod_battle_commander_restore_player_health') < debrief.index('script_sod_battle_commander_reset')
+    for token in (
+        '(assign, ":counts_as_player_party", 0)',
+        '(eq, ":agent_party", "p_main_party")',
+        '(eq, ":agent_troop_id", "trp_player")',
+        '(eq, "$g_sod_battle_commander_active", 1)',
+        '(eq, ":agent_troop_id", "$g_sod_battle_commander_troop")',
+        '(eq, ":counts_as_player_party", 1)',
+        '(eq, ":counts_as_player_party", 0)',
+    ):
+        assert_contains(casualty_counter, token)
     assert_contains(trigger_order, "entry_0175_sod_battle_commander_reset.py")
     assert_contains(reset_trigger, "(map_free)")
     assert_contains(reset_trigger, '(call_script, "script_sod_battle_commander_reset")')

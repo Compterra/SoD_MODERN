@@ -213,6 +213,8 @@ MENUS = [
 
       ("view_quest_journal_report", [], "View quest journal.", [(jump_to_menu, "mnu_quest_journal_report")]),
 
+      ("view_campaign_dispatch", [], "Read campaign dispatches.", [(jump_to_menu, "mnu_campaign_dispatch")]),
+
       ("view_realm_reports", [], "Realm and campaign reports...", [(jump_to_menu, "mnu_realm_reports")]),
 
       ("view_sod_diplomacy_report", [], "Open the diplomatic dispatches.", [(jump_to_menu, "mnu_sod_diplomacy_report")]),

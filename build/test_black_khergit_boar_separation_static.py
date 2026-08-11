@@ -71,9 +71,10 @@ def main() -> int:
         '(call_script, "script_cf_sod_black_khergits_party_is_raider", ":raider_party")',
         '(call_script, "script_cf_sod_black_khergits_party_is_horde_force", ":threat_party")',
         'The Black Khergits are rumored to have invaded Calradia.',
-        'The Black Khergit horde packs its tents and rides toward another rich trade road.',
-        'Black Khergit raiders are stripping wealth from nearby villages.',
-        'Black Khergit riders have found a caravan to harry on the trade roads.',
+        'script_sod_report_record_center_event',
+        'sod_report_category_security',
+        'sod_report_category_roads',
+        'sod_report_reason_black_khergit_raid',
         '(party_set_slot, ":party_no", slot_party_sod_boar_frontier_activity, 0)',
         '(party_set_slot, ":party_no", slot_party_sod_boar_frontier_origin, 0)',
         '(party_set_slot, ":party_no", slot_party_sod_boar_frontier_destination, 0)',
@@ -93,8 +94,8 @@ def main() -> int:
     assert_contains(incidents, "sod_mini_faction_incident_boar_tolls")
     assert_contains(boar_report, "script_sod_mini_faction_describe_recent_incident_to_s28\", sod_mini_faction_incident_boar_tolls")
     assert_contains(horde_report, "script_sod_mini_faction_describe_recent_incident_to_s28\", sod_mini_faction_incident_black_khergit_raid")
-    if horde.index("The Black Khergits are rumored to have invaded Calradia.") > horde.index("The Black Khergit horde packs its tents and rides toward another rich trade road."):
-        raise AssertionError("Initial Black Khergit invasion rumor should be the first public horde message")
+    if horde.index("The Black Khergits are rumored to have invaded Calradia.") > horde.index("script_sod_report_record_center_event"):
+        raise AssertionError("Initial Black Khergit invasion rumor should precede routine Dispatch reporting")
     if horde.index('(assign, ":camp_party", ":party_no")') > horde.index('(party_get_position, pos1, ":camp_party")'):
         raise AssertionError("Camp position reads must occur after a valid horde camp party is assigned")
     for stale in (

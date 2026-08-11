@@ -22,6 +22,8 @@ SCRIPTS = [
      (try_end),
      (party_set_slot, ":cur_party", slot_party_boss, -1),
      (party_set_slot, ":cur_party", slot_party_sod_merc_contract_employer, 0),
+     (party_set_slot, ":cur_party", slot_party_sod_merc_contract_role, sod_merc_contract_role_none),
+     (call_script, "script_sod_report_record_contract_event", sod_report_severity_routine, ":cur_party", ":base", 1, sod_report_reason_contract),
      (try_begin),
        (gt, ":guild_faction", 0),
        (party_set_slot, ":cur_party", slot_party_orginal_faction, ":guild_faction"),
@@ -75,11 +77,11 @@ SCRIPTS = [
        (party_set_banner_icon, ":cur_party", "icon_banner_166"),
      (try_end),
      (assign, ":assigned", 1),
-   (try_end),
-
-   (try_begin),
+   (else_try),
+     # The patrol branch above either takes ownership of this party or fails
+     # as a whole.  Make the fallback structurally exclusive instead of
+     # relying on a later AI overwrite guard.
      (party_is_active, ":cur_party"),
-     (eq, ":assigned", 0),
      (party_set_slot, ":cur_party", slot_party_commander_party, -1),
      (party_set_faction, ":cur_party", "fac_commoners"),
      (party_set_banner_icon, ":cur_party", 0),

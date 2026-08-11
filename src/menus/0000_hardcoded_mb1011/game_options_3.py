@@ -21,6 +21,17 @@ MENUS = [
         (str_store_string, s98, "@{s97}^^Messages: Fewest"),
       (try_end),
 
+      (str_store_string, s99, "@Standard"),
+      (try_begin),
+        (eq, "$g_sod_report_delivery_mode", sod_report_delivery_quiet),
+        (str_store_string, s99, "@Quiet"),
+      (else_try),
+        (eq, "$g_sod_report_delivery_mode", sod_report_delivery_archive_only),
+        (str_store_string, s99, "@Archive only"),
+      (try_end),
+      (str_store_string_reg, s97, s98),
+      (str_store_string, s98, "@{s97}^Campaign Dispatch: {s99}"),
+
 	  # (try_begin),
 	    # (eq, "$g_sod_anti_pursuit", 0),
 	    # Anti Pursuit System display removed.
@@ -106,6 +117,18 @@ MENUS = [
       ("game_options_few", [(eq, "$g_sod_hide_messages", 0)], "Show fewer messages.", [(assign, "$g_sod_hide_messages", -1), (jump_to_menu, "mnu_game_options_3")]),
       ("game_options_none", [(eq, "$g_sod_hide_messages", -1)], "Show fewest messages.", [(assign, "$g_sod_hide_messages", -2), (jump_to_menu, "mnu_game_options_3")]),
       ("game_options_all", [(eq, "$g_sod_hide_messages", -2)], "Show all messages.", [(assign, "$g_sod_hide_messages", 0), (jump_to_menu, "mnu_game_options_3")]),
+      ("game_options_cycle_campaign_dispatch", [], "Change campaign dispatch delivery.", [
+        (try_begin),
+          (eq, "$g_sod_report_delivery_mode", sod_report_delivery_standard),
+          (assign, "$g_sod_report_delivery_mode", sod_report_delivery_quiet),
+        (else_try),
+          (eq, "$g_sod_report_delivery_mode", sod_report_delivery_quiet),
+          (assign, "$g_sod_report_delivery_mode", sod_report_delivery_archive_only),
+        (else_try),
+          (assign, "$g_sod_report_delivery_mode", sod_report_delivery_standard),
+        (try_end),
+        (jump_to_menu, "mnu_game_options_3"),
+      ]),
       # ("game_options_anti_pursuit_1", [(eq, "$g_sod_anti_pursuit", 1)], "Enable Anti Pursuit System", [(assign, "$g_sod_anti_pursuit", 0), (jump_to_menu, "mnu_game_options_3")]),
       # ("game_options_anti_pursuit_2", [(eq, "$g_sod_anti_pursuit", 0)], "Disable Anti Pursuit System", [(assign, "$g_sod_anti_pursuit", 1), (jump_to_menu, "mnu_game_options_3")]),
       ("game_options_enable_ai", [(eq, "$g_sod_deactivate_ai", 1)], "Use full Strategic AI", [(assign, "$g_sod_deactivate_ai", 0), (assign, "$g_sod_deactivate_lords_ai", 0),(jump_to_menu, "mnu_game_options_3")]),   # Sod Twan new options

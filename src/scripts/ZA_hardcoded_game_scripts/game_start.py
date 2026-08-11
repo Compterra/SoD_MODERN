@@ -341,6 +341,9 @@ SCRIPTS = [
       (assign, "$g_sod_global_population", 0),    # global population (innaccurate - you really must recompute this when needed - see the Chancellor for an example)
       (assign, "$g_sod_global_health", 0),        # used for events
       (assign, "$g_sod_hide_messages", 0),        # allow players to control the amount of information that is displayed during our triggers
+      (assign, "$g_sod_report_delivery_mode", sod_report_delivery_standard),
+      (assign, "$g_sod_report_last_nudge_day", -1),
+      (assign, "$g_sod_report_selected_category", sod_report_category_settlements),
 
       # initialize population (towns & villages)
       (try_for_range, ":center_no", towns_begin, towns_end),
@@ -1171,6 +1174,11 @@ SCRIPTS = [
       (assign, "$g_sod_player_map_icon_initialized", 0),
       (assign, "$g_sod_player_map_icon_next_check_hour", 0),
       (assign, "$g_sod_battle_commander_reset_pending", 0),
+      (assign, "$g_sod_battle_xp_messages_suppressed", 0),
+      (assign, "$g_sod_battle_xp_start", 0),
+      (assign, "$g_sod_battle_level_start", 0),
+      (assign, "$g_sod_battle_xp_gain", 0),
+      (assign, "$g_sod_battle_level_gain", 0),
       # Setting food bonuses
       (item_set_slot, "itm_smoked_fish", slot_item_food_bonus, 10),
       (item_set_slot, "itm_dried_meat", slot_item_food_bonus, 10),

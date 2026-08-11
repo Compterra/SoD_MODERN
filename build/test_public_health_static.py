@@ -171,8 +171,9 @@ def main():
         "kingdom_heroes_begin",
         "slot_center_health_recent_exposure",
         "script_change_center_health",
-        "organize healers and quarantine",
-        "move supplies and clean handling",
+        "script_sod_report_record_event",
+        "sod_report_category_health",
+        "sod_report_reason_relief",
     ):
         assert_contains(helper, token, f"lord owner public health response {token}")
     assert_contains(town_menu, "script_sod_center_public_health_apply_player_visit_exposure", "town/castle visit public health exposure")
