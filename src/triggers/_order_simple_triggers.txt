@@ -105,6 +105,7 @@ ST04_weekly/entry_0102.py
 ST03_daily/entry_0103.py
 ST04_weekly/entry_0104.py
 ST04_weekly/entry_0105.py
+ST04_weekly/campaign_dispatch_weekly_flush.py
 ST04_weekly/entry_0106.py
 ST03_daily/entry_0107.py
 ST04_weekly/entry_0107.py
@@ -174,9 +175,9 @@ ST01_every_frame/entry_0169.py
 ST04_weekly/entry_0170.py
 ST03_daily/entry_0171.py
 ST02_every_hour/entry_0172.py
-ST02_every_hour/entry_0173_string_probe.py
 ST04_weekly/entry_0174.py
 ST01_every_frame/entry_0175_sod_battle_commander_reset.py
 ST04_weekly/entry_0176_public_health.py
 ST03_daily/entry_0177_public_health.py
+ST03_daily/campaign_dispatch_daily_flush.py
 ST02_every_hour/entry_0178_incriminate_loyal_commander.py

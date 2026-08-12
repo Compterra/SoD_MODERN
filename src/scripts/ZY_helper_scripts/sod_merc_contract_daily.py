@@ -82,6 +82,7 @@ SCRIPTS = [
       (store_mul, ":exp", ":size", 8),
       (call_script, "script_cf_party_upgrade_with_xp", ":cur_party", ":exp", 0),
     (try_end),
+    (call_script, "script_sod_merc_market_process_ai_contract_services"),
     (call_script, "script_merc_apply_daily_standing_perks"),
  ]),
 

@@ -31,8 +31,10 @@ MISSION_TEMPLATES = [
       (ti_before_mission_start, 0, 0, [], [
          (call_script, "script_change_banners_and_chest"),
          (call_script, "script_sod_battle_initialize_morale_context"),
+         (call_script, "script_sod_battle_xp_log_start"),
       ]),
 
+      common_battle_xp_log_suppression_tick,
       common_inventory_not_available,
 
       (ti_tab_pressed, 0, 0,

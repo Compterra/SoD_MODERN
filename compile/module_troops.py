@@ -1701,12 +1701,12 @@ troops = [
 
 #Infantry - Ranged
    ["sod_ade_archer", "Adenian Archer", "Adenian Archers", tf_guarantee_ranged|tf_guarantee_gloves|tf_guarantee_boots|tf_guarantee_armor|tf_guarantee_helmet|tf_guarantee_shield, 0, 2, fac_player_supporters_faction,
-    [itm_arrows, itm_short_bow, itm_short_bow, itm_hunting_bow, itm_one_handed_war_axe_a,
+    [itm_arrows, itm_short_bow, itm_short_bow, itm_hunting_bow, itm_one_handed_war_axe_a, itm_tab_shield_round_b,
      itm_leather_cap, itm_red_gambeson, itm_leather_boots, itm_leather_gloves],
     def_attrib|level(9), regular_archer(9), knows_power_draw_1|knows_athletics_1, swadian_face_younger_1, swadian_face_middle_2],
 
    ["sod_ade_veteran_archer", "Adenian Veteran Archer", "Adenian Veteran Archers", tf_guarantee_ranged|tf_guarantee_gloves|tf_guarantee_boots|tf_guarantee_armor|tf_guarantee_helmet|tf_guarantee_shield, 0, 2, fac_player_supporters_faction,
-    [itm_arrows, itm_short_bow, itm_nomad_bow, itm_nomad_bow, itm_one_handed_war_axe_b,
+    [itm_arrows, itm_short_bow, itm_nomad_bow, itm_nomad_bow, itm_one_handed_war_axe_b, itm_tab_shield_kite_c,
      itm_skullcap, itm_leather_vest, itm_leather_boots, itm_leather_gloves],
     def_attrib|level(14), regular_archer(14), knows_ironflesh_1|knows_power_draw_2|knows_athletics_1, swadian_face_young_1, swadian_face_old_2],
 
@@ -1723,7 +1723,7 @@ troops = [
     def_attrib|level(15), regular_melee(15), knows_riding_3|knows_ironflesh_1|knows_power_strike_1|knows_shield_2, swadian_face_young_1, swadian_face_old_2],
 
    ["sod_ade_medium", "Adenian Medium Cavalry", "Adenian Medium Cavalry", tf_mounted|tf_guarantee_horse|tf_guarantee_gloves|tf_guarantee_boots|tf_guarantee_armor|tf_guarantee_helmet|tf_guarantee_shield, 0, 3, fac_player_supporters_faction,
-    [itm_lance, itm_lance, itm_tab_shield_kite_cav_b,
+    [itm_lance, itm_sword_medieval_b, itm_tab_shield_kite_cav_b,
      itm_old_great_helm, itm_mail_hauberk, itm_mail_chausses, itm_mail_mittens,
      itm_warhorse],
     def_attrib|level(22), regular_melee(22), knows_riding_4|knows_ironflesh_2|knows_power_strike_2|knows_shield_2, swadian_face_young_1, swadian_face_old_2],
@@ -2088,7 +2088,7 @@ troops = [
 
 #Zerrikanian
   ["sod_faith4_mount_ranged", "Boundless Wanderer", "Boundless Wanderers", tf_guarantee_ranged|tf_mounted|tf_guarantee_horse|tf_guarantee_gloves|tf_guarantee_boots|tf_guarantee_armor|tf_guarantee_helmet|tf_guarantee_shield, 0, 5, fac_player_supporters_faction,
-   [itm_khergit_bow, itm_khergit_arrows, itm_khergit_arrows, itm_goldscimitar, 
+   [itm_khergit_bow, itm_khergit_arrows, itm_khergit_arrows, itm_goldscimitar, itm_steel_shield,
     itm_oprichnik_mask1, itm_zerk_redmask, itm_dvor2_mask, itm_faith_enlightenment_armor_1, itm_faith_enlightenment_armor_2, itm_dullboots, itm_black_army_leather_gloves,
     itm_rok_bashkir_courser, itm_rok_bashkir_hunter, itm_rok_boyar_son_warhorse, itm_rok_oprichnik_charger],
    def_attrib|level(30), expert_archer(35), knows_riding_10|knows_horse_archery_10|knows_power_draw_10|knows_power_throw_10|knows_shield_5, khergit_face_middle_1, khergit_face_older_2],

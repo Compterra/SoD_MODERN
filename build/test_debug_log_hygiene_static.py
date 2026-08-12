@@ -10,10 +10,6 @@ DEBUG_GUARD_RE = re.compile(
     r'\$g_sod_debug|\$cheat_mode|:debug|eq,\s*1,\s*0|g_sod_diplomacy_notification_level'
 )
 DEBUG_CONTEXT_LINES = 36
-WHOLE_FILE_DEBUG_GUARDS = {
-    "src/triggers/ST02_every_hour/entry_0173_string_probe.py": '(eq, "$g_sod_debug", 1)',
-}
-
 
 def read(rel: str) -> str:
     return (ROOT / rel).read_text(encoding="utf-8", errors="replace")
@@ -86,16 +82,10 @@ def test_debug_color_messages_are_guarded() -> None:
     for path in sorted((ROOT / "src").rglob("*.py")):
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
         rel = path.relative_to(ROOT).as_posix()
-        whole_file_guard = WHOLE_FILE_DEBUG_GUARDS.get(rel)
-        if whole_file_guard:
-            top_context = " ".join(lines[:12])
-            assert whole_file_guard in top_context, f"{rel}: expected whole-file debug guard {whole_file_guard}"
         for line_no, line in enumerate(lines, start=1):
             if line.lstrip().startswith("#"):
                 continue
             if not DEBUG_COLOR_MESSAGE_RE.search(line):
-                continue
-            if whole_file_guard:
                 continue
             start = max(0, line_no - DEBUG_CONTEXT_LINES)
             context = " ".join(lines[start:line_no])

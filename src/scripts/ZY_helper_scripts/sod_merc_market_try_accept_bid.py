@@ -64,6 +64,10 @@ SCRIPTS = [
        (try_end),
      (try_end),
      (gt, ":boss_party", 0),
+     # Resolve the role before formation. A local crisis without a viable
+     # target becomes field service before its company mix is selected.
+     (call_script, "script_sod_merc_market_resolve_ai_contract_role", ":kingdom_faction", ":demand_type", ":boss_party"),
+     (assign, ":effective_demand_type", reg0),
 
      (assign, ":collectable_wealth", 0),
      (try_begin),
@@ -90,7 +94,7 @@ SCRIPTS = [
      (try_end),
      (ge, ":collectable_wealth", ":bid_value"),
 
-     (call_script, "script_cf_spawn_ai_mercs", ":boss_troop", ":guild_faction", ":boss_party", ":company_size", ":kingdom_faction"),
+     (call_script, "script_cf_spawn_ai_mercs", ":boss_troop", ":guild_faction", ":boss_party", ":company_size", ":kingdom_faction", ":effective_demand_type"),
      (assign, ":spawned_party", reg0),
      (gt, ":spawned_party", 0),
 
@@ -138,7 +142,7 @@ SCRIPTS = [
      (party_set_slot, ":spawned_party", slot_party_sod_merc_contract_employer, ":kingdom_faction"),
      (party_set_slot, ":spawned_party", slot_party_sod_merc_contract_guild, ":guild_faction"),
      (party_set_slot, ":spawned_party", slot_party_sod_merc_contract_value, ":bid_value"),
-     (party_set_slot, ":spawned_party", slot_party_sod_merc_contract_role, ":demand_type"),
+     (party_set_slot, ":spawned_party", slot_party_sod_merc_contract_role, ":effective_demand_type"),
      (party_set_slot, ":spawned_party", slot_party_sod_merc_contract_start_day, ":cur_day"),
      (party_set_slot, ":spawned_party", slot_party_sod_merc_contract_initial_size, ":company_size"),
      (party_set_slot, ":spawned_party", slot_party_sod_merc_contract_loss_score, 0),
@@ -147,6 +151,7 @@ SCRIPTS = [
      (party_set_slot, ":spawned_party", slot_party_sod_merc_contract_replenishment_level, ":max_company_size"),
      (party_set_slot, ":spawned_party", slot_party_merc_contract, ":term_end"),
      (party_set_slot, ":spawned_party", slot_party_orginal_faction, ":guild_faction"),
+     (call_script, "script_sod_merc_market_deploy_ai_contract", ":spawned_party", ":kingdom_faction", ":effective_demand_type", ":boss_party"),
 
      (faction_get_slot, ":cached_contract_value", ":guild_faction", slot_faction_sod_merc_contract_value_cache),
      (val_add, ":cached_contract_value", ":bid_value"),

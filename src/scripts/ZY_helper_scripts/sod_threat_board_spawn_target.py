@@ -15,6 +15,10 @@ SCRIPTS = [
 
    (call_script, "script_sod_threat_board_normalize_center", ":sponsor_center"),
    (assign, ":sponsor_center", reg(0)),
+   (try_begin),
+     (le, ":party_template", 0),
+     (assign, ":party_template", "pt_bandits"),
+   (try_end),
 
    (spawn_around_party, ":sponsor_center", ":party_template"),
     (assign, ":target_party", reg(0)),

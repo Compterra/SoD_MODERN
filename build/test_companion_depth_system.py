@@ -87,14 +87,14 @@ def assert_script_contains_in_order(raw: str, script_name: str, needles: tuple[s
 def assert_script_has_membership_guard(raw: str, script_name: str) -> None:
     body = script_body(raw, script_name)
     assert_contains(body, "(is_between, \":companion\", companions_begin, companions_end)")
-    assert_contains(body, "(main_party_has_troop, \":companion\")")
+    assert_contains(body, "(call_script, \"script_cf_sod_companion_in_main_party\", \":companion\")")
 
 
 def assert_role_reader_has_party_guard(path: str) -> None:
     raw = read(path)
     if "slot_troop_companion_role" not in raw:
         raise AssertionError(f"Expected companion role reader in {path}")
-    assert_contains(raw, "main_party_has_troop")
+    assert_contains(raw, "script_cf_sod_companion_in_main_party")
 
 
 def assert_effective_role_reader_requires_trust(path: str) -> None:
@@ -200,7 +200,7 @@ def assert_named_companion_incident_starters_are_party_guarded(scripts: str) -> 
             raise AssertionError(f"Missing companion incident starter: {script_name}")
         next_start = scripts.find('\n("', start + len(marker))
         body = scripts[start:] if next_start < 0 else scripts[start:next_start]
-        assert_contains(body, f'(main_party_has_troop, "{troop_ref}")')
+        assert_contains(body, f'(call_script, "script_cf_sod_companion_in_main_party", "{troop_ref}")')
 
 
 def assert_companion_trust_unlocks_sync_quest_framework() -> None:
@@ -372,7 +372,7 @@ def main() -> int:
             '(troop_set_slot, "trp_diego_companion", slot_troop_companion_trust_tier, reg0)',
         ),
     )
-    assert_contains(special_daily, '(main_party_has_troop, "trp_diego_companion")')
+    assert_contains(special_daily, '(call_script, "script_cf_sod_companion_in_main_party", "trp_diego_companion")')
     assert_contains(scripts, '(eq, "$npc_with_grievance", ":companion")')
     assert_contains(scripts, '(assign, "$npc_with_grievance", 0)')
     assert_contains(scripts, '(eq, "$npc_with_personality_clash", ":companion")')

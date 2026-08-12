@@ -214,12 +214,12 @@ strings = [
  You can press the Tab key at any time to return to the tutorial menu."),
 # Ryan END
 
-  ("tutorial_5_msg_1", "TODO: Follow order to the flag"),
-  ("tutorial_5_msg_2", "TODO: Move to the flag, keep your units at this position"),
-  ("tutorial_5_msg_3", "TODO: Move to the flag to get the archers"),
-  ("tutorial_5_msg_4", "TODO: Move archers to flag1, infantry to flag2"),
-  ("tutorial_5_msg_5", "TODO: Enemy is charging. Fight!"),
-  ("tutorial_5_msg_6", "TODO: End of battle."),
+  ("tutorial_5_msg_1", "Follow the order marker and form up at the flag."),
+  ("tutorial_5_msg_2", "Move to the flag and hold your soldiers at this position."),
+  ("tutorial_5_msg_3", "Reach the next flag to take command of the archers."),
+  ("tutorial_5_msg_4", "Move the archers to the first flag and the infantry to the second."),
+  ("tutorial_5_msg_5", "The enemy is charging. Hold the line and fight!"),
+  ("tutorial_5_msg_6", "Exercise complete. You can press Tab to leave the field."),
 
   ("trainer_help_1", "This is a training ground where you can learn the basics of the game. Use A, S, D, W keys to move and the mouse to look around."),
   ("trainer_help_2", "To speak with the trainer, go near him, look at him and press the 'F' key when you see the word 'Talk' under his name.\

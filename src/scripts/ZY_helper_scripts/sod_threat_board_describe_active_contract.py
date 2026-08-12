@@ -70,12 +70,12 @@ SCRIPTS = [
 
    (try_begin),
      (eq, ":ready", 1),
-     (str_store_string, s1, "@Job Board Contract^^Sponsor: {s2}^{s8}^Target: {s3}^Tier {reg3}; recommended force {reg7}+ fit troops.^Status: ready to claim.^Reward: {reg2} denars, {reg6} XP, +{reg4} relation.^Note: {s4}"),
+     (str_store_string, s1, "@Regional Threat Warrant^^Sponsor: {s2}^{s8}^Marked party: {s3}^Danger tier {reg3}; bring at least {reg7} fit troops.^Status: ready to claim.^Reward: {reg2} denars, {reg6} XP, +{reg4} relation.^Note: {s4}"),
    (else_try),
-     (str_store_string, s1, "@Job Board Contract^^Sponsor: {s2}^{s8}^Target: {s3}^Tier {reg3}; recommended force {reg7}+ fit troops; {reg1} days left.^Reward: {reg2} denars, {reg6} XP, +{reg4} relation.^Note: {s4}"),
+     (str_store_string, s1, "@Regional Threat Warrant^^Sponsor: {s2}^{s8}^Marked party: {s3}^Danger tier {reg3}; bring at least {reg7} fit troops; {reg1} days left.^Reward: {reg2} denars, {reg6} XP, +{reg4} relation.^Note: {s4}"),
    (try_end),
   (else_try),
-    (str_store_string, s1, "@Job Board Contract^^No active contract."),
+    (str_store_string, s1, "@Regional Threat Warrant^^No warrant is currently posted for your company."),
   (try_end),
  ]),
 ]

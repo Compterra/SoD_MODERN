@@ -10,8 +10,8 @@ def read(path: str) -> str:
 def test_store_troop_name_link_handles_invalid_troop_ids() -> None:
     raw = read("src/scripts/ZH_heroes/store_troop_name_link.py")
     assert '(neg|is_between, ":troop", 0, "trp_last_troop")' in raw
-    assert '@that commander' in raw
-    assert '@an unknown commander' not in raw
+    assert '@an unknown commander' in raw
+    assert '@that commander' not in raw
 
 
 def test_lord_defeat_comments_require_valid_troop_object() -> None:
@@ -23,7 +23,7 @@ def test_lord_defeat_comments_require_valid_troop_object() -> None:
     assert '(troop_get_slot, ":center_object_faction", "trp_log_array_center_object_faction", ":log_entry_no")' in raw
     assert '##     (troop_get_slot, ":center_object",         "trp_log_array_center_object",         ":log_entry_no")' not in raw
     helper = read("src/scripts/ZY_helper_scripts/get_relevant_comment_to_s42.py")
-    assert '(str_store_string, s54, "@that commander")' in helper
+    assert '(str_store_string, s54, "@an unknown commander")' in helper
     assert '(is_between, ":troop_object", heroes_begin, heroes_end)' in helper
 
 

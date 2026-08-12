@@ -5,7 +5,7 @@ SCRIPTS = [
    (store_script_param, ":role", 1),
    (assign, reg0, 0),
    (try_for_range, ":companion", companions_begin, companions_end),
-     (main_party_has_troop, ":companion"),
+     (call_script, "script_cf_sod_companion_in_main_party", ":companion"),
      (troop_slot_ge, ":companion", slot_troop_companion_approval, 45),
      (troop_slot_eq, ":companion", slot_troop_companion_role, ":role"),
      (val_add, reg0, 1),

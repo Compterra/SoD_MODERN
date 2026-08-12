@@ -24,9 +24,11 @@ def main():
     assert "script_sod_merc_market_try_accept_bid" in pulse, "AI merc market pulse must accept through the guarded contract path"
     assert '(call_script, "script_cf_sod_faction_is_merc_guild", ":guild_faction")' in bid, "bid generation must validate guild factions"
     assert '(call_script, "script_cf_sod_faction_is_merc_guild", ":guild_faction")' in accept, "bid acceptance must validate guild factions"
-    assert '(call_script, "script_cf_spawn_ai_mercs", ":boss_troop", ":guild_faction", ":boss_party", ":company_size", ":kingdom_faction")' in accept, "accepted bids must pass the selected guild roster to spawning"
+    assert "script_sod_merc_market_resolve_ai_contract_role" in accept, "accepted bids must resolve a deployable role before formation"
+    assert '(call_script, "script_cf_spawn_ai_mercs", ":boss_troop", ":guild_faction", ":boss_party", ":company_size", ":kingdom_faction", ":effective_demand_type")' in accept, "accepted bids must pass the selected guild roster and resolved live role to spawning"
 
     assert '(is_between, ":faction", guilds_begin, guilds_end)' in spawn, "cf_spawn_ai_mercs must reject non-guild factions"
+    assert "script_sod_merc_guild_get_contract_roster" in spawn, "AI merc parties must resolve a role-aware roster before spawning"
     assert '(party_set_name, ":mercs", "str_s5_mercs")' not in spawn, "AI merc party names must not keep a live {s5} template"
     assert "(str_store_string, s60, \"@{s61}'s Mercenaries\")" in spawn, "AI merc party names must be resolved before party_set_name"
     assert '(party_set_name, ":mercs", s60)' in spawn, "AI merc party names should use a resolved string register"

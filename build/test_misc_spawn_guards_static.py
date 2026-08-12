@@ -86,10 +86,13 @@ def test_incriminate_loyal_commander_abort_cleans_messenger_party():
 
 def test_disembark_ship_spawn_is_validated_before_ship_mutation():
     text = _read("src/menus/other/disembark_yes_02.py")
-    spawn = text.index('(spawn_around_party, "p_main_party", "pt_none")')
+    templates = _read("compile/module_party_templates.py")
+    spawn = text.index('(spawn_around_party, "p_main_party", "pt_player_ship")')
     flags = text.index('(party_set_flags, "$g_main_ship_party"', spawn)
     enable = text.index('(enable_party, "$g_main_ship_party")', spawn)
 
+    assert '("player_ship","Ship"' in templates
+    assert "pt_none" not in text
     assert '(assign, "$g_main_ship_party", reg0)' in text[spawn:flags]
     assert '(gt, "$g_main_ship_party", 0)' in text[spawn:flags]
     assert '(party_is_active, "$g_main_ship_party")' in text[spawn:flags]

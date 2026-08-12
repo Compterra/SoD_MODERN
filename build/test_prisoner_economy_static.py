@@ -94,8 +94,7 @@ def test_prisoner_economy_helpers_exist() -> None:
         '"sod_process_prisoner_trains"',
         '"sod_prisoner_logistics_snapshot_to_regs"',
         "pt_prisoner_train_party",
-        "slot_faction_slaver_market_supply",
-        "slot_faction_slaver_market_heat",
+        "script_sod_slavers_apply_market_delta",
         "slot_center_has_prisoner_tower",
         "slot_center_sod_slave_laborers",
         "slot_center_ransom_broker",
@@ -123,6 +122,30 @@ def test_prisoner_economy_helpers_exist() -> None:
         "sod_prisoner_category_elite",
     ]:
         assert_contains(raw, token)
+
+
+def test_prisoner_debug_messages_use_feature_safe_string_registers() -> None:
+    raw = read("src/scripts/ZY_helper_scripts/sod_prisoner_economy.py")
+    for token in [
+        'str_store_party_name_link, s68, ":origin"',
+        'str_store_party_name_link, s69, ":destination"',
+        "@Prisoner train created: {s68} -> {s69}",
+        "@Neglected prisoner overcrowding at {s68}",
+        "@Prison pressure at {s68}",
+        "@Prisoner train {s68} removed from map",
+        "@A forming prisoner train at {s68} has been transferred",
+        "@Prisoner train from {s68} delayed",
+    ]:
+        assert_contains(raw, token)
+    for token in [
+        "@Prisoner train created: {s1} -> {s2}",
+        "@Neglected prisoner overcrowding at {s2}",
+        "@Prison pressure at {s1}",
+        "@Prisoner train {s1} removed from map",
+        "@A forming prisoner train at {s1} has been transferred",
+        "@Prisoner train from {s2} delayed",
+    ]:
+        assert_not_contains(raw, token)
 
 
 def test_hero_prisoner_escape_trigger_is_a_thin_dispatcher() -> None:
@@ -567,7 +590,6 @@ def test_prisoner_train_daily_processor_uses_snapshot_gates() -> None:
     snapshot = helper[snapshot_start:processor_start]
     processor = helper[processor_start:]
     for token in [
-        "script_sod_count_active_prisoner_trains_to_regs",
         "$g_sod_prisoner_logistics_snapshot_day",
         "$g_sod_prisoner_active_trains",
         "$g_sod_prisoner_overflow_candidate_centers",
@@ -582,12 +604,19 @@ def test_prisoner_train_daily_processor_uses_snapshot_gates() -> None:
         "slot_faction_sod_prisoner_demand",
         "slot_faction_diplomacy_policy_slavery",
         "slot_faction_sod_prisoner_labor_policy",
+        "val_add, \":active_trains\", \":kingdom_active_trains\"",
         "assign, reg1, \":overflow_candidate_centers\"",
         "assign, reg2, \":policy_candidate_centers\"",
         "assign, reg3, \":patrol_scan_allowed\"",
     ]:
         assert_contains(snapshot, token)
     for token in [
+        "script_sod_prisoner_reset_active_train_counts",
+        "store_num_parties_of_template, \":train_candidates\", \"pt_prisoner_train_party\"",
+        "gt, \":train_candidates\", 0",
+        "val_add, \":active_trains\", 1",
+        "store_faction_of_party, \":counted_train_faction\", \":party_no\"",
+        "slot_faction_sod_active_prisoner_trains",
         "script_sod_prisoner_logistics_snapshot_to_regs",
         "assign, \":overflow_candidate_centers\", reg1",
         "assign, \":policy_candidate_centers\", reg2",
@@ -597,9 +626,29 @@ def test_prisoner_train_daily_processor_uses_snapshot_gates() -> None:
         "gt, \":patrol_scan_allowed\", 0",
     ]:
         assert_contains(processor, token)
+    assert_not_contains(snapshot, "script_sod_count_active_prisoner_trains_to_regs")
+    assert_not_contains(snapshot, "try_for_parties")
+    assert processor.index("store_num_parties_of_template, \":train_candidates\", \"pt_prisoner_train_party\"") < processor.index("try_for_parties, \":party_no\"")
+    assert processor.index("val_add, \":active_trains\", 1") < processor.index("script_sod_prisoner_train_update_map_ai")
     assert processor.index("gt, \":overflow_candidate_centers\", 0") < processor.index("script_sod_maybe_create_prisoner_train_from_center_overcapacity")
     assert processor.index("gt, \":policy_candidate_centers\", 0") < processor.index("script_sod_maybe_create_prisoner_train_from_center_policy_demand")
     assert processor.index("gt, \":patrol_scan_allowed\", 0") < processor.index("script_sod_maybe_create_prisoner_train_from_party")
+
+
+def test_prisoner_train_snapshot_uses_post_processing_counts() -> None:
+    helper = read("src/scripts/ZY_helper_scripts/sod_prisoner_economy.py")
+    disband_start = helper.index('(\"sod_prisoner_train_disband\"')
+    exchange_start = helper.index('(\"sod_process_prisoner_exchange_between_factions\"', disband_start)
+    disband = helper[disband_start:exchange_start]
+    processor_start = helper.index('(\"sod_process_prisoner_trains\"')
+    processor = helper[processor_start:]
+    for token in [
+        'faction_get_slot, \":active_trains\", \":train_faction\", slot_faction_sod_active_prisoner_trains',
+        'val_sub, \":active_trains\", 1',
+        'faction_set_slot, \":train_faction\", slot_faction_sod_active_prisoner_trains, \":active_trains\"',
+    ]:
+        assert_contains(disband, token)
+    assert processor.index("script_sod_prisoner_train_arrive") < processor.index("script_sod_prisoner_logistics_snapshot_to_regs")
 
 
 def test_prisoner_destination_uses_cached_pressure_profile() -> None:
@@ -619,6 +668,7 @@ def test_prisoner_destination_uses_cached_pressure_profile() -> None:
         "slot_center_sod_prisoner_capacity",
         "slot_center_sod_prisoner_unrest_pressure",
         "slot_center_sod_prisoner_escape_pressure",
+        "gt, \":last_update_day\", 0",
         "assign, reg0, \":total\"",
         "assign, reg1, \":capacity\"",
         "assign, reg2, \":unrest\"",
@@ -627,6 +677,16 @@ def test_prisoner_destination_uses_cached_pressure_profile() -> None:
         assert_contains(cache, token)
     assert_contains(destination, "script_sod_center_prisoner_pressure_cached_to_regs")
     assert_contains(overcapacity, "script_sod_center_prisoner_pressure_cached_to_regs")
+
+
+def test_local_prisoner_holding_policy_refreshes_cached_pressure() -> None:
+    helper = read("src/scripts/ZY_helper_scripts/sod_prisoner_economy.py")
+    start = helper.index('("sod_player_set_local_prisoner_holding_policy"')
+    end = helper.index('("sod_player_build_prisoner_tower_for_policy_target"', start)
+    policy = helper[start:end]
+    assert_contains(policy, "slot_center_sod_prisoner_holding_policy")
+    assert_contains(policy, "script_sod_center_recalculate_prisoner_pressure")
+    assert policy.index("slot_center_sod_prisoner_holding_policy") < policy.index("script_sod_center_recalculate_prisoner_pressure")
 
 
 def test_weekly_prisoner_pressure_skips_empty_centers_before_recalculation() -> None:
@@ -709,6 +769,16 @@ def test_prisoner_train_map_ai_handles_threat_refuge_and_escorts() -> None:
     ]:
         assert_contains(helper, token)
 
+    map_ai_start = helper.index('(\"sod_prisoner_train_update_map_ai\"')
+    map_ai_end = helper.index('(\"sod_prisoner_train_arrive\"', map_ai_start)
+    map_ai = helper[map_ai_start:map_ai_end]
+    assert map_ai.count('(party_set_ai_behavior, ":train_party", ai_bhvr_travel_to_party)') == 1
+    assert map_ai.count('(party_set_ai_object, ":train_party", ":destination")') == 1
+    assert map_ai.count('(party_set_slot, ":train_party", slot_party_sod_prisoner_destination, ":destination")') == 1
+    assert map_ai.index('(assign, ":destination_changed", 1)') < map_ai.index(
+        '(party_set_ai_behavior, ":train_party", ai_bhvr_travel_to_party)'
+    )
+
 
 def test_prisoner_train_interception_resolves_captive_outcomes() -> None:
     raw = read("src/scripts/ZY_helper_scripts/sod_prisoner_economy.py")
@@ -731,8 +801,7 @@ def test_prisoner_train_interception_resolves_captive_outcomes() -> None:
         "sod_diplomacy_policy_slavery_accepted",
         "slot_faction_sod_prisoner_supply",
         "slot_faction_sod_prisoner_exchange_pressure",
-        "slot_faction_slaver_market_supply",
-        "slot_faction_slaver_market_heat",
+        "script_sod_slavers_apply_market_delta",
         "slot_faction_sod_prisoner_mercy_reputation",
         "script_change_player_relation_with_faction",
         "pt_runaway_slaves",
@@ -756,26 +825,33 @@ def test_prisoner_train_interception_resolves_captive_outcomes() -> None:
 
 def test_slaver_black_market_uses_daily_cache_and_dirty_refresh() -> None:
     raw = read("src/scripts/ZY_helper_scripts/sod_slavers_black_market.py")
+    prepare_start = raw.index('("sod_slavers_prepare_market_deltas"')
     refresh_start = raw.index('("sod_slavers_refresh_market_state_to_regs"')
     update_start = raw.index('("sod_slavers_update_market_state"', refresh_start)
     dirty_start = raw.index('("sod_slavers_mark_market_dirty"', update_start)
+    delta_start = raw.index('("sod_slavers_apply_market_delta"', dirty_start)
     action_start = raw.index('("sod_slavers_apply_player_action"', dirty_start)
+    prepare = raw[prepare_start:refresh_start]
     refresh = raw[refresh_start:update_start]
     update = raw[update_start:dirty_start]
     dirty = raw[dirty_start:action_start]
+    delta = raw[delta_start:action_start]
     describe_start = raw.index('("sod_slavers_describe_status_to_s20"')
     describe = raw[describe_start:]
     for token in [
         "try_for_range, \":center_no\", towns_begin, towns_end",
         "try_for_parties, \":party_no\"",
+        "party_is_active, \":party_no\"",
         "$g_sod_slaver_market_cache_day",
         "$g_sod_slaver_market_cache_dirty",
         "$g_sod_slaver_market_active_web_parties",
+        "$g_sod_slaver_market_supply_delta",
+        "$g_sod_slaver_market_demand_delta",
         "assign, reg4, \":active_web_parties\"",
     ]:
         assert_contains(refresh, token)
     for token in [
-        "gt, \"$g_sod_slaver_market_cache_day\", 0",
+        "eq, \"$g_sod_slaver_market_cache_initialized\", 1",
         "eq, \"$g_sod_slaver_market_cache_day\", \":cur_day\"",
         "eq, \"$g_sod_slaver_market_cache_dirty\", 0",
         "script_sod_slavers_refresh_market_state_to_regs",
@@ -783,6 +859,22 @@ def test_slaver_black_market_uses_daily_cache_and_dirty_refresh() -> None:
         "assign, reg4, \":active_web_parties\"",
     ]:
         assert_contains(update, token)
+    for token in [
+        "$g_sod_slaver_market_delta_day",
+        "$g_sod_slaver_market_delta_initialized",
+        "$g_sod_slaver_market_demand_delta",
+        "$g_sod_slaver_market_supply_delta",
+    ]:
+        assert_contains(prepare, token)
+    for token in [
+        "script_sod_slavers_update_market_state",
+        "script_sod_slavers_prepare_market_deltas",
+        "store_sub, \":applied_demand_delta\"",
+        "store_sub, \":applied_supply_delta\"",
+        "val_add, \"$g_sod_slaver_market_demand_delta\"",
+        "val_add, \"$g_sod_slaver_market_supply_delta\"",
+    ]:
+        assert_contains(delta, token)
     assert_contains(dirty, "assign, \"$g_sod_slaver_market_cache_dirty\", 1")
     for token in [
         "script_sod_slavers_mark_market_dirty",
@@ -791,6 +883,54 @@ def test_slaver_black_market_uses_daily_cache_and_dirty_refresh() -> None:
         assert_contains(raw, token)
     assert_contains(describe, "assign, reg24, reg4")
     assert_not_contains(describe, "try_for_parties")
+
+
+def test_slaver_market_mutations_use_the_cache_aware_delta_helper() -> None:
+    market = read("src/scripts/ZY_helper_scripts/sod_slavers_black_market.py")
+    writer_paths = [
+        "src/scripts/ZY_helper_scripts/sod_prisoner_economy.py",
+        "src/scripts/ZY_helper_scripts/sod_mini_faction_incidents.py",
+        "src/scripts/ZY_helper_scripts/sod_merc_market_apply_guardrails.py",
+        "src/scripts/ZY_helper_scripts/sod_jotnar_world_presence.py",
+        "src/scripts/ZY_helper_scripts/sod_elephant_guard_world_presence.py",
+        "src/scripts/ZY_helper_scripts/sod_black_army_world_presence.py",
+        "src/scripts/ZY_helper_scripts/sod_diplomacy_system.py",
+        "src/scripts/ZY_helper_scripts/sod_companion_depth.py",
+    ]
+    for path in writer_paths:
+        assert_contains(read(path), "script_sod_slavers_apply_market_delta")
+
+    direct_writer_paths: list[str] = []
+    for path in (ROOT / "src").rglob("*.py"):
+        if path == ROOT / "src/scripts/ZY_helper_scripts/sod_slavers_black_market.py":
+            continue
+        raw = path.read_text(encoding="utf-8", errors="replace")
+        if re.search(
+            r"faction_set_slot.*slot_faction_slaver_market_(?:demand|supply|heat)",
+            raw,
+        ):
+            direct_writer_paths.append(path.relative_to(ROOT).as_posix())
+    assert direct_writer_paths == [], f"uncentralized Slaver market writes: {direct_writer_paths}"
+    assert_contains(market, '"sod_slavers_apply_market_delta"')
+
+
+def test_slaver_market_cache_is_invalidated_for_party_lifecycle_changes() -> None:
+    market = read("src/scripts/ZY_helper_scripts/sod_slavers_black_market.py")
+    clear_group = read("src/scripts/ZC_parties/clear_party_group.py")
+    noncombat = read("src/scripts/ZY_helper_scripts/sod_resolve_hostile_party_noncombat.py")
+    sanity = read("src/scripts/ZY_helper_scripts/sod_campaign_party_sanity.py")
+    director = read("src/scripts/ZY_helper_scripts/sod_world_presence_director.py")
+    caravan_dialog = read("src/dialogs/ZA01_startup_and_dispatch/party_tpl_pt_slavers_caravan_start.py")
+    for token in [
+        '"sod_slavers_mark_market_party_dirty"',
+        "party_slot_eq, \":party_no\", slot_party_sod_slaver_web_activity, 1",
+        "script_sod_slavers_mark_market_dirty",
+    ]:
+        assert_contains(market, token)
+    for raw in [clear_group, noncombat, sanity, caravan_dialog]:
+        assert_contains(raw, "script_sod_slavers_mark_market_party_dirty")
+    assert_contains(director, "eq, \":activity_slot\", slot_party_sod_slaver_web_activity")
+    assert_contains(director, "script_sod_slavers_mark_market_dirty")
 
 
 def test_player_prisoner_train_orders_are_wired() -> None:
@@ -815,9 +955,9 @@ def test_player_prisoner_train_orders_are_wired() -> None:
         "itm_grain",
         "itm_bread",
         "itm_dried_meat",
-        "main_party_has_troop, \"trp_npc3\"",
-        "main_party_has_troop, \"trp_npc10\"",
-        "main_party_has_troop, \"trp_npc12\"",
+        "script_cf_sod_companion_in_main_party\", \"trp_npc3\"",
+        "script_cf_sod_companion_in_main_party\", \"trp_npc10\"",
+        "script_cf_sod_companion_in_main_party\", \"trp_npc12\"",
         "script_sod_companion_dispatch_player_action",
         "ai_bhvr_escort_party",
         "script_sod_prisoner_train_disband",
@@ -865,7 +1005,7 @@ def test_prisoner_train_failure_modes_are_handled() -> None:
     for token in [
         "slot_party_sod_prisoner_origin",
         "store_faction_of_party, \":origin_faction\", \":origin\"",
-        "A forming prisoner train at {s1} has been transferred to the new owner.",
+        "A forming prisoner train at {s68} has been transferred to the new owner.",
         "script_sod_prisoner_train_disband",
         "slot_town_wealth",
         "guard wages are short, guard quality downgraded",
@@ -923,9 +1063,9 @@ def test_prisoner_economy_integrates_labor_policy_and_road_security() -> None:
         "slot_faction_sod_prisoner_abuse_heat",
         "script_sod_companion_dispatch_player_action",
         "script_change_player_relation_with_faction",
-        "main_party_has_troop, \"trp_npc3\"",
-        "main_party_has_troop, \"trp_npc10\"",
-        "main_party_has_troop, \"trp_npc12\"",
+        "script_cf_sod_companion_in_main_party\", \"trp_npc3\"",
+        "script_cf_sod_companion_in_main_party\", \"trp_npc10\"",
+        "script_cf_sod_companion_in_main_party\", \"trp_npc12\"",
         "slot_center_sod_security_cache_contract_security",
         "slot_center_sod_security_cache_threat_reduction",
         "bandit_threat_relief",
@@ -1022,7 +1162,7 @@ def test_prisoner_diplomacy_and_law_hooks_are_wired() -> None:
     destroyed = prisoner[prisoner.index('("sod_prisoner_train_destroyed"') : prisoner.index('("sod_process_prisoner_trains"')]
     for token in [
         "script_change_player_relation_with_faction",
-        "slot_faction_slaver_market_heat",
+        "script_sod_slavers_apply_market_delta",
         "script_sod_companion_dispatch_player_action",
         "slot_faction_sod_prisoner_mercy_reputation",
         "origin_faction",
@@ -1334,7 +1474,7 @@ def test_prisoner_train_debug_and_faction_report_are_descriptive() -> None:
         "@slaver market",
         "@liberation/resettlement",
         "@traveling",
-        "@Prisoner train created: {s1} -> {s2}; purpose {s23}; captives {reg5}; value {reg6}; guard {reg7}; risk {reg9}; reason {reg8}.",
+        "@Prisoner train created: {s68} -> {s69}; purpose {s23}",
         "slot_party_sod_prisoner_value",
         "slot_party_sod_prisoner_guard_quality",
         '"sod_faction_prisoner_report_to_s20"',

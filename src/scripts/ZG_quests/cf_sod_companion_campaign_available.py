@@ -16,7 +16,7 @@ SCRIPTS = [
         (neg|troop_slot_eq, ":companion", slot_troop_occupation, slto_player_companion),
         (assign, ":available", 0),
       (else_try),
-        (neg|main_party_has_troop, ":companion"),
+        (neg|call_script, "script_cf_sod_companion_in_main_party", ":companion"),
         (assign, ":available", 0),
       (try_end),
 

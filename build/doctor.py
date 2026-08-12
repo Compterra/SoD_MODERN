@@ -3698,18 +3698,12 @@ def _check_unsupported_register_references(
     allowed_sregs = _load_header_defined_registers("s")
     max_reg_func = max(allowed_regs) if allowed_regs else 63
     hits: List[str] = []
-    extended_string_probe = "src/triggers/ST02_every_hour/entry_0173_string_probe.py"
-
     def add_hit(kind: str, rel: str, ln_no: int, token: str, line: str) -> None:
         hits.append(f"[REG] {kind} {rel}:{ln_no}: {token} in {line.strip()}")
 
     for fp in files:
         rel = fp.relative_to(ROOT).as_posix()
         if _path_is_allowlisted(rel, allowlist):
-            continue
-        if rel == extended_string_probe:
-            # Deliberate debug-only runtime experiment: stores into numeric string
-            # register ids above the Native header names to verify engine limits.
             continue
         for ln_no, line in enumerate(_read_text(fp).splitlines(), start=1):
             stripped = line.lstrip()

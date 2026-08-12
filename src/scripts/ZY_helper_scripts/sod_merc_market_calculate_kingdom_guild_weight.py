@@ -5,12 +5,14 @@ SCRIPTS = [
    (store_script_param_1, ":kingdom_faction"),
    (store_script_param_2, ":guild_faction"),
    (store_script_param, ":use_cached_contract_totals", 3),
+   (store_script_param, ":demand_type", 4),
 
    (assign, ":weight", -100),
    (assign, ":service_days", 0),
    (assign, ":contract_value", 0),
    (assign, ":contract_losses", 0),
    (assign, ":active_contracts", 0),
+   (assign, ":role_fit", 0),
 
    (try_begin),
      (is_between, ":kingdom_faction", native_kingdoms_begin, native_kingdoms_end),
@@ -65,6 +67,12 @@ SCRIPTS = [
      (store_mul, ":loss_penalty", ":contract_losses", 2),
      (val_sub, ":weight", ":loss_penalty"),
 
+     # Relationship and prior service decide trust; role fit decides whether this
+     # company is useful for the employer's present problem.
+     (call_script, "script_sod_merc_market_calculate_guild_role_fit", ":guild_faction", ":demand_type"),
+     (assign, ":role_fit", reg0),
+     (val_add, ":weight", ":role_fit"),
+
      (faction_get_slot, ":economic_strength", ":kingdom_faction", slot_faction_economic_strength),
      (val_max, ":economic_strength", 0),
      (try_begin),
@@ -107,5 +115,6 @@ SCRIPTS = [
    (assign, reg1, ":service_days"),
    (assign, reg2, ":contract_value"),
    (assign, reg3, ":contract_losses"),
+   (assign, reg4, ":role_fit"),
  ]),
 ]

@@ -45,6 +45,15 @@ common_battle_mission_start = (
     (call_script, "script_change_banners_and_chest"),
     (call_script, "script_sod_battle_initialize_morale_context"),
     (call_script, "script_sod_company_dialogue_process_battle_start_morale"),
+    (call_script, "script_sod_battle_xp_log_start"),
+    ])
+common_battle_xp_log_suppression_tick = (
+  0.5, 0, 0,
+  [
+    (eq, "$g_sod_battle_xp_messages_suppressed", 1),
+    ],
+  [
+    (set_show_messages, 0),
     ])
 common_battle_horse_health = (
   0, 0, ti_once, [],
@@ -1863,7 +1872,7 @@ mission_templates = [
         ]),
     ],
   ),
-# [ src/mission_templates/0005_bandits_at_night/bandits_at_night.py:L1-L115 ] bandits_at_night
+# [ src/mission_templates/0005_bandits_at_night/bandits_at_night.py:L1-L117 ] bandits_at_night
 (
     "bandits_at_night", 0, -1,
     "Default town visit",
@@ -1896,8 +1905,10 @@ mission_templates = [
       (ti_before_mission_start, 0, 0, [], [
          (call_script, "script_change_banners_and_chest"),
          (call_script, "script_sod_battle_initialize_morale_context"),
+         (call_script, "script_sod_battle_xp_log_start"),
       ]),
 
+      common_battle_xp_log_suppression_tick,
       common_inventory_not_available,
 
       (ti_tab_pressed, 0, 0,
@@ -2163,7 +2174,7 @@ mission_templates = [
 
     ],
   ),
-# [ src/mission_templates/0010_lead_charge/lead_charge.py:L1-L165 ] lead_charge
+# [ src/mission_templates/0010_lead_charge/lead_charge.py:L1-L167 ] lead_charge
 (
     "lead_charge", mtf_battle_mode, charge,
     "You lead your men to battle.",
@@ -2184,6 +2195,7 @@ mission_templates = [
 
       common_battle_tab_press, 
 	  common_battle_horse_health,
+      common_battle_xp_log_suppression_tick,
       sod_battle_commander_spawn_player_ally,
 	  
 
@@ -2210,6 +2222,7 @@ mission_templates = [
          (call_script, "script_sod_quest_battle_mission_start"),
          (call_script, "script_sod_battle_initialize_morale_context"),
          (call_script, "script_sod_company_dialogue_process_battle_start_morale"),
+         (call_script, "script_sod_battle_xp_log_start"),
          ]),
       quest_battle_agent_defeated,
       quest_battle_tick,
@@ -2327,7 +2340,7 @@ mission_templates = [
       common_battle_enemy_surrender_check,
     ],
   ),
-# [ src/mission_templates/0011_village_attack_bandits/village_attack_bandits.py:L1-L101 ] village_attack_bandits
+# [ src/mission_templates/0011_village_attack_bandits/village_attack_bandits.py:L1-L102 ] village_attack_bandits
 (
     "village_attack_bandits", mtf_battle_mode, charge,
     "You lead your men to battle.",
@@ -2340,6 +2353,7 @@ mission_templates = [
       common_battle_mission_start,
       common_battle_tab_press, 
 	  common_battle_horse_health, 
+      common_battle_xp_log_suppression_tick,
       sod_battle_commander_spawn_player_ally,
 
       (ti_question_answered, 0, 0, [],
@@ -2427,7 +2441,7 @@ mission_templates = [
       formations_update_route,
     ],
   ),
-# [ src/mission_templates/0012_village_raid/village_raid.py:L1-L133 ] village_raid
+# [ src/mission_templates/0012_village_raid/village_raid.py:L1-L134 ] village_raid
 (
     "village_raid", mtf_battle_mode, charge,
     "You lead your men to battle.",
@@ -2441,6 +2455,7 @@ mission_templates = [
       common_battle_mission_start,
       common_battle_tab_press, 
 	  common_battle_horse_health, 
+      common_battle_xp_log_suppression_tick,
       sod_battle_commander_spawn_player_ally_dismounted,
 
       (ti_question_answered, 0, 0, [],
@@ -2559,7 +2574,7 @@ mission_templates = [
       formations_update_route,
     ],
   ),
-# [ src/mission_templates/0013_besiege_inner_battle_castle/besiege_inner_battle_castle.py:L1-L85 ] besiege_inner_battle_castle
+# [ src/mission_templates/0013_besiege_inner_battle_castle/besiege_inner_battle_castle.py:L1-L87 ] besiege_inner_battle_castle
 (
     "besiege_inner_battle_castle", mtf_battle_mode, -1,
     "You attack the walls of the castle...",
@@ -2577,10 +2592,12 @@ mission_templates = [
       (ti_before_mission_start, 0, 0, [], [
         (call_script, "script_change_banners_and_chest"),
         (call_script, "script_sod_battle_initialize_morale_context"),
+        (call_script, "script_sod_battle_xp_log_start"),
       ]),
 
       common_battle_tab_press, 
 	  common_battle_horse_health, 
+      common_battle_xp_log_suppression_tick,
       sod_battle_commander_spawn_player_ally_dismounted,
 
       (ti_question_answered, 0, 0, [],
@@ -2643,7 +2660,7 @@ mission_templates = [
       formations_start_coherence,
     ],
   ),
-# [ src/mission_templates/0014_besiege_inner_battle_town_center/besiege_inner_battle_town_center.py:L1-L85 ] besiege_inner_battle_town_center
+# [ src/mission_templates/0014_besiege_inner_battle_town_center/besiege_inner_battle_town_center.py:L1-L87 ] besiege_inner_battle_town_center
 (
     "besiege_inner_battle_town_center", mtf_battle_mode, -1,
     "You attack the walls of the castle...",
@@ -2661,10 +2678,12 @@ mission_templates = [
       (ti_before_mission_start, 0, 0, [], [
         (call_script, "script_change_banners_and_chest"),
         (call_script, "script_sod_battle_initialize_morale_context"),
+        (call_script, "script_sod_battle_xp_log_start"),
       ]),
 
       common_battle_tab_press, 
 	  common_battle_horse_health, 
+      common_battle_xp_log_suppression_tick,
       sod_battle_commander_spawn_player_ally_dismounted,
 
       (ti_question_answered, 0, 0, [],
@@ -2727,7 +2746,7 @@ mission_templates = [
       formations_start_coherence,
     ],
   ),
-# [ src/mission_templates/0015_castle_attack_walls_defenders_sally/castle_attack_walls_defenders_sally.py:L1-L100 ] castle_attack_walls_defenders_sally
+# [ src/mission_templates/0015_castle_attack_walls_defenders_sally/castle_attack_walls_defenders_sally.py:L1-L102 ] castle_attack_walls_defenders_sally
 (
     "castle_attack_walls_defenders_sally", mtf_battle_mode, -1,
     "You attack the walls of the castle...",
@@ -2751,10 +2770,12 @@ mission_templates = [
          (call_script, "script_change_banners_and_chest"),
          (call_script, "script_sod_battle_initialize_morale_context"),
          (call_script, "script_remove_siege_objects"),
+         (call_script, "script_sod_battle_xp_log_start"),
          ]),
 
       common_battle_tab_press, 
 	  common_battle_horse_health, 
+      common_battle_xp_log_suppression_tick,
       sod_battle_commander_spawn_player_ally_dismounted,
 
       (ti_question_answered, 0, 0, [],
@@ -2826,7 +2847,7 @@ mission_templates = [
       formations_update_route,
     ],
   ),
-# [ src/mission_templates/0016_castle_attack_walls_belfry/castle_attack_walls_belfry.py:L1-L74 ] castle_attack_walls_belfry
+# [ src/mission_templates/0016_castle_attack_walls_belfry/castle_attack_walls_belfry.py:L1-L75 ] castle_attack_walls_belfry
 (
     "castle_attack_walls_belfry", mtf_battle_mode, -1,
     "You attack the walls of the castle...",
@@ -2850,6 +2871,7 @@ mission_templates = [
       common_battle_mission_start,
       common_battle_tab_press, 
 	  common_battle_horse_health, 
+      common_battle_xp_log_suppression_tick,
       sod_battle_commander_spawn_player_ally_dismounted,
       common_siege_question_answered,
       common_siege_init,
@@ -2899,7 +2921,7 @@ mission_templates = [
       common_siege_attacker_morale_pressure,
     ],
   ),
-# [ src/mission_templates/0017_castle_attack_walls_ladder/castle_attack_walls_ladder.py:L1-L60 ] castle_attack_walls_ladder
+# [ src/mission_templates/0017_castle_attack_walls_ladder/castle_attack_walls_ladder.py:L1-L61 ] castle_attack_walls_ladder
 (
     "castle_attack_walls_ladder", mtf_battle_mode, -1,
     "You attack the walls of the castle...",
@@ -2922,6 +2944,7 @@ mission_templates = [
       common_battle_mission_start,
       common_battle_tab_press, 
 	  common_battle_horse_health, 
+      common_battle_xp_log_suppression_tick,
       sod_battle_commander_spawn_player_ally_dismounted,
       common_siege_question_answered,
       common_siege_init,
@@ -5422,7 +5445,7 @@ mission_templates = [
                  ], []),
     ],
   ),
-# [ src/mission_templates/0050_custom_battle/custom_battle.py:L1-L100 ] custom_battle
+# [ src/mission_templates/0050_custom_battle/custom_battle.py:L1-L101 ] custom_battle
 (
     "custom_battle", mtf_battle_mode, -1,
     "You lead your men to battle.",
@@ -5469,6 +5492,7 @@ mission_templates = [
       common_inventory_not_available,
 	  #SoD Skirmish begin
 	  common_battle_mission_start,
+      common_battle_xp_log_suppression_tick,
 	  common_battle_order_panel,
       common_battle_order_panel_tick,
       camera_trigger_1,
@@ -5521,7 +5545,7 @@ mission_templates = [
       custom_battle_check_defeat_condition,
     ],
   ),
-# [ src/mission_templates/0051_custom_battle_siege/custom_battle_siege.py:L1-L71 ] custom_battle_siege
+# [ src/mission_templates/0051_custom_battle_siege/custom_battle_siege.py:L1-L72 ] custom_battle_siege
 (
     "custom_battle_siege", mtf_battle_mode, -1,
     "You lead your men to battle.",
@@ -5564,6 +5588,7 @@ mission_templates = [
      ],
     [
       common_battle_mission_start,
+      common_battle_xp_log_suppression_tick,
 
       (0, 0, ti_once,
        [

@@ -16,6 +16,12 @@ def assert_not_contains(raw: str, token: str) -> None:
     assert token not in raw, f"stale token remains: {token}"
 
 
+def script_block(raw: str, script_name: str) -> str:
+    start = raw.index(f'(\"{script_name}\",')
+    end = raw.index("\n ]),", start) + len("\n ]),")
+    return raw[start:end]
+
+
 def test_campaign_dispatch_has_bounded_persistent_layout() -> None:
     constants = read("src/constants/module_constants.py")
     dispatch = read("src/scripts/ZY_helper_scripts/sod_campaign_dispatch.py")
@@ -141,11 +147,57 @@ def test_notification_queue_is_bounded_and_duplicate_aware() -> None:
     assert_contains(trigger, 'troop_set_slot, "trp_notification_menu_var2", ":last_slot", 0')
 
 
+def test_campaign_dispatch_alert_helpers_have_explicit_minimal_contracts() -> None:
+    dispatch = read("src/scripts/ZY_helper_scripts/sod_campaign_dispatch.py")
+    recorder = script_block(dispatch, "sod_report_record_event")
+    should_alert = script_block(dispatch, "sod_report_should_alert_to_reg")
+    show_alert = script_block(dispatch, "sod_report_maybe_show_alert")
+
+    for token in [
+        '(store_script_param, ":secondary_kind", 5)',
+        '(store_script_param, ":secondary_id", 6)',
+        '(store_script_param, ":magnitude", 7)',
+        '(store_script_param, ":reason", 8)',
+    ]:
+        assert_contains(recorder, token)
+
+    for token in [
+        '(store_script_param_1, ":severity")',
+        '(store_script_param_2, ":primary_kind")',
+        '(store_script_param, ":primary_id", 3)',
+    ]:
+        assert_contains(should_alert, token)
+    assert_not_contains(should_alert, ":category")
+    assert_not_contains(should_alert, ":secondary_kind")
+    assert_not_contains(should_alert, ":secondary_id")
+
+    for token in [
+        '(store_script_param_1, ":category")',
+        '(store_script_param_2, ":severity")',
+        '(store_script_param, ":primary_kind", 3)',
+        '(store_script_param, ":primary_id", 4)',
+        '(store_script_param, ":magnitude", 5)',
+        '(store_script_param, ":reason", 6)',
+        '(call_script, "script_sod_report_should_alert_to_reg", ":severity", ":primary_kind", ":primary_id")',
+    ]:
+        assert_contains(show_alert, token)
+    assert_not_contains(show_alert, ":secondary_kind")
+    assert_not_contains(show_alert, ":secondary_id")
+
+    for token in [
+        '(call_script, "script_sod_report_maybe_show_alert", ":category", ":severity", ":source_kind", ":source_center", ":magnitude", ":reason")',
+        '(call_script, "script_sod_report_maybe_show_alert", sod_report_category_contracts, ":severity", ":party_kind", ":party_no", ":magnitude", ":reason")',
+        '(call_script, "script_sod_report_maybe_show_alert", ":category", ":severity", sod_report_subject_faction, ":primary_faction", ":magnitude", ":reason")',
+    ]:
+        assert_contains(dispatch, token)
+
+
 def main() -> int:
     test_campaign_dispatch_has_bounded_persistent_layout()
     test_campaign_dispatch_is_reachable_and_flushed_on_campaign_cadence()
     test_routine_report_emitters_use_dispatch_not_direct_map_lines()
     test_notification_queue_is_bounded_and_duplicate_aware()
+    test_campaign_dispatch_alert_helpers_have_explicit_minimal_contracts()
     print("[campaign_dispatch_static] OK")
     return 0
 

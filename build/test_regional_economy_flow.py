@@ -53,9 +53,9 @@ def main() -> int:
     assert_contains(target, "(assign, \":best_score\", -1)")
     assert_contains(target, "(gt, \":score\", \":best_score\")")
 
-    assert_contains(npc, "script_sod_get_center_regional_flow_profile")
+    assert_contains(npc, "script_sod_refresh_all_center_investment_profiles")
+    assert_contains(npc, "script_sod_find_cached_investment_target")
     assert_contains(npc, ":investment_mode")
-    assert_contains(npc, ":regional_weakness")
     assert_contains(npc, "script_sod_apply_center_investment")
 
     assert_contains(apply, "eq, \":mode\", 3")

@@ -255,34 +255,13 @@ MENUS = [
       # give player the option to siege this town or castle
       ("castle_start_siege",
        [
-         # MORDACHAI - allow the marshall or King to commandeer the siege
-         (assign, ":can_siege", 0),
-         (try_begin),
-           # nobody sieging here yet, or its the player who is in the process of sieging here...
-           (this_or_next|party_slot_eq, "$g_encountered_party", slot_center_is_besieged_by, -1),
-           (             party_slot_eq, "$g_encountered_party", slot_center_is_besieged_by, "p_main_party"),
+         (call_script, "script_cf_sod_center_player_can_start_siege", "$g_encountered_party"),
 
-           (assign, ":can_siege", 1),
-
-         (else_try),
-
-           # player outranks those doing the siege...
-           (party_get_slot, ":siege_party", "$g_encountered_party", slot_center_is_besieged_by),
-           (ge, ":siege_party", 0),
-           (party_is_active, ":siege_party"),
-           (store_faction_of_party, ":siege_party_faction", ":siege_party"),
-           (ge, ":siege_party_faction", 0),
-           (this_or_next|faction_slot_eq, ":siege_party_faction", slot_faction_marshall, "trp_player"),
-           (             faction_slot_eq, ":siege_party_faction", slot_faction_leader, "trp_player"),
-
-           (assign, ":can_siege", 1),
-
-         (try_end),
-         (eq, ":can_siege", 1),
-
-         #MORDACHAI - but also disallow you from attacking your own kingdom's centers!
          (store_faction_of_party, ":center_faction", "$g_encountered_party"),
-         (neq, ":center_faction", "$players_kingdom"),
+         (store_relation, ":center_relation", ":center_faction", "fac_player_supporters_faction"),
+         (this_or_next|neq, ":center_faction", "$players_kingdom"),
+         (lt, ":center_relation", 0),
+         (neg|party_slot_eq, "$g_encountered_party", slot_town_lord, "trp_player"),
          (neq, ":center_faction", "fac_player_faction"),
          (neq, ":center_faction", "fac_player_supporters_faction"),
 
@@ -303,9 +282,11 @@ MENUS = [
          (try_begin),
            (store_relation, ":reln", ":center_faction", "fac_player_supporters_faction"),
            (gt, ":reln", -1), #twanx
+           (assign, "$g_encountered_party_faction", ":center_faction"),
            (jump_to_menu, "mnu_castle_siege_confirm"),
          (else_try),
            (assign, "$g_player_besiege_town", "$g_encountered_party"),
+          (assign, "$g_encountered_party_faction", ":center_faction"),
           (call_script, "script_make_kingdom_hostile_to_player", ":center_faction", -10), #twanx
            (call_script, "script_update_all_notes"),
            (jump_to_menu, "mnu_castle_besiege"),

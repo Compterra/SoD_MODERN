@@ -13,6 +13,7 @@ SCRIPTS = [
     (assign, ":local_prosperity_delta", 0),
     (assign, ":wealth_delta", 0),
     (assign, ":cattle_delta", 0),
+    (assign, ":food_delta", 0),
 
     (val_max, ":budget", 0),
     (try_begin),
@@ -25,6 +26,7 @@ SCRIPTS = [
         (store_div, ":local_prosperity_delta", ":budget", 700),
         (store_div, ":wealth_delta", ":budget", 3),
         (store_div, ":cattle_delta", ":budget", 1000),
+        (store_div, ":food_delta", ":budget", 5),
       (else_try),
         (eq, ":mode", 2), # trade stimulus: inventories, workshops, credit
         (store_div, ":prosperity_delta", ":budget", 450),
@@ -55,6 +57,7 @@ SCRIPTS = [
       (val_clamp, ":local_prosperity_delta", 0, 12),
       (val_clamp, ":wealth_delta", 0, 6000),
       (val_clamp, ":cattle_delta", 0, 8),
+      (val_clamp, ":food_delta", 0, 1201),
 
       (try_begin),
         (neg|is_between, ":center_no", castles_begin, castles_end),
@@ -73,6 +76,10 @@ SCRIPTS = [
         (is_between, ":center_no", castles_begin, castles_end),
         (store_div, ":store_delta", ":budget", 8),
         (call_script, "script_sod_center_apply_food_delta", ":center_no", ":store_delta"),
+      (try_end),
+      (try_begin),
+        (eq, ":mode", 1),
+        (call_script, "script_sod_center_apply_food_delta", ":center_no", ":food_delta"),
       (try_end),
 
       (try_begin),
@@ -98,5 +105,6 @@ SCRIPTS = [
     (assign, reg3, ":local_prosperity_delta"),
     (assign, reg4, ":wealth_delta"),
     (assign, reg5, ":cattle_delta"),
+    (assign, reg6, ":food_delta"),
   ]),
 ]

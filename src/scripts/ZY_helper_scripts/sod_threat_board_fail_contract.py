@@ -26,7 +26,7 @@ SCRIPTS = [
      (call_script, "script_sod_threat_board_init_registry"),
     (display_message, "@Job board contract failed; local confidence falls.", 0xFFCC66),
    (else_try),
-     (display_message, "@No active job board contract was found to fail.", 0xCC4444),
+     (display_message, "@There is no posted warrant to abandon.", 0xCC4444),
    (try_end),
  ]),
 ]

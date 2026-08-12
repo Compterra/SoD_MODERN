@@ -24,9 +24,21 @@ def main():
         "party_ignore_player",
         "fac_neutral",
         "fac_commoners",
+        ":attachment_ai_repaired",
     ]
     for bit in required_helper_bits:
         assert bit in helper, f"missing campaign party sanity helper coverage: {bit}"
+
+    attachment_repair = helper.index('(assign, ":attachment_ai_repaired", 0)')
+    accompanying_state = helper.index(
+        '(call_script, "script_party_set_ai_state", ":party_no", spai_accompanying_army, ":commander_party")'
+    )
+    validation_pass = helper.index('(party_get_slot, ":ai_state", ":party_no", slot_party_ai_state)')
+    assert attachment_repair < accompanying_state < validation_pass, (
+        "nested attachment repair must precede generic AI validation"
+    )
+    assert helper.index('(assign, ":attachment_ai_repaired", 1)') < validation_pass
+    assert helper.index('(eq, ":attachment_ai_repaired", 0)') < validation_pass
 
     assert "set_show_messages, 1" in trigger, "hourly message leak reset was removed"
     assert "script_sod_campaign_party_sanity" in trigger, "hourly trigger does not call campaign party sanity helper"

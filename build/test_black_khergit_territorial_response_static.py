@@ -85,8 +85,11 @@ def main() -> int:
 
     refresh_script = scripts.split('("sod_black_khergits_refresh_active_parties"', 1)[1].split('("sod_black_khergits_apply_player_action"', 1)[0]
     assert_contains(refresh_script, '(eq, ":is_night", 1)')
+    assert_contains(refresh_script, 'script_cf_sod_black_khergits_party_is_camped')
     assert_contains(refresh_script, '(party_set_icon, ":party_no", "icon_camp")')
-    assert_contains(refresh_script, '(party_set_ai_behavior, ":party_no", ai_bhvr_hold)')
+    assert_contains(refresh_script, '(call_script, "script_sod_black_khergits_lock_camped_ai", ":party_no")')
+    if refresh_script.count('(party_set_ai_behavior, ":party_no", ai_bhvr_travel_to_party)') != 1:
+        raise AssertionError("A refreshed Black Khergit camp must not resume travel merely because daylight begins")
 
     assert_contains(hourly, "script_sod_black_khergits_process_ai_responses")
     assert_contains(simulate_battle, "script_sod_black_khergits_note_ai_battle_outcome")

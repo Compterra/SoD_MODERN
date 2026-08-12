@@ -4,6 +4,22 @@ setlocal EnableExtensions
 set "ROOT=%~dp0"
 pushd "%ROOT%"
 
+set "BUILD_EXIT=0"
+set "RUN_RELEASE_GATE=0"
+set "BUILD_ARGS="
+
+:parse_build_args
+if "%~1"=="" goto build_args_parsed
+if /I "%~1"=="--release-gate" (
+  set "RUN_RELEASE_GATE=1"
+) else (
+  set "BUILD_ARGS=%BUILD_ARGS% "%~1""
+)
+shift
+goto parse_build_args
+
+:build_args_parsed
+
 set "PY=C:\Users\Computica\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe"
 if not exist "%PY%" (
   set "PY=python"
@@ -28,7 +44,7 @@ for /f "usebackq delims=" %%V in ("%ROOT%build\version.txt") do (
 %PY% "%ROOT%build\tools\printc.py" dim "Working dir: %ROOT_DISPLAY%"
 
 %PY% "%ROOT%build\tools\printc.py" step "1) Build fragments -> compile\\"
-%PY% "%ROOT%build\tools\run_color.py" "%ROOT%build\build_all.py" -- %*
+%PY% "%ROOT%build\tools\run_color.py" "%ROOT%build\build_all.py" -- %BUILD_ARGS%
 if errorlevel 1 goto fail
 
 %PY% "%ROOT%build\tools\printc.py" step "2) Process pipeline (compile\\process\\...)"
@@ -77,6 +93,12 @@ if errorlevel 1 goto fail
 %PY% "%ROOT%build\tools\run_color.py" "%ROOT%build\doctor.py" -- --doctor-hardcoded-postprocess
 if errorlevel 1 goto fail
 
+if "%RUN_RELEASE_GATE%"=="1" (
+  %PY% "%ROOT%build\tools\printc.py" step "5) DevKit strict release gate"
+  %PY% "%ROOT%build\tools\run_color.py" "%ROOT%devkit\release_gate\release_gate.py" run --format markdown
+  if errorlevel 1 goto fail
+)
+
 %PY% "%ROOT%build\tools\printc.py" ok "Build finished successfully."
 goto end
 
@@ -84,8 +106,9 @@ goto end
 popd
 
 :fail
+set "BUILD_EXIT=1"
 %PY% "%ROOT%build\tools\printc.py" error "Build failed."
 
 :end
 popd
-endlocal
+endlocal & exit /b %BUILD_EXIT%

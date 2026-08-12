@@ -19,6 +19,7 @@ SCRIPTS = [
        (display_message, "@The Job Board target has been resolved without a pitched battle. Return to the board to claim the contract reward."),
      (try_end),
      (call_script, "script_sod_apply_hostile_noncombat_economy_effects", ":party_no"),
+     (call_script, "script_sod_slavers_mark_market_party_dirty", ":party_no"),
      (remove_party, ":party_no"),
    (try_end),
    (assign, "$g_leave_encounter", 1),

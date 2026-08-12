@@ -15,10 +15,16 @@ def assert_contains(raw: str, needle: str) -> None:
         raise AssertionError(f"Missing expected token: {needle}")
 
 
+def assert_not_contains(raw: str, needle: str) -> None:
+    if needle in raw:
+        raise AssertionError(f"Unexpected stale token: {needle}")
+
+
 def main() -> int:
     constants = read("src/constants/module_constants.py")
     party_templates = read("compile/module_party_templates.py")
     presence = read("src/scripts/ZY_helper_scripts/sod_jotnar_world_presence.py")
+    director = read("src/scripts/ZY_helper_scripts/sod_world_presence_director.py")
     spawns = read("src/scripts/ZZ_common_array_processing/spawn_bandits.py")
     report = read("src/scripts/ZY_helper_scripts/merc_describe_standing_report.py")
     notes = read("src/scripts/ZF_factions/update_faction_notes.py")
@@ -29,6 +35,9 @@ def main() -> int:
     assert_contains(constants, "slot_faction_jotnar_active_parties")
     assert_contains(constants, "slot_faction_jotnar_target_center")
     assert_contains(constants, "slot_party_sod_jotnar_hearth_activity")
+    assert_contains(constants, "slot_center_sod_jotnar_hearth_support_day")
+    assert_contains(constants, "slot_center_sod_jotnar_wintering_support_day")
+    assert_contains(constants, "sod_world_presence_activity_contract_days")
 
     assert_contains(party_templates, '"jotnar_hearth_guard"')
     assert_contains(party_templates, '"jotnar_wintering_camp"')
@@ -47,13 +56,23 @@ def main() -> int:
     assert_contains(presence, "village_pop_ideal")
     assert_contains(presence, "slot_center_sod_local_health")
     assert_contains(presence, "script_change_center_prosperity")
-    assert_contains(presence, "slot_party_merc_contract")
+    assert_contains(presence, "script_sod_world_presence_configure_activity_party")
+    assert_contains(presence, '":hearth_center", sod_world_presence_activity_contract_days')
+    assert_contains(director, '("sod_world_presence_configure_activity_party"')
+    assert_contains(director, "slot_party_merc_contract")
+    assert_contains(director, "sod_world_presence_activity_contract_days")
     assert_contains(presence, "script_party_set_ai_state")
     assert_contains(presence, "spai_patrolling_around_center")
 
     assert_contains(spawns, 'call_script, "script_sod_jotnar_world_presence"')
-    assert_contains(report, "hearth guards active")
-    assert_contains(report, "wintering camps active")
+    for token in (
+        "The Jotnar have",
+        "{reg10}",
+        "hearth guards",
+        "{reg11}",
+        "wintering camps",
+    ):
+        assert_contains(report, token)
     assert_contains(notes, "Hearth status")
 
     assert_contains(order, "party_tpl_pt_jotnar_hearth_guard_start.py")
@@ -74,6 +93,16 @@ def main() -> int:
         raise AssertionError("Jotnar world parties must not inherit employer faction wars")
     if "try_for_range, \":cur_faction\", kingdoms_begin, kingdoms_end" in presence:
         raise AssertionError("Jotnar employer search must stay on native kingdoms only")
+
+    process_start = presence.index('("sod_jotnar_process_world_activity"')
+    process_end = presence.index('("sod_jotnar_apply_player_support"', process_start)
+    process = presence[process_start:process_end]
+    assert_contains(process, "slot_center_sod_jotnar_hearth_support_day")
+    assert_contains(process, "slot_center_sod_jotnar_wintering_support_day")
+    assert process.index('(try_for_parties, ":jotnar_party")') < process.index(
+        '(try_for_range, ":center_no", villages_begin, villages_end)'
+    )
+    assert_not_contains(process, '(assign, ":supported", 0)')
 
     print("[jotnar_world_presence] OK")
     return 0

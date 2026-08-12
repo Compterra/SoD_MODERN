@@ -829,6 +829,48 @@ def test_companion_recruitment_flow_preserves_slot_driven_intro_chain() -> None:
         assert_contains(raw, token)
         assert '"event_triggered"' not in raw, f"{filename} must not hijack generic event_triggered"
 
+    recruit_register_files = {
+        "anyone_companion_recruit_backstory_a.py": "{s68}",
+        "anyone_companion_recruit_backstory_b.py": "{s68}",
+        "anyone_companion_recruit_backstory_c.py": "{s68}",
+        "anyone_companion_recruit_backstory_delayed.py": "{s68}",
+        "anyone_companion_recruit_signup.py": "{s68}",
+        "anyone_companion_recruit_signup_b.py": "{s68}",
+        "anyone_companion_recruit_payment.py": "{s68}",
+        "anyone_plyr_companion_recruit_intro_response.py": "{s69}",
+        "anyone_plyr_companion_recruit_intro_response_02.py": "{s69}",
+        "anyone_plyr_companion_recruit_backstory_response.py": "{s69}",
+        "anyone_plyr_companion_recruit_backstory_response_02.py": "{s69}",
+        "anyone_plyr_companion_recruit_signup_response_02.py": "{s69}",
+        "anyone_plyr_companion_recruit_signup_response_03.py": "{s69}",
+        "anyone_plyr_companion_recruit_payment_response.py": "{s69}",
+        "anyone_plyr_companion_recruit_payment_response_02.py": "Your price is beyond my purse today.",
+    }
+    for filename, display_register in recruit_register_files.items():
+        raw = read(f"src/dialogs/ZE01_companions_and_named_npcs/{filename}")
+        assert_contains(raw, '(is_between, "$g_talk_troop", companions_begin, companions_end)')
+        assert_contains(raw, display_register)
+        for stale_register in ("{s5}", "{s6}", "{s7}"):
+            assert_not_contains(raw, stale_register)
+        for stale_store in (
+            "(str_store_string, 5,",
+            "(str_store_string, 6,",
+            "(str_store_string, 7,",
+            "(str_store_string, s5,",
+            "(str_store_string, s6,",
+            "(str_store_string, s7,",
+            "(str_store_party_name, 20,",
+        ):
+            assert_not_contains(raw, stale_store)
+
+    recruit_script = read("src/scripts/ZH_heroes/recruit_troop_as_companion.py")
+    assert_contains(recruit_script, '(is_between, ":troop_no", 0, "trp_last_troop")')
+    assert_contains(recruit_script, '(str_store_troop_name, s68, ":troop_no")')
+    assert_contains(recruit_script, "@{s68} has joined your party.")
+    assert_contains(recruit_script, "the company cannot identify them")
+    assert_not_contains(recruit_script, "(str_store_troop_name, s6,")
+    assert_not_contains(recruit_script, "@{s6} has joined your party")
+
     for path in recruit_files:
         raw = path.read_text(encoding="utf-8", errors="replace")
         assert "event_triggered" not in raw, f"{path.relative_to(ROOT)} should not use event_triggered"
@@ -874,6 +916,31 @@ def test_common_mission_and_story_lines_avoid_placeholder_voice() -> None:
         assert_contains(read(path), token)
 
 
+def test_reports_and_tutorials_avoid_debug_copy() -> None:
+    strings = read("compile/module_strings.py")
+    guild_progress = read("src/scripts/ZY_helper_scripts/merc_describe_guild_progression.py")
+    guild_summary = read("src/scripts/ZY_helper_scripts/merc_describe_report_summary.py")
+    guild_standing = read("src/scripts/ZY_helper_scripts/merc_describe_standing_report.py")
+    threat_contract = read("src/scripts/ZY_helper_scripts/sod_threat_board_describe_active_contract.py")
+    threat_fail = read("src/scripts/ZY_helper_scripts/sod_threat_board_fail_contract.py")
+    law_reports = read("src/scripts/ZZ_common_array_processing/sod_law_reports.py")
+
+    for raw in (strings, guild_progress, guild_summary, guild_standing, threat_contract, threat_fail, law_reports):
+        assert_not_contains(raw, "TODO:")
+        assert_not_contains(raw, "Quest tier:")
+        assert_not_contains(raw, "No active contract.")
+        assert_not_contains(raw, "No active job board contract")
+        assert_not_contains(raw, "This law record is invalid.")
+
+    assert_contains(strings, "Follow the order marker and form up at the flag.")
+    assert_contains(guild_progress, "Only courier work is being offered.")
+    assert_contains(guild_summary, "No guild pact is on the books.")
+    assert_contains(guild_standing, "Guild doors open in stages")
+    assert_contains(threat_contract, "Regional Threat Warrant")
+    assert_contains(threat_fail, "There is no posted warrant to abandon.")
+    assert_contains(law_reports, "The court cannot read this law entry.")
+
+
 def test_common_accept_refuse_and_exit_lines_have_scene_voice() -> None:
     checks = {
         "src/dialogs/ZC02_townsfolk_and_special_npcs/anyone_plyr_mercenary_tavern_talk_03.py": "more than my purse can carry",
@@ -910,5 +977,6 @@ if __name__ == "__main__":
     test_high_frequency_town_player_lines_have_scene_voice()
     test_high_frequency_lord_guild_and_gate_choices_have_scene_voice()
     test_common_mission_and_story_lines_avoid_placeholder_voice()
+    test_reports_and_tutorials_avoid_debug_copy()
     test_common_accept_refuse_and_exit_lines_have_scene_voice()
     print("test_dialogue_immersion_static: OK")

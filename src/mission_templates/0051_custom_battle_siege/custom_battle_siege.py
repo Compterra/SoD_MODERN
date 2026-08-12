@@ -41,6 +41,7 @@ MISSION_TEMPLATES = [
      ],
     [
       common_battle_mission_start,
+      common_battle_xp_log_suppression_tick,
 
       (0, 0, ti_once,
        [

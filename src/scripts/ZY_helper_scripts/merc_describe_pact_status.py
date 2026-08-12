@@ -3,7 +3,7 @@ SCRIPTS = [
 ("merc_describe_pact_status",
  [
    (store_script_param_1, ":guild_faction"),
-   (str_store_string, s59, "@No active pact."),
+   (str_store_string, s59, "@No pact has been recorded."),
    (try_begin),
      (gt, ":guild_faction", 0),
      (store_relation, ":rel", ":guild_faction", "fac_player_faction"),

@@ -322,7 +322,7 @@ def test_first_three_camp_jobs_have_mechanical_effects_and_safety():
 
 def test_borcha_scout_route_temporarily_boosts_camped_sight_range():
     menu = read("src/menus/camp/camp_jobs.py")
-    assert_contains(menu, '(main_party_has_troop, "trp_npc1")')
+    assert_contains(menu, '(call_script, "script_cf_sod_companion_in_main_party", "trp_npc1")')
     assert_contains(menu, '(call_script, "script_sod_camp_job_start", sod_camp_job_scout_route, 6, "trp_npc1")')
     assert_contains(menu, '"Direct order: scout the route. Requires Borcha."')
 
@@ -334,13 +334,13 @@ def test_borcha_scout_route_temporarily_boosts_camped_sight_range():
     assert_contains(skill_callback, '(eq, ":skill_no", "skl_spotting")')
     assert_contains(skill_callback, '(eq, "$g_camp_mode", 1)')
     assert_contains(skill_callback, '(eq, "$g_player_icon_state", pis_camping)')
-    assert_contains(skill_callback, '(main_party_has_troop, "trp_npc1")')
+    assert_contains(skill_callback, '(call_script, "script_cf_sod_companion_in_main_party", "trp_npc1")')
     assert_contains(skill_callback, '(val_add, ":modifier_value", "$g_sod_camp_borcha_sight_bonus")')
 
 
 def test_marnid_ration_stores_lowers_camped_food_consumption():
     menu = read("src/menus/camp/camp_jobs.py")
-    assert_contains(menu, '(main_party_has_troop, "trp_npc2")')
+    assert_contains(menu, '(call_script, "script_cf_sod_companion_in_main_party", "trp_npc2")')
     assert_contains(menu, '(call_script, "script_sod_camp_job_start", sod_camp_job_ration_stores, 6, "trp_npc2")')
     assert_contains(menu, '"Direct order: count and sort stores. Requires Marnid."')
 
@@ -350,16 +350,19 @@ def test_marnid_ration_stores_lowers_camped_food_consumption():
     assert_contains(scripts, "Food consumption while camped is reduced by 25 percent")
 
     food_trigger = read("src/triggers/ST03_daily/entry_0054.py")
-    assert_contains(food_trigger, '(eq, "$g_camp_mode", 1)')
-    assert_contains(food_trigger, '(eq, "$g_player_icon_state", pis_camping)')
-    assert_contains(food_trigger, '(main_party_has_troop, "trp_npc2")')
-    assert_contains(food_trigger, '(val_mul, ":consumption_amount", "$g_sod_camp_marnid_food_consumption_pct")')
-    assert_contains(food_trigger, '(val_div, ":consumption_amount", 100)')
+    assert_contains(food_trigger, '(call_script, "script_sod_company_accounts_get_daily_food_consumption_to_regs")')
+
+    accounts = read("src/scripts/ZY_helper_scripts/sod_company_accounts.py")
+    assert_contains(accounts, '(eq, "$g_camp_mode", 1)')
+    assert_contains(accounts, '(eq, "$g_player_icon_state", pis_camping)')
+    assert_contains(accounts, '(call_script, "script_cf_sod_companion_in_main_party", "trp_npc2")')
+    assert_contains(accounts, '(val_mul, ":daily_consumption", "$g_sod_camp_marnid_food_consumption_pct")')
+    assert_contains(accounts, '(val_div, ":daily_consumption", 100)')
 
 
 def test_baheshtur_tend_mounts_unlames_random_horse():
     menu = read("src/menus/camp/camp_jobs.py")
-    assert_contains(menu, '(main_party_has_troop, "trp_npc5")')
+    assert_contains(menu, '(call_script, "script_cf_sod_companion_in_main_party", "trp_npc5")')
     assert_contains(menu, '(call_script, "script_sod_camp_job_start", sod_camp_job_tend_mounts, 6, "trp_npc5")')
     assert_contains(menu, '"Direct order: tend the mounts. Requires Baheshtur."')
 

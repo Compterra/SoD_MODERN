@@ -24,7 +24,7 @@ SCRIPTS = [
 		(gt, ":budget", 0),
 		(neq, ":need_type", sod_merc_contract_role_none),
 
-		(call_script, "script_sod_merc_market_calculate_kingdom_guild_weight", ":candidate", ":guild_no", 0),
+		(call_script, "script_sod_merc_market_calculate_kingdom_guild_weight", ":candidate", ":guild_no", 0, ":need_type"),
 		(assign, ":guild_weight", reg0),
 		(gt, ":guild_weight", -40),
 

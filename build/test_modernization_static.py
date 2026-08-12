@@ -32,10 +32,8 @@ KNOWN_EXTERNAL_OR_LEGACY_STATES = {
     "companion_rehire_refused",
     "member_wilderness_talk",
     "member_inn_talk",
-    "merchant_quest_persuade_peace_10",
     "party_encounter_hostile_defender",
     "cpsq_0",
-    "sell_prisoner_outlaws_finished",
     "sh_spy_liberated_battle",
 }
 
@@ -220,6 +218,24 @@ def test_dialogue_outputs_have_matching_inputs_or_safe_terminals() -> None:
         and state not in input_states
     ]
     assert not missing, "dialogue output states without matching inputs: " + repr(missing[:20])
+
+
+def test_restored_dialogue_handoffs_start_and_close_cleanly() -> None:
+    peace_acceptance = read(
+        "src/dialogs/ZC01_centers_and_economy/anyone_plyr_merchant_quest_persuade_peace_9.py"
+    )
+    peace_acknowledgement = read(
+        "src/dialogs/ZC01_centers_and_economy/anyone_merchant_quest_persuade_peace_10.py"
+    )
+    outlaw_completion = read(
+        "src/dialogs/ZD01_encounters_battles_and_prisoners/anyone_sell_prisoner_outlaws_finished.py"
+    )
+    assert_contains(peace_acceptance, '(setup_quest_text, "qst_persuade_lords_to_make_peace")')
+    assert_contains(peace_acceptance, '(call_script, "script_start_quest", "qst_persuade_lords_to_make_peace", "$g_talk_troop")')
+    assert_contains(peace_acknowledgement, '"merchant_quest_persuade_peace_10"')
+    assert_contains(peace_acknowledgement, '"close_window"')
+    assert_contains(outlaw_completion, '"sell_prisoner_outlaws_finished"')
+    assert_contains(outlaw_completion, '"close_window"')
 
 
 def test_dialogue_outputs_do_not_use_stale_removed_state_names() -> None:
@@ -609,7 +625,7 @@ def test_high_frequency_distance_calls_are_audited() -> None:
     audited = {
         "src/triggers/ST01_every_frame/entry_0078.py:10",
         "src/triggers/ST02_every_hour/entry_0073.py:5",
-        "src/triggers/ST02_every_hour/entry_0077.py:17",
+        "src/triggers/ST02_every_hour/entry_0077.py:18",
         "src/triggers/ST02_every_hour/entry_0082.py:8",
         "src/triggers/ST02_every_hour/entry_0082.py:16",
         "src/triggers/ST02_every_hour/entry_0082.py:24",
@@ -1456,6 +1472,7 @@ def test_mini_faction_party_templates_have_encounter_dialogue() -> None:
 def test_mini_faction_cross_reaction_links_are_pinned() -> None:
     raw = read("src/scripts/ZY_helper_scripts/sod_mini_faction_incidents.py")
     constants = read("src/constants/module_constants.py")
+    slaver_market = read("src/scripts/ZY_helper_scripts/sod_slavers_black_market.py")
     assert_contains(raw, "sod_mini_faction_dispatch_cross_reaction")
     cross_start = raw.index('("sod_mini_faction_dispatch_cross_reaction"')
     cross_end = raw.index('("sod_mini_faction_apply_incident_footprint"', cross_start)
@@ -1464,7 +1481,7 @@ def test_mini_faction_cross_reaction_links_are_pinned() -> None:
         "sod_mini_faction_incident_slaver_heat",
         "script_sod_jotnar_spawn_world_activity",
         "script_sod_elephant_guard_spawn_world_activity",
-        "slot_faction_slaver_market_supply",
+        "script_sod_slavers_apply_market_delta",
         "slot_faction_jotnar_hearth_pressure",
         "slot_faction_elephant_guard_slaver_alarm",
         "sod_companion_action_free_captives",
@@ -1486,8 +1503,12 @@ def test_mini_faction_cross_reaction_links_are_pinned() -> None:
     )
     for token in anti_slavery_tokens + road_pressure_tokens:
         assert_contains(cross, token)
+    # Incident cross-reactions now use the centralized market-delta script
+    # rather than duplicating the faction-slot read/write pair locally.
+    assert_contains(slaver_market, '("sod_slavers_apply_market_delta"')
+    assert_contains(slaver_market, '(faction_get_slot, ":supply", "fac_sod_merc_guild6", slot_faction_slaver_market_supply)')
+    assert_contains(slaver_market, '(faction_set_slot, "fac_sod_merc_guild6", slot_faction_slaver_market_supply, ":supply")')
     owned_pairs = (
-        ('"fac_sod_merc_guild6"', "slot_faction_slaver_market_supply", "# Slaver black market web. Used by fac_sod_merc_guild6 only."),
         ('"fac_sod_merc_guild4"', "slot_faction_jotnar_hearth_pressure", "# Jotnar Clan hearth camps. Used by fac_sod_merc_guild4 only."),
         ('"fac_sod_merc_guild3"', "slot_faction_elephant_guard_slaver_alarm", "# Elephant Guard sacred wardens. Used by fac_sod_merc_guild3 only."),
         ('"fac_black_khergits"', "slot_faction_black_khergit_pressure", "# Black Khergit moving horde. Used by fac_black_khergits only."),
@@ -2093,6 +2114,7 @@ if __name__ == "__main__":
     test_dialogue_family_terminal_audit_report_exists()
     test_dialogue_order_references_existing_files()
     test_dialogue_outputs_have_matching_inputs_or_safe_terminals()
+    test_restored_dialogue_handoffs_start_and_close_cleanly()
     test_dialogue_outputs_do_not_use_stale_removed_state_names()
     test_duplicate_player_options_do_not_shadow_later_branches()
     test_terminal_post_battle_dialogues_leave_encounter_when_needed()

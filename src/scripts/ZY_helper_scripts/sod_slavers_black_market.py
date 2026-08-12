@@ -387,7 +387,6 @@ SCRIPTS = [
 
    (faction_get_slot, ":base_count", "fac_sod_merc_guild6", slot_faction_slaver_market_bases),
    (faction_get_slot, ":heat", "fac_sod_merc_guild6", slot_faction_slaver_market_heat),
-   (faction_get_slot, ":demand", "fac_sod_merc_guild6", slot_faction_slaver_market_demand),
    (try_begin),
      (gt, ":base_count", 0),
      (store_div, ":heat_cap", ":heat", 25),
@@ -433,13 +432,11 @@ SCRIPTS = [
 
      (set_spawn_radius, 2),
      (assign, ":web_party", -1),
-     (assign, ":spawned_recovery_party", 0),
      (try_begin),
        (ge, ":heat", 50),
        (spawn_around_party, ":origin", "pt_slaves_with_jotnar_clansmen"),
        (assign, ":web_party", reg0),
        (str_store_string, s60, "@Slaver Recovery Party"),
-       (assign, ":spawned_recovery_party", 1),
      (else_try),
        (spawn_around_party, ":origin", "pt_slavers_caravan"),
        (assign, ":web_party", reg0),

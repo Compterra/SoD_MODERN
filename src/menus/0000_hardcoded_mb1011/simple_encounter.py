@@ -8,6 +8,13 @@ MENUS = [
         (assign, "$g_ally_party", -1),
         (call_script, "script_encounter_calculate_fit"),
         (try_begin),
+          (le, "$g_enemy_fit_for_battle", 0),
+          (gt, "$g_friend_fit_for_battle", 0),
+          (party_get_num_companions, ":enemy_total_companions", "p_collective_enemy"),
+          (gt, ":enemy_total_companions", 0),
+          (assign, "$g_enemy_surrenders", 1),
+        (try_end),
+        (try_begin),
           (eq, "$new_encounter", 1),
           (assign, "$new_encounter", 0),
           (assign, "$g_encounter_is_in_village", 0),
@@ -164,11 +171,15 @@ MENUS = [
       build_sod_battle_commander_change_option(
         "change_commander_simple_encounter",
         "mnu_simple_encounter",
-        [(eq, "$encountered_party_friendly", 0)],
+        [
+          (eq, "$encountered_party_friendly", 0),
+          (gt, "$g_enemy_fit_for_battle", 0),
+        ],
       ),
 
       ("encounter_attack", [
         (eq, "$encountered_party_friendly", 0),
+        (gt, "$g_enemy_fit_for_battle", 0),
         (call_script, "script_cf_sod_battle_commander_can_start"),
       ],
       "Charge the enemy ({s68} leads).", [
@@ -202,6 +213,7 @@ MENUS = [
 
       ("encounter_order_attack", [
         (eq, "$encountered_party_friendly", 0),
+        (gt, "$g_enemy_fit_for_battle", 0),
         (call_script, "script_party_count_members_with_full_health", "p_main_party"),
         (ge, reg(0), 4),
       ],

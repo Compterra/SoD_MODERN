@@ -45,6 +45,7 @@ MISSION_TEMPLATES = [
       common_inventory_not_available,
 	  #SoD Skirmish begin
 	  common_battle_mission_start,
+      common_battle_xp_log_suppression_tick,
 	  common_battle_order_panel,
       common_battle_order_panel_tick,
       camera_trigger_1,

@@ -284,7 +284,7 @@ SCRIPTS = [
       (try_end),
       (try_begin),
         (party_slot_eq, ":center_no", slot_town_lord, "trp_player"),
-        (main_party_has_troop, "trp_npc2"),
+        (call_script, "script_cf_sod_companion_in_main_party", "trp_npc2"),
         (troop_slot_ge, "trp_npc2", slot_troop_companion_approval, 45),
         (troop_slot_eq, "trp_npc2", slot_troop_companion_role, sod_companion_role_quartermaster),
         (troop_slot_eq, "trp_npc2", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),

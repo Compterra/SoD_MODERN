@@ -14,6 +14,7 @@ SIMPLE_TRIGGERS = [
      (gt, ":faction_marshall", 0),
      (troop_get_slot, ":faction_marshall_party", ":faction_marshall", slot_troop_leaded_party),
      (gt, ":faction_marshall_party", 0),
+     (party_is_active, ":faction_marshall_party"),
      (store_distance_to_party_from_party, ":dist", ":faction_marshall_party", "p_main_party"),
      (try_begin),
        (lt, ":dist", 15),

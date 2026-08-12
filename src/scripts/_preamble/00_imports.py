@@ -77,7 +77,9 @@ def kt_apply_doctrine_modifiers(troop_id, o_val, d_val, h_val, troop_type):
       o_val /= 100
       d_val *= 115
       d_val /= 100
-   elif troop_name.startswith("imperial_") or troop_name.startswith("legion_"):
+   elif troop_name.startswith("ief_") or troop_name.startswith("imperial_") or troop_name.startswith("legion_"):
+      # Core Expedition troops use the legacy ief_ prefix; retain the older
+      # imperial_/legion_ aliases for compatible auxiliary content.
       o_val *= 110
       o_val /= 100
       d_val *= 110

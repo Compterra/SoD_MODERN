@@ -73,6 +73,7 @@ party_templates = [
   ("player_patrol_2","Regiment",icon_flagbearer_a,0,fac_player_faction,soldier_personality,[]),
   ("player_mercenaries","Mercenaries",icon_flagbearer_a,0,fac_player_faction,hold_personality,[]),
   ("sod_companion_retinue","Companion Retinue",icon_flagbearer_a|pf_no_label|pf_quest_party,0,fac_player_faction,hold_personality,[]),
+  ("player_ship","Ship",icon_ship|pf_is_static|pf_always_visible|pf_hide_defenders|pf_is_ship,0,fac_neutral,hold_personality,[]),
 #PATROLS END
   ("sod_mercs","Mercenaries",icon_flagbearer_a,0,fac_player_faction,merc_personality,[]),
   ("manhunters","Manhunters",icon_gray_knight,0,fac_manhunters,soldier_personality,[(trp_manhunter,9,40)]),
@@ -155,8 +156,10 @@ party_templates = [
   ("kingdom_2_reinforcements_b", "kingdom_2_reinforcements_b", 0, 0, fac_commoners, 0, [(trp_vaegir_archer,2,6),(trp_vaegir_skirmisher,3,5),(trp_vaegir_footman,1,3)]),
   ("kingdom_2_reinforcements_c", "kingdom_2_reinforcements_c", 0, 0, fac_commoners, 0, [(trp_vaegir_horseman,3,6)]),
 
-  ("kingdom_3_reinforcements_a", "kingdom_3_reinforcements_a", 0, 0, fac_commoners, 0, [(trp_khergit_skirmisher,2,6),(trp_khergit_tribesman,4,7)]),
-  ("kingdom_3_reinforcements_b", "kingdom_3_reinforcements_b", 0, 0, fac_commoners, 0, [(trp_khergit_horse_archer,2,6),(trp_khergit_skirmisher,4,7)]),
+  # Mounted templates deliberately reinforce with fewer riders than foot kingdoms.
+  # Khergits retain all-mounted A/B doctrine without compounding mobility and quality through equal stack volume.
+  ("kingdom_3_reinforcements_a", "kingdom_3_reinforcements_a", 0, 0, fac_commoners, 0, [(trp_khergit_skirmisher,2,6),(trp_khergit_tribesman,3,6)]),
+  ("kingdom_3_reinforcements_b", "kingdom_3_reinforcements_b", 0, 0, fac_commoners, 0, [(trp_khergit_horse_archer,2,5),(trp_khergit_skirmisher,3,6)]),
   ("kingdom_3_reinforcements_c", "kingdom_3_reinforcements_c", 0, 0, fac_commoners, 0, [(trp_khergit_lancer,3,6)]),
 
   ("kingdom_4_reinforcements_a", "kingdom_4_reinforcements_a", 0, 0, fac_commoners, 0, [(trp_nord_footman,4,8),(trp_nord_recruit,2,4)]),
@@ -172,12 +175,14 @@ party_templates = [
   ("kingdom_6_reinforcements_c", "kingdom_6_reinforcements_c", 0, 0, fac_commoners, 0, [(trp_ief_velites,5,10),(trp_ief_sons_of_deer,2,3),(trp_ief_speculatores,2,4),(trp_ief_clibanarii,2,3),(trp_ief_pronoiar,1,2),(trp_ief_hospitalier,1,2)]), #cavalry heavy
   #Must include Legion nobles above or they will never spawn (trp_ief_akolouthos, trp_ief_praetorian, trp_ief_hospitalier)
 
-  ("sod_1_reinforcements_a", "sod_1_reinforcements_a", 0, 0, fac_commoners, 0, [(trp_sod_ant_regular,5,10),(trp_sod_ant_veteran,2,5),(trp_sod_ant_javelinman,1,5),(trp_sod_ant_elite,0,1)]),
-  ("sod_1_reinforcements_b", "sod_1_reinforcements_b", 0, 0, fac_commoners, 0, [(trp_sod_ant_javelinman,5,10),(trp_sod_ant_trained_javelinman,1,3),(trp_sod_ant_regular,2,5),(trp_sod_ant_veteran,1,2),(trp_sod_ant_elite,0,1)]),
+  # Keep Antarian lords supplied with their foot-and-javelin doctrine instead of compensating with foreign cavalry.
+  ("sod_1_reinforcements_a", "sod_1_reinforcements_a", 0, 0, fac_commoners, 0, [(trp_sod_ant_regular,5,10),(trp_sod_ant_veteran,2,5),(trp_sod_ant_javelinman,1,5),(trp_sod_ant_elite,1,2)]),
+  ("sod_1_reinforcements_b", "sod_1_reinforcements_b", 0, 0, fac_commoners, 0, [(trp_sod_ant_javelinman,5,10),(trp_sod_ant_trained_javelinman,2,4),(trp_sod_ant_regular,2,5),(trp_sod_ant_veteran,1,2),(trp_sod_ant_elite,0,1)]),
   ("sod_1_reinforcements_c", "sod_1_reinforcements_c", 0, 0, fac_commoners, 0, [(trp_sod_ant_scout,2,6),(trp_sod_ant_cavalry,1,4),(trp_sod_ant_guard,0,1),(trp_sod_ant_noble,1,2)]),
 
   ("sod_2_reinforcements_a", "sod_2_reinforcements_a", 0, 0, fac_commoners, 0, [(trp_sod_mar_conscript,5,10),(trp_sod_mar_regular,2,5),(trp_sod_mar_veteran,1,3),(trp_sod_mar_elite,1,2),(trp_sod_mar_crossbowman,1,3)]),
-  ("sod_2_reinforcements_b", "sod_2_reinforcements_b", 0, 0, fac_commoners, 0, [(trp_sod_mar_crossbowman,5,10),(trp_sod_mar_trained_crossbowman,3,7),(trp_sod_mar_elite_crossbowman,2,5),(trp_sod_mar_sharpshooter,1,2),(trp_sod_mar_mercenary,1,2)]),
+  # Preserve the crossbow-heavy doctrine without making a common garrison reinforcement disproportionately elite-dense.
+  ("sod_2_reinforcements_b", "sod_2_reinforcements_b", 0, 0, fac_commoners, 0, [(trp_sod_mar_crossbowman,5,10),(trp_sod_mar_trained_crossbowman,2,5),(trp_sod_mar_elite_crossbowman,1,4),(trp_sod_mar_sharpshooter,1,2),(trp_sod_mar_mercenary,1,2)]),
   ("sod_2_reinforcements_c", "sod_2_reinforcements_c", 0, 0, fac_commoners, 0, [(trp_sod_mar_scout,1,5),(trp_sod_mar_mercenary,1,3),(trp_sod_mar_landsknecht,1,2),(trp_sod_mar_elite_crossbowman,1,2),(trp_sod_mar_elite,1,2)]),
 
   ("sod_3_reinforcements_a", "sod_3_reinforcements_a", 0, 0, fac_commoners, 0, [(trp_sod_ade_regular,5,10),(trp_sod_ade_veteran,2,5),(trp_sod_ade_elite,1,5),(trp_sod_ade_light,0,1),(trp_sod_ade_medium,0,1)]),
@@ -188,7 +193,8 @@ party_templates = [
   ("sod_4_reinforcements_b", "sod_4_reinforcements_b", 0, 0, fac_commoners, 0, [(trp_sod_vil_longbowman,5,10),(trp_sod_vil_veteran_longbowman,3,7),(trp_sod_vil_elite_longbowman,2,5),(trp_sod_vil_sharpshooter,1,2),(trp_sod_vil_noble,0,1)]),
   ("sod_4_reinforcements_c", "sod_4_reinforcements_c", 0, 0, fac_commoners, 0, [(trp_sod_vil_scout,2,6),(trp_sod_vil_noble,1,4),(trp_sod_vil_chief,1,2),(trp_sod_vil_sharpshooter,0,1)]),  #twan456 removed obsolete units
 
-  ("sod_5_reinforcements_a", "sod_5_reinforcements_a", 0, 0, fac_commoners, 0, [(trp_sod_zer_1_cavalry,5,10),(trp_sod_zer_2_cavalry,2,5),(trp_sod_zer_1_cavalry_archer,1,5),(trp_sod_zer_3_cavalry,1,4),(trp_sod_zer_1_noble,1,4)]),
+  # Core mounted formation; elite cavalry and nobles remain concentrated in C.
+  ("sod_5_reinforcements_a", "sod_5_reinforcements_a", 0, 0, fac_commoners, 0, [(trp_sod_zer_1_cavalry,5,10),(trp_sod_zer_2_cavalry,2,5),(trp_sod_zer_1_cavalry_archer,1,5),(trp_sod_zer_3_cavalry,0,2),(trp_sod_zer_1_noble,0,2)]),
   ("sod_5_reinforcements_b", "sod_5_reinforcements_b", 0, 0, fac_commoners, 0, [(trp_sod_zer_1_infantry,5,10),(trp_sod_zer_2_infantry,1,3),(trp_sod_zer_1_archer,2,5),(trp_sod_zer_2_archer,1,2),(trp_sod_zer_3_infantry,0,1)]),
   ("sod_5_reinforcements_c", "sod_5_reinforcements_c", 0, 0, fac_commoners, 0, [(trp_sod_zer_2_cavalry,2,6),(trp_sod_zer_1_cavalry_archer,1,4),(trp_sod_zer_3_cavalry,1,4),(trp_sod_zer_1_noble,1,4),(trp_sod_zer_2_noble,1,3)]),
 

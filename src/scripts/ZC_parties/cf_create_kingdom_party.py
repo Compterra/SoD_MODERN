@@ -6,6 +6,7 @@ SCRIPTS = [
 
       (str_store_faction_name_link, s7, ":faction_no"),
       (assign, ":party_name_str", "str_no_string"),
+      (assign, ":party_template", -1),
 
       (faction_get_slot, ":reinforcements_b", ":faction_no", slot_faction_reinforcements_b),
 
@@ -32,6 +33,7 @@ SCRIPTS = [
           (set_spawn_radius, 1),
         (try_end),
         (assign, ":spawn_center", reg0),
+        (gt, ":party_template", 0),
         (is_between, ":spawn_center", centers_begin, centers_end),
         (spawn_around_party, ":spawn_center", ":party_template"),
         (assign, ":result", reg0),

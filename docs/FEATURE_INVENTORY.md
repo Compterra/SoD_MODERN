@@ -679,7 +679,6 @@ The project targets Mount & Blade 1.011 / Sword of Damocles Modern, not Warband.
 - Mini-faction incident processing.
 - World presence updates.
 - Economic, settlement, party, and campaign processing.
-- String probe trigger.
 - Message suppression leak guard.
 
 ## Hardcoded Game Callback Coverage
@@ -740,4 +739,3 @@ The project targets Mount & Blade 1.011 / Sword of Damocles Modern, not Warband.
 - Generated reports and audits.
 - Reference feature adaptation docs.
 - Playtest checklists for major systems such as castle mercenary guild halls.
-

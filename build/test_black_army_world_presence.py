@@ -80,7 +80,13 @@ def main() -> int:
 
     assert_contains(spawns, 'call_script, "script_sod_black_army_world_presence"')
     assert_contains(report, "script_sod_black_army_describe_status_to_s24")
-    assert_contains(report, "road-security network active")
+    for token in (
+        "road-security network",
+        "security fund {reg24}",
+        "contract heat {reg25}",
+        "active detachments {reg23}",
+    ):
+        assert_contains(report, token)
     assert_contains(faction_notes, "script_sod_black_army_describe_status_to_s24")
     assert_contains(faction_notes, "fac_sod_merc_guild1")
     assert_contains(order, "party_tpl_pt_black_army_patrol_start.py")

@@ -856,6 +856,7 @@ Recommended next implementation:
    - Destination scoring now uses a same-day prisoner pressure cache before falling back to full center pressure recalculation.
    - Slaver black-market reports/quotes now use cached daily market state, with dirty refresh after transport spawns/removals.
    - Weekly pressure processing remains on the direct recalculation path so weekly consequences stay fresh.
+   - Completion audit: the daily path now avoids the old count-then-scan pair, first-day pressure-cache reads cannot use uninitialized slots, and Slaver cache invalidation covers shared party lifecycle paths. Cache-aware market deltas also preserve legitimate same-day Slaver supply/demand effects through a dirty refresh. See `docs/tooling/PRISONER_SLAVER_REFACTOR_AUDIT.md`.
 
 4. Defer the siege assault trigger until after the above.
    - `ST02_every_hour/entry_0029.py` has real performance upside, but it owns sensitive siege timing and marshal assault behavior.

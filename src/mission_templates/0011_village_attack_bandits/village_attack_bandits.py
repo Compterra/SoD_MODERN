@@ -11,6 +11,7 @@ MISSION_TEMPLATES = [
       common_battle_mission_start,
       common_battle_tab_press, 
 	  common_battle_horse_health, 
+      common_battle_xp_log_suppression_tick,
       sod_battle_commander_spawn_player_ally,
 
       (ti_question_answered, 0, 0, [],

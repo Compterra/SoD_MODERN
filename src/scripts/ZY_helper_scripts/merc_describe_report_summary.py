@@ -2,9 +2,9 @@
 SCRIPTS = [
 ("merc_describe_report_summary",
  [
-   (str_store_string, s60, "@Field companies: none."),
-   (str_store_string, s61, "@No active guild pact."),
-   (str_store_string, s62, "@No current kingdom mercenary service."),
+   (str_store_string, s60, "@No field companies are under your banner."),
+   (str_store_string, s61, "@No guild pact is on the books."),
+   (str_store_string, s62, "@You are not serving a kingdom as a mercenary."),
 
    (call_script, "script_sod_count_player_merc_companies"),
    (assign, reg20, reg0),
@@ -15,10 +15,10 @@ SCRIPTS = [
      (eq, reg20, 1),
      (gt, ":sample_guild", 0),
      (str_store_faction_name, s63, ":sample_guild"),
-     (str_store_string, s60, "@Field company: {s63}. Size {reg21}. Company contract ends in {reg22} day(s)."),
+     (str_store_string, s60, "@One field company from {s63}: {reg21} soldiers. Contract ends in {reg22} day(s)."),
    (else_try),
      (gt, reg20, 1),
-     (str_store_string, s60, "@Field companies: {reg20}. Total strength {reg21}. Next company contract ends in {reg22} day(s)."),
+     (str_store_string, s60, "@Field companies under your banner: {reg20}. Total strength {reg21}. Next contract ends in {reg22} day(s)."),
    (try_end),
 
    (faction_get_slot, ":pact_guild", "fac_player_faction", slot_faction_merc_pact),
@@ -29,7 +29,7 @@ SCRIPTS = [
      (faction_get_slot, reg24, ":pact_guild", player_debt_to_faction),
      (assign, reg25, "$g_mercenary_guild_weekly_payment"),
      (call_script, "script_merc_describe_pact_status", ":pact_guild"),
-     (str_store_string, s61, "@Guild pact: {s63}. Weekly fee {reg25}. Debt {reg24}. Relation {reg23}. {s59}"),
+     (str_store_string, s61, "@{s63} pact: weekly fee {reg25}, debt {reg24}, relation {reg23}. {s59}"),
    (try_end),
 
    (try_begin),
@@ -39,7 +39,7 @@ SCRIPTS = [
      (store_current_day, ":cur_day"),
      (store_sub, reg26, "$mercenary_service_next_renew_day", ":cur_day"),
      (assign, reg27, "$mercenary_service_accumulated_pay"),
-     (str_store_string, s62, "@Kingdom service: {s63}. Service renewal in {reg26} day(s). Accrued unpaid wages {reg27} denars."),
+     (str_store_string, s62, "@Serving {s63}: renewal in {reg26} day(s); unpaid wages {reg27} denars."),
    (try_end),
  ]),
 ]

@@ -130,8 +130,10 @@ SCRIPTS = [
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_messenger_troop, "trp_sod_zer_messenger"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_prison_guard_troop, "trp_sod_zer_2_infantry"),
                 (faction_set_slot, "fac_player_supporters_faction", slot_faction_castle_guard_troop, "trp_sod_zer_2_infantry"),
-                (faction_set_slot, "fac_player_supporters_faction",  slot_faction_reinforcements_a, "pt_sod_5_reinforcements_a"),
-                (faction_set_slot, "fac_player_supporters_faction",  slot_faction_reinforcements_b, "pt_sod_5_reinforcements_b"),
+                # Centers draw template A 65% of the time. Keep the Zerrikanian
+                # foot/ranged cadre there; mounted field formations stay in B/C.
+                (faction_set_slot, "fac_player_supporters_faction",  slot_faction_reinforcements_a, "pt_sod_5_reinforcements_b"),
+                (faction_set_slot, "fac_player_supporters_faction",  slot_faction_reinforcements_b, "pt_sod_5_reinforcements_a"),
                 (faction_set_slot, "fac_player_supporters_faction",  slot_faction_reinforcements_c, "pt_sod_5_reinforcements_c"),
 				
 				(faction_set_slot, "fac_player_supporters_faction", slot_faction_ruler_title, "str_sod_c3_ruler_2"),

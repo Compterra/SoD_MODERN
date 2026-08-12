@@ -15,7 +15,7 @@ MENUS = [
           (this_or_next|le, "$g_main_ship_party", 0),
           (neg|party_is_active, "$g_main_ship_party"),
           (set_spawn_radius, 0),
-          (spawn_around_party, "p_main_party", "pt_none"),
+          (spawn_around_party, "p_main_party", "pt_player_ship"),
           (assign, "$g_main_ship_party", reg0),
           (try_begin),
             (gt, "$g_main_ship_party", 0),

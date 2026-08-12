@@ -199,7 +199,7 @@ def test_spokesperson_menu_is_registered() -> None:
     assert_contains(dialogue, "No one is ready to speak formally")
     assert_contains(dialogue, "(party_stack_get_size, \":stack_size\", \"p_main_party\", \":stack_no\")")
     assert_contains(dialogue, "(gt, \":stack_size\", 0)")
-    assert_contains(dialogue, "(main_party_has_troop, \"$g_sod_company_spokesperson_mediator\")")
+    assert_contains(dialogue, "(call_script, \"script_cf_sod_companion_in_main_party\", \"$g_sod_company_spokesperson_mediator\")")
     assert_contains(dialogue, "(troop_slot_ge, \"$g_sod_company_spokesperson_mediator\", slot_troop_companion_approval, 45)")
     assert_contains(dialogue, "(assign, \":speaker\", \"$g_sod_company_spokesperson_mediator\")")
 

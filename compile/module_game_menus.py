@@ -557,7 +557,7 @@ game_menus = [
        ),
     ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/reports.py:L85-L243 ] reports
+# [ src/menus/0000_hardcoded_mb1011/reports.py:L85-L245 ] reports
 ("reports", mnf_enable_hot_keys,
     "{playername} {s69}^Formerly of the {s68}^^{s3}^Reputation: {s4}^Fame: {s5}^^Company mood: {s6}^Party Size Limit: {reg7}^^Time in Calradia: {s7}.",
     "none",
@@ -687,6 +687,8 @@ game_menus = [
         ]),
 
       ("view_quest_journal_report", [], "View quest journal.", [(jump_to_menu, "mnu_quest_journal_report")]),
+
+      ("view_campaign_dispatch", [], "Read campaign dispatches.", [(jump_to_menu, "mnu_campaign_dispatch")]),
 
       ("view_realm_reports", [], "Realm and campaign reports...", [(jump_to_menu, "mnu_realm_reports")]),
 
@@ -1228,7 +1230,7 @@ game_menus = [
       ("game_options_autoresilve_3", [(eq, "$g_sod_autoresolve", -1)], "Use Bloodbath for Autoresolved Battles", [(assign, "$g_sod_autoresolve", 0), (jump_to_menu, "mnu_game_options_2")]),
       ("game_options_return", [], "Back to Options...", [(jump_to_menu, "mnu_game_options")]),
     ] ),
-# [ src/menus/0000_hardcoded_mb1011/game_options_3.py:L1-L137 ] game_options_3
+# [ src/menus/0000_hardcoded_mb1011/game_options_3.py:L1-L160 ] game_options_3
 ("game_options_3", mnf_enable_hot_keys,
     "{s98}",
     "none",
@@ -1250,6 +1252,17 @@ game_menus = [
         (str_store_string_reg, s97, s98),
         (str_store_string, s98, "@{s97}^^Messages: Fewest"),
       (try_end),
+
+      (str_store_string, s99, "@Standard"),
+      (try_begin),
+        (eq, "$g_sod_report_delivery_mode", sod_report_delivery_quiet),
+        (str_store_string, s99, "@Quiet"),
+      (else_try),
+        (eq, "$g_sod_report_delivery_mode", sod_report_delivery_archive_only),
+        (str_store_string, s99, "@Archive only"),
+      (try_end),
+      (str_store_string_reg, s97, s98),
+      (str_store_string, s98, "@{s97}^Campaign Dispatch: {s99}"),
 
 	  # (try_begin),
 	    # (eq, "$g_sod_anti_pursuit", 0),
@@ -1336,6 +1349,18 @@ game_menus = [
       ("game_options_few", [(eq, "$g_sod_hide_messages", 0)], "Show fewer messages.", [(assign, "$g_sod_hide_messages", -1), (jump_to_menu, "mnu_game_options_3")]),
       ("game_options_none", [(eq, "$g_sod_hide_messages", -1)], "Show fewest messages.", [(assign, "$g_sod_hide_messages", -2), (jump_to_menu, "mnu_game_options_3")]),
       ("game_options_all", [(eq, "$g_sod_hide_messages", -2)], "Show all messages.", [(assign, "$g_sod_hide_messages", 0), (jump_to_menu, "mnu_game_options_3")]),
+      ("game_options_cycle_campaign_dispatch", [], "Change campaign dispatch delivery.", [
+        (try_begin),
+          (eq, "$g_sod_report_delivery_mode", sod_report_delivery_standard),
+          (assign, "$g_sod_report_delivery_mode", sod_report_delivery_quiet),
+        (else_try),
+          (eq, "$g_sod_report_delivery_mode", sod_report_delivery_quiet),
+          (assign, "$g_sod_report_delivery_mode", sod_report_delivery_archive_only),
+        (else_try),
+          (assign, "$g_sod_report_delivery_mode", sod_report_delivery_standard),
+        (try_end),
+        (jump_to_menu, "mnu_game_options_3"),
+      ]),
       # ("game_options_anti_pursuit_1", [(eq, "$g_sod_anti_pursuit", 1)], "Enable Anti Pursuit System", [(assign, "$g_sod_anti_pursuit", 0), (jump_to_menu, "mnu_game_options_3")]),
       # ("game_options_anti_pursuit_2", [(eq, "$g_sod_anti_pursuit", 0)], "Disable Anti Pursuit System", [(assign, "$g_sod_anti_pursuit", 1), (jump_to_menu, "mnu_game_options_3")]),
       ("game_options_enable_ai", [(eq, "$g_sod_deactivate_ai", 1)], "Use full Strategic AI", [(assign, "$g_sod_deactivate_ai", 0), (assign, "$g_sod_deactivate_lords_ai", 0),(jump_to_menu, "mnu_game_options_3")]),   # Sod Twan new options
@@ -2066,17 +2091,39 @@ game_menus = [
       ("go_back_dot", [], "Go back.", [(jump_to_menu, "mnu_start_character_4"), ]),
     ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/past_life_explanation.py:L1-L32 ] past_life_explanation
+# [ src/menus/0000_hardcoded_mb1011/past_life_explanation.py:L1-L54 ] past_life_explanation
 (
     "past_life_explanation", mnf_disable_all_keys,
     "{s3}",
     "none",
     [
+     # This menu is only valid for the five character-background paragraphs.
+     # A stale global (including one carried by an old save) must not select an
+     # arbitrary engine string register.
      (try_begin),
+       (lt, "$current_string_reg", 10),
+       (assign, "$current_string_reg", 10),
+     (else_try),
        (gt, "$current_string_reg", 14),
        (assign, "$current_string_reg", 10),
      (try_end),
-     (str_store_string_reg, s3, "$current_string_reg"),
+     # Keep the register selection explicit.  Besides hardening the runtime
+     # path, this gives the DevKit a complete, auditable source set.
+     (try_begin),
+       (eq, "$current_string_reg", 10),
+       (str_store_string_reg, s3, s10),
+     (else_try),
+       (eq, "$current_string_reg", 11),
+       (str_store_string_reg, s3, s11),
+     (else_try),
+       (eq, "$current_string_reg", 12),
+       (str_store_string_reg, s3, s12),
+     (else_try),
+       (eq, "$current_string_reg", 13),
+       (str_store_string_reg, s3, s13),
+     (else_try),
+       (str_store_string_reg, s3, s14),
+     (try_end),
      (try_begin),
        (ge, "$current_string_reg", 14),
        (str_store_string, s5, "@Back to the beginning..."),
@@ -4073,7 +4120,7 @@ game_menus = [
         ]),
       ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/simple_encounter.py:L1-L340 ] simple_encounter
+# [ src/menus/0000_hardcoded_mb1011/simple_encounter.py:L1-L352 ] simple_encounter
 (
     "simple_encounter", mnf_enable_hot_keys|mnf_scale_picture,
     "{s2} You have {reg10} troops fit for battle against their {reg11}.",
@@ -4082,6 +4129,13 @@ game_menus = [
         (assign, "$g_enemy_party", "$g_encountered_party"),
         (assign, "$g_ally_party", -1),
         (call_script, "script_encounter_calculate_fit"),
+        (try_begin),
+          (le, "$g_enemy_fit_for_battle", 0),
+          (gt, "$g_friend_fit_for_battle", 0),
+          (party_get_num_companions, ":enemy_total_companions", "p_collective_enemy"),
+          (gt, ":enemy_total_companions", 0),
+          (assign, "$g_enemy_surrenders", 1),
+        (try_end),
         (try_begin),
           (eq, "$new_encounter", 1),
           (assign, "$new_encounter", 0),
@@ -4239,11 +4293,15 @@ game_menus = [
       build_sod_battle_commander_change_option(
         "change_commander_simple_encounter",
         "mnu_simple_encounter",
-        [(eq, "$encountered_party_friendly", 0)],
+        [
+          (eq, "$encountered_party_friendly", 0),
+          (gt, "$g_enemy_fit_for_battle", 0),
+        ],
       ),
 
       ("encounter_attack", [
         (eq, "$encountered_party_friendly", 0),
+        (gt, "$g_enemy_fit_for_battle", 0),
         (call_script, "script_cf_sod_battle_commander_can_start"),
       ],
       "Charge the enemy ({s68} leads).", [
@@ -4277,6 +4335,7 @@ game_menus = [
 
       ("encounter_order_attack", [
         (eq, "$encountered_party_friendly", 0),
+        (gt, "$g_enemy_fit_for_battle", 0),
         (call_script, "script_party_count_members_with_full_health", "p_main_party"),
         (ge, reg(0), 4),
       ],
@@ -4669,10 +4728,10 @@ game_menus = [
           ]),
     ]
   ),
-# [ src/menus/other/continue_05.py:L1-L149 ] battle_debrief
+# [ src/menus/other/continue_05.py:L1-L145 ] battle_debrief
 (
     "battle_debrief", mnf_disable_all_keys,
-    "{s11}^^Your Casualties:{s8}{s10}^^Enemy Casualties:{s9}^^Fit to continue: your side {reg10}, enemy side {reg11}.",
+    "{s11}^^Company casualties{s8}{s10}^^Enemy casualties{s9}",
     "none",
     [
       (set_background_mesh, "mesh_pic_attack_ready"),
@@ -4683,6 +4742,8 @@ game_menus = [
       (try_end),
 
      (call_script, "script_sod_battle_commander_restore_player_health"),
+     (call_script, "script_sod_battle_commander_reset"),
+     (call_script, "script_sod_battle_xp_log_finish"),
 
      (call_script, "script_encounter_calculate_fit"),
 
@@ -4695,10 +4756,7 @@ game_menus = [
        (str_store_string, s11, "@You were victorious!"),
 #       (play_track, "track_bogus"), #clear current track.
 #       (call_script, "script_music_set_situation_with_culture", mtf_sit_victorious),
-       (try_begin),
-         (gt, "$g_friend_fit_for_battle", 1),
-         (set_background_mesh, "mesh_pic_victory"),
-       (try_end),
+       (set_background_mesh, "mesh_pic_victory"),
      (else_try),
        (eq, "$g_battle_result", -1),
        (ge, "$g_enemy_fit_for_battle", 1),
@@ -4719,10 +4777,7 @@ game_menus = [
      (else_try),
        (eq, "$g_battle_result", 1),
        (str_store_string, s11, "@You have defeated the enemy."),
-       (try_begin),
-         (gt, "$g_friend_fit_for_battle", 1),
-         (set_background_mesh, "mesh_pic_victory"),
-       (try_end),
+       (set_background_mesh, "mesh_pic_victory"),
      (else_try),
        (eq, "$g_battle_result", 0),
        (str_store_string, s11, "@You have retreated from the fight."),
@@ -4810,7 +4865,7 @@ game_menus = [
        (eq, "$any_allies_at_the_last_battle", 1),
        (call_script, "script_print_casualties_to_s0", "p_ally_casualties", 0),
        (str_store_string_reg, s68, s0),
-       (str_store_string, s10, "@^^Ally Casualties:{s68}"),
+       (str_store_string, s10, "@^^Allied casualties{s68}"),
      (try_end),
      ],
     [
@@ -5172,7 +5227,7 @@ game_menus = [
       ("pre_join_leave", [], "Don't get involved.", [(leave_encounter), (change_screen_return)]),
     ]
   ),
-# [ src/menus/encounter/join_attack.py:L1-L162 ] join_battle
+# [ src/menus/encounter/join_attack.py:L1-L172 ] join_battle
 (
     "join_battle", mnf_enable_hot_keys,
     "You are helping {s73} against {s72}. Your side looks {s74}; the enemy line looks {s75}.",
@@ -5199,6 +5254,13 @@ game_menus = [
       #(str_store_faction_name, 2, ":ally_faction"),
 
       (call_script, "script_encounter_calculate_fit"),
+      (try_begin),
+        (le, "$g_enemy_fit_for_battle", 0),
+        (gt, "$g_friend_fit_for_battle", 0),
+        (party_get_num_companions, ":enemy_total_companions", "p_collective_enemy"),
+        (gt, ":enemy_total_companions", 0),
+        (assign, "$g_enemy_surrenders", 1),
+      (try_end),
       (try_begin),
         (le, "$g_friend_fit_for_battle", 0),
         (str_store_string, s74, "@spent"),
@@ -5280,9 +5342,11 @@ game_menus = [
         build_sod_battle_commander_change_option(
           "change_commander_join_battle",
           "mnu_join_battle",
+          [(gt, "$g_enemy_fit_for_battle", 0)],
         ),
 
         ("join_attack", [
+          (gt, "$g_enemy_fit_for_battle", 0),
           (call_script, "script_cf_sod_battle_commander_can_start"),
         ],
         "Charge the enemy ({s68} leads).", [
@@ -5302,6 +5366,7 @@ game_menus = [
 
         ("join_order_attack", [
 #          (gt, "$encountered_party_hostile", 0),
+          (gt, "$g_enemy_fit_for_battle", 0),
           (call_script, "script_party_count_members_with_full_health", "p_main_party"), (ge, reg(0), 3),
         ],
         "Order your troops to attack with your allies while you stay back.", [
@@ -5746,7 +5811,7 @@ game_menus = [
       ("leave", [], "Leave.", [(leave_encounter), (change_screen_return)]),
     ]
   ),
-# [ src/menus/centers/common/approach_gates.py:L1-L318 ] castle_outside
+# [ src/menus/centers/common/approach_gates.py:L1-L299 ] castle_outside
 (
     "castle_outside", mnf_enable_hot_keys,
     "You are outside {s2}.{s11} {s3} {s4}",
@@ -6003,34 +6068,13 @@ game_menus = [
       # give player the option to siege this town or castle
       ("castle_start_siege",
        [
-         # MORDACHAI - allow the marshall or King to commandeer the siege
-         (assign, ":can_siege", 0),
-         (try_begin),
-           # nobody sieging here yet, or its the player who is in the process of sieging here...
-           (this_or_next|party_slot_eq, "$g_encountered_party", slot_center_is_besieged_by, -1),
-           (             party_slot_eq, "$g_encountered_party", slot_center_is_besieged_by, "p_main_party"),
+         (call_script, "script_cf_sod_center_player_can_start_siege", "$g_encountered_party"),
 
-           (assign, ":can_siege", 1),
-
-         (else_try),
-
-           # player outranks those doing the siege...
-           (party_get_slot, ":siege_party", "$g_encountered_party", slot_center_is_besieged_by),
-           (ge, ":siege_party", 0),
-           (party_is_active, ":siege_party"),
-           (store_faction_of_party, ":siege_party_faction", ":siege_party"),
-           (ge, ":siege_party_faction", 0),
-           (this_or_next|faction_slot_eq, ":siege_party_faction", slot_faction_marshall, "trp_player"),
-           (             faction_slot_eq, ":siege_party_faction", slot_faction_leader, "trp_player"),
-
-           (assign, ":can_siege", 1),
-
-         (try_end),
-         (eq, ":can_siege", 1),
-
-         #MORDACHAI - but also disallow you from attacking your own kingdom's centers!
          (store_faction_of_party, ":center_faction", "$g_encountered_party"),
-         (neq, ":center_faction", "$players_kingdom"),
+         (store_relation, ":center_relation", ":center_faction", "fac_player_supporters_faction"),
+         (this_or_next|neq, ":center_faction", "$players_kingdom"),
+         (lt, ":center_relation", 0),
+         (neg|party_slot_eq, "$g_encountered_party", slot_town_lord, "trp_player"),
          (neq, ":center_faction", "fac_player_faction"),
          (neq, ":center_faction", "fac_player_supporters_faction"),
 
@@ -6051,9 +6095,11 @@ game_menus = [
          (try_begin),
            (store_relation, ":reln", ":center_faction", "fac_player_supporters_faction"),
            (gt, ":reln", -1), #twanx
+           (assign, "$g_encountered_party_faction", ":center_faction"),
            (jump_to_menu, "mnu_castle_siege_confirm"),
          (else_try),
            (assign, "$g_player_besiege_town", "$g_encountered_party"),
+          (assign, "$g_encountered_party_faction", ":center_faction"),
           (call_script, "script_make_kingdom_hostile_to_player", ":center_faction", -10), #twanx
            (call_script, "script_update_all_notes"),
            (jump_to_menu, "mnu_castle_besiege"),
@@ -7124,7 +7170,7 @@ game_menus = [
 ("camp_no_prisoners", 0, "You have no prisoners to recruit from.", "none", [], [
     ("continue", [], "Continue.", [(jump_to_menu, "mnu_camp_action")]),
   ]),
-# [ src/menus/centers/castle/castle_castle.py:L1-L1039 ] town
+# [ src/menus/centers/castle/castle_castle.py:L1-L1045 ] town
 (
     "town", mnf_enable_hot_keys,
     "{s10}{s11}{s23}{s17}{s15}{s16}{s12}{s21}{s13}{s40}",
@@ -7977,10 +8023,12 @@ game_menus = [
         [
           # Neutral or friendly towns auto-enter this menu, unlike castles.
           # Keep the declaration-of-war siege path visible here as well.
-          (this_or_next|party_slot_eq, "$current_town", slot_center_is_besieged_by, -1),
-          (             party_slot_eq, "$current_town", slot_center_is_besieged_by, "p_main_party"),
+          (call_script, "script_cf_sod_center_player_can_start_siege", "$current_town"),
           (store_faction_of_party, ":center_faction", "$current_town"),
-          (neq, ":center_faction", "$players_kingdom"),
+          (store_relation, ":center_relation", ":center_faction", "fac_player_supporters_faction"),
+          (this_or_next|neq, ":center_faction", "$players_kingdom"),
+          (lt, ":center_relation", 0),
+          (neg|party_slot_eq, "$current_town", slot_town_lord, "trp_player"),
           (neq, ":center_faction", "fac_player_faction"),
           (neq, ":center_faction", "fac_player_supporters_faction"),
           (call_script, "script_party_count_fit_for_battle", "p_main_party"),
@@ -7998,9 +8046,13 @@ game_menus = [
           (try_begin),
             (store_relation, ":reln", ":center_faction", "fac_player_supporters_faction"),
             (gt, ":reln", -1),
+            (assign, "$g_encountered_party", "$current_town"),
+            (assign, "$g_encountered_party_faction", ":center_faction"),
             (jump_to_menu, "mnu_castle_siege_confirm"),
           (else_try),
             (assign, "$g_player_besiege_town", "$current_town"),
+            (assign, "$g_encountered_party", "$current_town"),
+            (assign, "$g_encountered_party_faction", ":center_faction"),
             (call_script, "script_make_kingdom_hostile_to_player", ":center_faction", -10),
             (call_script, "script_update_all_notes"),
             (jump_to_menu, "mnu_castle_besiege"),
@@ -15078,7 +15130,7 @@ game_menus = [
           (this_or_next|le, "$g_main_ship_party", 0),
           (neg|party_is_active, "$g_main_ship_party"),
           (set_spawn_radius, 0),
-          (spawn_around_party, "p_main_party", "pt_none"),
+          (spawn_around_party, "p_main_party", "pt_player_ship"),
           (assign, "$g_main_ship_party", reg0),
           (try_begin),
             (gt, "$g_main_ship_party", 0),
@@ -23491,7 +23543,7 @@ game_menus = [
 
       ("camp_job_scout_route", [
           (eq, "$g_sod_camp_job_active", 0),
-          (main_party_has_troop, "trp_npc1"),
+          (call_script, "script_cf_sod_companion_in_main_party", "trp_npc1"),
         ], "Direct order: scout the route for six hours.",
         [
           (assign, "$g_camp_mode", 1),
@@ -23511,7 +23563,7 @@ game_menus = [
 
       ("camp_job_scout_route_locked", [
           (eq, "$g_sod_camp_job_active", 0),
-          (neg|main_party_has_troop, "trp_npc1"),
+          (neg|call_script, "script_cf_sod_companion_in_main_party", "trp_npc1"),
         ], "Direct order: scout the route. Requires Borcha.",
         [
           (display_message, "@You need Borcha in the party to post a proper road watch.", 0xFFCC66),
@@ -23540,7 +23592,7 @@ game_menus = [
 
       ("camp_job_ration_stores", [
           (eq, "$g_sod_camp_job_active", 0),
-          (main_party_has_troop, "trp_npc2"),
+          (call_script, "script_cf_sod_companion_in_main_party", "trp_npc2"),
         ], "Direct order: have Marnid count and sort stores for six hours.",
         [
           (assign, "$g_camp_mode", 1),
@@ -23560,7 +23612,7 @@ game_menus = [
 
       ("camp_job_ration_stores_locked", [
           (eq, "$g_sod_camp_job_active", 0),
-          (neg|main_party_has_troop, "trp_npc2"),
+          (neg|call_script, "script_cf_sod_companion_in_main_party", "trp_npc2"),
         ], "Direct order: count and sort stores. Requires Marnid.",
         [
           (display_message, "@You need Marnid in the party to organize the camp stores.", 0xFFCC66),
@@ -23570,7 +23622,7 @@ game_menus = [
 
       ("camp_job_tend_mounts", [
           (eq, "$g_sod_camp_job_active", 0),
-          (main_party_has_troop, "trp_npc5"),
+          (call_script, "script_cf_sod_companion_in_main_party", "trp_npc5"),
         ], "Direct order: have Baheshtur tend the mounts for six hours.",
         [
           (assign, "$g_camp_mode", 1),
@@ -23590,7 +23642,7 @@ game_menus = [
 
       ("camp_job_tend_mounts_locked", [
           (eq, "$g_sod_camp_job_active", 0),
-          (neg|main_party_has_troop, "trp_npc5"),
+          (neg|call_script, "script_cf_sod_companion_in_main_party", "trp_npc5"),
         ], "Direct order: tend the mounts. Requires Baheshtur.",
         [
           (display_message, "@You need Baheshtur in the party to tend lame mounts.", 0xFFCC66),
@@ -27091,6 +27143,60 @@ game_menus = [
             ]),
         ],
     ),
+# [ src/menus/reports/campaign_dispatch.py:L1-L55 ] campaign_dispatch
+("campaign_dispatch", mnf_enable_hot_keys,
+    "{s68}",
+    "none",
+    [
+      (set_background_mesh, "mesh_pic_report_screen"),
+      (call_script, "script_sod_report_describe_overview_to_s68"),
+    ],
+    [
+      ("campaign_dispatch_settlements", [], "Settlements and population.", [(assign, "$g_sod_report_selected_category", sod_report_category_settlements), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_health", [], "Health and relief.", [(assign, "$g_sod_report_selected_category", sod_report_category_health), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_roads", [], "Roads and treasury.", [(assign, "$g_sod_report_selected_category", sod_report_category_roads), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_security", [], "Security and raids.", [(assign, "$g_sod_report_selected_category", sod_report_category_security), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_captives", [], "Captives and prisoner logistics.", [(assign, "$g_sod_report_selected_category", sod_report_category_captives), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_contracts", [], "Mercenaries and contracts.", [(assign, "$g_sod_report_selected_category", sod_report_category_contracts), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_realm", [], "Realm and diplomacy.", [(assign, "$g_sod_report_selected_category", sod_report_category_realm), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_world", [], "World activity.", [(assign, "$g_sod_report_selected_category", sod_report_category_world), (jump_to_menu, "mnu_campaign_dispatch_detail")]),
+      ("campaign_dispatch_settings", [], "Dispatch delivery settings.", [(jump_to_menu, "mnu_campaign_dispatch_settings")]),
+      ("campaign_dispatch_back", [], "Back.", [(jump_to_menu, "mnu_reports")]),
+    ]),
+
+("campaign_dispatch_detail", mnf_enable_hot_keys,
+    "{s68}",
+    "none",
+    [
+      (set_background_mesh, "mesh_pic_report_screen"),
+      (call_script, "script_sod_report_describe_category_to_s68"),
+      (call_script, "script_sod_report_mark_category_read", "$g_sod_report_selected_category"),
+    ],
+    [
+      ("campaign_dispatch_detail_health_report", [(eq, "$g_sod_report_selected_category", sod_report_category_health)], "Open public health report.", [(jump_to_menu, "mnu_center_public_health_report")]),
+      ("campaign_dispatch_detail_roads_report", [(eq, "$g_sod_report_selected_category", sod_report_category_roads)], "Open caravan road notes.", [(jump_to_menu, "mnu_trade_network_report")]),
+      ("campaign_dispatch_detail_security_report", [(eq, "$g_sod_report_selected_category", sod_report_category_security)], "Open Black Khergit horde report.", [(jump_to_menu, "mnu_black_khergit_horde_report")]),
+      ("campaign_dispatch_detail_captives_report", [(eq, "$g_sod_report_selected_category", sod_report_category_captives)], "Open prisoner economy report.", [(jump_to_menu, "mnu_prisoner_economy_report")]),
+      ("campaign_dispatch_detail_contracts_report", [(eq, "$g_sod_report_selected_category", sod_report_category_contracts)], "Open mercenary market report.", [(jump_to_menu, "mnu_mercenary_market_report")]),
+      ("campaign_dispatch_detail_realm_report", [(eq, "$g_sod_report_selected_category", sod_report_category_realm)], "Open diplomatic dispatches.", [(jump_to_menu, "mnu_sod_diplomacy_report")]),
+      ("campaign_dispatch_detail_world_report", [(eq, "$g_sod_report_selected_category", sod_report_category_world)], "Open mercenary world activity report.", [(jump_to_menu, "mnu_mercenary_world_activity_report")]),
+      ("campaign_dispatch_detail_back", [], "Back to campaign dispatches.", [(jump_to_menu, "mnu_campaign_dispatch")]),
+      ("campaign_dispatch_detail_reports", [], "Other reports.", [(jump_to_menu, "mnu_reports")]),
+    ]),
+
+("campaign_dispatch_settings", mnf_enable_hot_keys,
+    "{s68}",
+    "none",
+    [
+      (set_background_mesh, "mesh_pic_report_screen"),
+      (call_script, "script_sod_report_describe_settings_to_s68"),
+    ],
+    [
+      ("campaign_dispatch_settings_standard", [(neq, "$g_sod_report_delivery_mode", sod_report_delivery_standard)], "Use standard dispatches.", [(assign, "$g_sod_report_delivery_mode", sod_report_delivery_standard), (jump_to_menu, "mnu_campaign_dispatch_settings")]),
+      ("campaign_dispatch_settings_quiet", [(neq, "$g_sod_report_delivery_mode", sod_report_delivery_quiet)], "Use quiet dispatches.", [(assign, "$g_sod_report_delivery_mode", sod_report_delivery_quiet), (jump_to_menu, "mnu_campaign_dispatch_settings")]),
+      ("campaign_dispatch_settings_archive", [(neq, "$g_sod_report_delivery_mode", sod_report_delivery_archive_only)], "Use archive-only dispatches.", [(assign, "$g_sod_report_delivery_mode", sod_report_delivery_archive_only), (jump_to_menu, "mnu_campaign_dispatch_settings")]),
+      ("campaign_dispatch_settings_back", [], "Back.", [(jump_to_menu, "mnu_campaign_dispatch")]),
+    ]),
 # [ src/menus/reports/elite_doctrine_report.py:L1-L13 ] elite_doctrine_report
 ("elite_doctrine_report", mnf_enable_hot_keys,
     "{s1}",

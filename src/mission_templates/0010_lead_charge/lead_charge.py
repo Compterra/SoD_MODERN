@@ -19,6 +19,7 @@ MISSION_TEMPLATES = [
 
       common_battle_tab_press, 
 	  common_battle_horse_health,
+      common_battle_xp_log_suppression_tick,
       sod_battle_commander_spawn_player_ally,
 	  
 
@@ -45,6 +46,7 @@ MISSION_TEMPLATES = [
          (call_script, "script_sod_quest_battle_mission_start"),
          (call_script, "script_sod_battle_initialize_morale_context"),
          (call_script, "script_sod_company_dialogue_process_battle_start_morale"),
+         (call_script, "script_sod_battle_xp_log_start"),
          ]),
       quest_battle_agent_defeated,
       quest_battle_tick,

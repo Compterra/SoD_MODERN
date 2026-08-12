@@ -12,6 +12,8 @@ SCRIPTS = [
 			(party_get_slot, ":party_type", ":party_no", slot_party_type),
 			(this_or_next|eq, ":party_type", spt_player_mercenaries),
 			(eq, ":party_type", spt_player_patrol),
+			(party_get_num_companions, ":source_companions", ":party_no"),
+			(gt, ":source_companions", 0),
 			(party_get_template_id, ":cur_template", ":party_no"),
 			(neq, ":cur_template", ":template_no"),
 			(str_store_party_name, s19, ":party_no"), # copy it's name
@@ -66,6 +68,7 @@ SCRIPTS = [
 			(party_set_ai_behavior, ":new_party", ":cur_bhvr"),
 			(party_set_ai_object, ":new_party", ":cur_ai_obj"),
 			(party_set_ai_target_position, ":new_party", pos1),
+			(call_script, "script_sod_slavers_mark_market_party_dirty", ":party_no"),
 			(remove_party, ":party_no"),
 			(assign, "$g_encountered_party", ":new_party"),
 			(call_script, "script_process_hero_ai", ":party_leader"), # may help to avoid waiting parties

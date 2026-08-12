@@ -1,7 +1,7 @@
 MENUS = [
 (
     "battle_debrief", mnf_disable_all_keys,
-    "{s11}^^Your Casualties:{s8}{s10}^^Enemy Casualties:{s9}^^Fit to continue: your side {reg10}, enemy side {reg11}.",
+    "{s11}^^Company casualties{s8}{s10}^^Enemy casualties{s9}",
     "none",
     [
       (set_background_mesh, "mesh_pic_attack_ready"),
@@ -12,6 +12,8 @@ MENUS = [
       (try_end),
 
      (call_script, "script_sod_battle_commander_restore_player_health"),
+     (call_script, "script_sod_battle_commander_reset"),
+     (call_script, "script_sod_battle_xp_log_finish"),
 
      (call_script, "script_encounter_calculate_fit"),
 
@@ -24,10 +26,7 @@ MENUS = [
        (str_store_string, s11, "@You were victorious!"),
 #       (play_track, "track_bogus"), #clear current track.
 #       (call_script, "script_music_set_situation_with_culture", mtf_sit_victorious),
-       (try_begin),
-         (gt, "$g_friend_fit_for_battle", 1),
-         (set_background_mesh, "mesh_pic_victory"),
-       (try_end),
+       (set_background_mesh, "mesh_pic_victory"),
      (else_try),
        (eq, "$g_battle_result", -1),
        (ge, "$g_enemy_fit_for_battle", 1),
@@ -48,10 +47,7 @@ MENUS = [
      (else_try),
        (eq, "$g_battle_result", 1),
        (str_store_string, s11, "@You have defeated the enemy."),
-       (try_begin),
-         (gt, "$g_friend_fit_for_battle", 1),
-         (set_background_mesh, "mesh_pic_victory"),
-       (try_end),
+       (set_background_mesh, "mesh_pic_victory"),
      (else_try),
        (eq, "$g_battle_result", 0),
        (str_store_string, s11, "@You have retreated from the fight."),
@@ -139,7 +135,7 @@ MENUS = [
        (eq, "$any_allies_at_the_last_battle", 1),
        (call_script, "script_print_casualties_to_s0", "p_ally_casualties", 0),
        (str_store_string_reg, s68, s0),
-       (str_store_string, s10, "@^^Ally Casualties:{s68}"),
+       (str_store_string, s10, "@^^Allied casualties{s68}"),
      (try_end),
      ],
     [

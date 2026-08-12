@@ -39,7 +39,8 @@ DIALOGS = [
                                                          (party_is_active, ":quest_target_party"),
                                                          (party_get_template_id, ":target_template", ":quest_target_party"),
                                                          (eq, ":target_template", "pt_slavers_caravan"),
-													     (remove_party, ":quest_target_party"), 
+														 (call_script, "script_sod_slavers_mark_market_party_dirty", ":quest_target_party"),
+														     (remove_party, ":quest_target_party"),
                                                        (try_end),
                                                        ]],
 ]

@@ -62,8 +62,13 @@ def main() -> int:
     assert_contains(daily_world, "script_sod_slavers_process_world_activity")
     assert_contains(daily_burden, "script_sod_slavers_process_player_slave_burden")
     assert_contains(notes, "script_sod_slavers_describe_status_to_s20")
-    assert_contains(report, "black-market web active")
-    assert_contains(report, "Demand {reg20}, supply {reg21}, heat {reg22}")
+    for token in (
+        "black-market web",
+        "demand {reg20}",
+        "supply {reg21}",
+        "heat {reg22}",
+    ):
+        assert_contains(report, token)
     assert_contains(read("src/menus/reports/slaver_black_market_report.py"), "Slaver Black Market Web")
     assert_contains(read("src/menus/0000_hardcoded_mb1011/reports.py"), "mnu_mini_faction_reports")
     assert_contains(read("src/menus/reports/report_submenus.py"), "mnu_slaver_black_market_report")
