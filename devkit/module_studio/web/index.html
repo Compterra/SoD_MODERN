@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>SoD Module Studio</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">SO D MODERN · LOCAL DEVKIT</p>
+      <h1>Module Studio</h1>
+      <p class="subtitle">Viewer/editor convenience layer over the LLM-first DevKit</p>
+    </div>
+    <div class="topbar-actions">
+      <span id="connection" class="status pending">Connecting…</span>
+      <button id="refresh-summary" class="secondary">Refresh evidence</button>
+    </div>
+  </header>
+
+  <div class="safety-strip">
+    <span>Loopback only</span><span>•</span><span>No build or export controls</span><span>•</span><span>Diff + SHA required before any source apply</span>
+  </div>
+
+  <main class="shell">
+    <nav class="nav" aria-label="Studio sections">
+      <button class="nav-item active" data-view="overview">Overview</button>
+      <button class="nav-item" data-view="atlas">Module Atlas</button>
+      <button class="nav-item" data-view="dialogue">Dialogue</button>
+      <button class="nav-item" data-view="presentations">Presentations</button>
+      <button class="nav-item" data-view="text">Text observability</button>
+      <button class="nav-item" data-view="order">Order Control</button>
+      <button class="nav-item" data-view="balance">Balance Lab</button>
+      <button class="nav-item" data-view="workbench">Workbench</button>
+      <button class="nav-item" data-view="editor">Guarded editor</button>
+    </nav>
+
+    <div class="views">
+      <section class="view active" id="view-overview">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">STATIC EVIDENCE</p>
+            <h2>Workspace overview</h2>
+          </div>
+          <p>The Studio reads the same indexes used by MCP and the JSON CLIs. It does not simulate M&amp;B runtime behavior.</p>
+        </div>
+        <div id="overview-cards" class="metric-grid"></div>
+        <div class="two-column">
+          <article class="panel">
+            <h3>How to work safely</h3>
+            <ol class="steps">
+              <li>Find the exact semantic entity, route, or overlay.</li>
+              <li>Inspect linked context, graph edges, and static hazards.</li>
+              <li>Generate a semantic patch plan and review its unified diff.</li>
+              <li>Rehearse with a dry-run. A real source apply requires the plan SHA and an explicit confirmation.</li>
+              <li>Use the normal reviewed build and target in-game smoke path afterward.</li>
+            </ol>
+          </article>
+          <article class="panel">
+            <h3>Evidence boundary</h3>
+            <p>Static tools can make the surprise smaller: source ownership, generated provenance, direct links, string/register risk, first-match dialogue shadows, and likely layout conflicts. Dynamic state, engine execution, and final screen behavior remain in-game checks.</p>
+          </article>
+        </div>
+        <details class="panel">
+          <summary>Raw overview JSON</summary>
+          <pre id="overview-json">Loading…</pre>
+        </details>
+      </section>
+
+      <section class="view" id="view-atlas">
+        <div class="section-heading">
+          <div><p class="eyebrow">ALL EIGHT MODULE AREAS</p><h2>Module Atlas</h2></div>
+          <p>Search constants, menus, missions, presentations, quests, scripts, and triggers through one stable ID model.</p>
+        </div>
+        <form id="atlas-search" class="tool-form compact-form">
+          <label>Search <input id="atlas-query" name="query" placeholder="name, text, operation, symbol"></label>
+          <label>Area
+            <select id="atlas-area" name="area">
+              <option value="all">All areas</option>
+              <option value="constants">Constants</option>
+              <option value="dialogs">Dialogs</option>
+              <option value="menus">Menus</option>
+              <option value="mission_templates">Mission templates</option>
+              <option value="presentations">Presentations</option>
+              <option value="quests">Quests</option>
+              <option value="scripts">Scripts</option>
+              <option value="triggers">Simple triggers</option>
+            </select>
+          </label>
+          <label>Kind <input id="atlas-kind" name="kind" placeholder="optional, e.g. script"></label>
+          <button type="submit">Find entities</button>
+        </form>
+        <div class="work-area">
+          <div class="panel result-panel"><h3>Results <span id="atlas-count" class="count"></span></h3><div id="atlas-results" class="result-list empty">Search for an exact module entity.</div></div>
+          <div class="panel detail-panel"><h3>Entity inspector</h3><div id="atlas-detail" class="empty">Choose a result to inspect its source context, links, actions, and bounded graph.</div></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-dialogue">
+        <div class="section-heading">
+          <div><p class="eyebrow">FIRST-MATCH AWARE</p><h2>Dialogue explorer</h2></div>
+          <p>Locate authored routes, then inspect source order and static NPC fallback shadows before changing dialogue.</p>
+        </div>
+        <form id="dialogue-search" class="tool-form compact-form">
+          <label>Search <input id="dialogue-query" placeholder="text, state, source fragment"></label>
+          <label>Input state <input id="dialogue-input" placeholder="optional"></label>
+          <label>Output state <input id="dialogue-output" placeholder="optional"></label>
+          <button type="submit">Find routes</button>
+        </form>
+        <div class="work-area">
+          <div class="panel result-panel"><h3>Routes <span id="dialogue-count" class="count"></span></h3><div id="dialogue-results" class="result-list empty">Search for a dialogue route.</div></div>
+          <div class="panel detail-panel"><h3>Route inspector</h3><div id="dialogue-detail" class="empty">Choose a route to see source order and first-match evidence.</div></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-presentations">
+        <div class="section-heading">
+          <div><p class="eyebrow">VISUAL, SOURCE-SAFE AUTHORING</p><h2>Presentation Workshop</h2></div>
+          <p>Stage, inspect, and author direct overlays visually. Every change still becomes a source-mapped diff before a dry-run or explicit source apply.</p>
+        </div>
+        <form id="presentation-search" class="tool-form compact-form">
+          <label>Search <input id="presentation-query" placeholder="presentation, overlay, text, identifier"></label>
+          <button type="submit">Find presentations</button>
+          <button id="presentation-browse" type="button" class="secondary">Browse all presentations</button>
+        </form>
+
+        <div class="presentation-workbench">
+          <aside class="panel presentation-browser">
+            <h3>Presentations <span id="presentation-count" class="count"></span></h3>
+            <div id="presentation-results" class="result-list empty">Search for a presentation or overlay.</div>
+          </aside>
+          <article class="panel presentation-stage-panel">
+            <div class="presentation-stage-heading">
+              <div>
+                <h3 id="presentation-stage-title">Static canvas</h3>
+                <p id="presentation-stage-meta" class="muted">Choose a presentation to reconstruct its bounded static canvas.</p>
+              </div>
+              <div class="presentation-stage-tools">
+                <span id="presentation-draft-status" class="status-label" role="status" aria-live="polite">No local draft</span>
+                <button id="presentation-reset-draft" type="button" class="secondary" disabled>Reset selected draft</button>
+                <button id="presentation-refresh-canvas" type="button" class="secondary" disabled>Refresh canvas</button>
+              </div>
+            </div>
+            <div id="presentation-detail" class="empty">Static direct-overlay geometry appears here. Dynamic engine paths remain visible as unresolved entries rather than guessed layout.</div>
+            <div class="presentation-overlay-toolbar">
+              <div>
+                <p class="eyebrow">LAYER INVENTORY</p>
+                <h4>Direct overlays <span id="presentation-overlay-count" class="count"></span></h4>
+              </div>
+              <label class="presentation-overlay-filter-label">Filter visible overlays
+                <input id="presentation-overlay-filter" type="search" disabled placeholder="identifier, kind, text, trigger">
+              </label>
+            </div>
+            <div id="presentation-overlay-list" class="overlay-list empty">Select a presentation to list its overlays and bindings.</div>
+          </article>
+        </div>
+
+        <div class="presentation-editor-layout">
+          <article class="panel presentation-inspector-panel">
+            <div class="panel-heading-row">
+              <div><p class="eyebrow">SELECTED OVERLAY</p><h3>Layout inspector</h3></div>
+              <span id="presentation-selected-status" class="status-label">Nothing selected</span>
+            </div>
+            <div id="presentation-selected-summary" class="empty">Click an overlay on the canvas or in the overlay list. Dragging changes only the local draft coordinates; it never writes source.</div>
+            <form id="presentation-layout-form" class="editor-form presentation-form">
+              <div class="form-grid">
+                <label>Position X <input id="presentation-position-x" type="number" step="1" inputmode="decimal" disabled></label>
+                <label>Position Y <input id="presentation-position-y" type="number" step="1" inputmode="decimal" disabled></label>
+              </div>
+              <button id="presentation-plan-move" type="submit" disabled>Review move / dragged position</button>
+              <div class="form-grid">
+                <label>Engine size X <input id="presentation-size-x" type="number" step="1" inputmode="decimal" disabled></label>
+                <label>Engine size Y <input id="presentation-size-y" type="number" step="1" inputmode="decimal" disabled></label>
+              </div>
+              <button id="presentation-plan-resize" type="button" class="secondary" disabled>Review resize</button>
+              <label>Direct literal text or mesh
+                <textarea id="presentation-content" rows="3" disabled placeholder="Direct literal text for text/button overlays, or mesh name for mesh overlays"></textarea>
+              </label>
+              <button id="presentation-plan-content" type="button" class="secondary" disabled>Review content change</button>
+              <div class="form-grid">
+                <label>Color expression <input id="presentation-color" disabled placeholder="e.g. 0xFF00FF00"></label>
+                <label>Alpha expression <input id="presentation-alpha" disabled placeholder="e.g. 200"></label>
+              </div>
+              <div class="inline-actions" aria-label="Alignment controls">
+                <span>Align anchor</span>
+                <button type="button" class="secondary presentation-align" data-alignment="left" disabled>Left</button>
+                <button type="button" class="secondary presentation-align" data-alignment="center" disabled>Center</button>
+                <button type="button" class="secondary presentation-align" data-alignment="right" disabled>Right</button>
+                <button type="button" class="secondary presentation-align" data-alignment="top" disabled>Top</button>
+                <button type="button" class="secondary presentation-align" data-alignment="middle" disabled>Middle</button>
+                <button type="button" class="secondary presentation-align" data-alignment="bottom" disabled>Bottom</button>
+              </div>
+              <div class="inline-actions">
+                <button id="presentation-plan-color" type="button" class="secondary" disabled>Review color</button>
+                <button id="presentation-plan-alpha" type="button" class="secondary" disabled>Review alpha</button>
+                <button id="presentation-plan-remove" type="button" class="danger" disabled>Review remove overlay</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="panel presentation-create-panel">
+            <p class="eyebrow">NEW DIRECT OVERLAY</p><h3>Create overlay</h3>
+            <p class="muted">This creates a direct operation block in an existing presentation trigger. It does not write source until its reviewed plan is explicitly applied.</p>
+            <form id="presentation-create-form" class="editor-form presentation-form">
+              <div class="form-grid">
+                <label>Kind
+                  <select id="presentation-create-kind" disabled>
+                    <option value="text">Text</option>
+                    <option value="button">Button</option>
+                    <option value="mesh">Mesh</option>
+                    <option value="slider">Slider</option>
+                  </select>
+                </label>
+                <label>Trigger <select id="presentation-create-trigger" disabled></select></label>
+              </div>
+              <label>Destination variable <input id="presentation-create-destination" disabled placeholder="$g_my_overlay or :local_overlay"></label>
+              <label>Text / mesh name <input id="presentation-create-content" disabled placeholder="@New label or mesh_name"></label>
+              <div class="form-grid">
+                <label>Position register <input id="presentation-create-register" disabled value="pos1" placeholder="pos1"></label>
+                <label>Position X <input id="presentation-create-x" type="number" step="1" disabled value="500"></label>
+                <label>Position Y <input id="presentation-create-y" type="number" step="1" disabled value="500"></label>
+              </div>
+              <div class="form-grid">
+                <label>Optional size X <input id="presentation-create-size-x" type="number" step="1" disabled></label>
+                <label>Optional size Y <input id="presentation-create-size-y" type="number" step="1" disabled></label>
+                <label>Slider minimum <input id="presentation-create-minimum" type="number" step="1" disabled value="0"></label>
+                <label>Slider maximum <input id="presentation-create-maximum" type="number" step="1" disabled value="100"></label>
+              </div>
+              <button id="presentation-plan-create" type="submit" disabled>Review new overlay</button>
+            </form>
+          </article>
+
+          <article class="panel presentation-plan-panel">
+            <p class="eyebrow">REVIEW BEFORE SOURCE</p><h3>Presentation change plan</h3>
+            <p class="muted">A drag, field edit, alignment, content change, or creation only becomes a source change after you inspect this diff, rehearse it, and explicitly confirm it.</p>
+            <div id="presentation-plan-summary" class="empty">Select an overlay or presentation and review one proposed change.</div>
+            <pre id="presentation-plan-diff" class="diff"></pre>
+            <div class="apply-controls">
+              <button id="presentation-dry-run" type="button" class="secondary" disabled>Rehearse presentation change</button>
+              <label class="checkbox-line"><input id="presentation-apply-check" type="checkbox" disabled> I reviewed this layout diff, current SHA, shared-binding impact, and source-only scope.</label>
+              <label>Type <code>APPLY SOURCE</code> to unlock real apply <input id="presentation-apply-confirmation" disabled placeholder="APPLY SOURCE"></label>
+              <button id="presentation-apply-source" type="button" class="danger" disabled>Apply reviewed presentation source change</button>
+            </div>
+            <div id="presentation-apply-result" class="result-message"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="view-text">
+        <div class="section-heading">
+          <div><p class="eyebrow">WRONG-STRING TRIAGE</p><h2>Text observability</h2></div>
+          <p>Static visible-text and string/register findings. Use this before assuming a text symptom is a game script error.</p>
+        </div>
+        <form id="text-lint" class="tool-form compact-form">
+          <label>Text/symbol filter <input id="text-query" placeholder="optional"></label>
+          <label>Severity
+            <select id="text-severity"><option value="warning">Warning+</option><option value="all">All</option><option value="error">Errors only</option><option value="info">Info+</option></select>
+          </label>
+          <button type="submit">Run text lint</button>
+        </form>
+        <article class="panel"><h3>Findings</h3><div id="text-results" class="result-list empty">Run text lint to inspect bounded static evidence.</div></article>
+      </section>
+
+      <section class="view" id="view-order">
+        <div class="section-heading">
+          <div><p class="eyebrow">TOP-TO-BOTTOM IS BEHAVIOR</p><h2>Order Control</h2></div>
+          <p>Trace manifest, authored, generated-ID, and callback order before an order-sensitive change. This never sorts folders or writes generated/export layers.</p>
+        </div>
+        <form id="order-search" class="tool-form compact-form">
+          <label>Search <input id="order-query" placeholder="fragment, entity, symbol, or generated ID"></label>
+          <label>Area
+            <select id="order-area">
+              <option value="all">All areas</option>
+              <option value="constants">Constants</option>
+              <option value="dialogs">Dialogs</option>
+              <option value="menus">Menus</option>
+              <option value="mission_templates">Mission templates</option>
+              <option value="presentations">Presentations</option>
+              <option value="quests">Quests</option>
+              <option value="scripts">Scripts</option>
+              <option value="triggers">Simple triggers</option>
+            </select>
+          </label>
+          <label>Order domain
+            <select id="order-domain"><option value="all">All</option><option value="source-fragments">Source fragments</option><option value="entities">Authored entities</option><option value="generated">Generated markers</option><option value="id-tables">ID tables</option></select>
+          </label>
+          <button type="submit">Map order evidence</button>
+        </form>
+        <div class="work-area">
+          <div class="panel result-panel"><h3>Order targets <span id="order-count" class="count"></span></h3><div id="order-results" class="result-list empty">Search for an exact fragment, route, entity, or generated ID symbol.</div></div>
+          <div class="panel detail-panel"><h3>Order inspector</h3><div id="order-detail" class="empty">Select a target to see source position, generated-ID evidence, protected contracts, and eligible safe moves.</div></div>
+        </div>
+        <div class="editor-layout order-move-layout">
+          <article class="panel editor-panel">
+            <h3>Anchored order move</h3>
+            <p class="muted">Only two fragments in one declared `_order*.txt` manifest or two same-fragment dialogue routes can be moved. The move is always planned before it is rehearsed or applied.</p>
+            <form id="order-move-form" class="tool-form editor-form">
+              <label>Target ID <input id="order-move-target" required placeholder="source:... or dialogue:..."></label>
+              <label>Anchor ID <input id="order-move-anchor" required placeholder="source:... or dialogue:..."></label>
+              <label>Position <select id="order-move-position"><option value="before">before</option><option value="after">after</option></select></label>
+              <label class="checkbox-line"><input id="order-allow-protected" type="checkbox"> I deliberately permit a protected engine/legacy order change after reviewing its generated-ID and build-diff consequences.</label>
+              <button type="submit">Generate order move plan</button>
+            </form>
+          </article>
+          <article class="panel plan-panel">
+            <h3>Reviewed order plan</h3>
+            <p class="muted">A plan is read-only. Its current SHA is required for rehearsal and any non-dry source apply.</p>
+            <div id="order-plan-summary" class="empty">Generate an anchored move plan to inspect its diff and risk.</div>
+            <pre id="order-plan-diff" class="diff"></pre>
+            <div class="apply-controls">
+              <button id="order-dry-run" type="button" class="secondary" disabled>Rehearse order move</button>
+              <label class="checkbox-line"><input id="order-apply-check" type="checkbox" disabled> I reviewed the diff, current SHA, protected contracts, and downstream ID risk.</label>
+              <label>Type <code>APPLY SOURCE</code> to unlock real apply <input id="order-apply-confirmation" disabled placeholder="APPLY SOURCE"></label>
+              <button id="order-apply-source" type="button" class="danger" disabled>Apply order source change</button>
+            </div>
+            <div id="order-apply-result" class="result-message"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="view-balance">
+        <div class="section-heading">
+          <div><p class="eyebrow">TROOPS + ITEMS · LEGACY AUTHORING AWARE</p><h2>Troop + Item Balance Lab</h2></div>
+          <p>Inspect evaluated M&amp;B 1.011 items, troop inventory pools, static upgrade paths, price/kit outliers, and only then plan a record-local balance change.</p>
+        </div>
+        <div id="balance-cards" class="metric-grid"></div>
+        <form id="balance-search" class="tool-form compact-form">
+          <label>View
+            <select id="balance-mode"><option value="items">Items</option><option value="troops">Troops</option><option value="outliers">Outliers</option></select>
+          </label>
+          <label>Search / filter <input id="balance-query" placeholder="item/troop code, name, faction, or leave empty for bounded view"></label>
+          <label class="checkbox-line"><input id="balance-include-heroes" type="checkbox"> Include heroes in troop outliers</label>
+          <button type="submit">Run balance view</button>
+          <button id="balance-summary-run" type="button" class="secondary">Refresh authoring evidence</button>
+        </form>
+        <div class="work-area">
+          <div class="panel result-panel"><h3>Results <span id="balance-count" class="count"></span></h3><div id="balance-results" class="result-list empty">Choose items, troops, or outliers. Exact context appears here before any edit plan.</div></div>
+          <div class="panel detail-panel"><h3>Balance inspector</h3><div id="balance-detail" class="empty">Choose an item, troop, or outlier to see decoded values, inventory/upgrade links, and source provenance.</div></div>
+        </div>
+        <div class="editor-layout balance-editor-layout">
+          <article class="panel editor-panel">
+            <h3>Guarded balance record patch</h3>
+            <p class="muted">This is a compatibility bridge for direct legacy authoring records only. It cannot add/move records, edit ID tables, or write exports.</p>
+            <form id="balance-editor" class="tool-form editor-form">
+              <label>Entity kind <select id="balance-edit-kind"><option value="item">Item</option><option value="troop">Troop</option></select></label>
+              <label>Item / troop ID <input id="balance-edit-id" required placeholder="itm_khergit_bow or trp_swadian_recruit"></label>
+              <label>Bounded changes JSON
+                <textarea id="balance-changes" rows="7" required placeholder='Item: {"price":1234,"stats":{"weight":2.5}}&#10;Troop: {"attributes":{"level":12},"skills":{"power_strike":3}}'></textarea>
+              </label>
+              <button type="submit">Generate balance patch plan</button>
+            </form>
+          </article>
+          <article class="panel plan-panel">
+            <h3>Reviewed legacy-authoring plan</h3>
+            <p class="muted">Rehearsal proves the current source SHA and plan SHA. A real apply additionally needs the explicit legacy-authoring acknowledgement below.</p>
+            <div id="balance-plan-summary" class="empty">Generate a record-local plan to inspect its diff, source SHA, and plan SHA.</div>
+            <pre id="balance-plan-diff" class="diff"></pre>
+            <div class="apply-controls">
+              <button id="balance-dry-run" type="button" class="secondary" disabled>Rehearse balance patch</button>
+              <label class="checkbox-line"><input id="balance-apply-check" type="checkbox" disabled> I reviewed the exact diff, current source SHA, plan SHA, and generated/export follow-up.</label>
+              <label class="checkbox-line"><input id="balance-legacy-ack" type="checkbox" disabled> I deliberately permit a direct legacy compile-authoring record change.</label>
+              <label class="checkbox-line"><input id="balance-protected-ack" type="checkbox" disabled> This is a deliberate hardwired-record change after reviewing engine compatibility impact.</label>
+              <label>Type <code>APPLY SOURCE</code> to unlock real apply <input id="balance-apply-confirmation" disabled placeholder="APPLY SOURCE"></label>
+              <button id="balance-apply-source" type="button" class="danger" disabled>Apply guarded legacy record change</button>
+            </div>
+            <div id="balance-apply-result" class="result-message"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="view-workbench">
+        <div class="section-heading">
+          <div><p class="eyebrow">CBO-STYLE EVIDENCE</p><h2>Workbench</h2></div>
+          <p>Fixed impact, contract, release, and text-observability workflows—no generic shell execution.</p>
+        </div>
+        <div class="tool-form workbench-form">
+          <label>Impact target <input id="impact-target" placeholder="exact name, source target, entity ID, or text"></label>
+          <button id="impact-run" type="button">Build impact packet</button>
+          <button id="order-report-run" type="button" class="secondary">Order report</button>
+          <button id="readiness-run" type="button" class="secondary">Check release readiness</button>
+          <button id="workbench-summary-run" type="button" class="secondary">Workbench summary</button>
+        </div>
+        <article class="panel"><h3>Evidence packet</h3><div id="workbench-result" class="empty">Choose a fixed Workbench workflow.</div></article>
+      </section>
+
+      <section class="view" id="view-editor">
+        <div class="section-heading">
+          <div><p class="eyebrow">SEMANTIC SOURCE AUTHORING</p><h2>Guarded editor</h2></div>
+          <p>No raw file editor. This form submits only named semantic actions to the existing specialist tool, then requires a reviewed SHA before source-only apply.</p>
+        </div>
+        <div class="editor-layout">
+          <article class="panel editor-panel">
+            <div class="editor-tabs" role="tablist">
+              <button class="editor-tab active" data-editor="atlas">Module Atlas</button>
+              <button class="editor-tab" data-editor="dialogue">Dialogue</button>
+              <button class="editor-tab" data-editor="presentation">Presentation</button>
+            </div>
+            <form id="semantic-editor" class="tool-form editor-form">
+              <label>Target ID <input id="edit-target" required placeholder="Select from an explorer, or paste a stable ID"></label>
+              <label>Action <input id="edit-action" required placeholder="e.g. set_text / replace_text / move_overlay"></label>
+              <div class="form-grid">
+                <label>Field <input id="edit-field" placeholder="Atlas only"></label>
+                <label>Block <input id="edit-block" placeholder="Atlas only"></label>
+                <label>Value <input id="edit-value" placeholder="text or source expression"></label>
+                <label>Operation <input id="edit-operation" placeholder="operation tuple"></label>
+                <label>Position <select id="edit-position"><option value="end">end</option><option value="start">start</option><option value="before">before</option><option value="after">after</option></select></label>
+                <label>Operation index <input id="edit-operation-index" type="number" min="0" placeholder="optional"></label>
+                <label>X <input id="edit-x" type="number" placeholder="Presentation only"></label>
+                <label>Y <input id="edit-y" type="number" placeholder="Presentation only"></label>
+                <label>Alignment <input id="edit-alignment" placeholder="left / center / right / …"></label>
+                <label>Trigger <input id="edit-trigger" placeholder="Presentation trigger"></label>
+                <label>Anchor route ID <input id="edit-anchor-route" placeholder="Dialogue only"></label>
+              </div>
+              <label>New item / route / overlay / trigger JSON
+                <textarea id="edit-new-item" rows="5" placeholder='Only when the selected semantic action needs one. Example: {"id":"new_option","text":"@Continue","conditions":"[]","consequences":"[]"}'></textarea>
+              </label>
+              <label class="checkbox-line"><input id="edit-allow-referenced-removal" type="checkbox"> I have inspected the inbound links and deliberately allow referenced removal.</label>
+              <label>Referenced-removal acknowledgement <input id="edit-removal-ack" placeholder="Required only for referenced removal"></label>
+              <button type="submit">Generate semantic patch plan</button>
+            </form>
+          </article>
+          <article class="panel plan-panel">
+            <h3>Reviewed plan</h3>
+            <p class="muted">A plan is read-only. Its base SHA is copied into both rehearsal and apply requests.</p>
+            <div id="plan-summary" class="empty">Generate a plan to see the unified diff and its apply contract.</div>
+            <pre id="plan-diff" class="diff"></pre>
+            <div class="apply-controls">
+              <button id="dry-run" type="button" class="secondary" disabled>Rehearse dry-run</button>
+              <label class="checkbox-line"><input id="apply-check" type="checkbox" disabled> I reviewed the diff, current SHA, and source-only scope.</label>
+              <label>Type <code>APPLY SOURCE</code> to unlock real apply <input id="apply-confirmation" disabled placeholder="APPLY SOURCE"></label>
+              <button id="apply-source" type="button" class="danger" disabled>Apply source only</button>
+            </div>
+            <div id="apply-result" class="result-message"></div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <template id="result-template">
+    <button class="result-card" type="button"><span class="result-title"></span><span class="result-meta"></span><span class="result-snippet"></span></button>
+  </template>
+  <script src="/app.js"></script>
+</body>
+</html>

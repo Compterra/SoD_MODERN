@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sod-modern.devkit.local/contracts/dialogue-create.v1.schema.json",
+  "title": "SoD Modern deterministic dialogue creation request v1",
+  "description": "A source-only, anchor-based request to create one Mount & Blade 1.011 dialogue route. The Composer canonicalizes rendering, rejects duplicate route signatures, and blocks static NPC first-match hazards unless explicitly acknowledged.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "anchor_route_id",
+    "position",
+    "speaker",
+    "input_state",
+    "text",
+    "output_state"
+  ],
+  "properties": {
+    "anchor_route_id": {
+      "type": "string",
+      "pattern": "^dialogue:",
+      "description": "Stable route ID returned by dialogue_find; fixes the source fragment and insertion neighborhood."
+    },
+    "position": {
+      "enum": ["before", "after"],
+      "description": "Exact placement relative to anchor_route_id."
+    },
+    "speaker": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\s*\\|\\s*[A-Za-z_][A-Za-z0-9_]*)*$",
+      "description": "Symbolic M&B speaker expression, for example anyone or plyr."
+    },
+    "input_state": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 30000,
+      "pattern": "^@",
+      "description": "Explicit M&B inline dialogue string."
+    },
+    "output_state": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "conditions": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {"type": "string", "minLength": 1},
+      "default": []
+    },
+    "consequences": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {"type": "string", "minLength": 1},
+      "default": []
+    },
+    "allow_static_shadow": {
+      "type": "boolean",
+      "default": false,
+      "description": "Must remain false unless the caller has deliberately reviewed a static NPC first-match hazard."
+    },
+    "shadow_acknowledgement": {
+      "const": "I acknowledge that an earlier NPC route may shadow this new route."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"allow_static_shadow": {"const": true}},
+        "required": ["allow_static_shadow"]
+      },
+      "then": {
+        "required": ["shadow_acknowledgement"]
+      }
+    }
+  ]
+}

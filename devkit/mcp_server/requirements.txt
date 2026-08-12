@@ -1,0 +1,4 @@
+# Official Model Context Protocol Python SDK. Pin the current stable v2 line so
+# this local server is reproducible and does not silently cross a major API
+# boundary.
+mcp[cli]==2.0.0

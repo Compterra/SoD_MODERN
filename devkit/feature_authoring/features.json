@@ -1,0 +1,51 @@
+{
+  "schema": "sod-modern.feature-authoring-catalog.v1",
+  "features": [
+    {
+      "schema": "sod-modern.feature-intent.v1",
+      "id": "black-khergit-camped-horde",
+      "title": "Black Khergit Camped Horde",
+      "status": "active",
+      "description": "Stewardship intent for the Black Khergit hourly lifecycle, camped AI lock, durable role ownership, and report menu. Camped hordes remain stationary until an explicit relocation branch changes their state.",
+      "blueprint_id": "black-khergit-camped-horde",
+      "entrypoints": [
+        "entrypoint:script:sod_black_khergits_lock_camped_ai",
+        "entrypoint:script:sod_black_khergits_process_day_cycle",
+        "entrypoint:script:sod_black_khergits_process_ai_responses",
+        "entrypoint:simple-trigger:src/triggers/ST02_every_hour/entry_0159.py:1",
+        "entrypoint:menu:black_khergit_horde_report"
+      ],
+      "changes": [],
+      "verification": {
+        "tests": [
+          "build/test_black_khergit_horde_presence.py",
+          "build/test_black_khergit_boar_separation_static.py"
+        ],
+        "require_blueprint": true
+      }
+    },
+    {
+      "schema": "sod-modern.feature-intent.v1",
+      "id": "campaign-dispatch",
+      "title": "Campaign Dispatch",
+      "status": "active",
+      "description": "Stewardship intent for the campaign report queue, its daily and weekly flushes, the report-recording script API, and report-menu flow.",
+      "blueprint_id": "campaign-dispatch",
+      "entrypoints": [
+        "entrypoint:script:sod_report_record_event",
+        "entrypoint:script:sod_report_flush_pending",
+        "entrypoint:simple-trigger:src/triggers/ST03_daily/campaign_dispatch_daily_flush.py:1",
+        "entrypoint:simple-trigger:src/triggers/ST04_weekly/campaign_dispatch_weekly_flush.py:1",
+        "entrypoint:menu:campaign_dispatch",
+        "entrypoint:menu:campaign_dispatch_detail"
+      ],
+      "changes": [],
+      "verification": {
+        "tests": [
+          "build/test_campaign_dispatch_static.py"
+        ],
+        "require_blueprint": true
+      }
+    }
+  ]
+}

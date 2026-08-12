@@ -1,0 +1,21 @@
+# Project-local DevKit runtime. Never commit a machine-specific interpreter or
+# downloaded packages.
+.venv/
+
+# Persistent local indexes. They are reproducible from workspace source and
+# generated modules, but intentionally never become module-system inputs.
+.cache/
+
+# Python runtime by-products.
+__pycache__/
+*.py[cod]
+
+# Reproducible DevKit artifacts.  These are generated locally and must never
+# be included in a source commit or release upload.
+/output/
+/order_control/baselines/
+/order_control/reports/
+/semantic_change_diff/baselines/
+/workbench/contracts/baselines/
+/workbench/drafts/
+/workbench/reports/

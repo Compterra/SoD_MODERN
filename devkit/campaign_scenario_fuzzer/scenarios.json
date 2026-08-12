@@ -1,0 +1,48 @@
+{
+  "schema": "devkit.campaign-scenario-fuzzer.v1",
+  "scenarios": [
+    {
+      "id": "black-khergit-camped-lock",
+      "description": "A valid Black Khergit horde camp must receive stationary hold AI from the camped-lock helper, regardless of harmless generated noise state.",
+      "entry_script": "script_sod_black_khergits_lock_camped_ai",
+      "parameters": [
+        {"party": "camp_party"}
+      ],
+      "state": {
+        "parties": {
+          "camp_party": {
+            "id": 1,
+            "active": true,
+            "template": "pt_black_khergit_horde_camp",
+            "ai": {
+              "behavior": "ai_bhvr_travel_to_party",
+              "initiative": 9
+            },
+            "slots": {}
+          }
+        },
+        "globals": {},
+        "registers": {}
+      },
+      "fuzz": {
+        "integer_ranges": {
+          "$scenario_noise": [0, 1000]
+        }
+      },
+      "assertions": [
+        {
+          "kind": "party_ai_equals",
+          "party": "camp_party",
+          "field": "behavior",
+          "equals": "ai_bhvr_hold"
+        },
+        {
+          "kind": "party_ai_equals",
+          "party": "camp_party",
+          "field": "initiative",
+          "equals": 0
+        }
+      ]
+    }
+  ]
+}

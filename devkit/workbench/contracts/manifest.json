@@ -1,0 +1,88 @@
+{
+  "schema": "sod-modern.workbench-contract-catalog.v1",
+  "version": 1,
+  "contracts": [
+    {
+      "id": "modular-source-topology",
+      "title": "Eight-Area Modular Source Topology",
+      "system": "module-system",
+      "status": "active",
+      "purpose": "Keeps all authored module-system areas, their generated counterparts, and their explicit ordering evidence visible before a build or game launch.",
+      "scenario": "atlas-structure-sentinel",
+      "targets": [],
+      "static": {
+        "rules": [
+          {"id": "source-areas", "kind": "atlas-area-count", "expected": 8, "label": "All eight modular source areas are indexed"},
+          {"id": "source-files", "kind": "workspace-path", "path": "src", "label": "Modular source root exists"},
+          {"id": "compile-files", "kind": "workspace-path", "path": "compile", "label": "Generated compile root exists"},
+          {"id": "module-build-script", "kind": "workspace-path", "path": "build/build_all.py", "label": "Canonical project build entry point exists"}
+        ]
+      },
+      "nativeProof": {
+        "policy": "after-content-or-build-changes",
+        "detail": "Run the reviewed module build and perform the targeted in-game smoke path; structural evidence does not prove engine runtime state."
+      }
+    },
+    {
+      "id": "atlas-direct-reference-integrity",
+      "title": "Direct Module Reference Integrity",
+      "system": "cross-area-links",
+      "status": "active",
+      "purpose": "Prevents duplicate authored definitions, direct dangling script/menu/mission/presentation/quest references, and parse failures from becoming a launch-only surprise.",
+      "scenario": "atlas-structure-sentinel",
+      "targets": [],
+      "static": {
+        "rules": [
+          {"id": "duplicate-definitions", "kind": "integrity-maximum", "field": "duplicate_definition_count", "expected": 0, "label": "No duplicate authored definitions"},
+          {"id": "unresolved-direct-references", "kind": "integrity-maximum", "field": "unresolved_reference_entity_count", "expected": 0, "label": "No unresolved direct Atlas references"},
+          {"id": "source-syntax", "kind": "integrity-maximum", "field": "syntax_error_count", "expected": 0, "label": "No modular source parse failures"}
+        ]
+      },
+      "nativeProof": {
+        "policy": "not-sufficient",
+        "detail": "This validates direct static names only. Dynamic selectors, branch reachability, and M&B engine behavior require target-specific source review and in-game proof."
+      }
+    },
+    {
+      "id": "text-flow-observability",
+      "title": "Visible Text Flow Observability",
+      "system": "strings-and-dialogue",
+      "status": "active",
+      "purpose": "Keeps source-to-generated text provenance and the string/register preflight available so wrong-screen text is diagnosed before launch.",
+      "scenario": "text-flow-sentinel",
+      "targets": [],
+      "static": {
+        "rules": [
+          {"id": "generated-source-markers", "kind": "integrity-summary-minimum", "field": "module_source_marker_count", "expected": 1, "label": "Generated module source markers are available"},
+          {"id": "text-sinks", "kind": "integrity-summary-minimum", "field": "text_sink_count", "expected": 1, "label": "Visible text sinks are indexed"},
+          {"id": "source-mapped-sinks", "kind": "integrity-summary-minimum", "field": "source_mapped_sink_count", "expected": 1, "label": "At least one visible text sink maps back to source"}
+        ]
+      },
+      "nativeProof": {
+        "policy": "when-visible-text-changes",
+        "detail": "Use text_explain/register_history and then verify the exact menu, dialogue, presentation, or message path in game after an intentional build."
+      }
+    },
+    {
+      "id": "semantic-authoring-safety",
+      "title": "Semantic Authoring Gate",
+      "system": "devkit-safety",
+      "status": "active",
+      "purpose": "Makes the Atlas, Dialogue Composer, Presentation Layout Composer, and Change Router regression surface explicit before semantic editing is relied upon.",
+      "scenario": "semantic-authoring-fixtures",
+      "targets": [],
+      "static": {
+        "rules": [
+          {"id": "atlas-fixture", "kind": "workspace-path", "path": "devkit/module_atlas/test_module_atlas.py", "label": "Atlas fixture test exists"},
+          {"id": "dialogue-fixture", "kind": "workspace-path", "path": "devkit/dialogue_composer/test_dialogue_composer.py", "label": "Dialogue Composer fixture test exists"},
+          {"id": "presentation-fixture", "kind": "workspace-path", "path": "devkit/presentation_layout/test_presentation_layout.py", "label": "Presentation Layout fixture test exists"},
+          {"id": "shared-router", "kind": "workspace-path", "path": "devkit/change_router/change_router.py", "label": "Shared source-only Change Router exists"}
+        ]
+      },
+      "nativeProof": {
+        "policy": "not-required",
+        "detail": "These are DevKit safety contracts. They do not certify a gameplay change."
+      }
+    }
+  ]
+}

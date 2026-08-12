@@ -1,0 +1,28 @@
+{
+  "schema": "devkit.slot-lifecycle-ownership.v1",
+  "ownership": [
+    {
+      "id": "black-khergit-party-role-lifecycle",
+      "category": "party_slot",
+      "slot_names": [
+        "slot_party_black_khergit_camp_activity",
+        "slot_party_black_khergit_origin",
+        "slot_party_black_khergit_target",
+        "slot_party_black_khergit_role",
+        "slot_party_black_khergit_response_target",
+        "slot_party_black_khergit_response_until"
+      ],
+      "owner_script_prefixes": [
+        "script_sod_black_khergits_"
+      ],
+      "allowed_handoff_scripts": [
+        "script_sod_boar_clan_world_presence"
+      ],
+      "require_clear": true,
+      "clear_values": [
+        "0"
+      ],
+      "description": "Black Khergit active party-role state belongs to the horde system and must be cleared before its party is reused. Cache/token slots are intentionally excluded: their invalidation model is token-based rather than reset-to-zero. Boar-clan conversion is an explicit reuse handoff."
+    }
+  ]
+}

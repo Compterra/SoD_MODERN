@@ -1,0 +1,136 @@
+{
+  "contract_version": "devkit.release-gate.approved-string-clear-sinks.v1",
+  "description": "Exact approved intentional blank text sinks. A changed count or a new unmatched warning blocks the strict release gate until it is reviewed.",
+  "rules": [
+    {
+      "id": "menu_tournament_bet_optional_suffix_s68",
+      "reason": "The tournament wager suffix is deliberately blank when no regular bet exists.",
+      "expected_count": 1,
+      "signature": {
+        "code": "STRING_REGISTER_CLEARED_BEFORE_SINK",
+        "category": "menu",
+        "sink_kind": "menu_text",
+        "context": "tournament_bet",
+        "register": "s68",
+        "source_path": "src/menus/other/go_back_dot.py"
+      }
+    },
+    {
+      "id": "menu_town_optional_health_s15",
+      "reason": "Town-only health text is deliberately blank when the same menu renders a castle.",
+      "expected_count": 1,
+      "signature": {
+        "code": "STRING_REGISTER_CLEARED_BEFORE_SINK",
+        "category": "menu",
+        "sink_kind": "menu_text",
+        "context": "town",
+        "register": "s15",
+        "source_path": "src/menus/centers/castle/castle_castle.py"
+      }
+    },
+    {
+      "id": "menu_town_optional_faith_s16",
+      "reason": "Town-only faith text is deliberately blank when the same menu renders a castle.",
+      "expected_count": 1,
+      "signature": {
+        "code": "STRING_REGISTER_CLEARED_BEFORE_SINK",
+        "category": "menu",
+        "sink_kind": "menu_text",
+        "context": "town",
+        "register": "s16",
+        "source_path": "src/menus/centers/castle/castle_castle.py"
+      }
+    },
+    {
+      "id": "menu_town_optional_compliance_s21",
+      "reason": "Town-only compliance text is deliberately blank when the same menu renders a castle.",
+      "expected_count": 1,
+      "signature": {
+        "code": "STRING_REGISTER_CLEARED_BEFORE_SINK",
+        "category": "menu",
+        "sink_kind": "menu_text",
+        "context": "town",
+        "register": "s21",
+        "source_path": "src/menus/centers/castle/castle_castle.py"
+      }
+    },
+    {
+      "id": "message_prisoner_escape_optional_prefix_s68",
+      "reason": "The player-prisoner prefix is deliberately blank for a non-player prisoner escape message.",
+      "expected_count": 1,
+      "signature": {
+        "code": "STRING_REGISTER_CLEARED_BEFORE_SINK",
+        "category": "message",
+        "sink_kind": "operation_display_message",
+        "context": "display_message argument 1",
+        "register": "s68",
+        "source_path": "src/scripts/ZC_parties/randomly_make_prisoner_heroes_escape_from_party.py"
+      }
+    },
+    {
+      "id": "presentation_battle_blank_overlay_labels_s7",
+      "reason": "Battle UI intentionally initializes blank text overlay labels before later updates populate selected controls.",
+      "expected_count": 21,
+      "signature": {
+        "code": "STRING_REGISTER_CLEARED_BEFORE_SINK",
+        "category": "presentation",
+        "sink_kind": "operation_create_text_overlay",
+        "context": "create_text_overlay argument 2",
+        "register": "s7",
+        "source_path": "src/presentations/0011_battle/battle.py"
+      }
+    },
+    {
+      "id": "presentation_fief_management_optional_s15",
+      "reason": "Fief-management layouts deliberately use an empty s15 label in optional overlay positions.",
+      "expected_count": 2,
+      "signature": {
+        "code": "STRING_REGISTER_CLEARED_BEFORE_SINK",
+        "category": "presentation",
+        "sink_kind": "operation_create_text_overlay",
+        "context": "create_text_overlay argument 2",
+        "register": "s15",
+        "source_path": "src/presentations/0020_sod_fief_management/sod_fief_management.py"
+      }
+    },
+    {
+      "id": "presentation_fief_management_optional_s16",
+      "reason": "Fief-management layouts deliberately use an empty s16 label in optional overlay positions.",
+      "expected_count": 2,
+      "signature": {
+        "code": "STRING_REGISTER_CLEARED_BEFORE_SINK",
+        "category": "presentation",
+        "sink_kind": "operation_create_text_overlay",
+        "context": "create_text_overlay argument 2",
+        "register": "s16",
+        "source_path": "src/presentations/0020_sod_fief_management/sod_fief_management.py"
+      }
+    },
+    {
+      "id": "presentation_fief_management_optional_s20",
+      "reason": "Fief-management layouts deliberately use an empty s20 label in optional overlay positions.",
+      "expected_count": 2,
+      "signature": {
+        "code": "STRING_REGISTER_CLEARED_BEFORE_SINK",
+        "category": "presentation",
+        "sink_kind": "operation_create_text_overlay",
+        "context": "create_text_overlay argument 2",
+        "register": "s20",
+        "source_path": "src/presentations/0020_sod_fief_management/sod_fief_management.py"
+      }
+    },
+    {
+      "id": "presentation_fief_management_optional_s69",
+      "reason": "Fief-management layouts deliberately use an empty s69 label in one optional overlay position.",
+      "expected_count": 1,
+      "signature": {
+        "code": "STRING_REGISTER_CLEARED_BEFORE_SINK",
+        "category": "presentation",
+        "sink_kind": "operation_create_text_overlay",
+        "context": "create_text_overlay argument 2",
+        "register": "s69",
+        "source_path": "src/presentations/0020_sod_fief_management/sod_fief_management.py"
+      }
+    }
+  ]
+}

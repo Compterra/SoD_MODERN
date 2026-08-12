@@ -1,0 +1,150 @@
+{
+  "schema": "sod-modern.module-blueprint-catalog.v1",
+  "blueprints": [
+    {
+      "id": "black-khergit-camped-horde",
+      "name": "Black Khergit Camped Horde",
+      "status": "active",
+      "description": "Owns the Black Khergit horde's hourly lifecycle, camped AI lock, durable role slots, and player-facing report. A camped horde must retain its hold behavior until an explicit relocation or approach branch changes that state.",
+      "source_fragments": [
+        "src/scripts/ZY_helper_scripts/sod_black_khergit_horde.py",
+        "src/triggers/ST02_every_hour/entry_0159.py",
+        "src/menus/reports/black_khergit_horde_report.py"
+      ],
+      "required_symbols": [
+        {
+          "symbol": "script_sod_black_khergits_lock_camped_ai",
+          "area": "scripts",
+          "kind": "script"
+        },
+        {
+          "symbol": "script_sod_black_khergits_process_day_cycle",
+          "area": "scripts",
+          "kind": "script"
+        },
+        {
+          "symbol": "script_sod_black_khergits_process_ai_responses",
+          "area": "scripts",
+          "kind": "script"
+        },
+        {
+          "symbol": "script_sod_black_khergits_refresh_active_parties",
+          "area": "scripts",
+          "kind": "script"
+        },
+        {
+          "symbol": "mnu_black_khergit_horde_report",
+          "area": "menus",
+          "kind": "menu"
+        }
+      ],
+      "source_assertions": [
+        {
+          "id": "camped-ai-lock-helper",
+          "path": "src/scripts/ZY_helper_scripts/sod_black_khergit_horde.py",
+          "contains": "(\"sod_black_khergits_lock_camped_ai\","
+        },
+        {
+          "id": "hourly-day-cycle-dispatch",
+          "path": "src/triggers/ST02_every_hour/entry_0159.py",
+          "contains": "script_sod_black_khergits_process_day_cycle"
+        },
+        {
+          "id": "horde-report-menu",
+          "path": "src/menus/reports/black_khergit_horde_report.py",
+          "contains": "(\"black_khergit_horde_report\","
+        }
+      ],
+      "order_constraints": [],
+      "slot_ownership_rules": [
+        "black-khergit-party-role-lifecycle"
+      ],
+      "ai_contracts": [
+        "black_khergit_camped_ai_stationary"
+      ],
+      "tests": [
+        "build/test_black_khergit_horde_presence.py",
+        "build/test_black_khergit_boar_separation_static.py"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "campaign-dispatch",
+      "name": "Campaign Dispatch",
+      "status": "active",
+      "description": "Owns the campaign report event queue, daily/weekly flush triggers, report menus, and the stable report-recording API used by other campaign systems.",
+      "source_fragments": [
+        "src/scripts/ZY_helper_scripts/sod_campaign_dispatch.py",
+        "src/menus/reports/campaign_dispatch.py",
+        "src/triggers/ST03_daily/campaign_dispatch_daily_flush.py",
+        "src/triggers/ST04_weekly/campaign_dispatch_weekly_flush.py"
+      ],
+      "required_symbols": [
+        {
+          "symbol": "script_sod_report_record_event",
+          "area": "scripts",
+          "kind": "script"
+        },
+        {
+          "symbol": "script_sod_report_flush_pending",
+          "area": "scripts",
+          "kind": "script"
+        },
+        {
+          "symbol": "mnu_campaign_dispatch",
+          "area": "menus",
+          "kind": "menu"
+        },
+        {
+          "symbol": "mnu_campaign_dispatch_detail",
+          "area": "menus",
+          "kind": "menu"
+        }
+      ],
+      "source_assertions": [
+        {
+          "id": "report-record-api",
+          "path": "src/scripts/ZY_helper_scripts/sod_campaign_dispatch.py",
+          "contains": "(\"sod_report_record_event\","
+        },
+        {
+          "id": "daily-flush-call",
+          "path": "src/triggers/ST03_daily/campaign_dispatch_daily_flush.py",
+          "contains": "script_sod_report_flush_pending"
+        },
+        {
+          "id": "weekly-flush-call",
+          "path": "src/triggers/ST04_weekly/campaign_dispatch_weekly_flush.py",
+          "contains": "script_sod_report_flush_pending"
+        },
+        {
+          "id": "dispatch-menu",
+          "path": "src/menus/reports/campaign_dispatch.py",
+          "contains": "(\"campaign_dispatch\","
+        }
+      ],
+      "order_constraints": [
+        {
+          "id": "daily-flush-after-public-health",
+          "target": "source:src/triggers/ST03_daily/campaign_dispatch_daily_flush.py",
+          "relation": "after",
+          "anchor": "source:src/triggers/ST03_daily/entry_0177_public_health.py",
+          "reason": "Campaign dispatch daily delivery must observe that day's public-health update before it flushes notifications."
+        },
+        {
+          "id": "dispatch-menu-after-journal",
+          "target": "source:src/menus/reports/campaign_dispatch.py",
+          "relation": "after",
+          "anchor": "source:src/menus/reports/quest_journal_report.py",
+          "reason": "Campaign Dispatch follows the quest journal in the report-menu assembly sequence."
+        }
+      ],
+      "slot_ownership_rules": [],
+      "ai_contracts": [],
+      "tests": [
+        "build/test_campaign_dispatch_static.py"
+      ],
+      "depends_on": []
+    }
+  ]
+}

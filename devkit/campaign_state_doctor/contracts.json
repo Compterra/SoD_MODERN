@@ -1,0 +1,22 @@
+{
+  "contract_version": "devkit.campaign-state-contracts.v1",
+  "contracts": [
+    {
+      "id": "black_khergit_camped_ai_stationary",
+      "kind": "stationary_camp",
+      "description": "A pitched Black Khergit horde camp must retain hold AI until an explicit relocation or approach branch changes its camped state.",
+      "scope_scripts": [
+        "script_sod_black_khergits_process_day_cycle",
+        "script_sod_black_khergits_refresh_active_parties"
+      ],
+      "party_template": "pt_black_khergit_horde_camp",
+      "camped_predicate": "script_cf_sod_black_khergits_party_is_camped",
+      "lock_script": "script_sod_black_khergits_lock_camped_ai",
+      "origin_slot": "slot_party_black_khergit_origin",
+      "target_slot": "slot_party_black_khergit_target",
+      "travel_behavior": "ai_bhvr_travel_to_party",
+      "relocation_counter": ":days_camped",
+      "approach_distance": ":camp_target_dist"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "schema": "sod-modern.workbench-scenario-catalog.v1",
+  "version": 1,
+  "scenarios": [
+    {
+      "id": "atlas-structure-sentinel",
+      "title": "Module Atlas Structural Sentinel",
+      "category": "module-system",
+      "purpose": "Checks eight-area topology, direct symbolic reference integrity, and ordering/freshness evidence without rebuilding the module.",
+      "evidence_level": "structural",
+      "proof_note": "This detects static structural problems before launch. It does not execute M&B conditions, dynamic IDs, or runtime menus.",
+      "targets": [],
+      "steps": [
+        {"kind": "builtin", "action": "workspace_audit", "label": "Workspace topology and generated/export freshness"},
+        {"kind": "builtin", "action": "module_integrity", "label": "Duplicate and direct-reference integrity"}
+      ]
+    },
+    {
+      "id": "text-flow-sentinel",
+      "title": "Visible Text Flow Sentinel",
+      "category": "strings-and-dialogue",
+      "purpose": "Preflights visible text sinks, string-register writers, source markers, and static uncertainty before changing strings or UI text.",
+      "evidence_level": "structural",
+      "proof_note": "Static writer flow is evidence, not a replacement for an in-game route check after a build.",
+      "targets": [],
+      "steps": [
+        {"kind": "builtin", "action": "string_integrity_summary", "label": "Text-sink and writer-contract preflight"}
+      ]
+    },
+    {
+      "id": "semantic-authoring-fixtures",
+      "title": "Semantic Authoring Fixture Sentinel",
+      "category": "devkit",
+      "purpose": "Runs isolated semantic authoring fixtures for the Atlas, Dialogue Composer, and Presentation Layout Composer without changing live module data.",
+      "evidence_level": "structural",
+      "proof_note": "These fixtures prove DevKit behavior, not game-engine runtime behavior.",
+      "targets": [],
+      "steps": [
+        {"kind": "python-test", "path": "devkit/module_atlas/test_module_atlas.py", "label": "Atlas semantic fixture"},
+        {"kind": "python-test", "path": "devkit/dialogue_composer/test_dialogue_composer.py", "label": "Dialogue semantic fixture"},
+        {"kind": "python-test", "path": "devkit/presentation_layout/test_presentation_layout.py", "label": "Presentation semantic fixture"}
+      ]
+    }
+  ]
+}

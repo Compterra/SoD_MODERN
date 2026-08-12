@@ -1,0 +1,315 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sod-modern.devkit.local/contracts/tool-result.v1.schema.json",
+  "title": "SoD Modern DevKit Tool Result v1",
+  "description": "Stable envelope returned by DevKit MCP tools, including read-only diagnostics, strict release-gate, Module Blueprint, and Feature Authoring contract evidence, plus explicitly named SHA-guarded modular-source, deterministic dialogue-creation, typed feature-plan, and narrowly scoped legacy compile-authoring edit operations.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "tool",
+    "ok",
+    "data",
+    "provenance",
+    "warnings"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "devkit.tool-result.v1"
+    },
+    "tool": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "data": {
+      "type": "object"
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_root",
+        "read_only",
+        "server_version"
+      ],
+      "properties": {
+        "repo_root": {
+          "type": "string"
+        },
+        "read_only": {
+          "type": "boolean"
+        },
+        "server_version": {
+          "type": "string"
+        },
+        "mcp_sdk_version": {
+          "type": "string"
+        },
+        "compiled_dialogue": {
+          "type": ["string", "null"]
+        },
+        "source_is_newer": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "examples": [
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "workspace_audit",
+      "ok": true,
+      "data": {},
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.0.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "string_integrity",
+      "ok": true,
+      "data": {},
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.0.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "text_explain",
+      "ok": true,
+      "data": {},
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.0.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "apply_source_edits",
+      "ok": true,
+      "data": {
+        "applied": true
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": false,
+        "server_version": "1.0.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "balance_summary",
+      "ok": true,
+      "data": {
+        "authoring": {
+          "layer": "legacy_compile_authoring",
+          "confirmed": true
+        }
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.0.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "balance_roster_inventory",
+      "ok": true,
+      "data": {
+        "mode": "inventory",
+        "roster": {
+          "id": "culture:antarian",
+          "name": "Antarian"
+        }
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.0.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "balance_progression",
+      "ok": true,
+      "data": {
+        "mode": "progression",
+        "faith_ascension_count": 5
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.0.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "balance_campaign_cohorts",
+      "ok": true,
+      "data": {
+        "mode": "catalog",
+        "cohort_count": 5
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.0.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "balance_imperial_invasion",
+      "ok": true,
+      "data": {
+        "mode": "imperial_invasion_profile",
+        "core_wave_count": 3
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.0.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "balance_faith_ascensions",
+      "ok": true,
+      "data": {
+        "mode": "faith_ascension_profile",
+        "state": "within_static_tier_targets",
+        "route_count": 25
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.0.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "balance_player_start_progression",
+      "ok": true,
+      "data": {
+        "mode": "player_start_progression_profile",
+        "state": "within_static_progression_targets",
+        "route_count": 52
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.0.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "balance_native_kingdoms",
+      "ok": true,
+      "data": {
+        "mode": "native_kingdom_profile",
+        "state": "within_static_balance_targets",
+        "kingdom_count": 5
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.4.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "balance_apply",
+      "ok": true,
+      "data": {
+        "applied": false,
+        "dry_run": true
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.0.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "release_gate",
+      "ok": true,
+      "data": {
+        "state": "passed",
+        "summary": {
+          "blocked_check_count": 0
+        }
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.2.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "blueprint_compile",
+      "ok": true,
+      "data": {
+        "blueprint_id": "campaign-dispatch",
+        "state": "ready_for_review",
+        "source_apply": {
+          "available": false
+        }
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.3.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "feature_plan",
+      "ok": true,
+      "data": {
+        "state": "ready_for_review",
+        "plan_id": "feature-plan:example",
+        "source_apply": {
+          "available": true,
+          "scope": "one named change / one modular source target at a time"
+        }
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.6.0"
+      },
+      "warnings": []
+    }
+  ]
+}

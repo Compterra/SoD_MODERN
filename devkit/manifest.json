@@ -1,0 +1,725 @@
+{
+  "manifest_version": "1.6.0",
+  "name": "sod-modern-devkit",
+  "description": "LLM-first diagnostics and authoring tooling for the Mount & Blade 1.011 SoD Modern module system.",
+  "design": {
+    "primary_interfaces": ["mcp-stdio", "json-cli"],
+    "human_ui_priority": "last",
+    "default_safety": "read-only",
+    "provenance_required": true,
+    "result_contract": "contracts/tool-result.v1.schema.json"
+  },
+  "runtimes": {
+    "python": ">=3.10",
+    "mcp_python_sdk": "mcp[cli]==2.0.0"
+  },
+  "interfaces": [
+    {
+      "id": "dialogue-inspector-cli",
+      "kind": "json-cli",
+      "entrypoint": "dialogue_inspector/dialogue_inspector.py",
+      "read_only": true,
+      "commands": ["summary", "routes", "text", "graph"]
+    },
+    {
+      "id": "workspace-audit-cli",
+      "kind": "json-cli",
+      "entrypoint": "workspace_audit/workspace_audit.py",
+      "read_only": true,
+      "commands": ["summary"]
+    },
+    {
+      "id": "string-integrity-cli",
+      "kind": "json-cli",
+      "entrypoint": "string_integrity/string_integrity.py",
+      "read_only": true,
+      "commands": ["summary", "sinks"]
+    },
+    {
+      "id": "text-export-parity-cli",
+      "kind": "json-cli",
+      "entrypoint": "text_export_parity/text_export_parity.py",
+      "read_only": true,
+      "commands": ["summary"]
+    },
+    {
+      "id": "release-gate-cli",
+      "kind": "json-cli",
+      "entrypoint": "release_gate/release_gate.py",
+      "read_only": true,
+      "commands": ["run"],
+      "contracts": ["release_gate/contracts/approved-string-clear-sinks.v1.json"]
+    },
+    {
+      "id": "module-blueprint-cli",
+      "kind": "json-cli",
+      "entrypoint": "module_blueprint/module_blueprint.py",
+      "read_only": true,
+      "commands": ["summary", "find", "explain", "compile", "verify"],
+      "contracts": ["module_blueprint/blueprints.json"],
+      "mutation_contract": "read-only contract compiler front-end: canonical src fragments remain authoritative; compile and export layers are impact evidence only, and there is no apply command"
+    },
+    {
+      "id": "feature-authoring-cli",
+      "kind": "json-cli",
+      "entrypoint": "feature_authoring/feature_authoring.py",
+      "read_only": false,
+      "commands": ["summary", "find", "entrypoints", "entrypoint", "explain", "intent-validate", "ir-render", "plan", "apply", "verify", "snapshot", "diff"],
+      "contracts": ["feature_authoring/entrypoints.json", "feature_authoring/features.json", "feature_authoring/contracts/feature-intent.v1.schema.json"],
+      "mutation_contract": "typed Feature Intent planning is read-only; apply is source-only, SHA-guarded, dry-run by default, requires an exact reviewed feature-plan ID, and applies one named source target at a time; compile and export layers are never written"
+    },
+    {
+      "id": "text-execution-ledger-cli",
+      "kind": "json-cli",
+      "entrypoint": "text_execution_ledger/text_execution_ledger.py",
+      "read_only": true,
+      "commands": ["summary", "explain", "history", "possible-texts"]
+    },
+    {
+      "id": "campaign-state-doctor-cli",
+      "kind": "json-cli",
+      "entrypoint": "campaign_state_doctor/campaign_state_doctor.py",
+      "read_only": true,
+      "commands": ["summary", "findings", "resource", "timeline", "contracts", "ai-intents"]
+    },
+    {
+      "id": "slot-lifecycle-lint-cli",
+      "kind": "json-cli",
+      "entrypoint": "slot_lifecycle_lint/slot_lifecycle_lint.py",
+      "read_only": true,
+      "commands": ["summary", "findings", "ownership", "slot"]
+    },
+    {
+      "id": "dialogue-model-checker-cli",
+      "kind": "json-cli",
+      "entrypoint": "dialogue_model_checker/dialogue_model_checker.py",
+      "read_only": true,
+      "commands": ["summary", "findings", "state", "route"]
+    },
+    {
+      "id": "string-provenance-cli",
+      "kind": "json-cli",
+      "entrypoint": "string_provenance/string_provenance.py",
+      "read_only": true,
+      "commands": ["summary", "paths", "explain"]
+    },
+    {
+      "id": "campaign-scenario-fuzzer-cli",
+      "kind": "json-cli",
+      "entrypoint": "campaign_scenario_fuzzer/campaign_scenario_fuzzer.py",
+      "read_only": true,
+      "commands": ["summary", "catalog", "fuzz"]
+    },
+    {
+      "id": "semantic-change-diff-cli",
+      "kind": "json-cli",
+      "entrypoint": "semantic_change_diff/semantic_change_diff.py",
+      "read_only": false,
+      "commands": ["snapshot", "diff"],
+      "mutation_contract": "a labeled snapshot writes only a confined ignored DevKit baseline; source, compile, and export files are always read-only"
+    },
+    {
+      "id": "change-router-cli",
+      "kind": "json-cli",
+      "entrypoint": "change_router/change_router.py",
+      "read_only": false,
+      "commands": ["summary", "find", "context", "impact", "plan", "apply", "verify"],
+      "mutation_contract": "apply is source-only, hash-guarded, and dry-run by default"
+    },
+    {
+      "id": "dialogue-composer-cli",
+      "kind": "json-cli",
+      "entrypoint": "dialogue_composer/dialogue_composer.py",
+      "read_only": false,
+      "commands": ["summary", "find", "context", "create-plan", "create-apply", "patch", "apply", "verify"],
+      "contracts": ["dialogue_composer/contracts/dialogue-create.v1.schema.json"],
+      "mutation_contract": "apply delegates semantic route edits to the Change Router source-only SHA gate and is dry-run by default; deterministic route creation additionally requires an anchored JSON contract, source SHA, and exact reviewed plan ID"
+    },
+    {
+      "id": "presentation-layout-cli",
+      "kind": "json-cli",
+      "entrypoint": "presentation_layout/presentation_layout.py",
+      "read_only": false,
+      "commands": ["summary", "find", "canvas", "preview", "patch", "apply", "verify"],
+      "mutation_contract": "apply delegates semantic layout edits to the Change Router source-only SHA gate and is dry-run by default; preview writes only devkit/output SVG artifacts"
+    },
+    {
+      "id": "module-atlas-cli",
+      "kind": "json-cli",
+      "entrypoint": "module_atlas/module_atlas.py",
+      "read_only": false,
+      "commands": ["summary", "integrity", "find", "context", "graph", "menu-flow", "script-flow", "mission-timeline", "trigger-timeline", "quest-registry", "references", "patch", "apply", "verify"],
+      "mutation_contract": "semantic source authoring delegates to the Change Router source-only SHA gate and is dry-run by default; dialogue and presentation semantics remain delegated to their specialist composers"
+    },
+    {
+      "id": "order-control-cli",
+      "kind": "json-cli",
+      "entrypoint": "order_control/order_control.py",
+      "read_only": false,
+      "commands": ["summary", "contracts", "map", "explain", "risk", "plan-move", "apply-move", "baseline", "diff", "verify"],
+      "mutation_contract": "apply-move is hash-guarded and dry-run by default; source fragment moves write only one explicit src/**/_order*.txt manifest, protected engine/legacy moves require an explicit override, dialogue moves delegate to the existing same-fragment Change Router gate, and baselines/reports are confined DevKit artifacts"
+    },
+    {
+      "id": "troop-item-balance-cli",
+      "kind": "json-cli",
+      "entrypoint": "troop_item_balance/troop_item_balance.py",
+      "read_only": false,
+      "commands": ["summary", "items", "item", "troops", "troop", "upgrade-tree", "roster-inventory", "progression", "campaign-cohorts", "imperial-invasion", "player-start-factions", "player-start-progression", "native-kingdoms", "mercenary-guilds", "faith-ascensions", "compare", "outliers", "patch", "apply", "verify"],
+      "mutation_contract": "patch/apply operate only on direct legacy compile/module_items.py or compile/module_troops.py authoring records after build-route confirmation; apply is SHA-guarded and dry-run by default, non-dry changes require explicit legacy-authoring acknowledgement, hardwired records require an extra override, and IDs/order/generated/export layers are never written"
+    },
+    {
+      "id": "workbench-cli",
+      "kind": "json-cli",
+      "entrypoint": "workbench/workbench.py",
+      "read_only": false,
+      "commands": ["doctor", "summary", "impact", "scope-check", "text-lint", "order-report", "contract-drift", "contract-baseline", "coverage", "scenario-list", "scenario-run", "release-readiness", "draft"],
+      "mutation_contract": "all diagnostic and validation workflows are fixed, bounded, and source-read-only; contract baselines, reports, and disabled drafts write only DevKit artifact paths and never activate module content"
+    },
+    {
+      "id": "module-studio-local-web",
+      "kind": "loopback-web",
+      "entrypoint": "module_studio/module_studio.py",
+      "read_only": false,
+      "commands": ["serve", "catalog", "summary"],
+      "mutation_contract": "optional human UI only; binds exactly 127.0.0.1, has no generic file editor/build/export action, and delegates semantic source changes to the existing SHA-guarded specialist apply paths with dry-run default and explicit APPLY SOURCE confirmation"
+    },
+    {
+      "id": "sod-modern-devkit-mcp",
+      "kind": "mcp-stdio",
+      "entrypoint": "mcp_server/server.py",
+      "read_only": false,
+      "mutation_contract": "dialogue_apply, dialogue_create_apply, presentation_apply, module_apply, feature_apply, apply_source_edits, order_apply_move, and balance_apply are dry-run by default; semantic applies use SHA guards, deterministic dialogue creation and feature_apply additionally use exact reviewed plan-ID guards, feature_apply is confined to one named canonical source target at a time, balance_apply is confined to explicitly confirmed legacy item/troop authoring records, order fragment moves are confined to explicit src/**/_order*.txt manifests, and preview/baseline/draft artifacts write only confined DevKit paths",
+      "contract": "contracts/tool-result.v1.schema.json"
+    }
+  ],
+  "mcp_tools": [
+    {
+      "name": "devkit_catalog",
+      "purpose": "Discover all DevKit interfaces, safety rules, and available MCP tools."
+    },
+    {
+      "name": "devkit_health",
+      "purpose": "Check the generated dialogue input, source freshness, and export-layer availability."
+    },
+    {
+      "name": "dialogue_summary",
+      "purpose": "Summarize compiled dialogue states and static order/string review candidates."
+    },
+    {
+      "name": "dialogue_routes",
+      "purpose": "Return dialogue candidates in exact compiled order with source provenance."
+    },
+    {
+      "name": "dialogue_entry",
+      "purpose": "Retrieve one compiled dialogue route by stable one-based index."
+    },
+    {
+      "name": "dialogue_model_summary",
+      "purpose": "Prove supported unreachable, shadowed, overlapping, ambiguous, and terminal-dead dialogue behavior."
+    },
+    {
+      "name": "dialogue_model_findings",
+      "purpose": "Filter proved branch-free dialogue reachability findings with source-mapped constraint boundaries."
+    },
+    {
+      "name": "dialogue_model_state",
+      "purpose": "Inspect exact compiled route precedence and proof status for one dialogue state."
+    },
+    {
+      "name": "dialogue_model_route",
+      "purpose": "Explain a single compiled route's normalized constraints, precedence group, and related proof findings."
+    },
+    {
+      "name": "dialogue_composer_summary",
+      "purpose": "Summarize semantic modular dialogue authoring coverage and compiled-order mapping."
+    },
+    {
+      "name": "dialogue_find",
+      "purpose": "Find authored dialogue routes by text/state/source and return stable semantic route IDs."
+    },
+    {
+      "name": "dialogue_context",
+      "purpose": "Explain a route's first-match hazards and linked source/generated/runtime context."
+    },
+    {
+      "name": "dialogue_create_plan",
+      "purpose": "Create a deterministic, anchor-based JSON route plan with duplicate and first-match safety checks, without writing source."
+    },
+    {
+      "name": "dialogue_create_apply",
+      "purpose": "Rehearse or apply exactly one reviewed deterministic dialogue creation plan using both source-SHA and plan-ID guards."
+    },
+    {
+      "name": "dialogue_patch",
+      "purpose": "Plan semantic dialogue text/state/condition/consequence/route edits without writing source."
+    },
+    {
+      "name": "dialogue_apply",
+      "purpose": "Apply a reviewed semantic dialogue edit through the shared SHA-guarded source gate."
+    },
+    {
+      "name": "dialogue_verify",
+      "purpose": "Verify semantic dialogue edits with first-match analysis and isolated build support."
+    },
+    {
+      "name": "string_trace",
+      "purpose": "Trace a string or identifier across modular source, generated modules, and exports."
+    },
+    {
+      "name": "string_integrity",
+      "purpose": "Statically preflight text sinks and string-register flow with generated/source provenance."
+    },
+    {
+      "name": "text_export_parity",
+      "purpose": "Replay the fixed legacy processor chain in temporary staging and compare text-bearing exports with source/generated provenance."
+    },
+    {
+      "name": "release_gate",
+      "purpose": "Run a strict read-only release preflight across staged source/export parity, compiler diagnostics, exact approved string blanks, dialogue-model errors, and order/ID contracts."
+    },
+    {
+      "name": "blueprint_summary",
+      "purpose": "Summarize declared feature Blueprints and their source, symbol, order, slot, AI, and focused-test contract state."
+    },
+    {
+      "name": "blueprint_find",
+      "purpose": "Find a stable feature Blueprint by its semantic source, symbol, contract, test, or description evidence."
+    },
+    {
+      "name": "blueprint_explain",
+      "purpose": "Explain one feature's exact source ownership, Atlas symbols, order constraints, external contracts, and tests."
+    },
+    {
+      "name": "blueprint_compile",
+      "purpose": "Create a deterministic dependency-first no-write source impact plan for one feature Blueprint."
+    },
+    {
+      "name": "blueprint_verify",
+      "purpose": "Re-evaluate Blueprint contracts after a reviewed source edit and block on structural regressions."
+    },
+    {
+      "name": "feature_summary",
+      "purpose": "Summarize Feature Intents and the source-derived engine entrypoint registry."
+    },
+    {
+      "name": "feature_find",
+      "purpose": "Find a checked-in Feature Intent by feature, Blueprint, entrypoint, or focused-test evidence."
+    },
+    {
+      "name": "entrypoint_find",
+      "purpose": "Find actual engine callbacks, scripts, triggers, menus, dialogue states, presentations, missions, quests, and constants."
+    },
+    {
+      "name": "entrypoint_explain",
+      "purpose": "Explain one engine entrypoint with bounded source order, generated-ID, and static execution evidence."
+    },
+    {
+      "name": "feature_explain",
+      "purpose": "Explain a checked-in or inline Feature Intent through entrypoints, Blueprint evidence, and typed-change validation."
+    },
+    {
+      "name": "feature_intent_validate",
+      "purpose": "Validate typed Feature Intent JSON without accepting raw Python tuple or expression source."
+    },
+    {
+      "name": "feature_ir_render",
+      "purpose": "Render typed Feature Intent operation JSON to safe M&B source syntax without writing source."
+    },
+    {
+      "name": "feature_plan",
+      "purpose": "Compile a typed Feature Intent to exact independently reviewable source patch plans and verification obligations."
+    },
+    {
+      "name": "feature_apply",
+      "purpose": "Rehearse or apply one reviewed Feature Intent change through the source-only SHA and feature-plan-ID gates."
+    },
+    {
+      "name": "feature_verify",
+      "purpose": "Re-check Feature Intent contracts, source syntax/order, and optionally declared focused tests."
+    },
+    {
+      "name": "feature_semantic_snapshot",
+      "purpose": "Capture an in-memory feature semantic baseline without writing a DevKit artifact."
+    },
+    {
+      "name": "feature_semantic_diff",
+      "purpose": "Compare feature entrypoint provenance, order, IDs, Blueprint state, and typed patch bases with a prior snapshot."
+    },
+    {
+      "name": "campaign_state_summary",
+      "purpose": "Build a source-mapped temporal model of campaign AI/slot/global state, trigger routes, contracts, and bounded findings."
+    },
+    {
+      "name": "campaign_state_findings",
+      "purpose": "Filter static state-contract failures and possible temporal overwrites with compact counterexample evidence."
+    },
+    {
+      "name": "campaign_state_resource",
+      "purpose": "Find durable campaign-state readers and writers with source and trigger-path provenance."
+    },
+    {
+      "name": "campaign_state_timeline",
+      "purpose": "Inspect full source operation order, branch conditions, and known trigger paths for a state resource."
+    },
+    {
+      "name": "campaign_state_contracts",
+      "purpose": "Evaluate checked-in temporal gameplay invariants before an in-game path exposes a silent defect."
+    },
+    {
+      "name": "campaign_ai_intents",
+      "purpose": "Inspect stationary, patrol, escort, raid-return, and despawn behavior contracts with source-mapped proof checks."
+    },
+    {
+      "name": "slot_lifecycle_summary",
+      "purpose": "Summarize declared slot ownership, lifecycle clearing, approved handoffs, and sharing candidates."
+    },
+    {
+      "name": "slot_lifecycle_findings",
+      "purpose": "Filter owner violations, missing lifecycle clears, and read-after-clear candidates."
+    },
+    {
+      "name": "slot_lifecycle_ownership",
+      "purpose": "Inspect checked-in slot owner prefixes, approved handoffs, and clear-value policy."
+    },
+    {
+      "name": "slot_lifecycle_slot",
+      "purpose": "Inspect every reader/writer and ownership evidence item for one durable slot."
+    },
+    {
+      "name": "campaign_scenario_summary",
+      "purpose": "Summarize safe bounded campaign scenario generation and supported source-script execution coverage."
+    },
+    {
+      "name": "campaign_scenario_catalog",
+      "purpose": "List checked-in campaign state domains, entry scripts, and assertions."
+    },
+    {
+      "name": "campaign_scenario_fuzz",
+      "purpose": "Run deterministic valid-state fuzzing and return a reproducible counterexample or inconclusive boundary."
+    },
+    {
+      "name": "text_explain",
+      "purpose": "Explain a visible text sink through conditions, writers, selectors, scripts, globals, menus, and provenance."
+    },
+    {
+      "name": "register_history",
+      "purpose": "Trace generated reads and writes for a string/register/local/global symbol across execution contexts."
+    },
+    {
+      "name": "possible_texts",
+      "purpose": "Return static template and substitution candidates for matching visible text sinks."
+    },
+    {
+      "name": "string_provenance_summary",
+      "purpose": "Summarize literal generated script-call coverage for interprocedural s-register writer paths."
+    },
+    {
+      "name": "string_provenance_paths",
+      "purpose": "Follow one s-register through literal nested script calls and branch conditions."
+    },
+    {
+      "name": "string_provenance_explain",
+      "purpose": "Resolve visible text script-clobber risk into actual writer paths and unresolved boundaries."
+    },
+    {
+      "name": "semantic_change_snapshot",
+      "purpose": "Capture a cross-layer semantic snapshot and optionally write a confined DevKit pre-edit baseline."
+    },
+    {
+      "name": "semantic_change_diff",
+      "purpose": "Diff dialogue precedence, state writers, string sinks, IDs, trigger effects, and exports against a pre-edit baseline."
+    },
+    {
+      "name": "presentation_layout_summary",
+      "purpose": "Summarize static presentation/overlay layout coverage and model limits."
+    },
+    {
+      "name": "presentation_find",
+      "purpose": "Find authored presentations and direct overlay bindings using stable IDs."
+    },
+    {
+      "name": "presentation_canvas",
+      "purpose": "Construct a bounded static presentation canvas and report layout risks."
+    },
+    {
+      "name": "presentation_preview",
+      "purpose": "Write a confined devkit/output SVG diagnostic preview of a static canvas."
+    },
+    {
+      "name": "presentation_patch",
+      "purpose": "Plan semantic overlay move/resize/align/content/control edits without writing source."
+    },
+    {
+      "name": "presentation_apply",
+      "purpose": "Apply a reviewed semantic presentation edit through the shared SHA-guarded source gate."
+    },
+    {
+      "name": "presentation_verify",
+      "purpose": "Verify a semantic presentation edit with static layout findings and isolated build support."
+    },
+    {
+      "name": "module_atlas_summary",
+      "purpose": "Summarize semantic coverage and static links across all eight modular source areas."
+    },
+    {
+      "name": "module_integrity",
+      "purpose": "Detect duplicate authored definitions, unresolved direct engine references, syntax errors, and generated-ID fallback boundaries."
+    },
+    {
+      "name": "module_find",
+      "purpose": "Find any authored semantic entity and return a stable Module Atlas ID."
+    },
+    {
+      "name": "module_context",
+      "purpose": "Explain one entity's source/generated provenance, operations, children, links, and safe semantic actions."
+    },
+    {
+      "name": "module_graph",
+      "purpose": "Traverse bounded direct cross-area dependencies around one semantic entity."
+    },
+    {
+      "name": "menu_flow",
+      "purpose": "Inspect a menu, options, operations, and static outbound flow."
+    },
+    {
+      "name": "script_flow",
+      "purpose": "Inspect a script's operations and static callers/callees/dependencies."
+    },
+    {
+      "name": "mission_timeline",
+      "purpose": "Inspect an authored mission template's trigger timeline and dependencies."
+    },
+    {
+      "name": "trigger_timeline",
+      "purpose": "Inspect simple trigger intervals, operations, and outbound links."
+    },
+    {
+      "name": "quest_registry",
+      "purpose": "List authored quest records with direct static link counts."
+    },
+    {
+      "name": "entity_references",
+      "purpose": "Find authored definitions and direct semantic or raw-source references for a symbol."
+    },
+    {
+      "name": "module_patch",
+      "purpose": "Plan semantic edits for constants, menus, missions, quests, scripts, and simple triggers without writing source."
+    },
+    {
+      "name": "module_apply",
+      "purpose": "Apply a reviewed Module Atlas semantic edit through the shared SHA-guarded source gate."
+    },
+    {
+      "name": "module_verify",
+      "purpose": "Verify a semantic Module Atlas edit with source/build provenance."
+    },
+    {
+      "name": "order_summary",
+      "purpose": "Summarize source, authored, generated-ID, and protected engine order domains."
+    },
+    {
+      "name": "order_map",
+      "purpose": "Map bounded source-fragment, entity, generated-marker, or ID-table order evidence."
+    },
+    {
+      "name": "order_explain",
+      "purpose": "Explain one order-sensitive target and its protected contracts or safe move boundary."
+    },
+    {
+      "name": "order_risk",
+      "purpose": "Assess projected first-match, generated-ID, and protected-prefix risk before an anchored order move."
+    },
+    {
+      "name": "order_plan_move",
+      "purpose": "Produce a reviewed anchored manifest/dialogue order diff and current SHA apply contract."
+    },
+    {
+      "name": "order_apply_move",
+      "purpose": "Rehearse or apply one SHA-guarded order move without writing generated modules or exports."
+    },
+    {
+      "name": "order_contracts",
+      "purpose": "Evaluate strict manifests, legacy hardcoded menu IDs, and engine callback order contracts."
+    },
+    {
+      "name": "order_baseline",
+      "purpose": "Write a confined DevKit snapshot of source order and generated ID tables."
+    },
+    {
+      "name": "order_diff",
+      "purpose": "Compare source/ID ordering against a named baseline and elevate callback-ID shifts."
+    },
+    {
+      "name": "order_verify",
+      "purpose": "Run static protected contracts, generated-marker parity, dialogue-order hazards, and optional baseline drift."
+    },
+    {
+      "name": "balance_summary",
+      "purpose": "Summarize authoritative legacy troop/item authoring, evaluated record coverage, balance dimensions, and ID parity."
+    },
+    {
+      "name": "balance_find_items",
+      "purpose": "Find evaluated items by text/type/availability/score with legacy-source provenance."
+    },
+    {
+      "name": "balance_item",
+      "purpose": "Inspect one item's decoded stats, economy score, editable constructors, and troop inventory users."
+    },
+    {
+      "name": "balance_find_troops",
+      "purpose": "Find evaluated troops by name/faction/role/level with kit-pressure evidence."
+    },
+    {
+      "name": "balance_troop",
+      "purpose": "Inspect one troop's stats, randomized inventory, static kit band, and direct upgrade links."
+    },
+    {
+      "name": "balance_upgrade_tree",
+      "purpose": "Traverse bounded explicit upgrade declarations with troop balance context."
+    },
+    {
+      "name": "balance_roster_inventory",
+      "purpose": "Catalog theme-preserving roster families or inspect one roster's current troop equipment pools and local/shared item ownership."
+    },
+    {
+      "name": "balance_progression",
+      "purpose": "Catalog roster families or inspect one normal/noble/faith progression trajectory, including scripted faith ascension routes."
+    },
+    {
+      "name": "balance_campaign_cohorts",
+      "purpose": "Map troop rosters to real campaign-coexistence cohorts so mutually exclusive player starts, native realms, and invasion forces are not conflated."
+    },
+    {
+      "name": "balance_imperial_invasion",
+      "purpose": "Inspect Imperial invasion reinforcement waves, advance-staging upper bounds, and campaign pressure/supply/counterplay contracts without treating the expedition as a normal faction average."
+    },
+    {
+      "name": "balance_player_start_factions",
+      "purpose": "Profile the five mutually exclusive SoD player-start cultures through their actual center/lord reinforcement bindings and bounded static pressure spread signals."
+    },
+    {
+      "name": "balance_player_start_progression",
+      "purpose": "Audit all direct normal/noble upgrade edges in the five player cultures for level, rank, training, and hard target-loadout progression contracts."
+    },
+    {
+      "name": "balance_native_kingdoms",
+      "purpose": "Profile the five coexisting Native kingdoms through actual A/B/C reinforcement bindings and direct upgrade routes, with doctrine-preserving static pressure bounds."
+    },
+    {
+      "name": "balance_mercenary_guilds",
+      "purpose": "Profile the seven mercenary guilds as asymmetric contract specialists through role-aware selection, job-shaped AI companies, dialogue identity, and themed roster evidence."
+    },
+    {
+      "name": "balance_faith_ascensions",
+      "purpose": "Audit the selected-culture Noble-to-Faith route matrix, concrete elite advantage signals, and hard target loadout contracts without flattening faith doctrines."
+    },
+    {
+      "name": "balance_compare",
+      "purpose": "Compare exact troop/item records through normalized evaluated balance fields."
+    },
+    {
+      "name": "balance_outliers",
+      "purpose": "Find static value/power, kit, inventory, and upgrade review candidates for balancing."
+    },
+    {
+      "name": "balance_patch",
+      "purpose": "Plan a narrow SHA-guarded legacy item/troop balance record edit without writing."
+    },
+    {
+      "name": "balance_apply",
+      "purpose": "Rehearse or explicitly apply a reviewed legacy balance patch without touching IDs/order/exports."
+    },
+    {
+      "name": "balance_verify",
+      "purpose": "Verify evaluated source, inventory, upgrade, hardwired-ID, and generated-ID parity without building."
+    },
+    {
+      "name": "workbench_summary",
+      "purpose": "Summarize the CBO-style M&B Workbench, its static contracts, and registered evidence workflows."
+    },
+    {
+      "name": "workbench_doctor",
+      "purpose": "Check local Workbench/DevKit prerequisites and catalogs without building the module."
+    },
+    {
+      "name": "workbench_impact",
+      "purpose": "Build a compact impact packet from source ownership through fixed validation steps."
+    },
+    {
+      "name": "workbench_scope_check",
+      "purpose": "Run a fixed fast/standard/deep validation profile for one semantic entity without arbitrary command execution."
+    },
+    {
+      "name": "workbench_text_lint",
+      "purpose": "Return bounded static visible-text and string/register findings with provenance."
+    },
+    {
+      "name": "workbench_order_report",
+      "purpose": "Run fixed Workbench order contracts, marker parity, dialogue hazards, and optional source/ID baseline drift."
+    },
+    {
+      "name": "workbench_contract_drift",
+      "purpose": "Evaluate checked-in static contracts and report active release blockers."
+    },
+    {
+      "name": "workbench_contract_baseline",
+      "purpose": "Write an explicit DevKit-only static-observation contract baseline."
+    },
+    {
+      "name": "workbench_coverage",
+      "purpose": "Map exact contract/scenario/test/generated coverage maturity across authored module entities."
+    },
+    {
+      "name": "workbench_scenarios",
+      "purpose": "List checked-in fixed evidence scenarios and their runtime-proof boundaries."
+    },
+    {
+      "name": "workbench_scenario_run",
+      "purpose": "Run one registered bounded scenario using only builtins and registered local tests."
+    },
+    {
+      "name": "workbench_release_readiness",
+      "purpose": "Compose an honest static/manual release checklist without certifying live gameplay."
+    },
+    {
+      "name": "workbench_draft",
+      "purpose": "Create a disabled DevKit-only authoring packet without activating or editing module content."
+    },
+    {
+      "name": "change_router_summary",
+      "purpose": "Summarize the persistent source/generated/order link index used by the guarded editing workflow."
+    },
+    {
+      "name": "code_find",
+      "purpose": "Find source, generated, or export text/symbols and return stable source target IDs."
+    },
+    {
+      "name": "linked_context",
+      "purpose": "Retrieve a source fragment's ownership, order, generated, execution, and test links."
+    },
+    {
+      "name": "change_impact",
+      "purpose": "Explain downstream source, generated, export, script, register, menu, and text consequences before an edit."
+    },
+    {
+      "name": "patch_plan",
+      "purpose": "Produce a deterministic source-only diff and SHA-guarded apply contract from exact edit anchors."
+    },
+    {
+      "name": "apply_source_edits",
+      "purpose": "Apply an explicitly requested source-only patch after SHA verification; dry-run is the default."
+    },
+    {
+      "name": "verify_change",
+      "purpose": "Check syntax, ordering, freshness, selected static tests, and optional isolated staging build evidence."
+    },
+    {
+      "name": "dialogue_graph",
+      "purpose": "Return an agent-readable state graph and optional DOT representation."
+    },
+    {
+      "name": "workspace_audit",
+      "purpose": "Audit the workspace's modular source, generated/exported layers, ordering contracts, freshness, and validation surface."
+    }
+  ]
+}

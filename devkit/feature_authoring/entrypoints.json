@@ -1,0 +1,87 @@
+{
+  "schema": "sod-modern.engine-entrypoint-catalog.v1",
+  "families": [
+    {
+      "id": "engine-callback",
+      "title": "Engine game callback",
+      "description": "Hardcoded M&B 1.011 game_* script callback. Its source order is engine-sensitive.",
+      "source_area": "scripts",
+      "entity_kind": "script",
+      "trace": "script_flow",
+      "path_prefix": "src/scripts/ZA_hardcoded_game_scripts/",
+      "name_prefix": "game_"
+    },
+    {
+      "id": "script",
+      "title": "Module script API",
+      "description": "Callable module-system script with static caller/callee evidence.",
+      "source_area": "scripts",
+      "entity_kind": "script",
+      "trace": "script_flow"
+    },
+    {
+      "id": "simple-trigger",
+      "title": "Campaign scheduler trigger",
+      "description": "Ordered simple trigger dispatched by the campaign scheduler.",
+      "source_area": "triggers",
+      "entity_kind": "simple_trigger",
+      "trace": "trigger_timeline"
+    },
+    {
+      "id": "menu",
+      "title": "Menu entrypoint",
+      "description": "Engine-addressable menu and its ordered option flow.",
+      "source_area": "menus",
+      "entity_kind": "menu",
+      "trace": "menu_flow"
+    },
+    {
+      "id": "dialogue-state",
+      "title": "Dialogue state",
+      "description": "First-match dialogue state grouped from its authored routes and compiled-order evidence.",
+      "source_area": "dialogs",
+      "entity_kind": "dialogue_route",
+      "trace": "dialogue_state"
+    },
+    {
+      "id": "presentation",
+      "title": "Presentation",
+      "description": "Engine-addressable presentation with static canvas and trigger evidence.",
+      "source_area": "presentations",
+      "entity_kind": "presentation",
+      "trace": "presentation_canvas"
+    },
+    {
+      "id": "mission",
+      "title": "Mission template",
+      "description": "Mission entrypoint with ordered event and interval callbacks.",
+      "source_area": "mission_templates",
+      "entity_kind": "mission_template",
+      "trace": "mission_timeline"
+    },
+    {
+      "id": "mission-callback",
+      "title": "Mission callback",
+      "description": "One engine callback block inside an ordered mission template.",
+      "source_area": "mission_templates",
+      "entity_kind": "mission_trigger",
+      "trace": "mission_timeline"
+    },
+    {
+      "id": "quest",
+      "title": "Quest record",
+      "description": "Engine-addressable quest record and static references.",
+      "source_area": "quests",
+      "entity_kind": "quest",
+      "trace": "entity_references"
+    },
+    {
+      "id": "constant",
+      "title": "Module constant",
+      "description": "Named constant, with generated-ID and static reference evidence where available.",
+      "source_area": "constants",
+      "entity_kind": "constant",
+      "trace": "entity_references"
+    }
+  ]
+}
