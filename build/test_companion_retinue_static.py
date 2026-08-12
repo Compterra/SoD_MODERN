@@ -1257,7 +1257,27 @@ def test_retinue_integration_audit_surfaces_are_covered() -> None:
 
     assert_contains(recruit, "script_sod_companion_retinue_ensure_party")
     assert recruit.index("party_force_add_members") < recruit.index("script_sod_companion_retinue_ensure_party")
+    assert_contains(recruit, "main_party_has_troop, \":troop_no\"")
+    assert recruit.index("main_party_has_troop, \":troop_no\"") < recruit.index("script_sod_companion_retinue_ensure_party")
     assert_contains(recruit, "script_sod_companion_retinue_update_warning_state")
+    assert_contains(recruit, "assign, reg0, \":recruitment_succeeded\"")
+    assert_not_contains(recruit, "the company cannot identify them")
+
+    ensure_party = retinues[
+        retinues.index('(\"sod_companion_retinue_ensure_party\"'):
+        retinues.index('(\"sod_companion_retinue_get_size\"')
+    ]
+    warning_state = retinues[
+        retinues.index('(\"sod_companion_retinue_update_warning_state\"'):
+        retinues.index('(\"sod_companion_retinue_set_strength_order\"')
+    ]
+    assert_contains(ensure_party, "assign, \":result\", 0")
+    assert_contains(ensure_party, "assign, reg0, \":result\"")
+    assert ensure_party.rindex("assign, reg0, \":result\"") > ensure_party.rindex("(try_end)")
+    assert_contains(warning_state, "assign, \":warning_state\", sod_retinue_warning_none")
+    assert_contains(warning_state, "assign, reg0, \":warning_state\"")
+    assert warning_state.rindex("assign, reg0, \":warning_state\"") > warning_state.rindex("(try_end)")
+
     assert_contains(retire, "script_sod_companion_retinue_cleanup_for_departure")
     assert_contains(quitting, "script_sod_companion_retinue_cleanup_for_departure")
     assert_contains(depth, "script_sod_companion_retinue_process_daily")

@@ -865,9 +865,12 @@ def test_companion_recruitment_flow_preserves_slot_driven_intro_chain() -> None:
 
     recruit_script = read("src/scripts/ZH_heroes/recruit_troop_as_companion.py")
     assert_contains(recruit_script, '(is_between, ":troop_no", 0, "trp_last_troop")')
+    assert_contains(recruit_script, '(troop_is_hero, ":troop_no")')
+    assert_contains(recruit_script, '(main_party_has_troop, ":troop_no")')
+    assert_contains(recruit_script, '(assign, reg0, ":recruitment_succeeded")')
     assert_contains(recruit_script, '(str_store_troop_name, s68, ":troop_no")')
     assert_contains(recruit_script, "@{s68} has joined your party.")
-    assert_contains(recruit_script, "the company cannot identify them")
+    assert_not_contains(recruit_script, "the company cannot identify them")
     assert_not_contains(recruit_script, "(str_store_troop_name, s6,")
     assert_not_contains(recruit_script, "@{s6} has joined your party")
 

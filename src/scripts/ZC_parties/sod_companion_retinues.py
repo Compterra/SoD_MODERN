@@ -459,7 +459,7 @@ SCRIPTS = [
 ("sod_companion_retinue_ensure_party",
  [
    (store_script_param, ":companion", 1),
-   (assign, reg0, 0),
+   (assign, ":result", 0),
    (try_begin),
      (is_between, ":companion", companions_begin, companions_end),
      (main_party_has_troop, ":companion"),
@@ -558,8 +558,11 @@ SCRIPTS = [
      (party_set_slot, ":retinue_party", slot_party_sod_retinue_anchor_party, "p_main_party"),
      (store_current_hours, ":cur_hours"),
      (party_set_slot, ":retinue_party", slot_party_sod_retinue_last_sync_hour, ":cur_hours"),
-     (assign, reg0, ":retinue_party"),
+     (assign, ":result", ":retinue_party"),
    (try_end),
+   # This is a data-returning helper, not a condition. Return zero when a
+   # retinue cannot be created yet so callers can continue their main action.
+   (assign, reg0, ":result"),
  ]),
 
 ("sod_companion_retinue_get_size",
@@ -651,7 +654,7 @@ SCRIPTS = [
 ("sod_companion_retinue_update_warning_state",
  [
    (store_script_param, ":companion", 1),
-   (assign, reg0, sod_retinue_warning_none),
+   (assign, ":warning_state", sod_retinue_warning_none),
    (try_begin),
      (is_between, ":companion", companions_begin, companions_end),
      (call_script, "script_sod_companion_retinue_get_size", ":companion"),
@@ -669,22 +672,25 @@ SCRIPTS = [
      (try_begin),
        (eq, ":order", sod_retinue_strength_none),
        (gt, ":size", 0),
-       (assign, reg0, sod_retinue_warning_no_troops_returning),
+       (assign, ":warning_state", sod_retinue_warning_no_troops_returning),
      (else_try),
        (gt, ":size", ":capacity"),
-       (assign, reg0, sod_retinue_warning_over_capacity),
+       (assign, ":warning_state", sod_retinue_warning_over_capacity),
      (else_try),
        (eq, ":order", sod_retinue_strength_full),
        (eq, ":order_ok", 0),
-       (assign, reg0, sod_retinue_warning_full_refused),
+       (assign, ":warning_state", sod_retinue_warning_full_refused),
      (else_try),
        (eq, ":order", sod_retinue_strength_half),
       (store_add, ":upper_band", ":target_size", sod_retinue_half_strength_tolerance),
        (gt, ":size", ":upper_band"),
-       (assign, reg0, sod_retinue_warning_above_target),
+       (assign, ":warning_state", sod_retinue_warning_above_target),
      (try_end),
-     (troop_set_slot, ":companion", slot_troop_sod_retinue_warning_state, reg0),
+     (troop_set_slot, ":companion", slot_troop_sod_retinue_warning_state, ":warning_state"),
    (try_end),
+   # Keep this maintenance helper total: invalid/deferred retinues simply have
+   # no warning state instead of failing the caller's enclosing try block.
+   (assign, reg0, ":warning_state"),
  ]),
 
 ("sod_companion_retinue_set_strength_order",
