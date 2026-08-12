@@ -1,6 +1,9 @@
 SCRIPTS = [
 ("update_faction_traveler_notes",
       [(store_script_param, ":faction_no", 1),
+		(call_script, "script_sod_faction_should_show_notes", ":faction_no"),
+		(try_begin),
+		  (eq, reg0, 1),
         (assign, ":total_men", 0),
         (try_for_parties, ":cur_party"),
           (party_is_active, ":cur_party"),
@@ -19,5 +22,9 @@ SCRIPTS = [
         (try_end),
 
         (add_faction_note_from_sreg, ":faction_no", 1, s49, 1),
+		(else_try),
+		  (str_clear, s68),
+		  (add_faction_note_from_sreg, ":faction_no", 1, s68, 0),
+		(try_end),
     ]),
 ]

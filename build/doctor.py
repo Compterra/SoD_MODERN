@@ -2339,6 +2339,21 @@ def _check_modernization_tooling_guards(
     if any(token in all_raw for token in party_hazard_tokens) and "sod_party_is_safe_active_to_reg" not in all_raw:
         errors.append("[MODERNIZATION] Party-id hazard operations exist without the safe active party helper.")
 
+    # Engine callbacks are invoked by the native scheduler, so their dynamic
+    # party parameters cannot rely on a caller-side guard.  Keep this narrow
+    # contract visible in the ordinary build Doctor as well as Release Gate.
+    try:
+        from devkit.rgl_log_sentinel import rgl_log_sentinel
+
+        callback_contract = rgl_log_sentinel.engine_callback_contract_report(ROOT, limit=20)
+        for finding in callback_contract["findings"]:
+            errors.append(
+                "[MODERNIZATION] Engine callback party-handle contract failed: "
+                + str(finding.get("message", finding))
+            )
+    except Exception as error:
+        errors.append(f"[MODERNIZATION] Engine callback party-handle contract could not run: {error}")
+
     report_path = DOCS_REPORTS / "builder_doctor_tooling_audit.md"
     DOCS_REPORTS.mkdir(parents=True, exist_ok=True)
     lines = [
@@ -2349,6 +2364,7 @@ def _check_modernization_tooling_guards(
         "- Dialogue graph input/output validity is pinned through `build/test_modernization_static.py` and surfaced by Doctor as a required modernization guard.",
         "- Unsafe post-mission `change_screen_return` patterns are checked in static coverage and Doctor flags source menu fragments that rely on return without explicit menu/map exits.",
         "- High-frequency party operations are guarded by the shared active-party helper and static coverage.",
+        "- Engine-owned dynamic-party callbacks are checked by RGL Log Sentinel before a party/faction operation can read a stale handle.",
         "- M&B 1.011 hardcoded callback compatibility is pinned by Original SoD presentation order and static coverage.",
         "- Stale order-file entries remain hard Doctor errors through manifest completeness checks.",
         "- Duplicate top-level IDs and duplicate dialogue heads remain Doctor-owned checks.",

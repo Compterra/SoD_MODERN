@@ -14,7 +14,7 @@ def assert_contains(text: str, needle: str, path: str) -> None:
 
 def main() -> None:
     report_path = "src/menus/centers/common/center_goods_market_report.py"
-    fief_path = "src/menus/camp/fief_reports.py"
+    fief_path = "src/menus/0000_hardcoded_mb1011/fief_reports.py"
     order_path = "src/menus/_order_game_menus.txt"
     recon_path = "src/scripts/ZD_centers/update_center_recon_notes.py"
 
@@ -37,23 +37,29 @@ def main() -> None:
         "town market engine",
         "castle military market",
         "village producer",
-        "Trade goods now matter as consumption, caravan flow, and center wealth/liquidity",
+        "Trade goods matter as consumption, caravan flow, and center wealth.",
     ]:
         assert_contains(report, needle, report_path)
 
     assert_contains(fief, "mnu_center_goods_market_report", fief_path)
-    assert_contains(order, "other/center_goods_market_report.py", order_path)
+    assert_contains(order, "centers/common/center_goods_market_report.py", order_path)
 
     for needle in [
-        "script_sod_get_center_goods_market_profile",
-        "Goods market: food",
-        "weekly wealth drift",
-        "reg44",
-        "reg51",
-        "reg34",
-        "reg41",
+        "script_sod_store_center_recon_brief_to_s68",
+        "quick field read",
     ]:
         assert_contains(recon, needle, recon_path)
+
+    for debug_label in [
+        "Village root economy",
+        "Goods market:",
+        "weekly wealth drift",
+        "Tax extraction:",
+        "Security infrastructure:",
+        "Effective threat",
+    ]:
+        if debug_label in recon:
+            raise AssertionError(f"{recon_path} should not expose raw telemetry: {debug_label!r}")
 
     print("[center_goods_market_reporting] OK")
 

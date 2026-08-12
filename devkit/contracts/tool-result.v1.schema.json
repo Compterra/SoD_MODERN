@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sod-modern.devkit.local/contracts/tool-result.v1.schema.json",
   "title": "SoD Modern DevKit Tool Result v1",
-  "description": "Stable envelope returned by DevKit MCP tools, including read-only diagnostics, strict release-gate, Module Blueprint, and Feature Authoring contract evidence, plus explicitly named SHA-guarded modular-source, deterministic dialogue-creation, typed feature-plan, and narrowly scoped legacy compile-authoring edit operations.",
+  "description": "Stable envelope returned by DevKit MCP tools, including read-only diagnostics, strict release-gate, Module Blueprint, Feature Authoring, and Content Forge contract evidence, plus explicitly named SHA-guarded modular-source, deterministic dialogue-creation, typed feature/content-pack plan, and narrowly scoped legacy compile-authoring edit operations.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -308,6 +308,44 @@
         "repo_root": "D:/path/to/sod_modern",
         "read_only": true,
         "server_version": "1.6.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "content_pack_plan",
+      "ok": true,
+      "data": {
+        "state": "ready_for_review",
+        "plan_id": "content-plan:example",
+        "source_apply": {
+          "available": true,
+          "scope": "one named Content Forge change / one source or direct legacy record target at a time"
+        }
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.8.0"
+      },
+      "warnings": []
+    },
+    {
+      "contract_version": "devkit.tool-result.v1",
+      "tool": "content_pack_catalog_plan",
+      "ok": true,
+      "data": {
+        "state": "ready_for_review",
+        "catalog_plan_id": "content-catalog-plan:example",
+        "catalog_target": {
+          "path": "devkit/content_forge/packs.json",
+          "base_sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        }
+      },
+      "provenance": {
+        "repo_root": "D:/path/to/sod_modern",
+        "read_only": true,
+        "server_version": "1.8.0"
       },
       "warnings": []
     }

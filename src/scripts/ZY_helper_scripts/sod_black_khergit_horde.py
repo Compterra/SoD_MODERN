@@ -486,6 +486,15 @@ SCRIPTS = [
         (party_is_active, ":camp_party"),
         (call_script, "script_cf_sod_black_khergits_party_is_horde_camp", ":camp_party"),
         (call_script, "script_cf_sod_companion_in_main_party", "trp_npc1"),
+       # This is a completed Borcha quest payoff, not ambient horde flavor.
+       # Initial role/approval slots exist for every companion, including
+       # companions the player has never recruited, so require the concrete
+       # successful road-quest state as an independent contract.
+       (troop_slot_eq, "trp_npc1", slot_troop_occupation, slto_player_companion),
+       (eq, "$g_sod_borcha_road_pending", 0),
+       (eq, "$g_sod_borcha_road_witnessed", 1),
+       (eq, "$g_sod_borcha_road_confronted", 1),
+       (ge, "$g_sod_borcha_road_result_grade", 2),
        (troop_slot_ge, "trp_npc1", slot_troop_companion_approval, 45),
        (troop_slot_eq, "trp_npc1", slot_troop_companion_role, sod_companion_role_scout),
        (troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good),

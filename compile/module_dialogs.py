@@ -255,8 +255,31 @@ dialogs = [
 
                      (eq, 1, 0)],
    "Warning: This line is never displayed. It is just for storing conversation variables.", "close_window", []],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered.py:L1-L24 ] anyone::event_triggered->close_window [store_conversation_troop|try_begin|is_between] {warning: this line is never displayed. it is just for storing co}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered.py:L1-L47 ] anyone::event_triggered->close_window [store_conversation_troop|try_begin|eq] {warning: this line is never displayed. it is just for storing co}
 [anyone , "event_triggered", [(store_conversation_troop, "$g_talk_troop"),
+                           # The generic companion-reaction routes consume only
+                           # the event pair recorded by companions_event_triggered.
+                           # This preamble runs before every event_triggered route,
+                           # so stale state is cleared before first-match selection.
+                           (try_begin),
+                               (eq, "$g_companion_event_active", 1),
+                               (is_between, "$g_companion_event_actor_a", companions_begin, companions_end),
+                               (is_between, "$g_companion_event_actor_b", companions_begin, companions_end),
+                               (main_party_has_troop, "$g_companion_event_actor_a"),
+                               (main_party_has_troop, "$g_companion_event_actor_b"),
+                               (this_or_next|eq, "$g_talk_troop", "$g_companion_event_actor_a"),
+                               (eq, "$g_talk_troop", "$g_companion_event_actor_b"),
+                           (else_try),
+                               (eq, "$g_companion_event_active", 1),
+                               (assign, "$g_companion_event_active", 0),
+                               (assign, "$g_companion_event_actor_a", -1),
+                               (assign, "$g_companion_event_actor_b", -1),
+                               (assign, "$g_companion_event_reaction_tier", -1),
+                               (assign, "$g_companion_event_average_cohesion", -1),
+                               (assign, "$g_companion_event_clash_severity", -1),
+                               (assign, "$g_companion_event_reconciliation", -1),
+                               (assign, "$g_companion_event_variant", -1),
+                           (try_end),
                            (try_begin),
                                (is_between, "$g_talk_troop", companions_begin, companions_end),
                                (main_party_has_troop, "$g_talk_troop"),
@@ -4777,10 +4800,9 @@ dialogs = [
 	(eq, ":mercenaries", "$g_talk_troop_faction"),
 	# (neq, "$g_rep", "$g_talk_troop"),
 	], "Our pact has run its course. I mean to end it cleanly.", "gm_pact_cancel1",[]],
-# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_talk_24.py:L1-L5 ] anyone|plyr::gm_talk->close_window [no_conditions] {goodbye.}
+# [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_talk_24.py:L1-L4 ] anyone|plyr::gm_talk->close_window [no_conditions] {goodbye.}
 [anyone|plyr, "gm_talk", [
-   ], "Goodbye.", "close_window",[
-  (finish_mission),]],
+   ], "Goodbye.", "close_window", []],
 # [ src/dialogs/ZZ99_misc_dialogs/anyone_plyr_gm_talk_25.py:L1-L19 ] anyone|plyr::gm_talk->gm_trusted_favor [neq|ge|assign] {as a trusted partner, can your guild extend us a favor?}
 [anyone|plyr, "gm_talk", [
    (neq, "$g_rep", "$g_talk_troop"),
@@ -19325,10 +19347,12 @@ Laugh if you wish princeling, but know that many failed to get past their format
      (troop_get_type, reg3, "$temp"),
      (assign, "$g_center_taken_by_player_faction", -1),
      ]],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_04.py:L1-L12 ] anyone::event_triggered->companion_quitting [store_conversation_troop|eq|troop_get_slot] {{var} -- there is something i need to tell you.}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_04.py:L1-L14 ] anyone::event_triggered->companion_quitting [store_conversation_troop|eq|is_between] {{var} -- there is something i need to tell you.}
 [anyone, "event_triggered", [
                      (store_conversation_troop, "$map_talk_troop"),
                      (eq, "$map_talk_troop", "$npc_is_quitting"),
+                     (is_between, "$map_talk_troop", companions_begin, companions_end),
+                     (main_party_has_troop, "$map_talk_troop"),
                      (troop_get_slot, ":honorific", "$map_talk_troop", slot_troop_honorific),
                      (str_store_string, 5, ":honorific")],
    "{s5} -- there is something I need to tell you.", "companion_quitting", [
@@ -19635,10 +19659,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
         (store_current_day, ":cur_day"),
         (troop_set_slot, "$g_talk_troop", slot_troop_companion_last_reaction_day, ":cur_day"),
     ]],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_05.py:L1-L20 ] anyone::event_triggered->companion_objection_response [store_conversation_troop|eq|main_party_has_troop] {{var}}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_05.py:L1-L21 ] anyone::event_triggered->companion_objection_response [store_conversation_troop|eq|is_between] {{var}}
 [anyone, "event_triggered", [
                      (store_conversation_troop, "$map_talk_troop"),
                      (eq, "$map_talk_troop", "$npc_with_grievance"),
+                     (is_between, "$map_talk_troop", companions_begin, companions_end),
                      (main_party_has_troop, "$map_talk_troop"),
                      (eq, "$npc_map_talk_context", slot_troop_morality_state),
 
@@ -20055,13 +20080,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
 		(this_or_next|eq, "$g_companion_banter_pair_a", trp_npc11),
 		(eq, "$g_companion_banter_pair_b", trp_npc11),
 	], "Good. We have spent enough words for now. If anyone wants more peace, they can start by keeping complaints quiet until dawn.", "close_window", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalityclash2_b.py:L4-L15 ] anyone::event_triggered->companion_personalityclash2_response [eq|store_conversation_troop|eq] {i have let this go too many times. if we travel together, we nee}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalityclash2_b.py:L4-L17 ] anyone::event_triggered->companion_personalityclash2_response [eq|store_conversation_troop|eq] {i have let this go too many times. if we travel together, we nee}
 [anyone, "event_triggered", [
         (eq, "$npc_map_talk_context", slot_troop_personalityclash2_state),
         (store_conversation_troop, "$map_talk_troop"),
         (eq, "$map_talk_troop", "$npc_with_personality_clash_2"),
+        (is_between, "$map_talk_troop", companions_begin, companions_end),
         (main_party_has_troop, "$map_talk_troop"),
         (troop_get_slot, ":object", "$map_talk_troop", slot_troop_personalityclash2_object),
+        (is_between, ":object", companions_begin, companions_end),
         (main_party_has_troop, ":object"),
     ], "I have let this go too many times. If we travel together, we need more than silence and resentment.", "companion_personalityclash2_response", [
         (assign, "$npc_with_personality_clash_2", 0),
@@ -20087,116 +20114,201 @@ Laugh if you wish princeling, but know that many failed to get past their format
         (assign, "$npc_with_personality_clash_2", 0),
         (assign, "$npc_map_talk_context", 0),
     ]],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_07.py:L5-L108 ] anyone::event_triggered->close_window [eq|eq|gt] {fine. truce, then. we still know how to stand together when the }
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_07.py:L14-L200 ] anyone::event_triggered->close_window [eq|eq|eq] {fine. truce, then. we still know how to stand together when the }
 [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
         (eq, "$g_companion_event_reconciliation", 1),
         (eq, "$g_companion_event_variant", 0),
         (gt, "$g_companion_event_average_cohesion", 75),
-    ], "Fine. Truce, then. We still know how to stand together when the camp needs it.", "close_window", []],
+    ], "Fine. Truce, then. We still know how to stand together when the camp needs it.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
         (eq, "$g_companion_event_reconciliation", 1),
         (eq, "$g_companion_event_variant", 0),
-    ], "Fine. Truce, then.", "close_window", []],
+        (le, "$g_companion_event_average_cohesion", 75),
+    ], "Fine. Truce, then.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
         (eq, "$g_companion_event_reconciliation", 1),
         (eq, "$g_companion_event_variant", 1),
-    ], "Call it settled before somebody gets stubborn.", "close_window", []],
+    ], "Call it settled before somebody gets stubborn.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
         (eq, "$g_companion_event_reconciliation", 1),
         (eq, "$g_companion_event_variant", 2),
-    ], "I can work beside you, but don't test me on this again.", "close_window", []],
+    ], "I can work beside you, but don't test me on this again.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
 
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 0),
         (eq, "$g_companion_event_variant", 0),
         (gt, "$g_companion_event_average_cohesion", 80),
-    ], "Enough. We've said our piece. Let's put the blades away and move.", "close_window", []],
+    ], "Enough. We've said our piece. Let's put the blades away and move.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 0),
         (eq, "$g_companion_event_variant", 0),
-    ], "Fine. I'll let it lie.", "close_window", []],
+        (le, "$g_companion_event_average_cohesion", 80),
+    ], "Fine. I'll let it lie.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 0),
         (eq, "$g_companion_event_variant", 1),
-    ], "I don't want this dragging behind us.", "close_window", []],
+    ], "I don't want this dragging behind us.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 0),
         (eq, "$g_companion_event_variant", 2),
-    ], "This still stings, but I can live with it if we keep moving.", "close_window", []],
+    ], "This still stings, but I can live with it if we keep moving.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
 
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 1),
         (eq, "$g_companion_event_variant", 0),
-    ], "We both know the tension is there. At least we're honest about it.", "close_window", []],
+    ], "We both know the tension is there. At least we're honest about it.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 1),
         (eq, "$g_companion_event_variant", 1),
-    ], "No more knives in the dark. Say what you mean, then let it go.", "close_window", []],
+    ], "No more knives in the dark. Say what you mean, then let it go.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 1),
         (eq, "$g_companion_event_variant", 2),
-    ], "This is a crack, not a collapse. Let's keep it from spreading.", "close_window", []],
+    ], "This is a crack, not a collapse. Let's keep it from spreading.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
 
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 2),
         (eq, "$g_companion_event_variant", 0),
-    ], "I'm not eager to forget that exchange.", "close_window", []],
+    ], "I'm not eager to forget that exchange.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 2),
         (eq, "$g_companion_event_variant", 1),
-    ], "You can hear the room tightening around us, can't you?", "close_window", []],
+    ], "You can hear the room tightening around us, can't you?", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 2),
         (eq, "$g_companion_event_variant", 2),
         (gt, "$g_companion_last_clash_average_cohesion", 45),
-    ], "That wasn't just an argument. That was a crack in the hull.", "close_window", []],
+    ], "That wasn't just an argument. That was a crack in the hull.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 2),
         (eq, "$g_companion_event_variant", 2),
         (le, "$g_companion_last_clash_average_cohesion", 45),
-    ], "That wasn't just an argument. That's what a company sounds like when it's starting to come apart.", "close_window", []],
-    [anyone, "event_triggered", [
-        (eq, "$g_companion_event_reaction_tier", 2),
-        (eq, "$g_companion_event_variant", 2),
-    ], "This is how grudges start. I'd prefer we stop before that.", "close_window", []],
+    ], "That wasn't just an argument. That's what a company sounds like when it's starting to come apart.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
 
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 3),
         (eq, "$g_companion_event_variant", 0),
-    ], "I'm tired of hearing apologies that don't change anything.", "close_window", []],
+    ], "I'm tired of hearing apologies that don't change anything.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 3),
         (eq, "$g_companion_event_variant", 1),
-    ], "You keep pushing, and you'll find what the rest of us have been swallowing.", "close_window", []],
+    ], "You keep pushing, and you'll find what the rest of us have been swallowing.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 3),
         (eq, "$g_companion_event_variant", 2),
-    ], "The next argument might not end with words.", "close_window", []],
+    ], "The next argument might not end with words.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
 
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 4),
         (eq, "$g_companion_event_variant", 0),
-    ], "The next insult is going to cost more than pride.", "close_window", []],
+    ], "The next insult is going to cost more than pride.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 4),
         (eq, "$g_companion_event_variant", 1),
-    ], "If we're doing this again, then we're all pretending not to see the cracks.", "close_window", []],
+    ], "If we're doing this again, then we're all pretending not to see the cracks.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 4),
         (eq, "$g_companion_event_variant", 2),
         (gt, "$g_companion_event_clash_severity", 80),
-    ], "Keep provoking the wrong person and the camp will answer for it.", "close_window", []],
+    ], "Keep provoking the wrong person and the camp will answer for it.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
     [anyone, "event_triggered", [
+        (eq, "$g_companion_event_active", 1),
+        (eq, "$g_companion_event_reconciliation", 0),
         (eq, "$g_companion_event_reaction_tier", 4),
         (eq, "$g_companion_event_variant", 2),
-    ], "I won't forget this. None of us will.", "close_window", []],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalityclash_b.py:L4-L15 ] anyone::event_triggered->companion_personalityclash_response [eq|store_conversation_troop|eq] {i have held my tongue long enough. this quarrel needs an answer }
+        (le, "$g_companion_event_clash_severity", 80),
+    ], "I won't forget this. None of us will.", "close_window", [
+        (assign, "$g_companion_event_active", 0),
+    ]],
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalityclash_b.py:L4-L17 ] anyone::event_triggered->companion_personalityclash_response [eq|store_conversation_troop|eq] {i have held my tongue long enough. this quarrel needs an answer }
 [anyone, "event_triggered", [
         (eq, "$npc_map_talk_context", slot_troop_personalityclash_state),
         (store_conversation_troop, "$map_talk_troop"),
         (eq, "$map_talk_troop", "$npc_with_personality_clash"),
+        (is_between, "$map_talk_troop", companions_begin, companions_end),
         (main_party_has_troop, "$map_talk_troop"),
         (troop_get_slot, ":object", "$map_talk_troop", slot_troop_personalityclash_object),
+        (is_between, ":object", companions_begin, companions_end),
         (main_party_has_troop, ":object"),
     ], "I have held my tongue long enough. This quarrel needs an answer before the camp inherits it.", "companion_personalityclash_response", [
         (assign, "$npc_with_personality_clash", 0),
@@ -20514,13 +20626,15 @@ Laugh if you wish princeling, but know that many failed to get past their format
 		"close_window",
 		[],
 	],
-# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalitymatch_b.py:L4-L15 ] anyone::event_triggered->companion_personalitymatch_response [eq|store_conversation_troop|eq] {you and i do not always agree, but you take blame and leave room}
+# [ src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalitymatch_b.py:L4-L17 ] anyone::event_triggered->companion_personalitymatch_response [eq|store_conversation_troop|eq] {you and i do not always agree, but you take blame and leave room}
 [anyone, "event_triggered", [
         (eq, "$npc_map_talk_context", slot_troop_personalitymatch_state),
         (store_conversation_troop, "$map_talk_troop"),
         (eq, "$map_talk_troop", "$npc_with_personality_match"),
+        (is_between, "$map_talk_troop", companions_begin, companions_end),
         (main_party_has_troop, "$map_talk_troop"),
         (troop_get_slot, ":object", "$map_talk_troop", slot_troop_personalitymatch_object),
+        (is_between, ":object", companions_begin, companions_end),
         (main_party_has_troop, ":object"),
     ], "You and I do not always agree, but you take blame and leave room for other voices. That matters.", "companion_personalitymatch_response", [
         (assign, "$npc_with_personality_match", 0),
@@ -20532,10 +20646,11 @@ Laugh if you wish princeling, but know that many failed to get past their format
         (assign, "$npc_with_personality_match", 0),
         (assign, "$npc_map_talk_context", 0),
     ]],
-# [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_09.py:L1-L12 ] anyone::event_triggered->companion_home_description [eq|store_conversation_troop|main_party_has_troop] {{var}}
+# [ src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_09.py:L1-L13 ] anyone::event_triggered->companion_home_description [eq|store_conversation_troop|is_between] {{var}}
 [anyone, "event_triggered", [
                      (eq, "$npc_map_talk_context", slot_troop_home),
                      (store_conversation_troop, "$map_talk_troop"),
+                     (is_between, "$map_talk_troop", companions_begin, companions_end),
                      (main_party_has_troop, "$map_talk_troop"),
                      (troop_get_slot, ":speech", "$map_talk_troop", slot_troop_home_intro),
                      (str_store_string, s5, ":speech"),

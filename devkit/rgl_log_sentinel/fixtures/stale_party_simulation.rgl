@@ -1,0 +1,5 @@
+Starting new log file.
+SCRIPT ERROR ON OPCODE 2204: Invalid Party ID: 525; LINE NO: 4: At script: game_event_simulate_battle. At script: game_event_simulate_battle. SCRIPT ERROR ON OPCODE 2190: Invalid Faction ID: 154201176; LINE NO: 8: At script: game_event_simulate_battle. At script: game_event_simulate_battle. SCRIPT ERROR ON OPCODE 2204: Invalid Party ID: 523; LINE NO: 4: At script: game_event_simulate_battle. At script: game_event_simulate_battle. SCRIPT ERROR ON OPCODE 2190: Invalid Faction ID: 154201176; LINE NO: 8: At script: game_event_simulate_battle. At script: game_event_simulate_battle.
+WARNING: UNABLE TO MAP GAME PRESENTATION CODE: prsnt_game_start
+WARNING: Unable to find material cyclo_costumes_lod
+vdt_regular :Out of Static vertex buffer memory. Needed = 237393 Available: 200000

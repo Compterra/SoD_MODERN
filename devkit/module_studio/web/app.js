@@ -17,6 +17,17 @@ const state = {
     drafts: new Map(),
     overlayFilter: "",
   },
+  content: {
+    packs: [],
+    catalogPackIds: new Set(),
+    selectedPackId: null,
+    draft: null,
+    plan: null,
+    selectedChangeId: null,
+    catalogPlan: null,
+    preview: null,
+    review: null,
+  },
 };
 const $ = (id) => document.getElementById(id);
 
@@ -825,6 +836,730 @@ async function inspectPresentation(presentationId) {
   }
 }
 
+function cloneJson(value) { return JSON.parse(JSON.stringify(value)); }
+
+function emptyContentPack() {
+  return {
+    schema: "sod-modern.content-pack.v1",
+    id: "new-content-pack",
+    title: "New Content Pack",
+    status: "draft",
+    description: "A typed player-facing content contract awaiting its first review.",
+    brief: {
+      summary: "Describe the player-facing outcome this pack is responsible for.",
+      lore_constraints: [],
+      tone: [],
+      acceptance_criteria: ["Define at least one observable acceptance criterion before planning."],
+    },
+    slices: { dialogue: { changes: [], beats: [] } },
+    verification: { tests: [], require_blueprint: false, scenarios: [] },
+  };
+}
+
+function contentLines(id, label, required = false) {
+  const values = $(id).value.split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
+  if (required && !values.length) throw new Error(`${label} needs at least one line.`);
+  const duplicate = values.find((value, index) => values.indexOf(value) !== index);
+  if (duplicate) throw new Error(`${label} repeats ${JSON.stringify(duplicate)}.`);
+  return values;
+}
+
+function contentJsonArray(id, label) {
+  const raw = $(id).value.trim();
+  if (!raw) return [];
+  try {
+    const value = JSON.parse(raw);
+    if (!Array.isArray(value)) throw new Error("it must be an array");
+    return value;
+  } catch (error) {
+    throw new Error(`${label} must be valid JSON array data: ${error.message}`);
+  }
+}
+
+function contentField(id, label) {
+  const value = $(id).value.trim();
+  if (!value) throw new Error(`${label} is required.`);
+  return value;
+}
+
+function contentDraftFromForm() {
+  const draft = {
+    schema: "sod-modern.content-pack.v1",
+    id: contentField("content-id", "Pack ID"),
+    title: contentField("content-title", "Title"),
+    status: $("content-status").value,
+    description: contentField("content-description", "Ownership / description"),
+    brief: {
+      summary: contentField("content-brief-summary", "Player-facing summary"),
+      lore_constraints: contentLines("content-lore", "Lore constraints"),
+      tone: contentLines("content-tone", "Tone"),
+      acceptance_criteria: contentLines("content-acceptance", "Acceptance criteria", true),
+    },
+    slices: {},
+    verification: {
+      tests: contentLines("content-tests", "Focused tests"),
+      require_blueprint: $("content-require-blueprint").checked,
+      scenarios: contentLines("content-verification-scenarios", "Verification scenarios"),
+    },
+  };
+  const blueprint = $("content-blueprint").value.trim();
+  if (blueprint) draft.blueprint_id = blueprint;
+  if ($("content-use-dialogue").checked) {
+    draft.slices.dialogue = {
+      beats: contentJsonArray("content-dialogue-beats", "Dialogue beats"),
+      changes: contentJsonArray("content-dialogue-changes", "Dialogue changes"),
+    };
+  }
+  if ($("content-use-quest").checked) {
+    draft.slices.quest_event = {
+      timeline: contentJsonArray("content-quest-timeline", "Quest/event timeline"),
+      changes: contentJsonArray("content-quest-changes", "Quest/event changes"),
+    };
+  }
+  if ($("content-use-ai").checked) {
+    draft.slices.campaign_ai = {
+      contracts: contentJsonArray("content-ai-contracts", "Campaign AI contracts"),
+      scenarios: contentLines("content-ai-scenarios", "Campaign AI scenarios"),
+      changes: contentJsonArray("content-ai-changes", "Campaign AI changes"),
+    };
+  }
+  if ($("content-use-presentation").checked) {
+    draft.slices.presentation = {
+      screens: contentJsonArray("content-presentation-screens", "Presentation screens"),
+      new_presentations: contentJsonArray("content-presentation-new", "New presentation declarations"),
+      changes: contentJsonArray("content-presentation-changes", "Presentation changes"),
+    };
+  }
+  if ($("content-use-balance").checked) {
+    draft.slices.troop_item = { records: contentJsonArray("content-balance-records", "Troop/item records") };
+  }
+  if (!Object.keys(draft.slices).length) throw new Error("Select at least one content slice.");
+  return draft;
+}
+
+function contentFormControlsDisabled(disabled) {
+  document.querySelectorAll("#content-pack-form input, #content-pack-form select, #content-pack-form textarea, #content-pack-form button, .content-slices-panel input, .content-slices-panel textarea, #content-raw-pack, #content-use-raw")
+    .forEach((element) => { element.disabled = disabled; });
+  ["content-validate", "content-plan", "content-preview", "content-review", "content-verify", "content-verify-scenarios", "content-verify-tests", "content-catalog-plan"]
+    .forEach((id) => { $(id).disabled = disabled; });
+}
+
+function contentDraftMetadata(draft) {
+  const slices = Object.keys(draft?.slices || {}).map((value) => value.replace("_", " "));
+  return `${draft?.status || "draft"} | ${slices.length ? slices.join(", ") : "no slices"} | local typed draft`;
+}
+
+function clearContentPlan() {
+  state.content.plan = null;
+  state.content.selectedChangeId = null;
+  $("content-plan-summary").className = "empty";
+  $("content-plan-summary").textContent = "Plan a valid local pack to inspect its independent source/balance changes and current SHA guards.";
+  clear($("content-plan-list")).append(node("div", { class: "empty", text: "No content plan is loaded." }));
+  clear($("content-change-select"));
+  $("content-change-select").disabled = true;
+  $("content-change-diff").textContent = "";
+  $("content-dry-run").disabled = true;
+  $("content-apply-check").checked = false;
+  $("content-apply-check").disabled = true;
+  $("content-legacy-ack").checked = false;
+  $("content-legacy-ack").disabled = true;
+  $("content-protected-ack").checked = false;
+  $("content-protected-ack").disabled = true;
+  $("content-apply-confirmation").value = "";
+  $("content-apply-confirmation").disabled = true;
+  $("content-apply-source").disabled = true;
+  clear($("content-apply-result"));
+}
+
+function clearContentCatalogPlan() {
+  state.content.catalogPlan = null;
+  $("content-catalog-summary").className = "empty";
+  $("content-catalog-summary").textContent = "Sync a valid local draft, then review the catalog diff before saving it.";
+  $("content-catalog-diff").textContent = "";
+  $("content-catalog-dry-run").disabled = true;
+  $("content-catalog-apply-check").checked = false;
+  $("content-catalog-apply-check").disabled = true;
+  $("content-catalog-confirmation").value = "";
+  $("content-catalog-confirmation").disabled = true;
+  $("content-catalog-apply").disabled = true;
+  clear($("content-catalog-result"));
+}
+
+function renderContentDraft() {
+  const draft = state.content.draft;
+  const enabled = Boolean(draft);
+  contentFormControlsDisabled(!enabled);
+  if (!draft) {
+    $("content-draft-title").textContent = "No pack selected";
+    $("content-draft-meta").textContent = "Load a checked-in pack or start a new draft. Editing remains local until a strict catalog save plan is reviewed.";
+    $("content-pack-status").className = "status-label";
+    $("content-pack-status").textContent = "No local draft";
+    $("content-raw-pack").value = "";
+    return;
+  }
+  $("content-id").value = draft.id || "";
+  $("content-title").value = draft.title || "";
+  $("content-status").value = draft.status || "draft";
+  $("content-blueprint").value = draft.blueprint_id || "";
+  $("content-description").value = draft.description || "";
+  $("content-brief-summary").value = draft.brief?.summary || "";
+  $("content-lore").value = (draft.brief?.lore_constraints || []).join("\n");
+  $("content-tone").value = (draft.brief?.tone || []).join("\n");
+  $("content-acceptance").value = (draft.brief?.acceptance_criteria || []).join("\n");
+  $("content-tests").value = (draft.verification?.tests || []).join("\n");
+  $("content-verification-scenarios").value = (draft.verification?.scenarios || []).join("\n");
+  $("content-require-blueprint").checked = Boolean(draft.verification?.require_blueprint);
+  const slices = draft.slices || {};
+  $("content-use-dialogue").checked = Boolean(slices.dialogue);
+  $("content-use-quest").checked = Boolean(slices.quest_event);
+  $("content-use-ai").checked = Boolean(slices.campaign_ai);
+  $("content-use-presentation").checked = Boolean(slices.presentation);
+  $("content-use-balance").checked = Boolean(slices.troop_item);
+  $("content-dialogue-beats").value = json(slices.dialogue?.beats || []);
+  $("content-dialogue-changes").value = json(slices.dialogue?.changes || []);
+  $("content-quest-timeline").value = json(slices.quest_event?.timeline || []);
+  $("content-quest-changes").value = json(slices.quest_event?.changes || []);
+  $("content-ai-contracts").value = json(slices.campaign_ai?.contracts || []);
+  $("content-ai-scenarios").value = (slices.campaign_ai?.scenarios || []).join("\n");
+  $("content-ai-changes").value = json(slices.campaign_ai?.changes || []);
+  $("content-presentation-screens").value = json(slices.presentation?.screens || []);
+  $("content-presentation-new").value = json(slices.presentation?.new_presentations || []);
+  $("content-presentation-changes").value = json(slices.presentation?.changes || []);
+  $("content-balance-records").value = json(slices.troop_item?.records || []);
+  $("content-raw-pack").value = json(draft);
+  $("content-draft-title").textContent = draft.title || draft.id;
+  $("content-draft-meta").textContent = contentDraftMetadata(draft);
+  $("content-pack-status").className = "status-label draft";
+  $("content-pack-status").textContent = state.content.catalogPackIds.has(draft.id) ? "Checked-in pack draft" : "Unsaved local draft";
+}
+
+function syncContentDraft(event) {
+  event?.preventDefault();
+  try {
+    state.content.draft = contentDraftFromForm();
+    state.content.selectedPackId = state.content.catalogPackIds.has(state.content.draft.id) ? state.content.draft.id : null;
+    clearContentPlan();
+    clearContentCatalogPlan();
+    renderContentDraft();
+    const result = clear($("content-action-result"));
+    result.className = "result-message good";
+    result.textContent = "Local strict pack draft synchronized. Validate, preview, or plan it before saving or applying anything.";
+  } catch (error) {
+    const result = clear($("content-action-result"));
+    result.className = "result-message error";
+    result.textContent = error.message;
+  }
+}
+
+function useContentRawDraft() {
+  try {
+    const raw = $("content-raw-pack").value.trim();
+    if (!raw) throw new Error("Advanced pack JSON is empty.");
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("Advanced pack JSON must be one object.");
+    state.content.draft = parsed;
+    state.content.selectedPackId = state.content.catalogPackIds.has(parsed.id) ? parsed.id : null;
+    clearContentPlan();
+    clearContentCatalogPlan();
+    renderContentDraft();
+    const result = clear($("content-action-result"));
+    result.className = "result-message good";
+    result.textContent = "Advanced JSON is now a local draft. Validate it before any preview, plan, or catalog save.";
+  } catch (error) {
+    const result = clear($("content-action-result"));
+    result.className = "result-message error";
+    result.textContent = `Advanced JSON was not loaded: ${error.message}`;
+  }
+}
+
+function renderContentPackList() {
+  const results = clear($("content-pack-results"));
+  const needle = $("content-query").value.trim().toLocaleLowerCase();
+  const slice = $("content-slice-filter").value;
+  const packs = state.content.packs.filter((pack) => {
+    if (slice !== "all" && !pack.slices?.some((item) => item.id === slice)) return false;
+    return !needle || JSON.stringify(pack).toLocaleLowerCase().includes(needle);
+  });
+  $("content-pack-count").textContent = state.content.packs.length ? `${packs.length}/${state.content.packs.length}` : "";
+  if (!packs.length) {
+    results.append(node("div", { class: "empty", text: "No checked-in content pack matches this filter." }));
+    return;
+  }
+  packs.forEach((pack) => {
+    const button = node("button", { class: "result-card", type: "button" });
+    button.classList.toggle("selected", state.content.selectedPackId === pack.id);
+    button.append(
+      node("span", { class: "result-title", text: pack.title || pack.id }),
+      node("span", { class: "result-meta", text: `${pack.id} | ${pack.status} | ${(pack.slices || []).map((item) => item.id).join(", ") || "no slices"}` }),
+      node("span", { class: "result-snippet", text: short(pack.description || pack.brief?.summary || "") })
+    );
+    button.addEventListener("click", () => loadContentPack(pack.id));
+    results.append(button);
+  });
+}
+
+async function loadContentSummary() {
+  const results = clear($("content-pack-results"));
+  results.append(node("div", { class: "empty", text: "Loading checked-in typed content packs..." }));
+  try {
+    const payload = await request("/api/content/summary?limit=200");
+    state.content.packs = payload.packs || [];
+    state.content.catalogPackIds = new Set(state.content.packs.map((pack) => pack.id));
+    renderContentPackList();
+  } catch (error) {
+    clear(results).append(apiError(error.message));
+  }
+}
+
+async function loadContentPack(packId) {
+  const result = clear($("content-action-result"));
+  result.className = "result-message";
+  result.textContent = "Loading the checked-in pack, entrypoint evidence, and strict local draft...";
+  try {
+    const payload = await request(`/api/content/explain?pack_id=${encodeURIComponent(packId)}&trace_limit=12`);
+    state.content.draft = cloneJson(payload.pack_source);
+    state.content.selectedPackId = packId;
+    state.content.preview = null;
+    state.content.review = null;
+    clearContentPlan();
+    clearContentCatalogPlan();
+    renderContentDraft();
+    renderContentPackList();
+    result.className = "result-message good";
+    result.textContent = payload.state === "ready"
+      ? "Loaded checked-in pack as a local typed draft. Edit it, then validate/preview/plan before a reviewed catalog save."
+      : `Loaded the pack, but its current static evidence is ${payload.state}. Inspect validation before editing.`;
+  } catch (error) {
+    result.className = "result-message error";
+    result.textContent = error.message;
+  }
+}
+
+function newContentPack() {
+  state.content.draft = emptyContentPack();
+  state.content.selectedPackId = null;
+  state.content.preview = null;
+  state.content.review = null;
+  clearContentPlan();
+  clearContentCatalogPlan();
+  renderContentDraft();
+  renderContentPackList();
+  const result = clear($("content-action-result"));
+  result.className = "result-message good";
+  result.textContent = "New local draft created. Give it a stable ID, player-facing brief, at least one slice, and reviewable acceptance criteria.";
+  $("content-id").focus();
+}
+
+function currentContentDraft() {
+  const draft = contentDraftFromForm();
+  state.content.draft = draft;
+  return draft;
+}
+
+function renderContentAction(payload, title) {
+  const result = clear($("content-action-result"));
+  result.className = payload.state === "blocked" || payload.state === "failed" ? "result-message error" : "result-message good";
+  const errors = payload.errors || payload.validation?.errors || [];
+  const warnings = payload.warnings || [];
+  result.append(
+    node("strong", { text: `${title}: ${payload.state || "ready"}` }),
+    node("p", { text: errors.length ? `${errors.length} blocking evidence item(s).` : "No returned blocking evidence." })
+  );
+  if (errors.length) result.append(rawPanel(errors));
+  else if (warnings.length) result.append(node("p", { class: "muted", text: short(warnings.join(" "), 520) }));
+}
+
+async function validateContentDraft() {
+  try {
+    const draft = currentContentDraft();
+    const payload = await request("/api/content/validate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pack: draft }) });
+    renderContentAction(payload, "Content contract validation");
+  } catch (error) {
+    const result = clear($("content-action-result"));
+    result.className = "result-message error";
+    result.textContent = error.message;
+  }
+}
+
+function contentPlanDiff(change) {
+  if (change.backend === "feature_authoring") return change.source_plan?.change_router_plan?.unified_diff || "No specialist source diff was returned.";
+  if (change.backend === "troop_item_balance") return change.balance_plan?.unified_diff || "No Balance Lab diff was returned.";
+  return "No supported specialist diff was returned.";
+}
+
+function selectedContentChange() {
+  return state.content.plan?.payload?.changes?.find((change) => change.change_id === state.content.selectedChangeId) || null;
+}
+
+function contentChangeProtection(change) {
+  const balance = change?.balance_plan || {};
+  return {
+    legacy: change?.backend === "troop_item_balance",
+    protected: Boolean(balance.entity?.protected_legacy_record),
+  };
+}
+
+function updateContentApplyButton() {
+  const change = selectedContentChange();
+  const protection = contentChangeProtection(change);
+  const ready = Boolean(change?.apply_available && change?.expected_sha256)
+    && $("content-apply-check").checked
+    && $("content-apply-confirmation").value === "APPLY SOURCE"
+    && (!protection.legacy || $("content-legacy-ack").checked)
+    && (!protection.protected || $("content-protected-ack").checked);
+  $("content-apply-source").disabled = !ready;
+}
+
+function selectContentChange(changeId) {
+  state.content.selectedChangeId = changeId || null;
+  const change = selectedContentChange();
+  $("content-change-select").value = state.content.selectedChangeId || "";
+  document.querySelectorAll("#content-plan-list .content-change-row").forEach((row) => row.classList.toggle("selected", row.dataset.changeId === state.content.selectedChangeId));
+  $("content-change-diff").textContent = change ? contentPlanDiff(change) : "";
+  const usable = Boolean(change?.apply_available && change?.expected_sha256);
+  const protection = contentChangeProtection(change);
+  $("content-dry-run").disabled = !usable;
+  $("content-apply-check").checked = false;
+  $("content-apply-check").disabled = !usable;
+  $("content-legacy-ack").checked = false;
+  $("content-legacy-ack").disabled = !usable || !protection.legacy;
+  $("content-protected-ack").checked = false;
+  $("content-protected-ack").disabled = !usable || !protection.protected;
+  $("content-apply-confirmation").value = "";
+  $("content-apply-confirmation").disabled = !usable;
+  updateContentApplyButton();
+}
+
+function renderContentPlan(payload, draft) {
+  state.content.plan = { payload, draft: cloneJson(draft) };
+  state.content.selectedChangeId = null;
+  const summary = clear($("content-plan-summary"));
+  summary.className = "";
+  summary.append(
+    node("p", { text: `Plan: ${payload.plan_id || "unavailable"} | ${payload.change_count ?? 0} named specialist change(s) | ${payload.state || "unknown"}` }),
+    node("p", { class: payload.state === "ready_for_review" ? "good-text" : "warning", text: payload.state === "ready_for_review" ? "Every listed apply is independent. Re-plan after each non-dry change." : "This pack is blocked. Resolve the returned structural/entrypoint/AI evidence before apply." })
+  );
+  if (payload.errors?.length) summary.append(rawPanel(payload.errors));
+  const list = clear($("content-plan-list"));
+  const select = clear($("content-change-select"));
+  const changes = payload.changes || [];
+  if (!changes.length) {
+    list.append(node("div", { class: "empty", text: "This pack has no source or direct balance changes. Its narrative and review surfaces can still be saved and previewed." }));
+    select.disabled = true;
+    select.append(node("option", { value: "", text: "No source change" }));
+    selectContentChange(null);
+    return;
+  }
+  select.disabled = false;
+  select.append(node("option", { value: "", text: "Select a named change" }));
+  changes.forEach((change) => {
+    select.append(node("option", { value: change.change_id, text: `${change.sequence}. ${change.slice} | ${change.target || change.entity_id || change.change_id}` }));
+    const button = node("button", { class: "content-change-row", type: "button", "data-change-id": change.change_id });
+    button.append(
+      node("span", { class: "change-sequence", text: String(change.sequence || "?") }),
+      node("span", {}, [
+        node("strong", { text: `${change.slice || "slice"} | ${change.action || change.record_id || "record"}` }),
+        node("span", { class: "change-meta", text: `${change.backend || "specialist"} | ${change.target || change.entity_id || "?"} | ${change.state || "unknown"}` }),
+      ])
+    );
+    button.addEventListener("click", () => selectContentChange(change.change_id));
+    list.append(button);
+  });
+  const first = changes.find((change) => change.apply_available) || changes[0];
+  selectContentChange(first.change_id);
+}
+
+async function planContentDraft() {
+  try {
+    const draft = currentContentDraft();
+    const payload = await request("/api/content/plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pack: draft, trace_limit: 12 }) });
+    renderContentPlan(payload, draft);
+    renderContentAction(payload, "Content plan");
+  } catch (error) {
+    const result = clear($("content-action-result"));
+    result.className = "result-message error";
+    result.textContent = error.message;
+  }
+}
+
+function staticContentPresentationCanvas(payload) {
+  const canvas = payload.canvas || {};
+  const box = node("div", { class: "canvas content-static-canvas", "aria-label": "Static Content Forge presentation canvas" });
+  for (const overlay of canvas.overlays || []) {
+    const rect = overlay.canvas_box;
+    if (!rect || !canvas.width || !canvas.height) continue;
+    const overlayNode = node("span", { class: `canvas-overlay ${overlay.kind || "unknown"}`, text: short(`${overlay.identifier}${overlay.content ? ` | ${overlay.content}` : ""}`, 55) });
+    overlayNode.style.left = `${(rect.x / canvas.width) * 100}%`;
+    overlayNode.style.top = `${(rect.y / canvas.height) * 100}%`;
+    overlayNode.style.width = `${Math.max((rect.width / canvas.width) * 100, 2)}%`;
+    overlayNode.style.height = `${Math.max((rect.height / canvas.height) * 100, 2)}%`;
+    overlayNode.title = `${overlay.identifier || "overlay"}\n${overlay.content || overlay.kind || ""}`;
+    box.append(overlayNode);
+  }
+  return box;
+}
+
+function contentPreviewSection(title, content) {
+  const section = node("section", { class: "content-preview-section" });
+  section.append(node("h4", { text: title }));
+  if (content) section.append(content);
+  return section;
+}
+
+function renderContentPreview(payload) {
+  state.content.preview = payload;
+  const target = clear($("content-preview-result"));
+  target.className = "content-preview-grid";
+  const narrative = payload.narrative_preview || {};
+  const beats = narrative.dialogue_beats || [];
+  const beatList = node("div", { class: "content-beat-list" });
+  if (!beats.length) beatList.append(node("p", { class: "empty", text: "No declared dialogue beats in this draft." }));
+  beats.forEach((beat) => beatList.append(node("article", { class: "content-beat" }, [
+    node("strong", { text: beat.title || beat.id || "Dialogue beat" }),
+    node("span", { text: beat.purpose || beat.description || "No player-facing purpose declared." }),
+    node("span", { class: "muted", text: beat.entrypoint || "No entrypoint linked yet" }),
+  ])));
+  target.append(contentPreviewSection("Dialogue the player can encounter", beatList));
+  const timeline = narrative.quest_event_timeline || [];
+  const timelineList = node("ol", { class: "content-timeline" });
+  if (!timeline.length) timelineList.append(node("li", { class: "empty", text: "No quest/event timeline is declared." }));
+  timeline.forEach((step) => timelineList.append(node("li", {}, [
+    node("strong", { text: `${step.phase ? `${step.phase}: ` : ""}${step.title || step.id || "Event step"}` }),
+    node("span", { text: step.description || "No player-facing event description." }),
+  ])));
+  target.append(contentPreviewSection("Quest / event progression", timelineList));
+  const ai = payload.campaign_ai_preview || {};
+  const contracts = ai.contracts || [];
+  const contractList = node("div", { class: "content-contract-list" });
+  if (!contracts.length) contractList.append(node("p", { class: "empty", text: "No campaign AI contract is declared." }));
+  contracts.forEach((contract) => contractList.append(node("article", { class: "content-contract" }, [
+    node("strong", { text: `${contract.intent || "AI intent"} | ${contract.id || "contract"}` }),
+    node("span", { class: contract.state === "passed" ? "good-text" : "warning", text: `${contract.state || "unproven"} | ${contract.entrypoint || "no entrypoint"}` }),
+    node("span", { text: `${(contract.required_markers || []).filter((marker) => marker.found).length}/${(contract.required_markers || []).length} required markers found` }),
+  ])));
+  target.append(contentPreviewSection("Campaign behavior the player should feel", contractList));
+  const presentation = payload.presentation_preview || {};
+  const screenList = node("div", { class: "content-screen-list" });
+  if (!presentation.canvases?.length && !presentation.planned_new_presentations?.length) screenList.append(node("p", { class: "empty", text: "No presentation screen is declared." }));
+  (presentation.canvases || []).forEach((item) => {
+    const canvasPayload = item.canvas || {};
+    const title = canvasPayload.presentation?.presentation_id || item.entrypoint || "Presentation";
+    const article = node("article", { class: "content-screen" });
+    article.append(node("strong", { text: title }), node("span", { text: item.entrypoint || "" }), staticContentPresentationCanvas(canvasPayload));
+    screenList.append(article);
+  });
+  (presentation.planned_new_presentations || []).forEach((item) => screenList.append(node("article", { class: "content-screen" }, [
+    node("strong", { text: item.id || "New presentation" }),
+    node("span", { text: `${item.canvas_state || "planned"} | anchor ${item.anchor || "?"}` }),
+    node("span", { text: item.description || "No description." }),
+  ])));
+  target.append(contentPreviewSection("Player-facing presentation screens", screenList));
+  const balance = payload.troop_item_preview || [];
+  const balanceList = node("div", { class: "content-contract-list" });
+  if (!balance.length) balanceList.append(node("p", { class: "empty", text: "No troop/item record change is declared." }));
+  balance.forEach((item) => balanceList.append(node("article", { class: "content-contract" }, [
+    node("strong", { text: item.entity_id || item.record_id || "Balance record" }),
+    node("span", { class: item.state === "ready_for_review" ? "good-text" : "warning", text: item.state || "unplanned" }),
+    node("span", { text: item.rationale || "No player-facing rationale." }),
+  ])));
+  target.append(contentPreviewSection("Troop / item intent", balanceList));
+}
+
+function renderContentReview(payload) {
+  state.content.review = payload;
+  const target = clear($("content-review-result"));
+  const canvas = payload.review_canvas || {};
+  const flow = node("div", { class: "content-flow" });
+  const nodeNames = new Map();
+  (canvas.nodes || []).forEach((item) => {
+    nodeNames.set(item.id, item.title || item.id);
+    const itemNode = node("article", { class: "content-flow-node", "data-kind": item.kind || "unknown", "data-status": item.status || "unknown" });
+    itemNode.append(
+      node("strong", { text: item.title || item.id }),
+      node("span", { text: `${item.kind || "node"} | ${item.status || "declared"}` }),
+      node("span", { text: short(typeof item.detail === "string" ? item.detail : json(item.detail || {}), 220) })
+    );
+    flow.append(itemNode);
+  });
+  if (!(canvas.nodes || []).length) flow.append(node("p", { class: "empty", text: "No review-canvas nodes were returned." }));
+  target.append(flow);
+  const edges = canvas.edges || [];
+  if (edges.length) {
+    const edgeList = node("div", { class: "content-flow" });
+    edges.forEach((edge) => edgeList.append(node("div", { class: "content-flow-edge", text: `${nodeNames.get(edge.from) || edge.from} -> ${nodeNames.get(edge.to) || edge.to} | ${edge.kind || "links"}` })));
+    appendDetailSection(target, "Typed relationships", edgeList);
+  }
+  const acceptance = canvas.acceptance_review || [];
+  if (acceptance.length) appendDetailSection(target, "Acceptance review", node("ul", { class: "detail-list" }, acceptance.map((item) => node("li", { text: `${item.state || "review"}: ${item.criterion}` }))));
+  if (canvas.mermaid) {
+    const details = node("details", { class: "panel" });
+    details.append(node("summary", { text: "Mermaid source for this review canvas" }), node("pre", { text: canvas.mermaid }));
+    target.append(details);
+  }
+}
+
+async function previewContentDraft() {
+  try {
+    const draft = currentContentDraft();
+    const payload = await request("/api/content/preview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pack: draft, trace_limit: 12 }) });
+    renderContentPreview(payload);
+    renderContentReview(payload);
+    renderContentAction(payload, "Content preview");
+  } catch (error) {
+    const result = clear($("content-action-result"));
+    result.className = "result-message error";
+    result.textContent = error.message;
+  }
+}
+
+async function reviewContentDraft() {
+  try {
+    const draft = currentContentDraft();
+    const payload = await request("/api/content/review", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pack: draft, trace_limit: 12 }) });
+    renderContentReview(payload);
+    renderContentAction(payload, "Content dependency review");
+  } catch (error) {
+    const result = clear($("content-action-result"));
+    result.className = "result-message error";
+    result.textContent = error.message;
+  }
+}
+
+async function verifyContentDraft() {
+  try {
+    const draft = currentContentDraft();
+    const payload = await request("/api/content/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        pack: draft,
+        run_scenarios: $("content-verify-scenarios").checked,
+        run_tests: $("content-verify-tests").checked,
+        stage_build_check: false,
+        scenario_iterations: 8,
+        scenario_seed: 1,
+        timeout_seconds: 90,
+      }),
+    });
+    renderContentAction(payload, "Content verification");
+  } catch (error) {
+    const result = clear($("content-action-result"));
+    result.className = "result-message error";
+    result.textContent = error.message;
+  }
+}
+
+async function runContentApply(dryRun) {
+  const plan = state.content.plan;
+  const change = selectedContentChange();
+  if (!plan || !change) return;
+  const result = clear($("content-apply-result"));
+  result.className = "result-message";
+  result.textContent = dryRun ? "Rehearsing the selected independent Content Forge change..." : "Applying one reviewed specialist source/record change...";
+  try {
+    const protection = contentChangeProtection(change);
+    const body = {
+      pack: plan.draft,
+      change_id: change.change_id,
+      expected_content_plan_id: plan.payload.plan_id,
+      expected_sha256: change.expected_sha256,
+      dry_run: dryRun,
+    };
+    if (change.expected_balance_plan_sha256) body.expected_balance_plan_sha256 = change.expected_balance_plan_sha256;
+    if (!dryRun) {
+      if (protection.legacy && !$("content-legacy-ack").checked) throw new Error("This direct legacy balance record needs its explicit acknowledgement.");
+      if (protection.protected && !$("content-protected-ack").checked) throw new Error("This protected legacy balance record needs its extra acknowledgement.");
+      body.confirmation = "APPLY SOURCE";
+      body.allow_legacy_compile_authoring = protection.legacy && $("content-legacy-ack").checked;
+      body.allow_protected_legacy_record_change = protection.protected && $("content-protected-ack").checked;
+    }
+    const payload = await request("/api/content/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    result.className = "result-message good";
+    result.textContent = json(payload);
+    if (!dryRun) {
+      clearContentPlan();
+      const action = clear($("content-action-result"));
+      action.className = "result-message good";
+      action.textContent = "One named content change applied through its specialist SHA gate. Re-plan the pack, verify it, then use the ordinary reviewed build and in-game smoke path.";
+    }
+  } catch (error) {
+    result.className = "result-message error";
+    result.textContent = error.message;
+  }
+}
+
+function updateContentCatalogApplyButton() {
+  const ready = Boolean(state.content.catalogPlan)
+    && $("content-catalog-apply-check").checked
+    && $("content-catalog-confirmation").value === "SAVE CONTENT PACK";
+  $("content-catalog-apply").disabled = !ready;
+}
+
+function contentCatalogMode(draft) {
+  return state.content.catalogPackIds.has(draft.id) ? "replace" : "create";
+}
+
+function renderContentCatalogPlan(payload, draft, mode) {
+  state.content.catalogPlan = { payload, draft: cloneJson(draft), mode };
+  const summary = clear($("content-catalog-summary"));
+  summary.className = "";
+  summary.append(
+    node("p", { text: `${payload.operation || mode} pack ${payload.pack?.id || draft.id} in ${payload.catalog_target?.path || "packs.json"}` }),
+    node("p", { class: "muted", text: `Catalog SHA-256: ${payload.catalog_target?.base_sha256 || "unavailable"}` })
+  );
+  $("content-catalog-diff").textContent = payload.unified_diff || "No catalog diff was returned.";
+  $("content-catalog-dry-run").disabled = false;
+  $("content-catalog-apply-check").disabled = false;
+  $("content-catalog-confirmation").disabled = false;
+  updateContentCatalogApplyButton();
+}
+
+async function planContentCatalogSave() {
+  try {
+    const draft = currentContentDraft();
+    const mode = contentCatalogMode(draft);
+    const payload = await request("/api/content/catalog-plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pack: draft, mode }) });
+    renderContentCatalogPlan(payload, draft, mode);
+    const action = clear($("content-action-result"));
+    action.className = "result-message good";
+    action.textContent = "Catalog save plan is ready. It affects only the strict Content Forge pack contract, never module source or exports.";
+  } catch (error) {
+    const result = clear($("content-catalog-result"));
+    result.className = "result-message error";
+    result.textContent = error.message;
+  }
+}
+
+async function runContentCatalogApply(dryRun) {
+  const catalogPlan = state.content.catalogPlan;
+  if (!catalogPlan) return;
+  const result = clear($("content-catalog-result"));
+  result.className = "result-message";
+  result.textContent = dryRun ? "Rehearsing the exact catalog SHA and strict pack contract..." : "Saving the reviewed strict Content Forge pack contract...";
+  try {
+    const body = {
+      pack: catalogPlan.draft,
+      mode: catalogPlan.mode,
+      expected_catalog_plan_id: catalogPlan.payload.catalog_plan_id,
+      expected_catalog_sha256: catalogPlan.payload.catalog_target.base_sha256,
+      dry_run: dryRun,
+    };
+    if (!dryRun) body.confirmation = "SAVE CONTENT PACK";
+    const payload = await request("/api/content/catalog-apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    result.className = "result-message good";
+    result.textContent = json(payload);
+    if (!dryRun) {
+      state.content.selectedPackId = catalogPlan.draft.id;
+      clearContentCatalogPlan();
+      await loadContentSummary();
+      await loadContentPack(catalogPlan.draft.id);
+    }
+  } catch (error) {
+    result.className = "result-message error";
+    result.textContent = error.message;
+  }
+}
+
 async function textLint(event) {
   event.preventDefault();
   const results = clear($("text-results"));
@@ -1429,6 +2164,7 @@ function wireEvents() {
   document.querySelectorAll(".nav-item").forEach((item) => item.addEventListener("click", () => {
     showView(item.dataset.view);
     if (item.dataset.view === "balance") loadBalanceSummary();
+    if (item.dataset.view === "content" && !state.content.packs.length) loadContentSummary();
   }));
   $("refresh-summary").addEventListener("click", loadOverview);
   $("atlas-search").addEventListener("submit", atlasSearch);
@@ -1468,6 +2204,29 @@ function wireEvents() {
   $("presentation-apply-source").addEventListener("click", () => runPresentationApply(false));
   $("presentation-apply-check").addEventListener("change", updatePresentationApplyButton);
   $("presentation-apply-confirmation").addEventListener("input", updatePresentationApplyButton);
+  $("content-search-form").addEventListener("submit", (event) => { event.preventDefault(); renderContentPackList(); });
+  $("content-query").addEventListener("input", renderContentPackList);
+  $("content-slice-filter").addEventListener("change", renderContentPackList);
+  $("content-new-pack").addEventListener("click", newContentPack);
+  $("content-pack-form").addEventListener("submit", syncContentDraft);
+  $("content-use-raw").addEventListener("click", useContentRawDraft);
+  $("content-validate").addEventListener("click", validateContentDraft);
+  $("content-plan").addEventListener("click", planContentDraft);
+  $("content-preview").addEventListener("click", previewContentDraft);
+  $("content-review").addEventListener("click", reviewContentDraft);
+  $("content-verify").addEventListener("click", verifyContentDraft);
+  $("content-change-select").addEventListener("change", (event) => selectContentChange(event.target.value));
+  $("content-dry-run").addEventListener("click", () => runContentApply(true));
+  $("content-apply-source").addEventListener("click", () => runContentApply(false));
+  $("content-apply-check").addEventListener("change", updateContentApplyButton);
+  $("content-legacy-ack").addEventListener("change", updateContentApplyButton);
+  $("content-protected-ack").addEventListener("change", updateContentApplyButton);
+  $("content-apply-confirmation").addEventListener("input", updateContentApplyButton);
+  $("content-catalog-plan").addEventListener("click", planContentCatalogSave);
+  $("content-catalog-dry-run").addEventListener("click", () => runContentCatalogApply(true));
+  $("content-catalog-apply").addEventListener("click", () => runContentCatalogApply(false));
+  $("content-catalog-apply-check").addEventListener("change", updateContentCatalogApplyButton);
+  $("content-catalog-confirmation").addEventListener("input", updateContentCatalogApplyButton);
   $("text-lint").addEventListener("submit", textLint);
   $("order-search").addEventListener("submit", orderSearch);
   $("order-move-form").addEventListener("submit", planOrderMove);
@@ -1502,6 +2261,9 @@ async function start() {
   clearOrderPlan();
   clearBalancePlan();
   clearPresentationPlan();
+  clearContentPlan();
+  clearContentCatalogPlan();
+  renderContentDraft();
   setPresentationInspector(null);
   updatePresentationDraftStatus();
   try {

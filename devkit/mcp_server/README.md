@@ -28,7 +28,9 @@ local STDIO; there is no dashboard or interactive UI requirement.
 | `string_trace` | Follow a phrase, ID, or register across source, generated, and export layers. |
 | `string_integrity` | Preflight text sinks and s-register flow before changing a source fragment. |
 | `text_export_parity` | Replay the legacy processor path in temporary staging and compare text-bearing exports without writing live data. |
-| `release_gate` | Run the strict isolated source/generated/all-export release preflight; it blocks on staged compiler diagnostics, unapproved blank string sinks, dialogue-model errors, and order/ID regressions without writing live data. |
+| `rgl_log_analyze` | Parse a real M&B gameplay log, cluster engine-error cascades, map script evidence through source/generated/export layers, classify warnings, and optionally identify a stale live module deployment. |
+| `rgl_log_contract` | Check protected engine-callback dynamic-party guards before a build or release. |
+| `release_gate` | Run the strict isolated source/generated/all-export release preflight; it blocks on staged compiler diagnostics, unapproved blank string sinks, dialogue-model errors, order/ID regressions, and protected engine callback party-handle regressions without writing live data. |
 | `blueprint_summary` | Summarize checked-in feature contracts and their active source/symbol/order/slot/AI/test state. |
 | `blueprint_find` | Locate a stable feature Blueprint by source, semantic symbol, contract, test, or description. |
 | `blueprint_explain` | Return a feature's exact source ownership, Atlas entities, order proof, external contracts, and focused tests. |
@@ -46,6 +48,20 @@ local STDIO; there is no dashboard or interactive UI requirement.
 | `feature_verify` | Re-check Feature Intent contracts, source syntax/order/freshness, and optional focused tests. |
 | `feature_semantic_snapshot` | Capture an in-memory per-feature semantic baseline without an artifact write. |
 | `feature_semantic_diff` | Compare entrypoint provenance/order/IDs, Blueprint state, and typed patch bases to a prior feature snapshot. |
+| `content_forge_summary` | Summarize typed content packs across dialogue, quest/event, campaign AI, troop/item, and presentation slices. |
+| `content_pack_find` | Find a pack by its brief, lore/tone/acceptance criteria, slice, entrypoint, contract, or verification evidence. |
+| `content_pack_explain` | Explain a checked-in or inline content pack through its brief, typed slices, entrypoints, and scenario declarations. |
+| `content_pack_validate` | Validate strict Content Pack JSON and specialist route/test/Blueprint/scenario prerequisites without writing. |
+| `content_pack_compile` | Compile a pack to an explicit order-aware sequence of specialist changes without writing. |
+| `content_pack_plan` | Produce exact source/balance diffs, SHA guards, AI evidence, order impacts, and verification obligations. |
+| `content_pack_preview` | Return narrative, campaign AI, balance, presentation-canvas, and review-canvas preview evidence. |
+| `content_pack_review` | Return a structured/Mermaid human review canvas backed by the exact typed plan. |
+| `content_pack_apply` | Rehearse or apply one reviewed content change with a content-plan ID and current SHA; troop/item changes also require Balance Lab plan SHA. |
+| `content_pack_verify` | Re-check specialist source/order evidence, AI contracts, optional tests/staged checks, and bounded scenarios. |
+| `content_pack_snapshot` | Capture an in-memory pack semantic baseline without an artifact write. |
+| `content_pack_semantic_diff` | Compare pack contract, source/balance plan bases, and AI intent evidence to a prior snapshot. |
+| `content_pack_catalog_plan` | Validate and plan one strict create/replacement of a checked-in Content Forge pack contract; returns only the `packs.json` diff and catalog SHA guard. |
+| `content_pack_catalog_apply` | Rehearse or save one reviewed strict pack contract to `devkit/content_forge/packs.json`; real save also requires `SAVE CONTENT PACK`. |
 | `campaign_state_summary` | Build a temporal source model of campaign state readers/writers, trigger paths, contracts, and bounded overwrite findings. |
 | `campaign_state_findings` | Filter possible state collisions and contract violations with compact counterexample evidence. |
 | `campaign_state_resource` | Find every source-mapped reader/writer of a party AI field, slot, lifecycle field, or global. |
@@ -200,6 +216,23 @@ label it is read-only; with a reviewed label it writes only
 `devkit/semantic_change_diff/baselines/`. Run it before a source edit, then
 run `semantic_change_diff` after the normal reviewed build. It never writes
 source, generated modules, or exports.
+
+Content Forge is the higher-level authored-content layer. Start with
+`content_forge_summary`, then use `content_pack_explain` to bind a creative
+brief, lore/tone constraints, and acceptance criteria to real engine
+entrypoints. Its slices delegate typed changes to Feature Authoring, Dialogue
+Composer, Presentation Layout, and Balance Lab rather than opening a raw
+source writer. `content_pack_plan` returns exact diffs and specialist SHA
+contracts; `content_pack_review` returns a structured/Mermaid review canvas.
+`content_pack_catalog_plan` is the separate narrow persistence path for the
+strict authoring contract itself: it diffs only
+`devkit/content_forge/packs.json`. `content_pack_catalog_apply` defaults to a
+SHA rehearsal and needs `SAVE CONTENT PACK` for a real save; it does not apply
+module source.
+`content_pack_apply` is deliberately one named source or direct legacy-record
+target at a time, dry-run by default, and never writes generated IDs, exports,
+or normal build layers. Follow a non-dry apply with `content_pack_verify`, then
+the ordinary reviewed build. See [`../content_forge/README.md`](../content_forge/README.md).
 
 ## Optional local Module Studio
 

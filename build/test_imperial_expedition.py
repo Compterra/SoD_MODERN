@@ -52,7 +52,12 @@ def main() -> int:
     ):
         assert_contains(scripts, token)
 
-    assert_contains(read("src/scripts/ZI_campaign_ai/ai_hire_mercenaries.py"), '(neq, ":troop_faction", "fac_kingdom_6")')
+    # The market service now owns the hiring loop.  Keep the Imperial
+    # Expedition outside the eligible native-realm range rather than pinning
+    # this guard to the former scheduler implementation.
+    merc_market = read("src/scripts/ZY_helper_scripts/sod_merc_market_weekly_pulse.py")
+    assert_contains(constants, 'native_kingdoms_end = "fac_kingdom_6"')
+    assert_contains(merc_market, 'native_kingdoms_begin, native_kingdoms_end')
     assert_contains(scripts, "slot_faction_merc_pact")
     assert_contains(scripts, "fac_kingdom_6_mercenaries")
     assert_contains(scripts, "script_diplomacy_start_war_between_kingdoms")

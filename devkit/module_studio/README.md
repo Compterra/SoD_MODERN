@@ -44,6 +44,7 @@ py -3 -B devkit\module_studio\module_studio.py summary
 | Module Atlas | Search all eight source areas; entity context, source/generated provenance, menu/script/mission flow, trigger/quest/references, and bounded dependency graphs. |
 | Dialogue | Authored route search, source/compiled-order evidence, and static first-match/fallback analysis. |
 | Presentation Workshop | Browse or search a presentation, inspect its direct overlay canvas, select/list overlays, locally drag a static anchor, edit numeric position/size/text/mesh/color/alpha or alignment, and create a text/button/mesh/slider overlay through the same guarded plan flow. |
+| Content Forge Studio | Browse checked-in content packs; edit a local typed brief and all dialogue, quest/event, campaign-AI, presentation, and troop/item slices; preview player-facing beats/timelines/contracts/static canvases; review the dependency canvas; plan/rehearse one specialist change; and save only a reviewed strict pack contract through a separate catalog SHA gate. |
 | Text observability | Workbench text lint for visible-text and string/register risk evidence. |
 | Order Control | Source manifest, authored/route, generated-ID, and protected callback-order inspection; anchored move risk, plan, dry-run, and guarded apply. |
 | Troop + Item Balance Lab | Evaluated legacy item/troop records, decoded stats, randomized inventory pools, direct upgrade-tree evidence, price/kit outliers, and a record-local guarded balance editor. |
@@ -55,6 +56,9 @@ The JSON API uses the same paths, such as:
 - `GET /api/atlas/find?area=menus&query=...`
 - `GET /api/dialogue/context?route_id=...`
 - `GET /api/presentation/canvas?presentation_id=...&overlay_limit=500`
+- `GET /api/content/summary` and `GET /api/content/explain?pack_id=...`
+- `POST /api/content/validate`, `/api/content/plan`, `/api/content/preview`, and `/api/content/review` with one strict inline `pack` object
+- `POST /api/content/catalog-plan` and `/api/content/catalog-apply` for the separate checked-in pack-contract persistence gate
 - `GET /api/order/explain?target=source:src/...` and `GET /api/order/verify`
 - `GET /api/balance/item?item_id=itm_khergit_bow`
 - `GET /api/balance/troop?troop_id=trp_swadian_recruit` and `GET /api/balance/outliers?domain=troops`
@@ -86,6 +90,15 @@ direct legacy item/troop record contract.
    records or write `compile/ids`, generated files, or exports.
 5. Referenced Atlas removals need their own exact acknowledgement:
    `"removal_acknowledgement": "REMOVE REFERENCED ENTITY"`.
+
+Content Forge Studio follows the same source/apply rule for a selected
+specialist content change. Its visual draft has a separate, intentionally
+narrow persistence route: after a reviewed catalog diff and dry-run,
+`POST /api/content/catalog-apply` can write exactly one strict pack contract
+to `devkit/content_forge/packs.json` only when
+`"confirmation": "SAVE CONTENT PACK"`. It cannot write `src/`, `compile/`,
+generated IDs, exports, or any arbitrary file. Saving a pack contract does not
+apply its module changes; validate/plan/review those independently afterward.
 
 For order work, Studio can move only two source fragments governed by the same
 declared `_order*.txt` manifest or two dialogue routes in one source fragment.
@@ -125,6 +138,30 @@ stays disabled: the Workshop will not accidentally replace dynamic content with
 the literal characters of a register name. Use the text/string workflow to
 change that writer, or intentionally use the lower-level semantic API after
 reviewing the plan.
+
+### Content Forge Studio workflow
+
+The Content Forge page is the player-facing content surface that joins the
+specialist editors without bypassing them. Start by loading an existing pack
+or creating a local draft. The brief form captures the player-facing summary,
+lore, tone, acceptance criteria, and verification obligations; slice toggles
+and typed JSON rows then describe dialogue beats, event progression, campaign
+AI contracts, presentation screens, and direct legacy-record intent.
+
+Use **Preview player-facing content** to see what the player can encounter:
+dialogue beat cards, an event timeline, campaign behavior proof, balance
+rationale, and bounded static presentation canvases. Use **Review dependency
+canvas** to inspect the pack/slice/change/AI graph before source work.
+
+The source-plan panel presents independent named changes from Content Forge;
+select one, inspect its exact specialist diff, rehearse it, and use the normal
+`APPLY SOURCE` acknowledgement only for that one change. A multi-slice pack is
+not treated as an atomic transaction, so re-plan after every non-dry apply.
+
+The catalog panel is deliberately separate. It has a different confirmation,
+`SAVE CONTENT PACK`, and affects only `devkit/content_forge/packs.json`. This
+makes it safe to persist an authored-content contract without accidentally
+changing the module while a human is organizing player-facing work.
 
 ## Test
 

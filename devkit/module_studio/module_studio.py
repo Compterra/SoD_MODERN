@@ -31,20 +31,24 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from devkit.dialogue_composer import dialogue_composer
+from devkit.content_forge import content_forge
+from devkit.feature_authoring import feature_authoring
 from devkit.module_atlas import module_atlas
+from devkit.module_blueprint import module_blueprint
 from devkit.order_control import order_control
 from devkit.presentation_layout import presentation_layout
 from devkit.troop_item_balance import troop_item_balance
 from devkit.workbench import workbench
 
 
-STUDIO_VERSION = "0.3.0"
+STUDIO_VERSION = "0.4.0"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8797
 MAX_BODY_BYTES = 1_000_000
 MAX_QUERY_BYTES = 8_192
 APPLY_CONFIRMATION = "APPLY SOURCE"
 REFERENCED_REMOVAL_CONFIRMATION = "REMOVE REFERENCED ENTITY"
+CONTENT_CATALOG_SAVE_CONFIRMATION = content_forge.CONTENT_CATALOG_SAVE_CONFIRMATION
 WEB_ROOT = Path(__file__).resolve().parent / "web"
 
 
@@ -99,6 +103,14 @@ def require_string(value: Any, *, name: str, maximum: int = 4_000) -> str:
 def require_boolean(value: Any, *, name: str) -> bool:
     if not isinstance(value, bool):
         raise StudioError(f"{name} must be true or false.")
+    return value
+
+
+def bounded_integer(value: Any, *, name: str, default: int, minimum: int, maximum: int) -> int:
+    if value is None:
+        return default
+    if isinstance(value, bool) or not isinstance(value, int) or not minimum <= value <= maximum:
+        raise StudioError(f"{name} must be an integer from {minimum} through {maximum}.")
     return value
 
 
@@ -190,6 +202,9 @@ class StudioService:
     def balance(self) -> troop_item_balance.BalanceIndex:
         return troop_item_balance.build_balance_index(self.root)
 
+    def content(self) -> content_forge.ContentForgeIndex:
+        return content_forge.build_content_forge(self.root)
+
     def catalog(self) -> dict[str, Any]:
         return {
             "studio_version": f"devkit.module-studio.v{STUDIO_VERSION}",
@@ -201,7 +216,7 @@ class StudioService:
                 "sha_guard_required": True,
                 "dry_run_default": True,
                 "non_dry_apply_confirmation": APPLY_CONFIRMATION,
-                "source_scope": "modular source by default; balance apply may write exactly one confirmed direct legacy compile/module_items.py or compile/module_troops.py record after its separate SHA/plan/acknowledgement gate; _export/ and generated IDs are never written",
+                "source_scope": "modular source by default; Content Forge may separately save exactly one reviewed strict pack contract to devkit/content_forge/packs.json; balance apply may write exactly one confirmed direct legacy compile/module_items.py or compile/module_troops.py record after its separate SHA/plan/acknowledgement gate; _export/ and generated IDs are never written",
             },
             "viewer_endpoints": [
                 "/api/summary",
@@ -210,6 +225,7 @@ class StudioService:
                 "/api/atlas/triggers", "/api/atlas/quests", "/api/atlas/references",
                 "/api/dialogue/find", "/api/dialogue/context",
                 "/api/presentation/find", "/api/presentation/canvas",
+                "/api/content/summary", "/api/content/explain",
                 "/api/order/summary", "/api/order/map", "/api/order/explain",
                 "/api/order/risk", "/api/order/contracts", "/api/order/diff",
                 "/api/order/verify",
@@ -224,6 +240,9 @@ class StudioService:
                 "/api/atlas/patch", "/api/atlas/apply",
                 "/api/dialogue/patch", "/api/dialogue/apply",
                 "/api/presentation/patch", "/api/presentation/apply",
+                "/api/content/validate", "/api/content/plan", "/api/content/preview",
+                "/api/content/review", "/api/content/verify", "/api/content/apply",
+                "/api/content/catalog-plan", "/api/content/catalog-apply",
                 "/api/order/plan-move", "/api/order/apply-move",
                 "/api/balance/patch", "/api/balance/apply",
             ],
@@ -249,7 +268,10 @@ class StudioService:
             return HTTPStatus.NOT_FOUND, {"ok": False, "error": str(error)}
         except (
             StudioError,
+            content_forge.ContentForgeError,
+            feature_authoring.FeatureAuthoringError,
             module_atlas.ModuleAtlasError,
+            module_blueprint.ModuleBlueprintError,
             dialogue_composer.DialogueComposerError,
             order_control.OrderControlError,
             presentation_layout.PresentationLayoutError,
@@ -381,6 +403,17 @@ class StudioService:
                 width=optional_int(query.get("width"), name="width", default=1024, minimum=1, maximum=4096),
                 height=optional_int(query.get("height"), name="height", default=768, minimum=1, maximum=4096),
                 overlay_limit=optional_int(query.get("overlay_limit"), name="overlay_limit", default=200, minimum=1, maximum=1000),
+            )
+        if path == "/api/content/summary":
+            return content_forge.content_forge_summary(
+                self.content(),
+                limit=optional_int(query.get("limit"), name="limit", default=30, minimum=1, maximum=200),
+            )
+        if path == "/api/content/explain":
+            return content_forge.content_pack_explain(
+                self.content(),
+                pack_id=query_value(query, "pack_id", required=True),
+                trace_limit=optional_int(query.get("trace_limit"), name="trace_limit", default=12, minimum=1, maximum=30),
             )
         if path == "/api/order/summary":
             return order_control.order_summary(self.order())
@@ -524,6 +557,22 @@ class StudioService:
             return self._presentation_patch(body)
         if path == "/api/presentation/apply":
             return self._presentation_apply(body)
+        if path == "/api/content/validate":
+            return self._content_validate(body)
+        if path == "/api/content/plan":
+            return self._content_plan(body)
+        if path == "/api/content/preview":
+            return self._content_preview(body)
+        if path == "/api/content/review":
+            return self._content_review(body)
+        if path == "/api/content/verify":
+            return self._content_verify(body)
+        if path == "/api/content/apply":
+            return self._content_apply(body)
+        if path == "/api/content/catalog-plan":
+            return self._content_catalog_plan(body)
+        if path == "/api/content/catalog-apply":
+            return self._content_catalog_apply(body)
         if path == "/api/order/plan-move":
             return self._order_plan_move(body)
         if path == "/api/order/apply-move":
@@ -614,6 +663,156 @@ class StudioService:
     def _presentation_apply(self, body: Mapping[str, Any]) -> dict[str, Any]:
         target, action, values = self._presentation_arguments(body, include_apply=True)
         return presentation_layout.presentation_apply(self.presentations(), target, action=action, **values)
+
+    def _content_selection(
+        self,
+        body: Mapping[str, Any],
+        *,
+        extra_allowed: set[str] | None = None,
+    ) -> tuple[str | None, dict[str, Any] | None, dict[str, Any]]:
+        """Accept one saved pack ID or one browser-local strict pack object.
+
+        Browser drafts remain typed JSON and are never interpreted as source.
+        The specialist Content Forge compiler decides whether their declared
+        entrypoints/actions can be planned.
+        """
+
+        allowed = {"pack_id", "pack"}
+        if extra_allowed:
+            allowed.update(extra_allowed)
+        values = select_fields(body, allowed)
+        pack_id = values.pop("pack_id", None)
+        pack = values.pop("pack", None)
+        if (pack_id is None) == (pack is None):
+            raise StudioError("Supply exactly one of pack_id or pack.")
+        if pack_id is not None:
+            return require_string(pack_id, name="pack_id", maximum=160), None, values
+        return None, require_object(pack, name="pack"), values
+
+    def _content_validate(self, body: Mapping[str, Any]) -> dict[str, Any]:
+        pack_id, pack, _values = self._content_selection(body)
+        return content_forge.content_pack_validate(self.content(), pack_id=pack_id, pack_value=pack)
+
+    def _content_plan(self, body: Mapping[str, Any]) -> dict[str, Any]:
+        pack_id, pack, values = self._content_selection(body, extra_allowed={"trace_limit"})
+        return content_forge.content_pack_plan(
+            self.content(),
+            pack_id=pack_id,
+            pack_value=pack,
+            trace_limit=bounded_integer(values.get("trace_limit"), name="trace_limit", default=12, minimum=1, maximum=30),
+        )
+
+    def _content_preview(self, body: Mapping[str, Any]) -> dict[str, Any]:
+        pack_id, pack, values = self._content_selection(body, extra_allowed={"trace_limit"})
+        return content_forge.content_pack_preview(
+            self.content(),
+            pack_id=pack_id,
+            pack_value=pack,
+            trace_limit=bounded_integer(values.get("trace_limit"), name="trace_limit", default=12, minimum=1, maximum=30),
+        )
+
+    def _content_review(self, body: Mapping[str, Any]) -> dict[str, Any]:
+        pack_id, pack, values = self._content_selection(body, extra_allowed={"trace_limit"})
+        return content_forge.content_pack_review(
+            self.content(),
+            pack_id=pack_id,
+            pack_value=pack,
+            trace_limit=bounded_integer(values.get("trace_limit"), name="trace_limit", default=12, minimum=1, maximum=30),
+        )
+
+    def _content_verify(self, body: Mapping[str, Any]) -> dict[str, Any]:
+        pack_id, pack, values = self._content_selection(
+            body,
+            extra_allowed={
+                "run_tests", "stage_build_check", "run_scenarios",
+                "scenario_iterations", "scenario_seed", "timeout_seconds",
+            },
+        )
+        options = {
+            "run_tests": require_boolean(values.get("run_tests", False), name="run_tests"),
+            "stage_build_check": require_boolean(values.get("stage_build_check", False), name="stage_build_check"),
+            "run_scenarios": require_boolean(values.get("run_scenarios", False), name="run_scenarios"),
+            "scenario_iterations": bounded_integer(values.get("scenario_iterations"), name="scenario_iterations", default=8, minimum=1, maximum=50),
+            "scenario_seed": bounded_integer(values.get("scenario_seed"), name="scenario_seed", default=1, minimum=-2_147_483_648, maximum=2_147_483_647),
+            "timeout_seconds": bounded_integer(values.get("timeout_seconds"), name="timeout_seconds", default=90, minimum=10, maximum=300),
+        }
+        return content_forge.content_pack_verify(self.content(), pack_id=pack_id, pack_value=pack, **options)
+
+    def _content_apply(self, body: Mapping[str, Any]) -> dict[str, Any]:
+        pack_id, pack, values = self._content_selection(
+            body,
+            extra_allowed={
+                "change_id", "expected_content_plan_id", "expected_sha256", "expected_balance_plan_sha256",
+                "dry_run", "confirmation", "allow_legacy_compile_authoring", "allow_protected_legacy_record_change",
+            },
+        )
+        dry_run, expected_sha256 = apply_intent(values)
+        expected_balance_plan_sha256 = values.get("expected_balance_plan_sha256")
+        if expected_balance_plan_sha256 is not None:
+            expected_balance_plan_sha256 = require_string(
+                expected_balance_plan_sha256,
+                name="expected_balance_plan_sha256",
+                maximum=128,
+            )
+        return content_forge.content_pack_apply(
+            self.content(),
+            pack_id=pack_id,
+            pack_value=pack,
+            change_id=require_string(values.get("change_id"), name="change_id", maximum=160),
+            expected_content_plan_id=require_string(values.get("expected_content_plan_id"), name="expected_content_plan_id", maximum=160),
+            expected_sha256=expected_sha256,
+            expected_balance_plan_sha256=expected_balance_plan_sha256,
+            dry_run=dry_run,
+            allow_legacy_compile_authoring=require_boolean(
+                values.get("allow_legacy_compile_authoring", False),
+                name="allow_legacy_compile_authoring",
+            ),
+            allow_protected_legacy_record_change=require_boolean(
+                values.get("allow_protected_legacy_record_change", False),
+                name="allow_protected_legacy_record_change",
+            ),
+        )
+
+    def _content_catalog_plan(self, body: Mapping[str, Any]) -> dict[str, Any]:
+        values = select_fields(body, {"pack", "mode"})
+        return content_forge.content_pack_catalog_plan(
+            self.content(),
+            pack_value=require_object(values.get("pack"), name="pack"),
+            mode=require_string(values.get("mode"), name="mode", maximum=20),
+        )
+
+    def _content_catalog_apply(self, body: Mapping[str, Any]) -> dict[str, Any]:
+        values = select_fields(
+            body,
+            {
+                "pack", "mode", "expected_catalog_plan_id", "expected_catalog_sha256",
+                "dry_run", "confirmation",
+            },
+        )
+        dry_run = require_boolean(values.get("dry_run", True), name="dry_run")
+        confirmation = values.get("confirmation")
+        if not dry_run and confirmation != CONTENT_CATALOG_SAVE_CONFIRMATION:
+            raise StudioError(
+                "A real content-pack catalog save requires confirmation exactly equal to "
+                f"{CONTENT_CATALOG_SAVE_CONFIRMATION!r}."
+            )
+        return content_forge.content_pack_catalog_apply(
+            self.content(),
+            pack_value=require_object(values.get("pack"), name="pack"),
+            mode=require_string(values.get("mode"), name="mode", maximum=20),
+            expected_catalog_plan_id=require_string(
+                values.get("expected_catalog_plan_id"),
+                name="expected_catalog_plan_id",
+                maximum=160,
+            ),
+            expected_catalog_sha256=require_string(
+                values.get("expected_catalog_sha256"),
+                name="expected_catalog_sha256",
+                maximum=128,
+            ),
+            dry_run=dry_run,
+            confirmation=confirmation if isinstance(confirmation, str) else None,
+        )
 
     def _order_move_arguments(self, body: Mapping[str, Any], *, include_apply: bool) -> tuple[str, str, str, dict[str, Any]]:
         allowed = {"target", "anchor", "position", "expected_sha256", "allow_protected_contract_change"}

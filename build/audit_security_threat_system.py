@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-REPORT = ROOT / "docs" / "reports" / "security_threat_system_audit.md"
+REPORT = ROOT / "docs" / "reports" / "economy_settlements" / "security_threat_system_audit.md"
 
 
 SECURITY_MODIFIERS = (
@@ -25,14 +25,14 @@ RUNTIME_HOOKS = (
     ("Security profile", "src/scripts/ZY_helper_scripts/sod_center_security_profile.py"),
     ("Threat compatibility API", "src/scripts/ZD_centers/get_center_threat_level.py"),
     ("Bandit spawn pressure", "src/scripts/ZZ_common_array_processing/spawn_bandits.py"),
-    ("Desperation bandit pressure", "src/triggers/ST04_weekly/entry_0105.py"),
+    ("Desperation bandit pressure", "src/scripts/ZY_helper_scripts/sod_center_weekly_security_desperation.py"),
     ("Village raid progress and recovery", "src/scripts/ZD_centers/process_village_raids.py"),
     ("Construction workforce", "src/scripts/ZY_helper_scripts/sod_population_based_construction.py"),
     ("Caravan route safety", "src/scripts/ZB_economy_and_trade/cf_select_random_town_at_peace_with_faction_in_trade_route.py"),
     ("Regional threat offers", "src/scripts/ZY_helper_scripts/sod_threat_board_generate_offers.py"),
     ("Regional threat outcomes", "src/scripts/ZY_helper_scripts/sod_threat_board_apply_economy_effect.py"),
     ("Population recovery security", "src/scripts/ZZ_common_array_processing/update_center_population_supply.py"),
-    ("Recon reporting", "src/scripts/ZD_centers/update_center_recon_notes.py"),
+    ("Field report builder", "src/scripts/ZY_helper_scripts/sod_store_center_recon_brief_to_s68.py"),
 )
 
 

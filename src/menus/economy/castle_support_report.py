@@ -31,6 +31,7 @@ MENUS = [
         (assign, ":garrison_recovery", reg12),
         (assign, ":patrol_strength", reg13),
         (assign, ":recruitment_quality", reg14),
+        (assign, ":tax_reliability", reg15),
         (assign, ":village_protection", reg16),
         (try_begin),
           (lt, ":support_score", 30),
@@ -126,6 +127,16 @@ MENUS = [
         (try_end),
 
         (try_begin),
+          (lt, ":tax_reliability", 45),
+          (str_store_string, s80, "@scutage is unreliable"),
+        (else_try),
+          (lt, ":tax_reliability", 85),
+          (str_store_string, s80, "@scutage is uneven"),
+        (else_try),
+          (str_store_string, s80, "@scutage is dependable"),
+        (try_end),
+
+        (try_begin),
           (lt, ":bound_villages", 1),
           (str_store_string, s78, "@no villages feed this estate directly"),
         (else_try),
@@ -135,7 +146,7 @@ MENUS = [
           (str_store_string, s78, "@its attached villages give it a meaningful base"),
         (try_end),
 
-        (str_store_string, s79, "@{s68}: {s69}; {s78}.^Garrison: {s70}; {s71}.^Roads: {s72}; {s76}.^Command: {s75}; {s74}; {s73}.^Outlook: {s77}."),
+        (str_store_string, s79, "@{s68}: {s69}; {s78}.^Garrison: {s70}; {s71}.^Roads: {s72}; {s76}.^Command: {s75}; {s74}; {s73}.^Revenue: {s80}.^Outlook: {s77}."),
         (try_begin),
           (eq, ":first", 1),
           (str_store_string, s98, "@{s79}"),
@@ -151,7 +162,7 @@ MENUS = [
         (str_store_string, s98, "@You do not personally hold any castles."),
       (try_end),
       (str_store_string_reg, s97, s98),
-      (str_store_string, s98, "@Castle Support Report:^^Castles are military estates. Their strength comes from garrisons, attached villages, stores, road control, commander quality, siege readiness, and noble access.^^{s97}"),
+      (str_store_string, s98, "@Castle Support Report:^^Castles are military estates. Their strength comes from garrisons, attached villages, stores, road control, commander quality, siege readiness, noble access, scutage reliability, and village protection.^^{s97}"),
     ],
     [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_fief_reports")]),

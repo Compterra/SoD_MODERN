@@ -91,6 +91,11 @@ The schema is [`contracts/feature-intent.v1.schema.json`](contracts/feature-inte
 
 Supported typed change families are `module`, `dialogue`, and `presentation`. They compile into the existing specialist semantic actions, so dialogue retains first-match analysis and presentation retains overlay/register analysis. Destructive removal and cross-fragment reordering remain intentionally in their dedicated Atlas / Dialogue / Order workflows, which contain the necessary migration and ordering safeguards.
 
+The `module` family also permits the narrow `add_presentation` action when its
+target is a real presentation entrypoint. It creates a complete new typed
+presentation at that source fragment's existing presentation anchor; it does
+not turn existing presentation layout editing into a generic module edit.
+
 ## Semantic baselines
 
 `feature_semantic_snapshot` returns an in-memory JSON baseline (it writes nothing). Pass that object to `feature_semantic_diff` after a source edit to report changed entrypoint provenance, order, generated IDs, Blueprint state, and typed plan bases. Use the existing workspace-wide `semantic_change_snapshot` / `semantic_change_diff` tools when the impact is broader than one feature.

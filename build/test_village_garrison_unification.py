@@ -74,10 +74,7 @@ def main() -> int:
     assert_contains(raid_attack, ":village_reliability")
     assert_contains(raid_attack, ":population_resistance")
 
-    assert_contains(recon, "Village garrison")
-    assert_contains(recon, "NPC militia pool")
-    assert_contains(recon, "player recruit pool")
-    assert_contains(recon, "party_get_num_companions, reg17")
+    assert_contains(recon, "script_sod_store_center_recon_brief_to_s68")
 
     assert_contains(notes, "Village garrison")
     assert_contains(notes, "actual village defenders")

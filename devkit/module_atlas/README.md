@@ -39,7 +39,10 @@ Dialogue and presentation records appear in Atlas search/context/graphs, but
 their authoring is deliberately delegated to `dialogue_patch` and
 `presentation_patch`. That preserves dialogue first-match/shadow analysis and
 presentation overlay/register-layout semantics instead of flattening them into
-unsafe generic edits.
+unsafe generic edits. The one narrow presentation exception is
+`add_presentation`: it appends a wholly new typed presentation at a named
+existing presentation append anchor. Existing screen layout changes still
+belong to Presentation Layout.
 
 ## CLI examples
 
@@ -67,6 +70,7 @@ single raw text surface:
 | menu option | change text/expressions; edit conditions/consequences; remove option |
 | mission template | change expressions; add mission/trigger; guarded removal |
 | mission trigger | edit condition/consequence blocks, interval, remove trigger |
+| presentation | append a new typed presentation only; edit existing overlays/triggers in Presentation Layout |
 | quest | change title/description/flags; add quest; guarded removal |
 | script | change operation block; add script; guarded removal |
 | simple trigger | change operation block/interval; add/remove trigger |

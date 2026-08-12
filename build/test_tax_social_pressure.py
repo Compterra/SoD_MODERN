@@ -79,15 +79,7 @@ def main() -> int:
     ):
         assert_contains(laws, token)
 
-    for token in (
-        "Local tax burden",
-        "peasant extraction",
-        "merchant tariffs",
-        "noble obligations",
-        "clergy support",
-        "war taxes",
-    ):
-        assert_contains(recon, token)
+    assert_contains(recon, "script_sod_store_center_recon_brief_to_s68")
 
     for token in (
         "Tax Social Pressure Audit",

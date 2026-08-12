@@ -24,6 +24,7 @@ def main() -> int:
     security = read("src/scripts/ZY_helper_scripts/sod_center_security_profile.py")
     population = read("src/scripts/ZZ_common_array_processing/update_center_population_supply.py")
     recon = read("src/scripts/ZD_centers/update_center_recon_notes.py")
+    recon_brief = read("src/scripts/ZY_helper_scripts/sod_store_center_recon_brief_to_s68.py")
     notes = read("docs/reports/food_economy_input_audit.md")
 
     for token in (
@@ -64,8 +65,9 @@ def main() -> int:
     assert_contains(population, ":food_pressure")
     assert_contains(population, "lt, \":food_security\", 300")
     assert_contains(population, "ge, \":food_security\", 1400")
-    assert_contains(recon, "Food security")
-    assert_contains(recon, "script_sod_get_center_food_profile")
+    assert_contains(recon, "script_sod_store_center_recon_brief_to_s68")
+    assert_contains(recon_brief, "Food stores")
+    assert_contains(recon_brief, "script_sod_get_center_food_profile")
 
     assert_contains(notes, "Food Economy Input Audit")
     assert_contains(notes, "health")

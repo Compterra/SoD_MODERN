@@ -25,7 +25,7 @@ from mcp.server import MCPServer
 from mcp.types import ToolAnnotations
 
 
-SERVER_VERSION = "1.6.0"
+SERVER_VERSION = "1.9.0"
 SERVER_DIR = Path(__file__).resolve().parent
 DEVKIT_ROOT = SERVER_DIR.parent
 REPO_ROOT = DEVKIT_ROOT.parent
@@ -43,9 +43,11 @@ from devkit.change_router import change_router  # noqa: E402
 from devkit.module_atlas import module_atlas  # noqa: E402
 from devkit.module_blueprint import module_blueprint  # noqa: E402
 from devkit.feature_authoring import feature_authoring  # noqa: E402
+from devkit.content_forge import content_forge  # noqa: E402
 from devkit.order_control import order_control  # noqa: E402
 from devkit.presentation_layout import presentation_layout  # noqa: E402
 from devkit.release_gate import release_gate  # noqa: E402
+from devkit.rgl_log_sentinel import rgl_log_sentinel  # noqa: E402
 from devkit.string_integrity import string_integrity  # noqa: E402
 from devkit.string_provenance import string_provenance  # noqa: E402
 from devkit.slot_lifecycle_lint import slot_lifecycle_lint  # noqa: E402
@@ -97,6 +99,7 @@ SERVER_INSTRUCTIONS = (
     "then use bounded dialogue/string tools. For text in the wrong UI, menu, or dialogue location, "
     "run string_integrity, then text_export_parity when a processor/export mismatch is plausible, then text_explain for execution evidence before proposing a source edit. "
     "For silent campaign behavior problems, use campaign_state_summary, then campaign_state_findings and campaign_state_timeline; turn a confirmed invariant into a reviewed checked-in state contract rather than relying on an in-game surprise. "
+    "For a gameplay RGL log, use rgl_log_analyze with the exact rgl_log path and the live module path when available; it clusters engine errors, maps them to source/generated/export evidence, and distinguishes a fixed source tree from a stale deployed export. Use rgl_log_contract before a build or release to verify protected engine callback party-handle guards. "
     "Use campaign_ai_intents for stationary/patrol/escort/raid-return/despawn contracts, slot_lifecycle_summary before reusing durable slots, and campaign_scenario_fuzz for safe bounded counterexample generation. "
     "For dialogue behavior rather than mere ordering, use dialogue_model_summary and dialogue_model_state; it proves only supported branch-free unreachable/shadowed/overlap paths. "
     "For string-register calls, use string_provenance_explain after text_explain to resolve actual nested writer branches. Capture semantic_change_snapshot before a source edit and semantic_change_diff after the reviewed build to see precedence/writer/sink/ID/trigger/export effects. "
@@ -108,9 +111,10 @@ SERVER_INSTRUCTIONS = (
     "Order Control protects manifest, generated-ID, and engine callback contracts but never writes compile/ or export files. "
     "For troop/item balancing, start with balance_summary then balance_item or balance_troop; use balance_compare, balance_upgrade_tree, and balance_outliers before proposing a change. Use balance_native_kingdoms before changing Native A/B/C templates or direct Native upgrades, and balance_mercenary_guilds before changing guild role fit, contract formation, or mercenary roster composition. "
     "Balance edits are a narrow legacy compile-authoring compatibility gate: they produce a SHA-guarded record diff, dry-run by default, never alter IDs/order/exports, and require an explicit legacy-authoring acknowledgement for non-dry apply. "
-    "For a strict release-candidate preflight after a reviewed build, use release_gate; it stages source assembly and all legacy exports without writing the live workspace, requires exact approved intentional blank sinks, and blocks on compiler, dialogue, order, or export-parity regressions. "
+    "For a strict release-candidate preflight after a reviewed build, use release_gate; it stages source assembly and all legacy exports without writing the live workspace, requires exact approved intentional blank sinks, and blocks on compiler, dialogue, order, export-parity, or protected engine-callback regressions. "
     "For a coherent feature that spans source fragments, order, durable slots, AI, and focused tests, start with blueprint_summary and blueprint_explain; use blueprint_compile only for its dependency-first no-write impact plan, then make any separately reviewed change through the existing SHA-guarded source editor. "
     "For a new or evolving module-system feature, use feature_summary/feature_explain and entrypoint_find/entrypoint_explain to map actual engine entrypoints first; submit only typed JSON Feature Intent operations to feature_plan, review each exact source diff, then use feature_apply for one SHA-guarded source target at a time and feature_verify afterward. "
+    "For authored content spanning dialogue, quest/event, campaign AI, troop/item balancing, and presentations, use content_forge_summary then content_pack_explain; Content Packs bind brief/lore/tone/acceptance criteria to typed specialist slices. Use content_pack_catalog_plan/content_pack_catalog_apply only to persist one reviewed strict pack contract to devkit/content_forge/packs.json; use content_pack_plan and content_pack_review before content_pack_apply, which remains one named SHA-guarded specialist change at a time. "
     "For CBO-style fixed impact, validation, contract, coverage, scenario, and release evidence workflows, use the workbench_* tools. "
     "Use change_impact and patch_plan before raw apply_source_edits. Apply is source-only, SHA-guarded, and dry-run by default. Results include compiled order and "
     "source/export provenance. Never infer a dialogue branch without inspecting "
@@ -223,8 +227,10 @@ def guarded(
         module_atlas.ModuleAtlasError,
         module_blueprint.ModuleBlueprintError,
         feature_authoring.FeatureAuthoringError,
+        content_forge.ContentForgeError,
         order_control.OrderControlError,
         presentation_layout.PresentationLayoutError,
+        rgl_log_sentinel.RglLogSentinelError,
         string_integrity.StringIntegrityError,
         string_provenance.StringProvenanceError,
         slot_lifecycle_lint.SlotLifecycleError,
@@ -354,6 +360,7 @@ def install_workspace_index_cache() -> None:
         ("module_atlas", module_atlas, "build_module_atlas"),
         ("module_blueprint", module_blueprint, "build_module_blueprints"),
         ("feature_authoring", feature_authoring, "build_feature_authoring"),
+        ("content_forge", content_forge, "build_content_forge"),
         ("order_control", order_control, "build_order_control"),
         ("presentation_layout", presentation_layout, "build_presentation_layout"),
         ("semantic_snapshot", semantic_change_diff, "build_snapshot"),
@@ -415,7 +422,7 @@ def devkit_catalog() -> dict[str, Any]:
                 "server_instructions": SERVER_INSTRUCTIONS,
                 "activation": (
                     "This server is diagnostic-first. dialogue_apply, presentation_apply, module_apply, and apply_source_edits "
-                    "all use the same source-only, SHA-guarded, dry-run-by-default Change Router gate; balance_apply is a separate, narrower SHA-gated legacy compile-authoring compatibility path for direct troop/item records only; Workbench tools provide fixed evidence workflows and disabled DevKit drafts. "
+                    "all use the same source-only, SHA-guarded, dry-run-by-default Change Router gate; content_pack_catalog_apply separately persists only one reviewed strict devkit/content_forge/packs.json contract with its own SHA/confirmation gate; content_pack_apply delegates one named change to those same specialist gates; balance_apply is a separate, narrower SHA-gated legacy compile-authoring compatibility path for direct troop/item records only; Workbench tools provide fixed evidence workflows and disabled DevKit drafts. "
                     "Configure it in a local Codex client to make its tools callable there."
                 ),
             },
@@ -964,10 +971,58 @@ def text_export_parity_tool(
 
 
 @mcp.tool(
+    name="rgl_log_analyze",
+    description=(
+        "Read one Mount & Blade RGL gameplay log, cluster related engine errors, map named scripts to source/generated/export evidence, "
+        "classify non-script warnings, and optionally prove whether an explicit live Module directory is stale versus workspace _export. "
+        "Read-only: it never touches saves, live module files, source, compile, or exports."
+    ),
+    annotations=READ_ONLY,
+    structured_output=True,
+)
+def rgl_log_analyze_tool(
+    log_path: str,
+    live_module_path: str | None = None,
+    limit: int = 50,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        maximum = require_int("limit", limit, 1, 200)
+        checked_log = Path(require_query(log_path))
+        checked_live = Path(require_query(live_module_path)) if live_module_path is not None else None
+        payload = rgl_log_sentinel.analyze_log(
+            REPO_ROOT,
+            log_path=checked_log,
+            live_module=checked_live,
+            limit=maximum,
+        )
+        return success("rgl_log_analyze", payload, extra_warnings=payload["tool_warnings"])
+
+    return guarded("rgl_log_analyze", action)
+
+
+@mcp.tool(
+    name="rgl_log_contract",
+    description=(
+        "Check protected native engine callback contracts for dynamic party handles before a build or release. "
+        "Currently protects game_event_simulate_battle from stale-party reads; read-only."
+    ),
+    annotations=READ_ONLY,
+    structured_output=True,
+)
+def rgl_log_contract_tool(limit: int = 50) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        maximum = require_int("limit", limit, 1, 200)
+        payload = rgl_log_sentinel.engine_callback_contract_report(REPO_ROOT, limit=maximum)
+        return success("rgl_log_contract", payload, extra_warnings=payload["warnings"])
+
+    return guarded("rgl_log_contract", action)
+
+
+@mcp.tool(
     name="release_gate",
     description=(
         "Run the strict, read-only release-candidate preflight: isolated source-to-generated-to-all-export parity, "
-        "staged compiler diagnostics, exact approved intentional blank sinks, dialogue-model errors, and order/ID contracts. "
+        "staged compiler diagnostics, exact approved intentional blank sinks, dialogue-model errors, order/ID contracts, and protected engine callback party-handle contracts. "
         "The tool never writes live compile or export files; data.state is passed or blocked."
     ),
     annotations=READ_ONLY,
@@ -1378,6 +1433,368 @@ def feature_semantic_diff_tool(
         return success("feature_semantic_diff", payload, extra_warnings=payload["warnings"])
 
     return guarded("feature_semantic_diff", action)
+
+
+@mcp.tool(
+    name="content_forge_summary",
+    description=(
+        "Summarize checked-in typed Content Forge packs and coverage across dialogue, quest/event, campaign AI, troop/item, and presentation authoring slices."
+    ),
+    annotations=READ_ONLY,
+    structured_output=True,
+)
+def content_forge_summary_tool(limit: int = 30) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        payload = content_forge.content_forge_summary(
+            content_forge.build_content_forge(REPO_ROOT),
+            limit=require_int("limit", limit, 1, 200),
+        )
+        return success("content_forge_summary", payload, extra_warnings=payload["warnings"])
+
+    return guarded("content_forge_summary", action)
+
+
+@mcp.tool(
+    name="content_pack_find",
+    description="Find a Content Forge pack by its brief, lore/tone/acceptance criteria, slice, entrypoint, contract, or declared test/scenario.",
+    annotations=READ_ONLY,
+    structured_output=True,
+)
+def content_pack_find_tool(query: str, slice: str = "all", limit: int = 30) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        payload = content_forge.content_pack_find(
+            content_forge.build_content_forge(REPO_ROOT),
+            require_query(query),
+            slice_name=slice,
+            limit=require_int("limit", limit, 1, 200),
+        )
+        return success("content_pack_find", payload, extra_warnings=payload["warnings"])
+
+    return guarded("content_pack_find", action)
+
+
+@mcp.tool(
+    name="content_pack_explain",
+    description=(
+        "Explain one checked-in or inline typed Content Pack through its brief, source slices, real engine entrypoints, Feature Intent compilation, and declared scenario evidence."
+    ),
+    annotations=READ_ONLY,
+    structured_output=True,
+)
+def content_pack_explain_tool(
+    pack_id: str | None = None,
+    pack: dict[str, Any] | None = None,
+    trace_limit: int = 12,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        payload = content_forge.content_pack_explain(
+            content_forge.build_content_forge(REPO_ROOT),
+            pack_id=pack_id,
+            pack_value=pack,
+            trace_limit=require_int("trace_limit", trace_limit, 1, 30),
+        )
+        return success("content_pack_explain", payload, extra_warnings=payload["warnings"])
+
+    return guarded("content_pack_explain", action)
+
+
+@mcp.tool(
+    name="content_pack_validate",
+    description=(
+        "Validate one checked-in or inline Content Pack's strict JSON contract, specialist typed-source route, declared tests, Blueprint requirement, and scenario IDs before planning."
+    ),
+    annotations=READ_ONLY,
+    structured_output=True,
+)
+def content_pack_validate_tool(
+    pack_id: str | None = None,
+    pack: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        payload = content_forge.content_pack_validate(
+            content_forge.build_content_forge(REPO_ROOT),
+            pack_id=pack_id,
+            pack_value=pack,
+        )
+        return success("content_pack_validate", payload, extra_warnings=payload["warnings"])
+
+    return guarded("content_pack_validate", action)
+
+
+@mcp.tool(
+    name="content_pack_compile",
+    description=(
+        "Compile a Content Pack into an explicit order-aware sequence of Feature Authoring and Balance Lab changes without producing a diff or writing source."
+    ),
+    annotations=READ_ONLY,
+    structured_output=True,
+)
+def content_pack_compile_tool(
+    pack_id: str | None = None,
+    pack: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        payload = content_forge.content_pack_compile(
+            content_forge.build_content_forge(REPO_ROOT),
+            pack_id=pack_id,
+            pack_value=pack,
+        )
+        return success("content_pack_compile", payload, extra_warnings=payload["warnings"])
+
+    return guarded("content_pack_compile", action)
+
+
+@mcp.tool(
+    name="content_pack_plan",
+    description=(
+        "Compile a Content Pack to exact independently guarded source/balance diffs, current SHAs, planned AI intent evidence, ordering impacts, and verification obligations. Never writes source."
+    ),
+    annotations=READ_ONLY,
+    structured_output=True,
+)
+def content_pack_plan_tool(
+    pack_id: str | None = None,
+    pack: dict[str, Any] | None = None,
+    trace_limit: int = 12,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        payload = content_forge.content_pack_plan(
+            content_forge.build_content_forge(REPO_ROOT),
+            pack_id=pack_id,
+            pack_value=pack,
+            trace_limit=require_int("trace_limit", trace_limit, 1, 30),
+        )
+        return success("content_pack_plan", payload, extra_warnings=payload["warnings"])
+
+    return guarded("content_pack_plan", action)
+
+
+@mcp.tool(
+    name="content_pack_preview",
+    description=(
+        "Return static narrative beats, quest/event timeline, AI evidence, balance patches, existing presentation canvases, planned new-presentation summaries, and a review canvas for one Content Pack."
+    ),
+    annotations=READ_ONLY,
+    structured_output=True,
+)
+def content_pack_preview_tool(
+    pack_id: str | None = None,
+    pack: dict[str, Any] | None = None,
+    trace_limit: int = 12,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        payload = content_forge.content_pack_preview(
+            content_forge.build_content_forge(REPO_ROOT),
+            pack_id=pack_id,
+            pack_value=pack,
+            trace_limit=require_int("trace_limit", trace_limit, 1, 30),
+        )
+        return success("content_pack_preview", payload, extra_warnings=payload["warnings"])
+
+    return guarded("content_pack_preview", action)
+
+
+@mcp.tool(
+    name="content_pack_review",
+    description=(
+        "Return a deterministic structured/Mermaid human review canvas showing a Content Pack's brief, slices, dependencies, apply sequence, contracts, and acceptance review state."
+    ),
+    annotations=READ_ONLY,
+    structured_output=True,
+)
+def content_pack_review_tool(
+    pack_id: str | None = None,
+    pack: dict[str, Any] | None = None,
+    trace_limit: int = 12,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        payload = content_forge.content_pack_review(
+            content_forge.build_content_forge(REPO_ROOT),
+            pack_id=pack_id,
+            pack_value=pack,
+            trace_limit=require_int("trace_limit", trace_limit, 1, 30),
+        )
+        return success("content_pack_review", payload, extra_warnings=payload["warnings"])
+
+    return guarded("content_pack_review", action)
+
+
+@mcp.tool(
+    name="content_pack_apply",
+    description=(
+        "Rehearse or apply exactly one reviewed Content Pack change through its specialist source or legacy-record gate. Requires exact content-plan ID and current SHA; troop/item changes also require Balance Lab's plan SHA. dry_run is true by default."
+    ),
+    annotations=WRITE_SOURCE,
+    structured_output=True,
+)
+def content_pack_apply_tool(
+    change_id: str,
+    expected_content_plan_id: str,
+    expected_sha256: str,
+    expected_balance_plan_sha256: str | None = None,
+    pack_id: str | None = None,
+    pack: dict[str, Any] | None = None,
+    dry_run: bool = True,
+    allow_legacy_compile_authoring: bool = False,
+    allow_protected_legacy_record_change: bool = False,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        payload = content_forge.content_pack_apply(
+            content_forge.build_content_forge(REPO_ROOT),
+            pack_id=pack_id,
+            pack_value=pack,
+            change_id=change_id,
+            expected_content_plan_id=expected_content_plan_id,
+            expected_sha256=expected_sha256,
+            expected_balance_plan_sha256=expected_balance_plan_sha256,
+            dry_run=dry_run,
+            allow_legacy_compile_authoring=allow_legacy_compile_authoring,
+            allow_protected_legacy_record_change=allow_protected_legacy_record_change,
+        )
+        return success("content_pack_apply", payload, extra_warnings=payload["warnings"], read_only=dry_run)
+
+    return guarded("content_pack_apply", action, read_only=dry_run if isinstance(dry_run, bool) else False)
+
+
+@mcp.tool(
+    name="content_pack_verify",
+    description=(
+        "Re-evaluate a Content Pack's specialist source/order checks, current AI intent contracts, direct legacy-record integrity, and optionally focused tests, staged builds, or bounded deterministic scenarios. Never writes source."
+    ),
+    annotations=READ_ONLY,
+    structured_output=True,
+)
+def content_pack_verify_tool(
+    pack_id: str | None = None,
+    pack: dict[str, Any] | None = None,
+    run_tests: bool = False,
+    stage_build_check: bool = False,
+    run_scenarios: bool = False,
+    scenario_iterations: int = 8,
+    scenario_seed: int = 1,
+    timeout_seconds: int = 90,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        payload = content_forge.content_pack_verify(
+            content_forge.build_content_forge(REPO_ROOT),
+            pack_id=pack_id,
+            pack_value=pack,
+            run_tests=run_tests,
+            stage_build_check=stage_build_check,
+            run_scenarios=run_scenarios,
+            scenario_iterations=require_int("scenario_iterations", scenario_iterations, 1, 50),
+            scenario_seed=scenario_seed,
+            timeout_seconds=require_int("timeout_seconds", timeout_seconds, 10, 300),
+        )
+        return success("content_pack_verify", payload, extra_warnings=payload["warnings"])
+
+    return guarded("content_pack_verify", action)
+
+
+@mcp.tool(
+    name="content_pack_snapshot",
+    description=(
+        "Return an in-memory Content Pack semantic baseline: declared pack contract, specialist plan bases, current feature evidence, and AI contract status. It writes no artifact."
+    ),
+    annotations=READ_ONLY,
+    structured_output=True,
+)
+def content_pack_snapshot_tool(
+    pack_id: str | None = None,
+    pack: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        payload = content_forge.content_pack_snapshot(
+            content_forge.build_content_forge(REPO_ROOT),
+            pack_id=pack_id,
+            pack_value=pack,
+        )
+        return success("content_pack_snapshot", payload, extra_warnings=payload["warnings"])
+
+    return guarded("content_pack_snapshot", action)
+
+
+@mcp.tool(
+    name="content_pack_semantic_diff",
+    description=(
+        "Compare an earlier content_pack_snapshot object with current pack/source/balance/AI evidence, reporting changed typed plan bases and intent-contract status."
+    ),
+    annotations=READ_ONLY,
+    structured_output=True,
+)
+def content_pack_semantic_diff_tool(
+    before: dict[str, Any],
+    pack_id: str | None = None,
+    pack: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        payload = content_forge.content_pack_semantic_diff(
+            content_forge.build_content_forge(REPO_ROOT),
+            before,
+            pack_id=pack_id,
+            pack_value=pack,
+        )
+        return success("content_pack_semantic_diff", payload, extra_warnings=payload["warnings"])
+
+    return guarded("content_pack_semantic_diff", action)
+
+
+@mcp.tool(
+    name="content_pack_catalog_plan",
+    description=(
+        "Plan a strict create or replacement of one checked-in Content Forge pack contract in devkit/content_forge/packs.json. "
+        "Returns the exact catalog diff and SHA guard; never writes module source, generated layers, or exports."
+    ),
+    annotations=READ_ONLY,
+    structured_output=True,
+)
+def content_pack_catalog_plan_tool(pack: dict[str, Any], mode: str) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        payload = content_forge.content_pack_catalog_plan(
+            content_forge.build_content_forge(REPO_ROOT),
+            pack_value=pack,
+            mode=mode,
+        )
+        return success("content_pack_catalog_plan", payload, extra_warnings=payload["warnings"])
+
+    return guarded("content_pack_catalog_plan", action)
+
+
+@mcp.tool(
+    name="content_pack_catalog_apply",
+    description=(
+        "Rehearse or save one reviewed strict Content Forge pack contract to devkit/content_forge/packs.json. "
+        "Requires the exact catalog-plan ID, current catalog SHA, and SAVE CONTENT PACK confirmation when dry_run=false; it never applies module source or writes generated/export layers."
+    ),
+    annotations=WRITE_SOURCE,
+    structured_output=True,
+)
+def content_pack_catalog_apply_tool(
+    pack: dict[str, Any],
+    mode: str,
+    expected_catalog_plan_id: str,
+    expected_catalog_sha256: str,
+    dry_run: bool = True,
+    confirmation: str | None = None,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        payload = content_forge.content_pack_catalog_apply(
+            content_forge.build_content_forge(REPO_ROOT),
+            pack_value=pack,
+            mode=mode,
+            expected_catalog_plan_id=expected_catalog_plan_id,
+            expected_catalog_sha256=expected_catalog_sha256,
+            dry_run=dry_run,
+            confirmation=confirmation,
+        )
+        return success(
+            "content_pack_catalog_apply",
+            payload,
+            extra_warnings=payload["warnings"],
+            read_only=dry_run,
+        )
+
+    return guarded("content_pack_catalog_apply", action, read_only=dry_run if isinstance(dry_run, bool) else False)
 
 
 @mcp.tool(

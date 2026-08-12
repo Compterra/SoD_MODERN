@@ -31,6 +31,7 @@
       <button class="nav-item" data-view="atlas">Module Atlas</button>
       <button class="nav-item" data-view="dialogue">Dialogue</button>
       <button class="nav-item" data-view="presentations">Presentations</button>
+      <button class="nav-item" data-view="content">Content Forge</button>
       <button class="nav-item" data-view="text">Text observability</button>
       <button class="nav-item" data-view="order">Order Control</button>
       <button class="nav-item" data-view="balance">Balance Lab</button>
@@ -246,6 +247,198 @@
             </div>
             <div id="presentation-apply-result" class="result-message"></div>
           </article>
+        </div>
+      </section>
+
+      <section class="view" id="view-content">
+        <div class="section-heading">
+          <div><p class="eyebrow">PLAYER-FACING CONTENT, TYPED FIRST</p><h2>Content Forge Studio</h2></div>
+          <p>Shape dialogue, events, campaign intent, presentation screens, and balance intent in one local review workspace. The pack contract and specialist SHA plans remain authoritative.</p>
+        </div>
+        <div class="content-workbench">
+          <aside class="panel content-browser">
+            <div class="panel-heading-row">
+              <div><p class="eyebrow">CHECKED-IN PACKS</p><h3>Content packs <span id="content-pack-count" class="count"></span></h3></div>
+              <button id="content-new-pack" type="button" class="secondary">New draft</button>
+            </div>
+            <form id="content-search-form" class="content-search-form">
+              <label>Filter packs <input id="content-query" type="search" placeholder="title, tone, slice, entrypoint"></label>
+              <label>Slice
+                <select id="content-slice-filter">
+                  <option value="all">All slices</option>
+                  <option value="dialogue">Dialogue</option>
+                  <option value="quest_event">Quest / event</option>
+                  <option value="campaign_ai">Campaign AI</option>
+                  <option value="presentation">Presentation</option>
+                  <option value="troop_item">Troop / item</option>
+                </select>
+              </label>
+              <button type="submit">Filter</button>
+            </form>
+            <div id="content-pack-results" class="result-list empty">Loading checked-in Content Forge packs.</div>
+          </aside>
+
+          <div class="content-main">
+            <article class="panel content-draft-heading">
+              <div class="panel-heading-row">
+                <div>
+                  <p class="eyebrow">LOCAL DRAFT</p><h3 id="content-draft-title">No pack selected</h3>
+                  <p id="content-draft-meta" class="muted">Load a checked-in pack or start a new draft. Editing remains local until a strict catalog save plan is reviewed.</p>
+                </div>
+                <span id="content-pack-status" class="status-label">No local draft</span>
+              </div>
+              <div class="inline-actions">
+                <button id="content-validate" type="button" class="secondary" disabled>Validate contract</button>
+                <button id="content-plan" type="button" disabled>Plan content changes</button>
+                <button id="content-preview" type="button" class="secondary" disabled>Preview player-facing content</button>
+                <button id="content-review" type="button" class="secondary" disabled>Review dependency canvas</button>
+                <button id="content-verify" type="button" class="secondary" disabled>Verify static evidence</button>
+              </div>
+              <div class="inline-actions content-verify-options">
+                <label class="checkbox-line"><input id="content-verify-scenarios" type="checkbox" disabled> Run declared bounded AI scenarios</label>
+                <label class="checkbox-line"><input id="content-verify-tests" type="checkbox" disabled> Run declared focused tests</label>
+              </div>
+              <div id="content-action-result" class="result-message"></div>
+            </article>
+
+            <div class="content-editor-layout">
+              <article class="panel content-brief-panel">
+                <p class="eyebrow">CREATIVE + ACCEPTANCE CONTRACT</p><h3>Pack brief</h3>
+                <p class="muted">These are the player-facing intent and observable outcome. Line-oriented fields become strict de-duplicated string lists.</p>
+                <form id="content-pack-form" class="editor-form">
+                  <div class="form-grid">
+                    <label>Pack ID <input id="content-id" required placeholder="frontier-camp-consequences"></label>
+                    <label>Title <input id="content-title" required placeholder="Frontier Camp Consequences"></label>
+                    <label>Status
+                      <select id="content-status"><option value="draft">Draft</option><option value="active">Active</option><option value="disabled">Disabled</option></select>
+                    </label>
+                    <label>Optional Blueprint ID <input id="content-blueprint" placeholder="existing-blueprint-id"></label>
+                  </div>
+                  <label>Ownership / description <textarea id="content-description" rows="3" required placeholder="What this content pack owns and why it belongs together."></textarea></label>
+                  <label>Player-facing summary <textarea id="content-brief-summary" rows="3" required placeholder="What should the player notice, understand, or be able to do?"></textarea></label>
+                  <label>Lore constraints <textarea id="content-lore" rows="4" placeholder="One non-negotiable setting fact per line"></textarea></label>
+                  <label>Tone <textarea id="content-tone" rows="3" placeholder="One tone instruction per line"></textarea></label>
+                  <label>Acceptance criteria <textarea id="content-acceptance" rows="4" required placeholder="One testable or reviewable outcome per line"></textarea></label>
+                  <div class="form-grid">
+                    <label>Focused tests <textarea id="content-tests" rows="3" placeholder="build/test_feature_static.py&#10;one path per line"></textarea></label>
+                    <label>Verification scenarios <textarea id="content-verification-scenarios" rows="3" placeholder="one declared scenario ID per line"></textarea></label>
+                  </div>
+                  <label class="checkbox-line"><input id="content-require-blueprint" type="checkbox"> This pack requires its Blueprint to resolve before planning.</label>
+                  <button type="submit">Sync local typed draft</button>
+                </form>
+              </article>
+
+              <article class="panel content-slices-panel">
+                <p class="eyebrow">CROSS-SYSTEM SLICES</p><h3>Content slices</h3>
+                <p class="muted">Use narrative rows for what the player experiences. Typed source-change rows are optional and are compiled only by the existing specialist tools; no raw Python or tuple editor exists here.</p>
+                <div class="content-slice-toggles">
+                  <label class="checkbox-line"><input id="content-use-dialogue" type="checkbox"> Dialogue</label>
+                  <label class="checkbox-line"><input id="content-use-quest" type="checkbox"> Quest / event</label>
+                  <label class="checkbox-line"><input id="content-use-ai" type="checkbox"> Campaign AI</label>
+                  <label class="checkbox-line"><input id="content-use-presentation" type="checkbox"> Presentation</label>
+                  <label class="checkbox-line"><input id="content-use-balance" type="checkbox"> Troop / item</label>
+                </div>
+                <details class="content-slice" open>
+                  <summary>Dialogue beats and typed route changes</summary>
+                  <label>Narrative beats (JSON array)
+                    <textarea id="content-dialogue-beats" rows="7" placeholder='[{"id":"greeting","title":"Greet the player","purpose":"Establish the camp's stakes.","entrypoint":"entrypoint:dialogue-state:..."}]'></textarea>
+                  </label>
+                  <label>Typed dialogue changes (JSON array; kind is inferred)
+                    <textarea id="content-dialogue-changes" rows="5" placeholder='[{"target":"entrypoint:dialogue-state:...","action":"replace_text","value":"@..."}]'></textarea>
+                  </label>
+                </details>
+                <details class="content-slice">
+                  <summary>Quest / event timeline and typed changes</summary>
+                  <label>Player-visible event timeline (JSON array)
+                    <textarea id="content-quest-timeline" rows="7" placeholder='[{"id":"arrival","title":"Arrival","phase":"setup","description":"The player sees the camp's condition.","entrypoint":"entrypoint:script:..."}]'></textarea>
+                  </label>
+                  <label>Typed quest/event changes (JSON array; kind is inferred)
+                    <textarea id="content-quest-changes" rows="5" placeholder='[{"target":"entrypoint:script:...","action":"..."}]'></textarea>
+                  </label>
+                </details>
+                <details class="content-slice">
+                  <summary>Campaign AI intent contracts</summary>
+                  <label>AI contracts (JSON array)
+                    <textarea id="content-ai-contracts" rows="8" placeholder='[{"id":"camp-holds","intent":"stationary_camp","entrypoint":"entrypoint:script:...","required_markers":["party_set_ai_behavior","ai_bhvr_hold"],"description":"The camp does not drift."}]'></textarea>
+                  </label>
+                  <div class="form-grid">
+                    <label>AI scenarios (one ID per line)<textarea id="content-ai-scenarios" rows="3"></textarea></label>
+                    <label>Typed AI/source changes (JSON array; kind is inferred)<textarea id="content-ai-changes" rows="3" placeholder='[{"target":"entrypoint:script:...","action":"..."}]'></textarea></label>
+                  </div>
+                </details>
+                <details class="content-slice">
+                  <summary>Player-facing presentation screens</summary>
+                  <label>Existing presentation screens (JSON array)
+                    <textarea id="content-presentation-screens" rows="6" placeholder='[{"id":"camp-report","title":"Camp report","description":"Player-facing camp status.","entrypoint":"entrypoint:presentation:..."}]'></textarea>
+                  </label>
+                  <label>New presentation declarations (JSON array)
+                    <textarea id="content-presentation-new" rows="6" placeholder='[{"anchor":"entrypoint:presentation:...","id":"my_presentation","flags":0,"triggers":[]}]'></textarea>
+                  </label>
+                  <label>Typed presentation changes (JSON array; kind is inferred)
+                    <textarea id="content-presentation-changes" rows="5" placeholder='[{"target":"entrypoint:presentation:...","action":"move_overlay","x":500,"y":500}]'></textarea>
+                  </label>
+                </details>
+                <details class="content-slice">
+                  <summary>Troop / item balance records</summary>
+                  <label>Existing legacy records only (JSON array)
+                    <textarea id="content-balance-records" rows="7" placeholder='[{"id":"camp-guard-kit","entity_kind":"troop","entity_id":"trp_...","changes":{"attributes":{"level":20}},"rationale":"Player-facing threat matches the camp."}]'></textarea>
+                  </label>
+                </details>
+              </article>
+            </div>
+
+            <details class="panel content-advanced-panel">
+              <summary>Advanced strict pack JSON</summary>
+              <p class="muted">For a full structured pack supplied by Codex/LLM or an experienced author. It is validated before it can be previewed, planned, or saved, and it never becomes raw module source.</p>
+              <textarea id="content-raw-pack" rows="18" placeholder="A strict sod-modern.content-pack.v1 JSON object appears here after you load or sync a draft."></textarea>
+              <div class="inline-actions"><button id="content-use-raw" type="button" class="secondary">Use advanced JSON as local draft</button></div>
+            </details>
+
+            <div class="content-review-layout">
+              <article class="panel content-preview-panel">
+                <div class="panel-heading-row"><div><p class="eyebrow">PLAYER-FACING PREVIEW</p><h3>Experience surface</h3></div></div>
+                <div id="content-preview-result" class="empty">Preview a valid local draft to see dialogue beats, event progression, AI intent, balance intent, and static presentation canvases together.</div>
+              </article>
+              <article class="panel content-review-panel">
+                <div class="panel-heading-row"><div><p class="eyebrow">ORDER + DEPENDENCY REVIEW</p><h3>Content canvas</h3></div></div>
+                <div id="content-review-result" class="empty">Review a valid local draft to see slices, compiled change sequence, AI contracts, and acceptance criteria.</div>
+              </article>
+            </div>
+
+            <div class="content-plan-layout">
+              <article class="panel content-plan-panel">
+                <p class="eyebrow">ONE SPECIALIST CHANGE AT A TIME</p><h3>Content source plan</h3>
+                <div id="content-plan-summary" class="empty">Plan a valid local pack to inspect its independent source/balance changes and current SHA guards.</div>
+                <label>Selected content change <select id="content-change-select" disabled></select></label>
+                <div id="content-plan-list" class="result-list empty">No content plan is loaded.</div>
+                <pre id="content-change-diff" class="diff"></pre>
+                <div class="apply-controls">
+                  <button id="content-dry-run" type="button" class="secondary" disabled>Rehearse selected change</button>
+                  <label class="checkbox-line"><input id="content-apply-check" type="checkbox" disabled> I reviewed the exact specialist diff, current SHA, content order, and player-facing impact.</label>
+                  <label class="checkbox-line"><input id="content-legacy-ack" type="checkbox" disabled> I deliberately permit the selected direct legacy item/troop record change.</label>
+                  <label class="checkbox-line"><input id="content-protected-ack" type="checkbox" disabled> I deliberately permit the selected protected legacy record change.</label>
+                  <label>Type <code>APPLY SOURCE</code> to unlock real apply <input id="content-apply-confirmation" disabled placeholder="APPLY SOURCE"></label>
+                  <button id="content-apply-source" type="button" class="danger" disabled>Apply selected reviewed change</button>
+                </div>
+                <div id="content-apply-result" class="result-message"></div>
+              </article>
+
+              <article class="panel content-catalog-panel">
+                <p class="eyebrow">SAVE THE AUTHORING CONTRACT, NOT MODULE SOURCE</p><h3>Checked-in pack catalog</h3>
+                <p class="muted">A save writes only the single strict pack entry in <code>devkit/content_forge/packs.json</code>. It does not build, export, or apply any module content.</p>
+                <button id="content-catalog-plan" type="button" class="secondary" disabled>Review pack catalog save</button>
+                <div id="content-catalog-summary" class="empty">Sync a valid local draft, then review the catalog diff before saving it.</div>
+                <pre id="content-catalog-diff" class="diff"></pre>
+                <div class="apply-controls">
+                  <button id="content-catalog-dry-run" type="button" class="secondary" disabled>Rehearse pack save</button>
+                  <label class="checkbox-line"><input id="content-catalog-apply-check" type="checkbox" disabled> I reviewed the exact pack-contract diff and understand this does not apply module source.</label>
+                  <label>Type <code>SAVE CONTENT PACK</code> to unlock real save <input id="content-catalog-confirmation" disabled placeholder="SAVE CONTENT PACK"></label>
+                  <button id="content-catalog-apply" type="button" class="danger" disabled>Save reviewed pack contract</button>
+                </div>
+                <div id="content-catalog-result" class="result-message"></div>
+              </article>
+            </div>
+          </div>
         </div>
       </section>
 

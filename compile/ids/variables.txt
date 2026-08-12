@@ -1438,3 +1438,6 @@ g_sod_report_selected_category
 g_sod_report_last_nudge_day
 g_sod_merc_village_patrol_cache_initialized
 g_sod_merc_village_patrol_cache_hour
+g_companion_event_active
+g_companion_event_actor_a
+g_companion_event_actor_b

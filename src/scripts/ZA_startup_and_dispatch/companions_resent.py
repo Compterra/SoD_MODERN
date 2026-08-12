@@ -42,11 +42,13 @@ SCRIPTS = [
 
          (try_begin),
              (is_between, ":companion_a", companions_begin, companions_end),
+             (call_script, "script_cf_sod_companion_in_main_party", ":companion_a"),
              (assign, ":valid_a", 1),
          (try_end),
          (try_begin),
              (is_between, ":companion_b", companions_begin, companions_end),
              (neq, ":companion_b", ":companion_a"),
+             (call_script, "script_cf_sod_companion_in_main_party", ":companion_b"),
              (assign, ":valid_b", 1),
          (try_end),
 

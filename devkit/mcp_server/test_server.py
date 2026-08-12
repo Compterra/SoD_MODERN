@@ -45,6 +45,8 @@ EXPECTED_TOOLS = {
     "string_trace",
     "string_integrity",
     "text_export_parity",
+    "rgl_log_analyze",
+    "rgl_log_contract",
     "release_gate",
     "blueprint_summary",
     "blueprint_find",
@@ -63,6 +65,20 @@ EXPECTED_TOOLS = {
     "feature_verify",
     "feature_semantic_snapshot",
     "feature_semantic_diff",
+    "content_forge_summary",
+    "content_pack_find",
+    "content_pack_explain",
+    "content_pack_validate",
+    "content_pack_compile",
+    "content_pack_plan",
+    "content_pack_preview",
+    "content_pack_review",
+    "content_pack_apply",
+    "content_pack_verify",
+    "content_pack_snapshot",
+    "content_pack_semantic_diff",
+    "content_pack_catalog_plan",
+    "content_pack_catalog_apply",
     "campaign_state_summary",
     "campaign_state_findings",
     "campaign_state_resource",
@@ -348,6 +364,23 @@ async def verify_client(client: Client) -> None:
     assert export_parity["provenance"]["read_only"] is True
     assert export_parity["data"]["summary"]["checked_file_count"] >= 10
     assert export_parity["data"]["safety"]["live_workspace_unchanged"] is True
+
+    rgl_contract = structured(await client.call_tool("rgl_log_contract", {"limit": 3}))
+    assert rgl_contract["ok"] is True
+    assert rgl_contract["data"]["passed"] is True
+
+    rgl_log = structured(
+        await client.call_tool(
+            "rgl_log_analyze",
+            {
+                "log_path": str(REPO_ROOT / "devkit" / "rgl_log_sentinel" / "fixtures" / "stale_party_simulation.rgl"),
+                "limit": 3,
+            },
+        )
+    )
+    assert rgl_log["ok"] is True
+    assert rgl_log["data"]["summary"]["invalid_party_faction_cascade_count"] == 1
+    assert rgl_log["data"]["clusters"][0]["current_contract"]["state"] == "covered_pass"
 
     campaign_state = structured(
         await client.call_tool("campaign_state_summary", {"limit": 3})

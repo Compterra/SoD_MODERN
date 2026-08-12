@@ -1,65 +1,99 @@
 SCRIPTS = [
 ("post_battle_personality_clash_check",
         [
+          # This dispatcher owns these two queue globals.  Resetting them
+          # before candidate discovery makes a completed or abandoned battle
+          # unable to leak an old speaker into the next map conversation.
+          (assign, "$npc_with_personality_clash_2", 0),
+          (assign, "$npc_with_personality_match", 0),
+          (assign, ":clash_found", 0),
+          (assign, ":match_found", 0),
 
-
-
-          #            (display_message, "@Post-victory personality clash check", debug_color),
+          # Pick the first eligible pair in troop order.  The selection rule
+          # is explicit instead of relying on the last loop assignment.
           (try_for_range, ":npc", companions_begin, companions_end),
             (eq, "$disable_npc_complaints", 0),
-
-            (main_party_has_troop, ":npc"),
+            (eq, ":clash_found", 0),
+            (call_script, "script_cf_sod_companion_in_main_party", ":npc"),
             (neg|troop_is_wounded, ":npc"),
-
             (troop_get_slot, ":other_npc", ":npc", slot_troop_personalityclash2_object),
-            (main_party_has_troop, ":other_npc"),
+            (is_between, ":other_npc", companions_begin, companions_end),
+            (call_script, "script_cf_sod_companion_in_main_party", ":other_npc"),
             (neg|troop_is_wounded, ":other_npc"),
-
-            #                (store_random_in_range, ":random", 0, 3),
-            (try_begin),
-              (troop_slot_eq, ":npc", slot_troop_personalityclash2_state, 0),
-              (try_begin),
-                #                        (eq, ":random", 0),
-                (assign, "$npc_with_personality_clash_2", ":npc"),
-              (try_end),
-            (try_end),
-
+            (troop_slot_eq, ":npc", slot_troop_personalityclash2_state, 0),
+            (assign, "$npc_with_personality_clash_2", ":npc"),
+            (assign, ":clash_found", 1),
           (try_end),
 
           (try_for_range, ":npc", companions_begin, companions_end),
-            (troop_slot_eq, ":npc", slot_troop_personalitymatch_state, 0),
             (eq, "$disable_npc_complaints", 0),
-
-            (main_party_has_troop, ":npc"),
+            (eq, ":match_found", 0),
+            (call_script, "script_cf_sod_companion_in_main_party", ":npc"),
             (neg|troop_is_wounded, ":npc"),
-
             (troop_get_slot, ":other_npc", ":npc", slot_troop_personalitymatch_object),
-            (main_party_has_troop, ":other_npc"),
+            (is_between, ":other_npc", companions_begin, companions_end),
+            (call_script, "script_cf_sod_companion_in_main_party", ":other_npc"),
             (neg|troop_is_wounded, ":other_npc"),
+            (troop_slot_eq, ":npc", slot_troop_personalitymatch_state, 0),
             (assign, "$npc_with_personality_match", ":npc"),
+            (assign, ":match_found", 1),
           (try_end),
 
+          # A pair must be revalidated at dispatch time as well: a post-battle
+          # state transition can remove either member after candidate discovery.
+          (assign, ":clash_pair_present", 0),
+          (try_begin),
+            (is_between, "$npc_with_personality_clash_2", companions_begin, companions_end),
+            (call_script, "script_cf_sod_companion_in_main_party", "$npc_with_personality_clash_2"),
+            (troop_get_slot, ":clash_object", "$npc_with_personality_clash_2", slot_troop_personalityclash2_object),
+            (is_between, ":clash_object", companions_begin, companions_end),
+            (call_script, "script_cf_sod_companion_in_main_party", ":clash_object"),
+            (assign, ":clash_pair_present", 1),
+          (try_end),
 
+          (assign, ":match_pair_present", 0),
+          (try_begin),
+            (is_between, "$npc_with_personality_match", companions_begin, companions_end),
+            (call_script, "script_cf_sod_companion_in_main_party", "$npc_with_personality_match"),
+            (troop_get_slot, ":match_object", "$npc_with_personality_match", slot_troop_personalitymatch_object),
+            (is_between, ":match_object", companions_begin, companions_end),
+            (call_script, "script_cf_sod_companion_in_main_party", ":match_object"),
+            (assign, ":match_pair_present", 1),
+          (try_end),
+
+          # Preserve normal priority: clash two resolves before a match.  A
+          # valid queue remains pending while the player is captive; invalid
+          # queues are cleared together with their matching context.
           (try_begin),
             (gt, "$npc_with_personality_clash_2", 0),
-            (main_party_has_troop, "$npc_with_personality_clash_2"),
-            (neq, "$g_player_is_captive", 1),
-            (assign, "$npc_map_talk_context", slot_troop_personalityclash2_state),
-            (start_map_conversation, "$npc_with_personality_clash_2"),
-          (else_try),
-            (gt, "$npc_with_personality_clash_2", 0),
-            (assign, "$npc_with_personality_clash_2", 0),
+            (try_begin),
+              (eq, ":clash_pair_present", 1),
+              (neq, "$g_player_is_captive", 1),
+              (assign, "$npc_map_talk_context", slot_troop_personalityclash2_state),
+              (start_map_conversation, "$npc_with_personality_clash_2"),
+            (else_try),
+              (eq, ":clash_pair_present", 0),
+              (assign, "$npc_with_personality_clash_2", 0),
+              (try_begin),
+                (eq, "$npc_map_talk_context", slot_troop_personalityclash2_state),
+                (assign, "$npc_map_talk_context", 0),
+              (try_end),
+            (try_end),
           (else_try),
             (gt, "$npc_with_personality_match", 0),
-            (main_party_has_troop, "$npc_with_personality_match"),
-            (neq, "$g_player_is_captive", 1),
-            (assign, "$npc_map_talk_context", slot_troop_personalitymatch_state),
-            (start_map_conversation, "$npc_with_personality_match"),
-          (else_try),
-            (gt, "$npc_with_personality_match", 0),
-            (assign, "$npc_with_personality_match", 0),
+            (try_begin),
+              (eq, ":match_pair_present", 1),
+              (neq, "$g_player_is_captive", 1),
+              (assign, "$npc_map_talk_context", slot_troop_personalitymatch_state),
+              (start_map_conversation, "$npc_with_personality_match"),
+            (else_try),
+              (eq, ":match_pair_present", 0),
+              (assign, "$npc_with_personality_match", 0),
+              (try_begin),
+                (eq, "$npc_map_talk_context", slot_troop_personalitymatch_state),
+                (assign, "$npc_map_talk_context", 0),
+              (try_end),
+            (try_end),
           (try_end),
-
-
       ]),
 ]

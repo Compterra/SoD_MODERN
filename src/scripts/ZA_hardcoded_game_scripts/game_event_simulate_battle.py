@@ -3,9 +3,21 @@ SCRIPTS = [
     [
       (store_script_param_1, ":root_defender_party"),
       (store_script_param_2, ":root_attacker_party"),
-      (assign, ":lets_recalculate_ais", 0), 
-	  
-      (try_begin), #tr0
+      (assign, ":lets_recalculate_ais", 0),
+
+      # This engine callback can arrive after a dynamic party has been removed.
+      # party_is_active is the only safe way to validate a dynamic party handle
+      # before store_faction_of_party or any other party operation reads it.
+      (assign, ":root_parties_active", 0),
+      (try_begin),
+        (party_is_active, ":root_defender_party"),
+        (party_is_active, ":root_attacker_party"),
+        (assign, ":root_parties_active", 1),
+      (try_end),
+
+      (try_begin),
+        (eq, ":root_parties_active", 1),
+        (try_begin), #tr0
         (store_faction_of_party, ":defender_faction", ":root_defender_party"),
         (store_faction_of_party, ":attacker_faction", ":root_attacker_party"),
         (neq, ":defender_faction", "fac_player_faction"),
@@ -609,9 +621,13 @@ SCRIPTS = [
           (try_end), #tr42
 		  
         (try_end), #tr1
-        (set_trigger_result, ":trigger_result"),
-      (try_end), #tr0
-	  
+          (set_trigger_result, ":trigger_result"),
+        (try_end), #tr0
+      (else_try),
+        # A removed root party cannot be simulated. End the stale battle cleanly.
+        (set_trigger_result, 1),
+      (try_end),
+
 	  (try_begin),
 	    (eq, ":lets_recalculate_ais", 1),
 		(assign, "$g_recalculate_ais", 1),

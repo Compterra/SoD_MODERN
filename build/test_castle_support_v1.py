@@ -21,10 +21,10 @@ def main() -> int:
     military = read("src/scripts/ZY_helper_scripts/sod_center_military_modifiers.py")
     sieges = read("src/scripts/ZE_encounters/process_sieges.py")
     security = read("src/scripts/ZY_helper_scripts/sod_center_security_profile.py")
-    fief_reports = read("src/menus/camp/fief_reports.py")
+    fief_reports = read("src/menus/0000_hardcoded_mb1011/fief_reports.py")
     castle_report = read("src/menus/economy/castle_support_report.py")
     order = read("src/menus/_order_game_menus.txt")
-    notes = read("docs/reports/castle_support_profile_audit.md")
+    notes = read("docs/reports/economy_settlements/castle_support_profile_audit.md")
 
     for token in (
         ":commander_quality",
@@ -70,11 +70,12 @@ def main() -> int:
         assert_contains(security, token)
 
     assert_contains(fief_reports, "mnu_castle_support_report")
-    assert_contains(order, "other/castle_support_report.py")
+    assert_contains(order, "economy/castle_support_report.py")
     assert_contains(castle_report, "Castle Support Report")
     assert_contains(castle_report, "commander quality")
     assert_contains(castle_report, "siege readiness")
     assert_contains(castle_report, "scutage reliability")
+    assert_contains(castle_report, "scutage is")
     assert_contains(castle_report, "village protection")
 
     assert_contains(notes, "Current Castle Economy/Support Audit")

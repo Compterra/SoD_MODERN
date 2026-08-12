@@ -27,11 +27,12 @@ if str(DEFAULT_REPO_ROOT) not in sys.path:
 
 from devkit.dialogue_model_checker import dialogue_model_checker  # noqa: E402
 from devkit.order_control import order_control  # noqa: E402
+from devkit.rgl_log_sentinel import rgl_log_sentinel  # noqa: E402
 from devkit.string_integrity import string_integrity  # noqa: E402
 from devkit.text_export_parity import text_export_parity  # noqa: E402
 
 
-RELEASE_GATE_VERSION = "1.0.0"
+RELEASE_GATE_VERSION = "1.1.0"
 APPROVAL_CONTRACT_RELATIVE = Path("devkit/release_gate/contracts/approved-string-clear-sinks.v1.json")
 APPROVAL_CONTRACT_VERSION = "devkit.release-gate.approved-string-clear-sinks.v1"
 APPROVAL_SIGNATURE_FIELDS = (
@@ -428,6 +429,23 @@ def order_assessment(verification: Mapping[str, Any], *, limit: int) -> dict[str
     }
 
 
+def engine_callback_assessment(report: Mapping[str, Any], *, limit: int) -> dict[str, Any]:
+    """Normalize protected dynamic-party callback evidence for the release gate."""
+
+    findings = [item for item in report.get("findings", []) if isinstance(item, Mapping)]
+    rows, truncated = bounded_rows(findings, limit)
+    passed = report.get("passed") is True and not findings
+    return {
+        "passed": passed,
+        "contract_version": report.get("contract_version"),
+        "contract_count": report.get("contract_count"),
+        "failed_contract_count": report.get("failed_contract_count"),
+        "finding_count": len(findings),
+        "findings": rows,
+        "findings_truncated": truncated,
+    }
+
+
 def check_payload(check_id: str, title: str, passed: bool, summary: str, evidence: Mapping[str, Any], blockers: Sequence[Mapping[str, Any]] = ()) -> dict[str, Any]:
     return {
         "id": check_id,
@@ -589,6 +607,35 @@ def run_release_gate(
                 "Order, generated-ID, and dialogue-precedence contracts",
                 False,
                 "Order-control analysis could not complete.",
+                {},
+                [{"message": str(error)}],
+            )
+        )
+
+    try:
+        callback_report = rgl_log_sentinel.engine_callback_contract_report(root, limit=maximum)
+        callback_result = engine_callback_assessment(callback_report, limit=maximum)
+        checks.append(
+            check_payload(
+                "engine_callback_party_handle_contracts",
+                "Engine callback dynamic-party handle contracts",
+                callback_result["passed"],
+                "Protected engine callbacks must validate dynamic party handles before any party/faction read and end stale invocations safely.",
+                {
+                    key: value
+                    for key, value in callback_result.items()
+                    if key not in {"findings", "findings_truncated", "passed"}
+                },
+                callback_result["findings"],
+            )
+        )
+    except rgl_log_sentinel.RglLogSentinelError as error:
+        checks.append(
+            check_payload(
+                "engine_callback_party_handle_contracts",
+                "Engine callback dynamic-party handle contracts",
+                False,
+                "Engine callback party-handle contract analysis could not complete.",
                 {},
                 [{"message": str(error)}],
             )

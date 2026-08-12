@@ -8,7 +8,10 @@ from src.constants.module_constants import *
 SCRIPTS = [
 ("update_faction_notes",
       [(store_script_param, ":faction_no", 1),
+		(call_script, "script_sod_faction_should_show_notes", ":faction_no"),
 		(try_begin),
+			(eq, reg0, 1),
+			(try_begin),
 			(eq, ":faction_no", "fac_black_khergits"),
 			(str_store_faction_name, s5, ":faction_no"),
 			(call_script, "script_sod_black_khergits_describe_status_to_s27"),
@@ -396,5 +399,11 @@ SCRIPTS = [
         (else_try),
           (add_faction_note_tableau_mesh, ":faction_no", "tableau_faction_note_mesh_banner"),
         (try_end),
+		(else_try),
+			# Clearing both note types removes an obsolete realm from the Notes list.
+			(str_clear, s68),
+			(add_faction_note_from_sreg, ":faction_no", 0, s68, 0),
+			(add_faction_note_from_sreg, ":faction_no", 1, s68, 0),
+		(try_end),
     ]),
 ]

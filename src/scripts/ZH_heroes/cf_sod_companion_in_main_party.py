@@ -4,6 +4,10 @@ SCRIPTS = [
    (store_script_param_1, ":companion"),
    (this_or_next|is_between, ":companion", companions_begin, companions_end),
    (is_between, ":companion", special_companions_begin, special_companions_end),
+   # A hero may transiently appear in p_main_party without being one of the
+   # player's active companions.  World effects and dialogue must not treat
+   # that stack membership as companion participation.
+   (troop_slot_eq, ":companion", slot_troop_occupation, slto_player_companion),
    (main_party_has_troop, ":companion"),
    (party_count_companions_of_type, ":companion_count", "p_main_party", ":companion"),
    (gt, ":companion_count", 0),

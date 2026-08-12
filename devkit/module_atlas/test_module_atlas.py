@@ -112,6 +112,7 @@ def main() -> None:
         script = entity(index, "script", "fixture_script")
         mission = entity(index, "mission_template", "fixture_mission")
         mission_trigger = next(candidate for candidate in index.entities if candidate.parent_id == mission.id)
+        presentation = entity(index, "presentation", "fixture_presentation")
         quest = entity(index, "quest", "fixture_quest")
         constant = entity(index, "constant", "fixture_value")
         spare_constant = entity(index, "constant", "fixture_other")
@@ -191,6 +192,19 @@ def main() -> None:
         assert "new_mission" in mission_plan["change_router_plan"]["unified_diff"]
         assert plan(index, mission_trigger.id, "set_trigger_interval", value="2")["change_router_plan"]["unified_diff"]
         assert plan(index, mission_trigger.id, "remove_mission_trigger")["change_router_plan"]["unified_diff"]
+
+        presentation_plan = plan(
+            index,
+            presentation.id,
+            "add_presentation",
+            new_item={
+                "id": "new_presentation",
+                "flags": "0",
+                "mesh": "mesh_load_window",
+                "triggers": [{"event": "ti_on_presentation_load", "operations": "[]"}],
+            },
+        )
+        assert "new_presentation" in presentation_plan["change_router_plan"]["unified_diff"]
 
         simple_plan = plan(index, trigger.id, "add_simple_trigger", new_item={"interval": "2", "operations": "[]"})
         assert "(2, [])" in simple_plan["change_router_plan"]["unified_diff"]

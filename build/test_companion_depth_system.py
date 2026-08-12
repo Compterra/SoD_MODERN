@@ -110,6 +110,185 @@ def assert_cleanup_after_removal(path: str) -> None:
     assert_contains(raw, "script_sod_companion_cleanup_departed_companion")
 
 
+def assert_companion_event_contract() -> None:
+    callback = read("src/scripts/ZA_startup_and_dispatch/companions_event_triggered.py")
+    resentment = read("src/scripts/ZA_startup_and_dispatch/companions_resent.py")
+    event_preamble = read("src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered.py")
+    event_reactions = read("src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_07.py")
+    quitting_entry = read("src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_04.py")
+    depth = read("src/scripts/ZY_helper_scripts/sod_companion_depth.py")
+    companion_membership = read("src/scripts/ZH_heroes/cf_sod_companion_in_main_party.py")
+    black_khergit_horde = read("src/scripts/ZY_helper_scripts/sod_black_khergit_horde.py")
+    borcha_aftermath = read("src/menus/camp/borcha_road_keeps_own.py")
+    dialog_order = read("src/dialogs/_order_dialogs.txt")
+
+    assert_script_contains_in_order(
+        callback,
+        "companions_event_triggered",
+        (
+            '(assign, "$g_companion_event_active", 0)',
+            '(assign, "$g_companion_event_actor_a", -1)',
+            '(assign, "$g_companion_event_actor_b", -1)',
+            '(is_between, ":companion_a", companions_begin, companions_end)',
+            '(is_between, ":companion_b", companions_begin, companions_end)',
+            '(call_script, "script_cf_sod_companion_in_main_party", ":companion_a")',
+            '(call_script, "script_cf_sod_companion_in_main_party", ":companion_b")',
+            '(call_script, "script_companions_resent", ":companion_a", ":companion_b", ":clash_severity")',
+            '(assign, "$g_companion_event_actor_a", ":companion_a")',
+            '(assign, "$g_companion_event_actor_b", ":companion_b")',
+            '(assign, "$g_companion_event_active", 1)',
+        ),
+    )
+    assert_contains(resentment, '(call_script, "script_cf_sod_companion_in_main_party", ":companion_a")')
+    assert_contains(resentment, '(call_script, "script_cf_sod_companion_in_main_party", ":companion_b")')
+    assert_contains(callback, '(val_clamp, ":variant", 0, 3)')
+
+    # Player-companion effects need both physical party membership and the
+    # explicit player-companion occupation.  A transient hero stack must not
+    # activate a companion's campaign content.
+    assert_script_contains_in_order(
+        companion_membership,
+        "cf_sod_companion_in_main_party",
+        (
+            '(this_or_next|is_between, ":companion", companions_begin, companions_end)',
+            '(is_between, ":companion", special_companions_begin, special_companions_end)',
+            '(troop_slot_eq, ":companion", slot_troop_occupation, slto_player_companion)',
+            '(main_party_has_troop, ":companion")',
+            '(party_count_companions_of_type, ":companion_count", "p_main_party", ":companion")',
+            '(gt, ":companion_count", 0)',
+        ),
+    )
+
+    # Borcha's horde relief is a named, successful personal-quest payoff.  It
+    # must be impossible on a fresh game, even though startup initializes his
+    # scout role and approval slots before he is recruited.
+    assert_script_contains_in_order(
+        black_khergit_horde,
+        "sod_black_khergits_spawn_raids",
+        (
+            '(call_script, "script_cf_sod_companion_in_main_party", "trp_npc1")',
+            '(troop_slot_eq, "trp_npc1", slot_troop_occupation, slto_player_companion)',
+            '(eq, "$g_sod_borcha_road_pending", 0)',
+            '(eq, "$g_sod_borcha_road_witnessed", 1)',
+            '(eq, "$g_sod_borcha_road_confronted", 1)',
+            '(ge, "$g_sod_borcha_road_result_grade", 2)',
+            '(troop_slot_eq, "trp_npc1", slot_troop_companion_personal_quest_stage, sod_companion_quest_resolved_good)',
+            'Borcha finds a hidden road before the Black Khergit camp can flood it with riders.',
+        ),
+    )
+
+    for token in (
+        '(eq, "$g_companion_event_active", 1)',
+        '(is_between, "$g_companion_event_actor_a", companions_begin, companions_end)',
+        '(is_between, "$g_companion_event_actor_b", companions_begin, companions_end)',
+        '(main_party_has_troop, "$g_companion_event_actor_a")',
+        '(main_party_has_troop, "$g_companion_event_actor_b")',
+        '(this_or_next|eq, "$g_talk_troop", "$g_companion_event_actor_a")',
+        '(eq, "$g_talk_troop", "$g_companion_event_actor_b")',
+        '(assign, "$g_companion_event_actor_a", -1)',
+        '(assign, "$g_companion_event_actor_b", -1)',
+    ):
+        assert_contains(event_preamble, token)
+    if dialog_order.index("ZA01_startup_and_dispatch/anyone_event_triggered.py") >= dialog_order.index(
+        "ZA01_startup_and_dispatch/anyone_event_triggered_07.py"
+    ):
+        raise AssertionError("Companion event contract preamble must precede generic reaction routes")
+
+    route_count = event_reactions.count('[anyone, "event_triggered", [')
+    if route_count < 1:
+        raise AssertionError("Expected at least one generic companion reaction route")
+    if event_reactions.count('(eq, "$g_companion_event_active", 1)') != route_count:
+        raise AssertionError("Every generic companion reaction route must require an active event contract")
+    if event_reactions.count('(assign, "$g_companion_event_active", 0)') != route_count:
+        raise AssertionError("Every generic companion reaction route must consume its event contract")
+    if event_reactions.count('(eq, "$g_companion_event_reconciliation", 1)') != 4:
+        raise AssertionError("Reconciliation reactions must own exactly their four explicit routes")
+    if event_reactions.count('(eq, "$g_companion_event_reconciliation", 0)') != route_count - 4:
+        raise AssertionError("Every ordinary reaction route must exclude reconciliation state")
+    for guard in (
+        '(le, "$g_companion_event_average_cohesion", 75)',
+        '(le, "$g_companion_event_average_cohesion", 80)',
+        '(le, "$g_companion_last_clash_average_cohesion", 45)',
+        '(le, "$g_companion_event_clash_severity", 80)',
+    ):
+        assert_contains(event_reactions, guard)
+    assert_not_contains(event_reactions, "This is how grudges start.")
+
+    assert_contains(quitting_entry, '(main_party_has_troop, "$map_talk_troop")')
+    assert_contains(depth, '(assign, "$g_companion_event_active", 0)')
+    assert_contains(depth, '(this_or_next|eq, "$g_companion_event_actor_a", ":companion")')
+    assert_contains(depth, '(eq, "$g_companion_event_actor_b", ":companion")')
+    assert_menu_option_contains(borcha_aftermath, "borcha_road_ambush_after", '(main_party_has_troop, "trp_npc1")')
+    assert_menu_option_contains(borcha_aftermath, "borcha_road_failed_after", '(main_party_has_troop, "trp_npc1")')
+
+
+def assert_legacy_companion_event_dispatch_contract() -> None:
+    hourly = read("src/triggers/ST02_every_hour/entry_0086.py")
+    post_battle = read("src/scripts/ZE_encounters/post_battle_personality_clash_check.py")
+    cleanup = read("src/scripts/ZY_helper_scripts/sod_companion_depth.py")
+    quitting = read("src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_04.py")
+    grievance = read("src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_05.py")
+    home = read("src/dialogs/ZA01_startup_and_dispatch/anyone_event_triggered_09.py")
+    pair_dialogues = (
+        read("src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalityclash_b.py"),
+        read("src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalityclash2_b.py"),
+        read("src/dialogs/ZE01_companions_and_named_npcs/anyone_companion_personalitymatch_b.py"),
+    )
+
+    # The hourly dispatcher must not treat captivity as a companion departure.
+    assert_not_contains(hourly, "script_sod_companion_cleanup_departed_companion")
+    for selector in (
+        "$npc_is_quitting",
+        "$npc_with_grievance",
+        "$npc_with_personality_clash",
+    ):
+        assert_contains(hourly, f'(is_between, "{selector}", companions_begin, companions_end)')
+        assert_contains(hourly, f'(call_script, "script_cf_sod_companion_in_main_party", "{selector}")')
+    assert_contains(hourly, '(is_between, ":clash_object", companions_begin, companions_end)')
+    assert_contains(hourly, '(call_script, "script_cf_sod_companion_in_main_party", ":clash_object")')
+    assert_contains(hourly, '(eq, ":quitting_present", 0)')
+    assert_contains(hourly, '(eq, ":grievance_present", 0)')
+    assert_contains(hourly, '(eq, ":clash_pair_present", 0)')
+
+    # Battle dispatch starts clean, chooses one explicit pair, and validates
+    # both members immediately before it requests a map conversation.
+    assert_script_contains_in_order(
+        post_battle,
+        "post_battle_personality_clash_check",
+        (
+            '(assign, "$npc_with_personality_clash_2", 0)',
+            '(assign, "$npc_with_personality_match", 0)',
+            '(assign, ":clash_found", 0)',
+            '(assign, ":match_found", 0)',
+            '(is_between, ":other_npc", companions_begin, companions_end)',
+            '(assign, ":clash_pair_present", 0)',
+            '(is_between, "$npc_with_personality_clash_2", companions_begin, companions_end)',
+            '(is_between, ":clash_object", companions_begin, companions_end)',
+            '(assign, ":match_pair_present", 0)',
+            '(is_between, "$npc_with_personality_match", companions_begin, companions_end)',
+            '(is_between, ":match_object", companions_begin, companions_end)',
+        ),
+    )
+    assert_contains(post_battle, '(eq, ":clash_pair_present", 0)')
+    assert_contains(post_battle, '(eq, ":match_pair_present", 0)')
+
+    for dialog in (quitting, grievance, home):
+        assert_contains(dialog, '(is_between, "$map_talk_troop", companions_begin, companions_end)')
+    for dialog in pair_dialogues:
+        assert_contains(dialog, '(is_between, "$map_talk_troop", companions_begin, companions_end)')
+        assert_contains(dialog, '(is_between, ":object", companions_begin, companions_end)')
+
+    # Departure cleanup is bidirectional for pair events; the old context
+    # comparison against a troop id must never return.
+    assert_not_contains(cleanup, '(eq, "$npc_map_talk_context", ":companion")')
+    for selector, slot in (
+        ("$npc_with_personality_clash", "slot_troop_personalityclash_object"),
+        ("$npc_with_personality_clash_2", "slot_troop_personalityclash2_object"),
+        ("$npc_with_personality_match", "slot_troop_personalitymatch_object"),
+    ):
+        assert_contains(cleanup, f'(troop_get_slot, ":legacy_event_object", "{selector}", {slot})')
+
+
 def assert_companion_depth_player_entries_are_party_guarded() -> None:
     for path in (ROOT / "src/dialogs/ZE01_companions_and_named_npcs").glob("anyone_plyr_companion_depth_*.py"):
         raw = path.read_text(encoding="utf-8", errors="replace")
@@ -289,6 +468,8 @@ def main() -> int:
         for path in (ROOT / "src/dialogs/ZE01_companions_and_named_npcs").glob("anyone_companion_depth_*.py")
     )
 
+    assert_companion_event_contract()
+    assert_legacy_companion_event_dispatch_contract()
     assert_companion_depth_choice_entries_are_party_guarded()
     assert_companion_depth_warning_branches_exclude_settled_states()
     assert_companion_trust_unlocks_sync_quest_framework()
@@ -391,8 +572,8 @@ def main() -> int:
     assert_contains(reduce_clash, '(main_party_has_troop, ":companion_1")')
     assert_contains(reduce_clash, '(main_party_has_troop, ":companion_2")')
     post_battle_clash = read("src/scripts/ZE_encounters/post_battle_personality_clash_check.py")
-    assert_contains(post_battle_clash, '(main_party_has_troop, "$npc_with_personality_clash_2")')
-    assert_contains(post_battle_clash, '(main_party_has_troop, "$npc_with_personality_match")')
+    assert_contains(post_battle_clash, '(call_script, "script_cf_sod_companion_in_main_party", "$npc_with_personality_clash_2")')
+    assert_contains(post_battle_clash, '(call_script, "script_cf_sod_companion_in_main_party", "$npc_with_personality_match")')
     assert_contains(post_battle_clash, '(assign, "$npc_with_personality_clash_2", 0)')
     assert_contains(post_battle_clash, '(assign, "$npc_with_personality_match", 0)')
     dialog_order = read("src/dialogs/_order_dialogs.txt")
@@ -428,7 +609,7 @@ def main() -> int:
         "src/menus/other/continue_48.py",
     ):
         assert_cleanup_after_removal(removal_path)
-    assert_contains(read("src/triggers/ST02_every_hour/entry_0086.py"), "script_sod_companion_cleanup_departed_companion")
+    assert_not_contains(read("src/triggers/ST02_every_hour/entry_0086.py"), "script_sod_companion_cleanup_departed_companion")
     for role_reader in (
         "src/scripts/ZY_helper_scripts/sod_prisoner_economy.py",
         "src/scripts/ZY_helper_scripts/sod_get_companion_patrol_role_bonus.py",

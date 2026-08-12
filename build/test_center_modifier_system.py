@@ -28,6 +28,7 @@ def main() -> int:
     food_limit = read("src/scripts/ZD_centers/center_get_food_store_limit.py")
     food_consumption = read("src/scripts/ZD_centers/center_get_food_consumption.py")
     recon_notes = read("src/scripts/ZD_centers/update_center_recon_notes.py")
+    recon_brief = read("src/scripts/ZY_helper_scripts/sod_store_center_recon_brief_to_s68.py")
     caravan = read("src/scripts/ZB_economy_and_trade/do_merchant_town_trade.py")
     audit = read("build/audit_center_modifier_system.py")
 
@@ -84,7 +85,8 @@ def main() -> int:
     assert_contains(population, "script_sod_get_center_modifier_totals")
     assert_contains(food_limit, "sod_center_modifier_food_store_capacity_flat")
     assert_contains(food_consumption, "sod_center_modifier_food_consumption_pct")
-    assert_contains(recon_notes, "script_sod_get_center_food_profile")
+    assert_contains(recon_notes, "script_sod_store_center_recon_brief_to_s68")
+    assert_contains(recon_brief, "script_sod_get_center_food_profile")
     assert_contains(caravan, ":center_trade_liquidity")
     assert_contains(caravan, ":center_trade_volume_pct")
     assert_contains(caravan, ":center_tariff_pct")

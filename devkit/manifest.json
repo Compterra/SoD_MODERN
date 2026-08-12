@@ -1,5 +1,5 @@
 {
-  "manifest_version": "1.6.0",
+  "manifest_version": "1.9.0",
   "name": "sod-modern-devkit",
   "description": "LLM-first diagnostics and authoring tooling for the Mount & Blade 1.011 SoD Modern module system.",
   "design": {
@@ -43,6 +43,13 @@
       "commands": ["summary"]
     },
     {
+      "id": "rgl-log-sentinel-cli",
+      "kind": "json-cli",
+      "entrypoint": "rgl_log_sentinel/rgl_log_sentinel.py",
+      "read_only": true,
+      "commands": ["analyze", "contract"]
+    },
+    {
       "id": "release-gate-cli",
       "kind": "json-cli",
       "entrypoint": "release_gate/release_gate.py",
@@ -67,6 +74,15 @@
       "commands": ["summary", "find", "entrypoints", "entrypoint", "explain", "intent-validate", "ir-render", "plan", "apply", "verify", "snapshot", "diff"],
       "contracts": ["feature_authoring/entrypoints.json", "feature_authoring/features.json", "feature_authoring/contracts/feature-intent.v1.schema.json"],
       "mutation_contract": "typed Feature Intent planning is read-only; apply is source-only, SHA-guarded, dry-run by default, requires an exact reviewed feature-plan ID, and applies one named source target at a time; compile and export layers are never written"
+    },
+    {
+      "id": "content-forge-cli",
+      "kind": "json-cli",
+      "entrypoint": "content_forge/content_forge.py",
+      "read_only": false,
+      "commands": ["summary", "find", "explain", "validate", "compile", "plan", "preview", "review", "catalog-plan", "catalog-apply", "apply", "verify", "snapshot", "diff"],
+      "contracts": ["content_forge/packs.json", "content_forge/contracts/content-pack.v1.schema.json"],
+      "mutation_contract": "pack discovery, validation, compilation, preview, review, verification, snapshots, and diffs are read-only; catalog-apply may save exactly one reviewed strict devkit/content_forge/packs.json pack contract after an exact catalog-plan ID, current catalog SHA, dry-run rehearsal, and SAVE CONTENT PACK confirmation; apply selects exactly one named specialist change with an exact content-plan ID and current SHA, dry-run by default; source changes delegate to Feature Authoring, troop/item records delegate to Balance Lab with its explicit legacy acknowledgements, and generated/ID/export layers are never written"
     },
     {
       "id": "text-execution-ledger-cli",
@@ -181,14 +197,14 @@
       "entrypoint": "module_studio/module_studio.py",
       "read_only": false,
       "commands": ["serve", "catalog", "summary"],
-      "mutation_contract": "optional human UI only; binds exactly 127.0.0.1, has no generic file editor/build/export action, and delegates semantic source changes to the existing SHA-guarded specialist apply paths with dry-run default and explicit APPLY SOURCE confirmation"
+      "mutation_contract": "optional human UI only; binds exactly 127.0.0.1, has no generic file editor/build/export action, renders the typed Content Forge player-facing preview/review workspace, may save exactly one reviewed strict devkit/content_forge/packs.json contract through its separate SHA/dry-run/SAVE CONTENT PACK gate, and delegates semantic source changes to the existing SHA-guarded specialist apply paths with dry-run default and explicit APPLY SOURCE confirmation"
     },
     {
       "id": "sod-modern-devkit-mcp",
       "kind": "mcp-stdio",
       "entrypoint": "mcp_server/server.py",
       "read_only": false,
-      "mutation_contract": "dialogue_apply, dialogue_create_apply, presentation_apply, module_apply, feature_apply, apply_source_edits, order_apply_move, and balance_apply are dry-run by default; semantic applies use SHA guards, deterministic dialogue creation and feature_apply additionally use exact reviewed plan-ID guards, feature_apply is confined to one named canonical source target at a time, balance_apply is confined to explicitly confirmed legacy item/troop authoring records, order fragment moves are confined to explicit src/**/_order*.txt manifests, and preview/baseline/draft artifacts write only confined DevKit paths",
+      "mutation_contract": "dialogue_apply, dialogue_create_apply, presentation_apply, module_apply, feature_apply, content_pack_apply, content_pack_catalog_apply, apply_source_edits, order_apply_move, and balance_apply are dry-run by default; semantic applies use SHA guards, deterministic dialogue creation and feature/content-pack apply additionally use exact reviewed plan-ID guards, content_pack_catalog_apply is confined to one strict devkit/content_forge/packs.json entry and additionally requires its catalog-plan ID/current catalog SHA/SAVE CONTENT PACK confirmation, feature/content-pack apply are confined to one named canonical source or direct legacy-record target at a time, balance_apply is confined to explicitly confirmed legacy item/troop authoring records, order fragment moves are confined to explicit src/**/_order*.txt manifests, and preview/baseline/draft artifacts write only confined DevKit paths",
       "contract": "contracts/tool-result.v1.schema.json"
     }
   ],
@@ -274,8 +290,16 @@
       "purpose": "Replay the fixed legacy processor chain in temporary staging and compare text-bearing exports with source/generated provenance."
     },
     {
+      "name": "rgl_log_analyze",
+      "purpose": "Cluster Mount & Blade RGL engine-error cascades, map named scripts through source/generated/export layers, classify runtime warnings, and identify a stale live deployment when supplied."
+    },
+    {
+      "name": "rgl_log_contract",
+      "purpose": "Verify protected native engine callbacks validate dynamic party handles before any party or faction operation."
+    },
+    {
       "name": "release_gate",
-      "purpose": "Run a strict read-only release preflight across staged source/export parity, compiler diagnostics, exact approved string blanks, dialogue-model errors, and order/ID contracts."
+      "purpose": "Run a strict read-only release preflight across staged source/export parity, compiler diagnostics, exact approved string blanks, dialogue-model errors, order/ID contracts, and engine callback party-handle contracts."
     },
     {
       "name": "blueprint_summary",
@@ -344,6 +368,62 @@
     {
       "name": "feature_semantic_diff",
       "purpose": "Compare feature entrypoint provenance, order, IDs, Blueprint state, and typed patch bases with a prior snapshot."
+    },
+    {
+      "name": "content_forge_summary",
+      "purpose": "Summarize typed authoring packs across dialogue, quest/event, campaign AI, troop/item, and presentation slices."
+    },
+    {
+      "name": "content_pack_find",
+      "purpose": "Find a content pack by its brief, lore/tone/acceptance criteria, slice, entrypoint, contract, or verification evidence."
+    },
+    {
+      "name": "content_pack_explain",
+      "purpose": "Explain a checked-in or inline content pack through its brief, typed source slices, entrypoints, feature compilation, and scenarios."
+    },
+    {
+      "name": "content_pack_validate",
+      "purpose": "Validate a strict content pack before planning, rejecting unknown fields, unsafe route shapes, missing tests, Blueprints, and scenarios."
+    },
+    {
+      "name": "content_pack_compile",
+      "purpose": "Compile a content pack into an explicit order-aware sequence of specialist source and balance changes without writing."
+    },
+    {
+      "name": "content_pack_plan",
+      "purpose": "Produce exact specialist diffs, SHA guards, order impact, AI intent evidence, and verification obligations for a content pack."
+    },
+    {
+      "name": "content_pack_preview",
+      "purpose": "Return static narrative, campaign AI, balance, and presentation preview evidence plus a review canvas."
+    },
+    {
+      "name": "content_pack_review",
+      "purpose": "Return a structured/Mermaid human review canvas backed by the exact typed content plan."
+    },
+    {
+      "name": "content_pack_apply",
+      "purpose": "Rehearse or apply one reviewed content change using exact content-plan and source-SHA guards; troop/item changes also require Balance Lab plan SHA."
+    },
+    {
+      "name": "content_pack_verify",
+      "purpose": "Re-check content specialist evidence, AI intent contracts, optional focused tests/staged checks, and bounded deterministic scenarios."
+    },
+    {
+      "name": "content_pack_snapshot",
+      "purpose": "Capture an in-memory content semantic baseline with pack, plan, specialist, and AI evidence."
+    },
+    {
+      "name": "content_pack_semantic_diff",
+      "purpose": "Diff content pack contract, specialist plan bases, and AI intent evidence against a prior snapshot."
+    },
+    {
+      "name": "content_pack_catalog_plan",
+      "purpose": "Plan a strict create or replacement of one checked-in Content Forge pack contract, returning only its catalog diff and SHA guard."
+    },
+    {
+      "name": "content_pack_catalog_apply",
+      "purpose": "Rehearse or save one reviewed strict Content Forge pack contract to devkit/content_forge/packs.json with catalog-plan/SHA and SAVE CONTENT PACK guards."
     },
     {
       "name": "campaign_state_summary",

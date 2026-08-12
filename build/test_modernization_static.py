@@ -629,7 +629,7 @@ def test_high_frequency_distance_calls_are_audited() -> None:
         "src/triggers/ST02_every_hour/entry_0082.py:8",
         "src/triggers/ST02_every_hour/entry_0082.py:16",
         "src/triggers/ST02_every_hour/entry_0082.py:24",
-        "src/triggers/ST02_every_hour/entry_0086.py:69",
+        "src/triggers/ST02_every_hour/entry_0086.py:104",
         "src/triggers/ST02_every_hour/entry_0087.py:39",
         "src/triggers/ST02_every_hour/entry_0178_incriminate_loyal_commander.py:20",
     }
@@ -1726,6 +1726,8 @@ def test_phase9_builder_doctor_tooling_guard_exists() -> None:
         "test_warband_presentation_callbacks_are_absent_for_mb1011",
         "sod_party_is_safe_active_to_reg",
         "script_sod_safe_leave_encounter",
+        "rgl_log_sentinel",
+        "engine_callback_contract_report",
     ):
         assert_contains(doctor, token)
     for row in (

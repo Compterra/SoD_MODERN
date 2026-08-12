@@ -19,8 +19,10 @@ $stringProvenance = Join-Path $devkitRoot 'string_provenance\string_provenance.p
 $campaignScenarioFuzzer = Join-Path $devkitRoot 'campaign_scenario_fuzzer\campaign_scenario_fuzzer.py'
 $semanticChangeDiff = Join-Path $devkitRoot 'semantic_change_diff\semantic_change_diff.py'
 $releaseGate = Join-Path $devkitRoot 'release_gate\release_gate.py'
+$rglLogSentinel = Join-Path $devkitRoot 'rgl_log_sentinel\rgl_log_sentinel.py'
 $moduleBlueprint = Join-Path $devkitRoot 'module_blueprint\module_blueprint.py'
 $featureAuthoring = Join-Path $devkitRoot 'feature_authoring\feature_authoring.py'
+$contentForge = Join-Path $devkitRoot 'content_forge\content_forge.py'
 $studio = Join-Path $devkitRoot 'module_studio\module_studio.py'
 
 if (-not (Test-Path -LiteralPath $workbench)) {
@@ -132,6 +134,16 @@ if ($CommandArguments[0] -eq 'gate') {
     exit $LASTEXITCODE
 }
 
+if ($CommandArguments[0] -eq 'rgl') {
+    if (-not (Test-Path -LiteralPath $rglLogSentinel)) {
+        Write-Error "RGL Log Sentinel entry point was not found: $rglLogSentinel"
+        exit 2
+    }
+    $rglArguments = @($CommandArguments | Select-Object -Skip 1)
+    & py -3 -B $rglLogSentinel @rglArguments
+    exit $LASTEXITCODE
+}
+
 if ($CommandArguments[0] -eq 'blueprint') {
     if (-not (Test-Path -LiteralPath $moduleBlueprint)) {
         Write-Error "Module Blueprint Compiler entry point was not found: $moduleBlueprint"
@@ -149,6 +161,16 @@ if ($CommandArguments[0] -eq 'feature') {
     }
     $featureArguments = @($CommandArguments | Select-Object -Skip 1)
     & py -3 -B $featureAuthoring @featureArguments
+    exit $LASTEXITCODE
+}
+
+if ($CommandArguments[0] -eq 'content') {
+    if (-not (Test-Path -LiteralPath $contentForge)) {
+        Write-Error "Content Forge entry point was not found: $contentForge"
+        exit 2
+    }
+    $contentArguments = @($CommandArguments | Select-Object -Skip 1)
+    & py -3 -B $contentForge @contentArguments
     exit $LASTEXITCODE
 }
 

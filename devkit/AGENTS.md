@@ -70,6 +70,32 @@ top-level removal with direct inbound Atlas references requires explicit
 `allow_referenced_removal` acknowledgement after those references have been
 reviewed and migrated deliberately.
 
+For content that crosses dialogue, quest/event flow, campaign AI, troop/item
+records, or presentation layout, begin with `content_forge_summary` and
+`content_pack_explain`. A Content Pack must carry its brief, lore constraints,
+tone, acceptance criteria, typed slices, and declared verification evidence;
+do not flatten that context into raw source. Use `content_pack_validate`, then
+`content_pack_plan` and `content_pack_review` before any apply. The review
+canvas is a human convenience, not authority: MCP/CLI JSON and the specialist
+plans remain canonical. `content_pack_apply` applies exactly one named change
+with the current content-plan ID and SHA, dry-run by default. Source changes
+delegate to Feature Authoring; troop/item records delegate to Balance Lab and
+retain its legacy acknowledgements. New troop/item records and reordering are
+intentionally outside this pack compiler because ID-sensitive legacy order
+must be reviewed explicitly. Follow a non-dry change with
+`content_pack_verify`; it rechecks first-match/source/order evidence, current
+AI intent contracts, and optional deterministic scenarios before the normal
+reviewed build.
+
+To persist a strict Content Pack itself, use `content_pack_catalog_plan` then
+`content_pack_catalog_apply` rather than editing `packs.json` directly. This
+is a separate contract-only SHA gate: its real save requires the exact
+catalog-plan ID, current catalog SHA, and `SAVE CONTENT PACK` confirmation;
+it writes only `devkit/content_forge/packs.json` and never applies content,
+module source, generated IDs, or exports. Module Studio's Content Forge page
+is a human-facing renderer/editor for this same contract, not an alternate
+authoring authority.
+
 For any change where top-to-bottom order could affect assembly, first-match
 dialogue, positional IDs, or an engine callback, begin with `order_summary`
 and `order_explain`. Use `order_risk` before proposing a move and

@@ -173,13 +173,17 @@ MENUS = [
         "mnu_simple_encounter",
         [
           (eq, "$encountered_party_friendly", 0),
-          (gt, "$g_enemy_fit_for_battle", 0),
+          (gt, "$g_enemy_party", 0),
+          (party_is_active, "$g_enemy_party"),
         ],
       ),
 
       ("encounter_attack", [
         (eq, "$encountered_party_friendly", 0),
-        (gt, "$g_enemy_fit_for_battle", 0),
+        # The current-battle aggregate can be stale while the map party is
+        # still valid. Keep the encounter playable in that window.
+        (gt, "$g_enemy_party", 0),
+        (party_is_active, "$g_enemy_party"),
         (call_script, "script_cf_sod_battle_commander_can_start"),
       ],
       "Charge the enemy ({s68} leads).", [
@@ -213,7 +217,8 @@ MENUS = [
 
       ("encounter_order_attack", [
         (eq, "$encountered_party_friendly", 0),
-        (gt, "$g_enemy_fit_for_battle", 0),
+        (gt, "$g_enemy_party", 0),
+        (party_is_active, "$g_enemy_party"),
         (call_script, "script_party_count_members_with_full_health", "p_main_party"),
         (ge, reg(0), 4),
       ],

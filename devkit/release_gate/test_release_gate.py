@@ -86,6 +86,16 @@ def clean_order_report() -> dict[str, object]:
     }
 
 
+def clean_engine_callback_report() -> dict[str, object]:
+    return {
+        "contract_version": "devkit.engine-party-callback-contract.v1",
+        "passed": True,
+        "contract_count": 1,
+        "failed_contract_count": 0,
+        "findings": [],
+    }
+
+
 def run_fixture(*, parity: dict[str, object] | None = None, strings: dict[str, object] | None = None) -> dict[str, object]:
     contract = gate.load_approval_contract(REPO_ROOT)
     with (
@@ -94,6 +104,7 @@ def run_fixture(*, parity: dict[str, object] | None = None, strings: dict[str, o
         patch.object(gate.dialogue_model_checker, "build_dialogue_model", return_value=clean_dialogue_index()),
         patch.object(gate.order_control, "build_order_control", return_value=object()),
         patch.object(gate.order_control, "order_verify", return_value=clean_order_report()),
+        patch.object(gate.rgl_log_sentinel, "engine_callback_contract_report", return_value=clean_engine_callback_report()),
     ):
         return gate.run_release_gate(REPO_ROOT, timeout_seconds=10, limit=50)
 
@@ -108,7 +119,7 @@ def check(report: dict[str, object], check_id: str) -> dict[str, object]:
 def test_exact_approval_baseline_passes() -> None:
     report = run_fixture()
     assert report["state"] == "passed", report
-    assert report["summary"]["passed_check_count"] == 5
+    assert report["summary"]["passed_check_count"] == 6
     assert report["approval_contract"]["expected_approved_finding_count"] == 33
 
 
@@ -148,9 +159,39 @@ def test_staged_warning_blocks_compiler_check() -> None:
     assert check(report, "staged_compiler_diagnostics")["state"] == "blocked"
 
 
+def test_engine_callback_contract_failure_blocks_release() -> None:
+    contract = gate.load_approval_contract(REPO_ROOT)
+    broken = clean_engine_callback_report()
+    broken.update(
+        {
+            "passed": False,
+            "failed_contract_count": 1,
+            "findings": [
+                {
+                    "contract_id": "game-event-simulate-battle-active-root-parties",
+                    "code": "engine_callback_party_handle_contract",
+                    "message": "Fixture missing active party guard.",
+                }
+            ],
+        }
+    )
+    with (
+        patch.object(gate.text_export_parity, "build_export_parity_report", return_value=clean_parity_report()),
+        patch.object(gate.string_integrity, "build_integrity_report", return_value=clean_string_report(contract)),
+        patch.object(gate.dialogue_model_checker, "build_dialogue_model", return_value=clean_dialogue_index()),
+        patch.object(gate.order_control, "build_order_control", return_value=object()),
+        patch.object(gate.order_control, "order_verify", return_value=clean_order_report()),
+        patch.object(gate.rgl_log_sentinel, "engine_callback_contract_report", return_value=broken),
+    ):
+        report = gate.run_release_gate(REPO_ROOT, timeout_seconds=10, limit=50)
+    assert report["state"] == "blocked"
+    assert check(report, "engine_callback_party_handle_contracts")["state"] == "blocked"
+
+
 if __name__ == "__main__":
     test_exact_approval_baseline_passes()
     test_extra_matching_blank_sink_blocks_count_drift()
     test_export_mismatch_blocks_parity()
     test_staged_warning_blocks_compiler_check()
+    test_engine_callback_contract_failure_blocks_release()
     print("test_release_gate: OK")

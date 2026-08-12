@@ -113,11 +113,17 @@ MENUS = [
         build_sod_battle_commander_change_option(
           "change_commander_join_battle",
           "mnu_join_battle",
-          [(gt, "$g_enemy_fit_for_battle", 0)],
+          [
+            (gt, "$g_enemy_party", 0),
+            (party_is_active, "$g_enemy_party"),
+          ],
         ),
 
         ("join_attack", [
-          (gt, "$g_enemy_fit_for_battle", 0),
+          # Late-join aggregation can briefly report zero while map parties
+          # are still fighting. Gate on the selected side, not that snapshot.
+          (gt, "$g_enemy_party", 0),
+          (party_is_active, "$g_enemy_party"),
           (call_script, "script_cf_sod_battle_commander_can_start"),
         ],
         "Charge the enemy ({s68} leads).", [
@@ -137,7 +143,8 @@ MENUS = [
 
         ("join_order_attack", [
 #          (gt, "$encountered_party_hostile", 0),
-          (gt, "$g_enemy_fit_for_battle", 0),
+          (gt, "$g_enemy_party", 0),
+          (party_is_active, "$g_enemy_party"),
           (call_script, "script_party_count_members_with_full_health", "p_main_party"), (ge, reg(0), 3),
         ],
         "Order your troops to attack with your allies while you stay back.", [

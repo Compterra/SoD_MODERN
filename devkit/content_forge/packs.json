@@ -1,0 +1,81 @@
+{
+  "schema": "sod-modern.content-pack-catalog.v1",
+  "packs": [
+    {
+      "schema": "sod-modern.content-pack.v1",
+      "id": "black-khergit-camp-runtime",
+      "title": "Black Khergit Camp Runtime",
+      "status": "active",
+      "description": "Stewardship contract for the camped Black Khergit horde. The camp AI lock, hourly lifecycle, report-facing status, and player-facing consequences must agree: a pitched camp remains stationary until an explicit relocation or approach branch changes that state.",
+      "blueprint_id": "black-khergit-camped-horde",
+      "brief": {
+        "summary": "Keep the Black Khergit horde legible as a threatening but anchored camp, rather than a party that silently drifts because an unrelated AI branch overwrote its intent.",
+        "lore_constraints": [
+          "A pitched horde camp is a deliberate occupation and must read as settled until a named relocation or approach transition occurs.",
+          "The report must describe the same live camp state that the campaign AI enforces."
+        ],
+        "tone": [
+          "ominous frontier pressure",
+          "clear player-facing causality",
+          "no unexplained AI drift"
+        ],
+        "acceptance_criteria": [
+          "A valid camp receives ai_bhvr_hold and zero initiative from the camped-lock helper.",
+          "Only explicit relocation or approach logic may expose a movement behavior for the camp.",
+          "The hourly lifecycle and report menu continue to resolve the same Black Khergit horde ownership chain."
+        ]
+      },
+      "slices": {
+        "quest_event": {
+          "changes": [],
+          "timeline": [
+            {
+              "id": "camped-ai-lock",
+              "title": "Lock camp AI",
+              "phase": "maintain",
+              "entrypoint": "entrypoint:script:sod_black_khergits_lock_camped_ai",
+              "description": "The camped-horde helper reasserts stationary AI before later lifecycle branches can react to explicit relocation or approach state."
+            },
+            {
+              "id": "hourly-lifecycle",
+              "title": "Process hourly horde lifecycle",
+              "phase": "maintain",
+              "entrypoint": "entrypoint:script:sod_black_khergits_process_day_cycle",
+              "description": "Hourly processing owns pressure, recovery, and explicit state transitions without treating camp movement as an ambient default."
+            }
+          ]
+        },
+        "campaign_ai": {
+          "changes": [],
+          "contracts": [
+            {
+              "id": "camped-horde-stationary",
+              "intent": "stationary_camp",
+              "entrypoint": "entrypoint:script:sod_black_khergits_lock_camped_ai",
+              "required_markers": [
+                "party_set_ai_behavior",
+                "ai_bhvr_hold",
+                "party_set_ai_initiative"
+              ],
+              "description": "The camped lock helper must visibly set holding behavior and zero initiative for the Black Khergit horde camp.",
+              "state_contract_id": "black_khergit_camped_ai_stationary"
+            }
+          ],
+          "scenarios": [
+            "black-khergit-camped-lock"
+          ]
+        }
+      },
+      "verification": {
+        "tests": [
+          "build/test_black_khergit_horde_presence.py",
+          "build/test_black_khergit_boar_separation_static.py"
+        ],
+        "require_blueprint": true,
+        "scenarios": [
+          "black-khergit-camped-lock"
+        ]
+      }
+    }
+  ]
+}

@@ -4120,7 +4120,7 @@ game_menus = [
         ]),
       ]
   ),
-# [ src/menus/0000_hardcoded_mb1011/simple_encounter.py:L1-L352 ] simple_encounter
+# [ src/menus/0000_hardcoded_mb1011/simple_encounter.py:L1-L357 ] simple_encounter
 (
     "simple_encounter", mnf_enable_hot_keys|mnf_scale_picture,
     "{s2} You have {reg10} troops fit for battle against their {reg11}.",
@@ -4295,13 +4295,17 @@ game_menus = [
         "mnu_simple_encounter",
         [
           (eq, "$encountered_party_friendly", 0),
-          (gt, "$g_enemy_fit_for_battle", 0),
+          (gt, "$g_enemy_party", 0),
+          (party_is_active, "$g_enemy_party"),
         ],
       ),
 
       ("encounter_attack", [
         (eq, "$encountered_party_friendly", 0),
-        (gt, "$g_enemy_fit_for_battle", 0),
+        # The current-battle aggregate can be stale while the map party is
+        # still valid. Keep the encounter playable in that window.
+        (gt, "$g_enemy_party", 0),
+        (party_is_active, "$g_enemy_party"),
         (call_script, "script_cf_sod_battle_commander_can_start"),
       ],
       "Charge the enemy ({s68} leads).", [
@@ -4335,7 +4339,8 @@ game_menus = [
 
       ("encounter_order_attack", [
         (eq, "$encountered_party_friendly", 0),
-        (gt, "$g_enemy_fit_for_battle", 0),
+        (gt, "$g_enemy_party", 0),
+        (party_is_active, "$g_enemy_party"),
         (call_script, "script_party_count_members_with_full_health", "p_main_party"),
         (ge, reg(0), 4),
       ],
@@ -5150,7 +5155,7 @@ game_menus = [
          ]),
       ]
   ),
-# [ src/menus/encounter/pre_join_help_attackers.py:L1-L78 ] pre_join
+# [ src/menus/encounter/pre_join_help_attackers.py:L1-L80 ] pre_join
 (
     "pre_join", mnf_enable_hot_keys,
     "You come across a battle between:^^{s70} and {s73}.^^You decide to...",
@@ -5185,13 +5190,15 @@ game_menus = [
         (gt, "$g_encountered_party", 0),
         (party_is_active, "$g_encountered_party"),
         (store_faction_of_party, ":attacker_faction", "$g_encountered_party_2"),
-        (store_relation, ":attacker_relation", ":attacker_faction", "fac_player_supporters_faction"),
+        # Use the player's current political allegiance. The supporters faction
+        # only represents an independent player realm.
+        (assign, ":player_faction", "fac_player_faction"),
+        (try_begin),
+          (gt, "$players_kingdom", 0),
+          (assign, ":player_faction", "$players_kingdom"),
+        (try_end),
+        (store_relation, ":attacker_relation", ":attacker_faction", ":player_faction"),
         (ge, ":attacker_relation", 0),
-
-        # MORDACHAI - allow players to join in on neutral battles
-        #(store_faction_of_party, ":defender_faction", "$g_encountered_party"),
-        #(store_relation, ":defender_relation", ":defender_faction", "fac_player_supporters_faction"),
-        #(lt, ":defender_relation", 0),
       ],
       "Move in to help {s70}.", [
         (select_enemy, 0),
@@ -5208,13 +5215,13 @@ game_menus = [
         (gt, "$g_encountered_party_2", 0),
         (party_is_active, "$g_encountered_party_2"),
         (store_faction_of_party, ":defender_faction", "$g_encountered_party"),
-        (store_relation, ":defender_relation", ":defender_faction", "fac_player_supporters_faction"),
+        (assign, ":player_faction", "fac_player_faction"),
+        (try_begin),
+          (gt, "$players_kingdom", 0),
+          (assign, ":player_faction", "$players_kingdom"),
+        (try_end),
+        (store_relation, ":defender_relation", ":defender_faction", ":player_faction"),
         (ge, ":defender_relation", 0),
-
-        # MORDACHAI - allow players to join in on neutral battles
-        #(store_faction_of_party, ":attacker_faction", "$g_encountered_party_2"),
-        #(store_relation, ":attacker_relation", ":attacker_faction", "fac_player_supporters_faction"),
-        #(lt, ":attacker_relation", 0),
       ],
       "Rush to the aid of {s73}.", [
         (select_enemy, 1),
@@ -5227,7 +5234,7 @@ game_menus = [
       ("pre_join_leave", [], "Don't get involved.", [(leave_encounter), (change_screen_return)]),
     ]
   ),
-# [ src/menus/encounter/join_attack.py:L1-L172 ] join_battle
+# [ src/menus/encounter/join_attack.py:L1-L179 ] join_battle
 (
     "join_battle", mnf_enable_hot_keys,
     "You are helping {s73} against {s72}. Your side looks {s74}; the enemy line looks {s75}.",
@@ -5342,11 +5349,17 @@ game_menus = [
         build_sod_battle_commander_change_option(
           "change_commander_join_battle",
           "mnu_join_battle",
-          [(gt, "$g_enemy_fit_for_battle", 0)],
+          [
+            (gt, "$g_enemy_party", 0),
+            (party_is_active, "$g_enemy_party"),
+          ],
         ),
 
         ("join_attack", [
-          (gt, "$g_enemy_fit_for_battle", 0),
+          # Late-join aggregation can briefly report zero while map parties
+          # are still fighting. Gate on the selected side, not that snapshot.
+          (gt, "$g_enemy_party", 0),
+          (party_is_active, "$g_enemy_party"),
           (call_script, "script_cf_sod_battle_commander_can_start"),
         ],
         "Charge the enemy ({s68} leads).", [
@@ -5366,7 +5379,8 @@ game_menus = [
 
         ("join_order_attack", [
 #          (gt, "$encountered_party_hostile", 0),
-          (gt, "$g_enemy_fit_for_battle", 0),
+          (gt, "$g_enemy_party", 0),
+          (party_is_active, "$g_enemy_party"),
           (call_script, "script_party_count_members_with_full_health", "p_main_party"), (ge, reg(0), 3),
         ],
         "Order your troops to attack with your allies while you stay back.", [
@@ -16211,7 +16225,7 @@ game_menus = [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_fief_reports")]),
     ]
   ),
-# [ src/menus/economy/castle_support_report.py:L1-L160 ] castle_support_report
+# [ src/menus/economy/castle_support_report.py:L1-L171 ] castle_support_report
 ("castle_support_report", mnf_enable_hot_keys,
    "{s98}",
    "none",
@@ -16244,6 +16258,7 @@ game_menus = [
         (assign, ":garrison_recovery", reg12),
         (assign, ":patrol_strength", reg13),
         (assign, ":recruitment_quality", reg14),
+        (assign, ":tax_reliability", reg15),
         (assign, ":village_protection", reg16),
         (try_begin),
           (lt, ":support_score", 30),
@@ -16339,6 +16354,16 @@ game_menus = [
         (try_end),
 
         (try_begin),
+          (lt, ":tax_reliability", 45),
+          (str_store_string, s80, "@scutage is unreliable"),
+        (else_try),
+          (lt, ":tax_reliability", 85),
+          (str_store_string, s80, "@scutage is uneven"),
+        (else_try),
+          (str_store_string, s80, "@scutage is dependable"),
+        (try_end),
+
+        (try_begin),
           (lt, ":bound_villages", 1),
           (str_store_string, s78, "@no villages feed this estate directly"),
         (else_try),
@@ -16348,7 +16373,7 @@ game_menus = [
           (str_store_string, s78, "@its attached villages give it a meaningful base"),
         (try_end),
 
-        (str_store_string, s79, "@{s68}: {s69}; {s78}.^Garrison: {s70}; {s71}.^Roads: {s72}; {s76}.^Command: {s75}; {s74}; {s73}.^Outlook: {s77}."),
+        (str_store_string, s79, "@{s68}: {s69}; {s78}.^Garrison: {s70}; {s71}.^Roads: {s72}; {s76}.^Command: {s75}; {s74}; {s73}.^Revenue: {s80}.^Outlook: {s77}."),
         (try_begin),
           (eq, ":first", 1),
           (str_store_string, s98, "@{s79}"),
@@ -16364,7 +16389,7 @@ game_menus = [
         (str_store_string, s98, "@You do not personally hold any castles."),
       (try_end),
       (str_store_string_reg, s97, s98),
-      (str_store_string, s98, "@Castle Support Report:^^Castles are military estates. Their strength comes from garrisons, attached villages, stores, road control, commander quality, siege readiness, and noble access.^^{s97}"),
+      (str_store_string, s98, "@Castle Support Report:^^Castles are military estates. Their strength comes from garrisons, attached villages, stores, road control, commander quality, siege readiness, noble access, scutage reliability, and village protection.^^{s97}"),
     ],
     [
       ("continue", [], "Continue...", [(jump_to_menu, "mnu_fief_reports")]),
@@ -23022,7 +23047,7 @@ game_menus = [
       ("back_to_town_menu", [], "Return to the streets.", [ (jump_to_menu, "mnu_town"), ]),
     ]
   ),
-# [ src/menus/reports/report_submenus.py:L1-L57 ] party_reports
+# [ src/menus/reports/report_submenus.py:L1-L54 ] party_reports
 ("party_reports", mnf_enable_hot_keys,
     "Party and Company Reports",
     "none",
@@ -23043,10 +23068,7 @@ game_menus = [
     [(set_background_mesh, "mesh_pic_report_screen")],
     [
       ("realm_reports_resume", [], "Resume travelling.", [(change_screen_return)]),
-      ("view_faith_world_report", [
-        (this_or_next|eq, "$cheat_mode", 1),
-        (eq, "$g_sod_cheat_mode", 1),
-      ], "Debug faith and institution ledgers.", [(jump_to_menu, "mnu_faith_world_report")]),
+      ("view_faith_world_report", [], "Read faith and institution report.", [(jump_to_menu, "mnu_faith_world_report")]),
       ("view_realm_law_report", [], "Read realm laws and foreign edicts.", [(jump_to_menu, "mnu_realm_law_report")]),
       ("view_noble_houses_report", [], "Read noble house ledgers.", [(jump_to_menu, "mnu_noble_houses_report")]),
       ("view_sod_diplomacy_report", [], "Open the diplomatic dispatches.", [(jump_to_menu, "mnu_sod_diplomacy_report")]),
@@ -23687,7 +23709,7 @@ game_menus = [
       ),
     ]
   ),
-# [ src/menus/camp/borcha_road_keeps_own.py:L1-L218 ] borcha_road_keeps_own
+# [ src/menus/camp/borcha_road_keeps_own.py:L1-L234 ] borcha_road_keeps_own
 ("borcha_road_keeps_own", mnf_scale_picture|mnf_enable_hot_keys,
    "Borcha has the road drawn in dirt and boot cuts: {s3} at one end, {s4} at the other, and a side track too clean to trust.^^{reg1?The first plan smelled like profit, and Borcha has not forgotten who suggested bait.:The first plan was caution, and Borcha is watching whether caution becomes help.} The road has spoken through a witness and answered with steel. Now the lesson belongs to the company.",
    "none",
@@ -23863,21 +23885,29 @@ game_menus = [
 
 ("borcha_road_ambush_succeeded", mnf_scale_picture|mnf_enable_hot_keys,
    "The ambushers break against a trap they thought was theirs. Borcha steps over the old wheel ruts and kicks loose the stones that would have pinned the next caravan in place.",
-   "none",
+    "none",
     [
       (set_background_mesh, "mesh_pic_bandits"),
-      (assign, "$g_sod_borcha_road_confronted", 1),
       (try_begin),
-        (le, "$g_sod_borcha_road_result_grade", 0),
-        (assign, "$g_sod_borcha_road_result_grade", 3),
+        (main_party_has_troop, "trp_npc1"),
+        (assign, "$g_sod_borcha_road_confronted", 1),
+        (try_begin),
+          (le, "$g_sod_borcha_road_result_grade", 0),
+          (assign, "$g_sod_borcha_road_result_grade", 3),
+        (try_end),
+        (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_progress, 75),
+        (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_metadata, "$g_sod_borcha_road_result_grade"),
+        (call_script, "script_sod_companion_apply_player_action", sod_companion_action_safe_roadcraft, 3),
+        (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
+      (else_try),
+        (call_script, "script_sod_companion_cleanup_departed_companion", "trp_npc1"),
+        (jump_to_menu, "mnu_camp_action"),
       (try_end),
-      (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_progress, 75),
-      (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_metadata, "$g_sod_borcha_road_result_grade"),
-      (call_script, "script_sod_companion_apply_player_action", sod_companion_action_safe_roadcraft, 3),
-      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
     ],
     [
-      ("borcha_road_ambush_after", [], "Speak with Borcha about the road.",
+      ("borcha_road_ambush_after", [
+          (main_party_has_troop, "trp_npc1"),
+        ], "Speak with Borcha about the road.",
         [
           (start_map_conversation, "trp_npc1"),
         ]
@@ -23887,17 +23917,25 @@ game_menus = [
 
 ("borcha_road_ambush_failed", mnf_scale_picture|mnf_enable_hot_keys,
    "The side road becomes noise and dust. Borcha gets you clear, but his mouth is a hard line: not anger, not fear, just the old memory of a route that ate someone because warning came too late.",
-   "none",
+    "none",
     [
       (set_background_mesh, "mesh_pic_bandits"),
-      (assign, "$g_sod_borcha_road_confronted", 1),
-      (assign, "$g_sod_borcha_road_result_grade", -1),
-      (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_progress, 75),
-      (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_metadata, "$g_sod_borcha_road_result_grade"),
-      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
+      (try_begin),
+        (main_party_has_troop, "trp_npc1"),
+        (assign, "$g_sod_borcha_road_confronted", 1),
+        (assign, "$g_sod_borcha_road_result_grade", -1),
+        (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_progress, 75),
+        (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_metadata, "$g_sod_borcha_road_result_grade"),
+        (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
+      (else_try),
+        (call_script, "script_sod_companion_cleanup_departed_companion", "trp_npc1"),
+        (jump_to_menu, "mnu_camp_action"),
+      (try_end),
     ],
     [
-      ("borcha_road_failed_after", [], "Face Borcha's road lesson.",
+      ("borcha_road_failed_after", [
+          (main_party_has_troop, "trp_npc1"),
+        ], "Face Borcha's road lesson.",
         [
           (start_map_conversation, "trp_npc1"),
         ]

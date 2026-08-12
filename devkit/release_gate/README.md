@@ -18,6 +18,8 @@ It blocks on all of the following:
   intentional-blank contract;
 - dialogue-model error findings; and
 - failed order/ID contracts, generated-order drift, or dialogue-order hazards.
+- failed protected engine-callback dynamic-party contracts, including the
+  autoresolve callback that can otherwise read a removed party ID.
 
 The blank-sink contract is deliberately exact-count rather than a broad
 suppression. If an approved warning disappears, increases, moves to a new

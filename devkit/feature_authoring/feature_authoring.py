@@ -1168,6 +1168,26 @@ def compile_mission_trigger(spec: Any, *, name: str) -> dict[str, Any]:
     }
 
 
+def compile_presentation_trigger(spec: Any, *, name: str) -> dict[str, Any]:
+    """Compile a top-level presentation callback from typed operation IR."""
+
+    item = require_object(spec, name=name)
+    reject_unknown_fields(item, name=name, allowed={"event", "operations"})
+    event = item.get("event")
+    event_value = normalize_ir_operand(event, name=f"{name}.event")
+    if (
+        not isinstance(event, dict)
+        or set(event) != {"symbol"}
+        or not isinstance(event.get("symbol"), str)
+        or not event["symbol"].startswith("ti_")
+    ):
+        raise FeatureAuthoringError(f"{name}.event must be a {{\"symbol\": \"ti_*\"}} operand.")
+    return {
+        "event": event_value,
+        "operations": render_operations(item.get("operations", []), name=f"{name}.operations"),
+    }
+
+
 def compile_module_new_item(action: str, value: Any, *, name: str) -> dict[str, Any]:
     item = require_object(value, name=name)
     if action == "add_constant":
@@ -1226,6 +1246,26 @@ def compile_module_new_item(action: str, value: Any, *, name: str) -> dict[str, 
             "spawn_records": normalize_ir_operand(item.get("spawn_records", {"list": []}), name=f"{name}.spawn_records"),
             "triggers": [compile_mission_trigger(trigger, name=f"{name}.triggers[{position}]") for position, trigger in enumerate(triggers)],
         }
+    if action == "add_presentation":
+        reject_unknown_fields(item, name=name, allowed={"id", "flags", "mesh", "triggers"})
+        mesh = item.get("mesh", {"symbol": "mesh_load_window"})
+        rendered_mesh = normalize_ir_operand(mesh, name=f"{name}.mesh")
+        if (
+            not isinstance(mesh, dict)
+            or set(mesh) != {"symbol"}
+            or not isinstance(mesh.get("symbol"), str)
+            or not mesh["symbol"].startswith("mesh_")
+        ):
+            raise FeatureAuthoringError(f"{name}.mesh must be a {{\"symbol\": \"mesh_*\"}} operand.")
+        triggers = item.get("triggers", [])
+        if not isinstance(triggers, list) or len(triggers) > 100:
+            raise FeatureAuthoringError(f"{name}.triggers must be an array with at most 100 callback blocks.")
+        return {
+            "id": require_identifier(item.get("id"), name=f"{name}.id"),
+            "flags": normalize_ir_operand(item.get("flags", 0), name=f"{name}.flags"),
+            "mesh": rendered_mesh,
+            "triggers": [compile_presentation_trigger(trigger, name=f"{name}.triggers[{position}]") for position, trigger in enumerate(triggers)],
+        }
     raise FeatureAuthoringError(f"Unsupported module new-item action: {action}")
 
 
@@ -1247,10 +1287,30 @@ def compile_module_change(
         allowed={"kind", "target", "action", "field", "block", "position", "operation_index", "operation", "operations", "text", "expression", "interval", "new_item"},
     )
     entry = require_entrypoint_target(change, index, name=name)
-    entity = entity_for_entrypoint(index, entry, name=name)
     action = require_string(change.get("action"), name=f"{name}.action", maximum=80)
     if action not in module_atlas.VALID_ACTIONS:
         raise FeatureAuthoringError(f"{name}.action is not a supported Module Atlas action.")
+    if action == "add_presentation":
+        # Presentation entrypoints intentionally originate in Presentation
+        # Layout, where an existing screen can own several source-level
+        # details and therefore has no Atlas entity ID.  New-presentation
+        # creation is the narrow exception: resolve the one matching Atlas
+        # presentation solely as an append anchor, while keeping every edit of
+        # an existing layout in the Presentation Layout specialist.
+        if entry.family != "presentation":
+            raise FeatureAuthoringError(f"{name}.target must be a presentation entrypoint for add_presentation.")
+        candidates = [
+            candidate
+            for candidate in index.atlas.entities
+            if candidate.area == "presentations" and candidate.kind == "presentation" and candidate.name == entry.name and candidate.path in entry.source_paths
+        ]
+        if len(candidates) != 1:
+            raise FeatureAuthoringError(
+                f"{name}.target must resolve to one unique Atlas presentation append anchor; found {len(candidates)} candidate(s)."
+            )
+        entity = candidates[0]
+    else:
+        entity = entity_for_entrypoint(index, entry, name=name)
     # Deletion and reordering have specialized lifecycle/order controls.  Do
     # not let a feature intent turn a generated plan into a broad migration.
     if action in {"remove_entity", "remove_menu_option", "remove_mission_trigger"}:

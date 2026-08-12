@@ -96,6 +96,7 @@ VALID_ACTIONS = frozenset(
         "add_menu",
         "add_menu_option",
         "add_mission_template",
+        "add_presentation",
         "remove_menu_option",
         "add_mission_trigger",
         "remove_mission_trigger",
@@ -1218,7 +1219,7 @@ def supported_actions(entity: ModuleEntity) -> list[str]:
     if entity.area == "dialogs":
         return ["delegate_to_dialogue_composer"]
     if entity.area == "presentations":
-        return ["delegate_to_presentation_layout_composer"]
+        return ["delegate_to_presentation_layout_composer", "add_presentation"]
     actions = ["set_expression"]
     if entity.kind in {"menu", "menu_option", "quest"}:
         actions.append("set_text")
@@ -1807,6 +1808,51 @@ def render_simple_trigger(item: dict[str, Any]) -> str:
     return f"({interval.strip()}, {operations})"
 
 
+def render_presentation_trigger(item: dict[str, Any]) -> str:
+    """Render one top-level presentation callback without a raw-source escape hatch.
+
+    Existing presentation editing belongs to Presentation Layout because it
+    understands overlays, registers, and canvas consequences.  This renderer
+    exists only for deterministic creation of a wholly new presentation at a
+    named existing presentation anchor.
+    """
+
+    if not isinstance(item, dict):
+        raise ModuleAtlasError("new_item trigger must be an object for add_presentation.")
+    event = item.get("event")
+    if not isinstance(event, str):
+        raise ModuleAtlasError("new_item trigger event must be an event expression such as ti_on_presentation_load.")
+    expression = parse_expression(event, name="new_item trigger.event")
+    if not isinstance(expression, ast.Name) or not expression.id.startswith("ti_"):
+        raise ModuleAtlasError("new_item trigger.event must be a ti_* presentation callback constant.")
+    operations = validate_operation_list(str(item.get("operations", "[]")), name="new_item trigger.operations")
+    return f"({event.strip()}, {operations})"
+
+
+def render_presentation(item: dict[str, Any]) -> str:
+    if not isinstance(item, dict):
+        raise ModuleAtlasError("new_item must be an object for add_presentation.")
+    presentation_id = require_identifier(item.get("id"), name="new_item.id")
+    flags = str(item.get("flags", "0"))
+    mesh = str(item.get("mesh", "mesh_load_window"))
+    triggers = item.get("triggers", [])
+    parse_expression(flags, name="new_item.flags")
+    mesh_expression = parse_expression(mesh, name="new_item.mesh")
+    if not isinstance(mesh_expression, ast.Name):
+        raise ModuleAtlasError("new_item.mesh must be a mesh constant name such as mesh_load_window.")
+    if not isinstance(triggers, list):
+        raise ModuleAtlasError("new_item.triggers must be a list of presentation trigger objects.")
+    rendered_triggers = [render_presentation_trigger(trigger) for trigger in triggers]
+    return "(" + ", ".join(
+        (
+            quoted(presentation_id, name="new_item.id"),
+            flags.strip(),
+            mesh.strip(),
+            rebuilt_list(rendered_triggers),
+        )
+    ) + ")"
+
+
 def document_for(index: ModuleAtlasIndex, entity: ModuleEntity) -> SourceDocument:
     document = index.documents.get(entity.path)
     if document is None:
@@ -1832,7 +1878,7 @@ def semantic_edits(
         raise ModuleAtlasError("action must be one of: " + ", ".join(sorted(VALID_ACTIONS)))
     if entity.area == "dialogs":
         raise ModuleAtlasError("Dialogue route semantics belong to dialogue_patch; it preserves first-match analysis.")
-    if entity.area == "presentations":
+    if entity.area == "presentations" and action != "add_presentation":
         raise ModuleAtlasError("Presentation semantics belong to presentation_patch; it preserves layout/register analysis.")
     document = document_for(index, entity)
     metadata: dict[str, Any] = {"action": action, "entity_id": entity.id, "kind": entity.kind}
@@ -1912,6 +1958,10 @@ def semantic_edits(
         if entity.kind != "mission_template":
             raise ModuleAtlasError("add_mission_template requires a mission template that anchors the intended source fragment.")
         return [append_list_item(document, assignment_container(document, entity, name="MISSION_TEMPLATES"), render_mission_template(new_item or {}))], metadata
+    if action == "add_presentation":
+        if entity.kind != "presentation":
+            raise ModuleAtlasError("add_presentation requires an existing presentation that anchors the intended source fragment.")
+        return [append_list_item(document, assignment_container(document, entity, name="PRESENTATIONS"), render_presentation(new_item or {}))], metadata
     if action == "remove_mission_trigger":
         if entity.kind != "mission_trigger":
             raise ModuleAtlasError("remove_mission_trigger requires a mission_trigger entity.")

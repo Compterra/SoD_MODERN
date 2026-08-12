@@ -23,9 +23,10 @@ def main() -> int:
     caravan = read("src/scripts/ZB_economy_and_trade/cf_select_random_town_at_peace_with_faction_in_trade_route.py")
     bandits = read("src/scripts/ZZ_common_array_processing/spawn_bandits.py")
     recon = read("src/scripts/ZD_centers/update_center_recon_notes.py")
+    recon_brief = read("src/scripts/ZY_helper_scripts/sod_store_center_recon_brief_to_s68.py")
     town_report = read("src/menus/economy/town_market_report.py")
     regional_report = read("src/menus/economy/regional_economy_flow_report.py")
-    notes = read("docs/reports/security_economic_infrastructure_audit.md")
+    notes = read("docs/reports/economy_settlements/security_economic_infrastructure_audit.md")
 
     for token in (
         '"sod_get_center_security_economy_profile"',
@@ -44,7 +45,7 @@ def main() -> int:
     ):
         assert_contains(security, token)
 
-    for raw in (town, village, caravan, bandits, recon, town_report, regional_report):
+    for raw in (town, village, caravan, bandits, town_report, regional_report):
         assert_contains(raw, "script_sod_get_center_security_economy_profile")
 
     assert_contains(town, ":security_trade_pct")
@@ -52,9 +53,11 @@ def main() -> int:
     assert_contains(village, ":bandit_pressure_pct")
     assert_contains(caravan, ":route_security")
     assert_contains(bandits, ":bandit_pressure_pct")
-    assert_contains(recon, "Security infrastructure")
+    assert_contains(recon, "script_sod_store_center_recon_brief_to_s68")
+    assert_contains(recon_brief, "script_sod_get_center_security_profile")
+    assert_contains(recon_brief, "The roads are")
     assert_contains(town_report, "Security infrastructure")
-    assert_contains(regional_report, "Security trade protection")
+    assert_contains(regional_report, "Security infrastructure protects trade volume and recovery")
 
     assert_contains(notes, "Security Economic Infrastructure Audit")
     assert_contains(notes, "contracted Black Army and Serpent Host")

@@ -19,9 +19,11 @@ ignored by Git.
 | `workspace_audit/` | Establish the modular source, generated compile, legacy processing, export, ordering, freshness, and validation topology before diagnosis. |
 | `string_integrity/` | Preflight visible text sinks and s-register flow, including dynamic selector boundaries and source provenance. |
 | `text_export_parity/` | Replay the legacy processor chain in temporary staging and prove or pinpoint generated/source-to-export text-table drift without changing live exports. |
-| `release_gate/` | Run one strict read-only release preflight that requires full source/generated/all-export parity, clean staged compiler diagnostics, exact approved intentional blank text sinks, zero dialogue-model errors, and intact order/ID contracts. |
+| `rgl_log_sentinel/` | Read a real M&B RGL gameplay log, cluster root error cascades, map callbacks through source/generated/export layers, classify warnings, compare a live module with `_export`, and enforce protected engine party-handle contracts. |
+| `release_gate/` | Run one strict read-only release preflight that requires full source/generated/all-export parity, clean staged compiler diagnostics, exact approved intentional blank text sinks, zero dialogue-model errors, intact order/ID contracts, and protected engine party-handle contracts. |
 | `module_blueprint/` | Give a coherent feature a stable checked-in identity and prove its exact source, symbols, order, slot ownership, AI intent contracts, downstream impact, and focused test declarations before a legacy source edit. |
 | `feature_authoring/` | Compile an LLM-first typed Feature Intent through real engine entrypoints and the existing Blueprint/Atlas/dialogue/presentation specialists; produce reviewed per-source SHA plans, bounded traces, semantic baselines, and focused verification without raw tuple authoring. |
+| `content_forge/` | Author a typed content pack that joins a brief/lore/tone/acceptance contract to dialogue, quest/event, campaign AI, troop/item, and presentation slices; compile exact specialist plans, review a deterministic canvas, apply one SHA-guarded change at a time, and persist one reviewed strict pack contract through its separate catalog SHA gate. |
 | `text_execution_ledger/` | Explain why a text sink can render through conditions, writers, selectors, scripts, globals, transitions, and source provenance. |
 | `string_provenance/` | Follow `s`-register writers through literal generated `call_script` paths and enclosing branches, separating actual writer paths from unresolved clobber boundaries. |
 | `dialogue_model_checker/` | Prove branch-free dialogue contradictions, first-match shadows, overlaps, ambiguous player choices, and terminal dead states while preserving complex condition blocks as boundaries. |
@@ -36,7 +38,7 @@ ignored by Git.
 | `order_control/` | Make source manifests, authored route/record order, generated-ID shifts, and engine callback prefixes explicit; assess anchored move risk, plan guarded manifest/dialogue moves, and diff order baselines without touching generated/export layers. |
 | `troop_item_balance/` | Evaluate legacy M&B 1.011 item/troop authoring, trace equipment and progression, map real campaign cohorts, player-start and coexisting-Native reinforcement pressure, mercenary contract niches, tier trajectories, and Imperial invasion waves, surface review candidates, and plan narrow SHA-guarded balance edits without touching generated IDs, order, or exports. |
 | `workbench/` | CBO-inspired, M&B-native fixed workflows for impact packets, scoped validation, declarative contracts, coverage maturity, registered scenarios, release evidence, and disabled authoring drafts. |
-| `module_studio/` | Optional loopback-only CBO-style viewer/editor for Atlas, dialogue, presentation, text, and Workbench evidence. Its Presentation Workshop adds visual overlay selection, local drag staging, layout/content controls, creation, and the same semantic diff/SHA/dry-run gates. |
+| `module_studio/` | Optional loopback-only CBO-style viewer/editor for Atlas, dialogue, presentation, Content Forge, text, and Workbench evidence. Its Presentation Workshop adds visual overlay selection, local drag staging, layout/content controls, creation, and the same semantic diff/SHA/dry-run gates; Content Forge Studio adds a player-facing cross-slice preview/review/editor with an independently guarded pack-contract save. |
 | `mcp_server/` | Present the DevKit’s diagnostics and explicitly named guarded source editing as typed local MCP tools for Codex and other LLM hosts. |
 
 ## Agent contract
@@ -52,7 +54,7 @@ without becoming implicit build dependencies.
 
 For Windows shell use, [`SoDDev.bat`](SoDDev.bat) is a convenience front door;
 MCP and the JSON CLI remain the primary interfaces. It routes `state`,
-`slots`, `dialogue-model`, `provenance`, `fuzz`, `semantic`, `gate`, `blueprint`, and `feature` to their
+`slots`, `dialogue-model`, `provenance`, `fuzz`, `semantic`, `rgl`, `gate`, `blueprint`, `feature`, and `content` to their
 matching deterministic slices. For example:
 `./devkit/SoDDev.bat dialogue-model summary`.
 
@@ -68,9 +70,26 @@ entrypoints, accepts only typed JSON operations (never raw Python tuples), and
 applies one reviewed SHA-guarded source target at a time. See
 [`feature_authoring/README.md`](feature_authoring/README.md).
 
+For a complete authored-content workflow, use
+`./devkit/SoDDev.bat content explain --pack-id black-khergit-camp-runtime`,
+then `content plan` and `content review`. Content Forge binds narrative and
+acceptance criteria to typed dialogue, quest/event, campaign AI, troop/item,
+and presentation slices while preserving the existing specialist SHA gates.
+For a reviewed strict pack-contract save, use `content catalog-plan` followed
+by a dry-run `content catalog-apply`; a real save requires the exact catalog
+plan/SHA and `SAVE CONTENT PACK`, and writes only
+`devkit/content_forge/packs.json`.
+See [`content_forge/README.md`](content_forge/README.md).
+
 For a release candidate, use `./devkit/SoDDev.bat gate run` for the isolated
 strict preflight, or `cmd /c build_module.bat --release-gate --no-cache` to
 run it after the normal canonical build.
+
+After a gameplay session, run `./devkit/SoDDev.bat rgl analyze --log
+"D:\\Program Files (x86)\\Steam\\steamapps\\common\\Mount and Blade\\rgl_log.txt"
+--live-module "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Mount and Blade\\Modules\\Sword of Damocles - V5.0"`.
+It groups a native error cascade into one root cause and tells you when the
+workspace fix has not yet reached the module you actually launched.
 
 For a local visual sorting/authoring surface, run
 `./devkit/SoDDev.bat studio` and open the printed `127.0.0.1` URL manually.

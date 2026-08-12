@@ -1,48 +1,83 @@
 SIMPLE_TRIGGERS = [
 (1,
    [
-        #Resolve one issue each hour
+        # Resolve one queued companion issue each hour.  A queue item is only
+        # dispatchable when every participant is a live member of p_main_party.
+        # Captivity pauses a valid queue; it never converts it into a departure
+        # cleanup or a conversation with an unrelated troop.
         (try_begin),
-            ### Here do NPC that is quitting
+            # Companion quitting is a single-participant event.
             (gt, "$npc_is_quitting", 0),
+            (assign, ":quitting_present", 0),
             (try_begin),
-                (main_party_has_troop, "$npc_is_quitting"),
+                (is_between, "$npc_is_quitting", companions_begin, companions_end),
+                (call_script, "script_cf_sod_companion_in_main_party", "$npc_is_quitting"),
+                (assign, ":quitting_present", 1),
+            (try_end),
+            (try_begin),
+                (eq, ":quitting_present", 1),
                 (neq, "$g_player_is_captive", 1),
-
                 (start_map_conversation, "$npc_is_quitting"),
             (else_try),
-                (is_between, "$npc_is_quitting", companions_begin, companions_end),
-                (call_script, "script_sod_companion_cleanup_departed_companion", "$npc_is_quitting"),
-            (else_try),
+                (eq, ":quitting_present", 0),
                 (assign, "$npc_is_quitting", 0),
             (try_end),
 
         (else_try),
-            #### Grievance
+            # A morality objection is also a single-participant event.
             (gt, "$npc_with_grievance", 0),
             (eq, "$disable_npc_complaints", 0),
+            (assign, ":grievance_present", 0),
             (try_begin),
-                (main_party_has_troop, "$npc_with_grievance"),
+                (is_between, "$npc_with_grievance", companions_begin, companions_end),
+                (call_script, "script_cf_sod_companion_in_main_party", "$npc_with_grievance"),
+                (assign, ":grievance_present", 1),
+            (try_end),
+            (try_begin),
+                (eq, ":grievance_present", 1),
                 (neq, "$g_player_is_captive", 1),
-
                 (assign, "$npc_map_talk_context", slot_troop_morality_state),
                 (start_map_conversation, "$npc_with_grievance"),
             (else_try),
+                (eq, ":grievance_present", 0),
                 (assign, "$npc_with_grievance", 0),
+                (assign, "$npc_grievance_string", 0),
+                (assign, "$npc_grievance_slot", 0),
+                (assign, "$npc_praise_not_complaint", 0),
+                (try_begin),
+                    (eq, "$npc_map_talk_context", slot_troop_morality_state),
+                    (assign, "$npc_map_talk_context", 0),
+                (try_end),
             (try_end),
+
         (else_try),
+            # Personality clashes are pair events: both the speaker and the
+            # named counterpart must still be in the current party.
             (gt, "$npc_with_personality_clash", 0),
             (eq, "$disable_npc_complaints", 0),
-            (troop_get_slot, ":object", "$npc_with_personality_clash", slot_troop_personalityclash_object),
+            (assign, ":clash_pair_present", 0),
             (try_begin),
-                (main_party_has_troop, "$npc_with_personality_clash"),
-                (main_party_has_troop, ":object"),
+                (is_between, "$npc_with_personality_clash", companions_begin, companions_end),
+                (call_script, "script_cf_sod_companion_in_main_party", "$npc_with_personality_clash"),
+                (troop_get_slot, ":clash_object", "$npc_with_personality_clash", slot_troop_personalityclash_object),
+                (is_between, ":clash_object", companions_begin, companions_end),
+                (call_script, "script_cf_sod_companion_in_main_party", ":clash_object"),
+                (assign, ":clash_pair_present", 1),
+            (try_end),
+            (try_begin),
+                (eq, ":clash_pair_present", 1),
                 (neq, "$g_player_is_captive", 1),
                 (assign, "$npc_map_talk_context", slot_troop_personalityclash_state),
                 (start_map_conversation, "$npc_with_personality_clash"),
             (else_try),
+                (eq, ":clash_pair_present", 0),
                 (assign, "$npc_with_personality_clash", 0),
+                (try_begin),
+                    (eq, "$npc_map_talk_context", slot_troop_personalityclash_state),
+                    (assign, "$npc_map_talk_context", 0),
+                (try_end),
             (try_end),
+
         (else_try),
             (eq, "$disable_npc_complaints", 0),
             (eq, "$g_sod_company_spokesperson_dialogue_pending", 1),
@@ -57,12 +92,12 @@ SIMPLE_TRIGGERS = [
             (else_try),
                 (assign, "$g_sod_company_spokesperson_dialogue_pending", 0),
             (try_end),
-        (else_try), ###check for regional background
+
+        (else_try), # Check for regional background.
             (eq, "$disable_local_histories", 0),
             (try_for_range, ":npc", companions_begin, companions_end),
-                (main_party_has_troop, ":npc"),
+                (call_script, "script_cf_sod_companion_in_main_party", ":npc"),
                 (troop_slot_eq, ":npc", slot_troop_home_speech_delivered, 0),
-                #(eq, "$npc_map_talk_context", 0),
                 (troop_get_slot, ":home", ":npc", slot_troop_home),
                 (gt, ":home", 0),
                 (party_is_active, ":home"),

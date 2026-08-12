@@ -24,6 +24,7 @@ def main() -> int:
     castle = read("src/scripts/ZY_helper_scripts/sod_castle_support_profile.py")
     boar = read("src/scripts/ZY_helper_scripts/sod_boar_clan_world_presence.py")
     recon = read("src/scripts/ZD_centers/update_center_recon_notes.py")
+    recon_brief = read("src/scripts/ZY_helper_scripts/sod_store_center_recon_brief_to_s68.py")
     notes = read("docs/reports/village_economic_root_audit.md")
 
     for token in (
@@ -97,9 +98,9 @@ def main() -> int:
     assert_contains(boar, ":village_coercion_pressure")
     assert_contains(boar, "script_sod_change_center_wealth")
     assert_contains(boar, "script_sod_change_center_local_prosperity")
-    assert_contains(recon, "Village root economy")
-    assert_contains(recon, "Tax extraction")
-    assert_contains(recon, "script_sod_get_village_output_profile")
+    assert_contains(recon, "script_sod_store_center_recon_brief_to_s68")
+    assert_contains(recon_brief, "The village is devastated.")
+    assert_contains(recon_brief, "The market is short of goods.")
 
     assert_contains(notes, "Village Economic Root Audit")
     assert_contains(notes, "trade-good production")

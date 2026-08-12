@@ -174,21 +174,29 @@ MENUS = [
 
 ("borcha_road_ambush_succeeded", mnf_scale_picture|mnf_enable_hot_keys,
    "The ambushers break against a trap they thought was theirs. Borcha steps over the old wheel ruts and kicks loose the stones that would have pinned the next caravan in place.",
-   "none",
+    "none",
     [
       (set_background_mesh, "mesh_pic_bandits"),
-      (assign, "$g_sod_borcha_road_confronted", 1),
       (try_begin),
-        (le, "$g_sod_borcha_road_result_grade", 0),
-        (assign, "$g_sod_borcha_road_result_grade", 3),
+        (main_party_has_troop, "trp_npc1"),
+        (assign, "$g_sod_borcha_road_confronted", 1),
+        (try_begin),
+          (le, "$g_sod_borcha_road_result_grade", 0),
+          (assign, "$g_sod_borcha_road_result_grade", 3),
+        (try_end),
+        (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_progress, 75),
+        (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_metadata, "$g_sod_borcha_road_result_grade"),
+        (call_script, "script_sod_companion_apply_player_action", sod_companion_action_safe_roadcraft, 3),
+        (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
+      (else_try),
+        (call_script, "script_sod_companion_cleanup_departed_companion", "trp_npc1"),
+        (jump_to_menu, "mnu_camp_action"),
       (try_end),
-      (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_progress, 75),
-      (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_metadata, "$g_sod_borcha_road_result_grade"),
-      (call_script, "script_sod_companion_apply_player_action", sod_companion_action_safe_roadcraft, 3),
-      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
     ],
     [
-      ("borcha_road_ambush_after", [], "Speak with Borcha about the road.",
+      ("borcha_road_ambush_after", [
+          (main_party_has_troop, "trp_npc1"),
+        ], "Speak with Borcha about the road.",
         [
           (start_map_conversation, "trp_npc1"),
         ]
@@ -198,17 +206,25 @@ MENUS = [
 
 ("borcha_road_ambush_failed", mnf_scale_picture|mnf_enable_hot_keys,
    "The side road becomes noise and dust. Borcha gets you clear, but his mouth is a hard line: not anger, not fear, just the old memory of a route that ate someone because warning came too late.",
-   "none",
+    "none",
     [
       (set_background_mesh, "mesh_pic_bandits"),
-      (assign, "$g_sod_borcha_road_confronted", 1),
-      (assign, "$g_sod_borcha_road_result_grade", -1),
-      (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_progress, 75),
-      (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_metadata, "$g_sod_borcha_road_result_grade"),
-      (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
+      (try_begin),
+        (main_party_has_troop, "trp_npc1"),
+        (assign, "$g_sod_borcha_road_confronted", 1),
+        (assign, "$g_sod_borcha_road_result_grade", -1),
+        (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_progress, 75),
+        (quest_set_slot, "qst_companion_borcha_road_keeps_own", slot_quest_sod_runtime_metadata, "$g_sod_borcha_road_result_grade"),
+        (call_script, "script_sod_companion_sync_personal_quest_framework", "trp_npc1"),
+      (else_try),
+        (call_script, "script_sod_companion_cleanup_departed_companion", "trp_npc1"),
+        (jump_to_menu, "mnu_camp_action"),
+      (try_end),
     ],
     [
-      ("borcha_road_failed_after", [], "Face Borcha's road lesson.",
+      ("borcha_road_failed_after", [
+          (main_party_has_troop, "trp_npc1"),
+        ], "Face Borcha's road lesson.",
         [
           (start_map_conversation, "trp_npc1"),
         ]

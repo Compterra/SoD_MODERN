@@ -33,13 +33,15 @@ MENUS = [
         (gt, "$g_encountered_party", 0),
         (party_is_active, "$g_encountered_party"),
         (store_faction_of_party, ":attacker_faction", "$g_encountered_party_2"),
-        (store_relation, ":attacker_relation", ":attacker_faction", "fac_player_supporters_faction"),
+        # Use the player's current political allegiance. The supporters faction
+        # only represents an independent player realm.
+        (assign, ":player_faction", "fac_player_faction"),
+        (try_begin),
+          (gt, "$players_kingdom", 0),
+          (assign, ":player_faction", "$players_kingdom"),
+        (try_end),
+        (store_relation, ":attacker_relation", ":attacker_faction", ":player_faction"),
         (ge, ":attacker_relation", 0),
-
-        # MORDACHAI - allow players to join in on neutral battles
-        #(store_faction_of_party, ":defender_faction", "$g_encountered_party"),
-        #(store_relation, ":defender_relation", ":defender_faction", "fac_player_supporters_faction"),
-        #(lt, ":defender_relation", 0),
       ],
       "Move in to help {s70}.", [
         (select_enemy, 0),
@@ -56,13 +58,13 @@ MENUS = [
         (gt, "$g_encountered_party_2", 0),
         (party_is_active, "$g_encountered_party_2"),
         (store_faction_of_party, ":defender_faction", "$g_encountered_party"),
-        (store_relation, ":defender_relation", ":defender_faction", "fac_player_supporters_faction"),
+        (assign, ":player_faction", "fac_player_faction"),
+        (try_begin),
+          (gt, "$players_kingdom", 0),
+          (assign, ":player_faction", "$players_kingdom"),
+        (try_end),
+        (store_relation, ":defender_relation", ":defender_faction", ":player_faction"),
         (ge, ":defender_relation", 0),
-
-        # MORDACHAI - allow players to join in on neutral battles
-        #(store_faction_of_party, ":attacker_faction", "$g_encountered_party_2"),
-        #(store_relation, ":attacker_relation", ":attacker_faction", "fac_player_supporters_faction"),
-        #(lt, ":attacker_relation", 0),
       ],
       "Rush to the aid of {s73}.", [
         (select_enemy, 1),

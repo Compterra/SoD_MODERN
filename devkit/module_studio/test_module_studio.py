@@ -34,6 +34,13 @@ def expect_ok(service: module_studio.StudioService, target: str) -> dict[str, ob
     return payload["result"]
 
 
+def expect_post_ok(service: module_studio.StudioService, target: str, body: dict) -> dict[str, object]:
+    status, payload = service.handle("POST", target, body)
+    assert int(status) == 200, payload
+    assert payload["ok"] is True
+    return payload["result"]
+
+
 def main() -> None:
     with tempfile.TemporaryDirectory(prefix="module-studio-") as temporary:
         root = Path(temporary)
@@ -280,6 +287,42 @@ def main() -> None:
         )
         assert int(status) == 400
         assert "confirmation" in refused["error"]
+
+    # Content Forge is intentionally exercised against the real checked-in
+    # DevKit contract because its full typed entrypoint catalog is itself the
+    # feature under test. These calls remain read-only: the Studio should
+    # expose visual-pack data and a catalog *plan*, never a generic writer.
+    content_service = module_studio.StudioService(REPO_ROOT)
+    content_summary = expect_ok(content_service, "/api/content/summary?limit=5")
+    assert content_summary["pack_count"] >= 1
+    content_pack_id = content_summary["packs"][0]["id"]
+    content_explain = expect_ok(content_service, "/api/content/explain?pack_id=" + content_pack_id)
+    assert content_explain["pack_source"]["id"] == content_pack_id
+    content_preview = expect_post_ok(content_service, "/api/content/preview", {"pack": content_explain["pack_source"]})
+    assert "review_canvas" in content_preview
+    content_plan = expect_post_ok(content_service, "/api/content/plan", {"pack": content_explain["pack_source"]})
+    assert content_plan["state"] in {"ready_for_review", "blocked"}
+    catalog_draft = dict(content_explain["pack_source"])
+    catalog_draft["description"] = catalog_draft["description"] + " [Studio catalog-plan coverage]"
+    catalog_plan = expect_post_ok(
+        content_service,
+        "/api/content/catalog-plan",
+        {"pack": catalog_draft, "mode": "replace"},
+    )
+    assert catalog_plan["catalog_target"]["path"] == "devkit/content_forge/packs.json"
+    catalog_rehearsal = expect_post_ok(
+        content_service,
+        "/api/content/catalog-apply",
+        {
+            "pack": catalog_draft,
+            "mode": "replace",
+            "expected_catalog_plan_id": catalog_plan["catalog_plan_id"],
+            "expected_catalog_sha256": catalog_plan["catalog_target"]["base_sha256"],
+            "dry_run": True,
+        },
+    )
+    assert catalog_rehearsal["applied"] is False
+    assert catalog_rehearsal["catalog_plan"]["catalog_plan_id"] == catalog_plan["catalog_plan_id"]
 
     print("test_module_studio: OK")
 

@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sod-modern.devkit.local/content_forge/contracts/content-pack.v1.schema.json",
+  "title": "SoD Modern Content Forge Pack v1",
+  "description": "LLM-first typed content contract. Source-changing slices are compiled only through existing Feature Authoring, Dialogue Composer, Presentation Layout, Module Atlas, and Balance Lab gates; raw Python and tuple source are intentionally absent.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "title", "status", "description", "brief", "slices", "verification"],
+  "properties": {
+    "schema": {"const": "sod-modern.content-pack.v1"},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,119}$"},
+    "title": {"type": "string", "minLength": 1, "maxLength": 200},
+    "status": {"enum": ["active", "draft", "disabled"]},
+    "description": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "blueprint_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,119}$"},
+    "brief": {"$ref": "#/$defs/brief"},
+    "slices": {"$ref": "#/$defs/slices"},
+    "verification": {"$ref": "#/$defs/verification"}
+  },
+  "$defs": {
+    "brief": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "lore_constraints", "tone", "acceptance_criteria"],
+      "properties": {
+        "summary": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "lore_constraints": {"$ref": "#/$defs/stringList"},
+        "tone": {"$ref": "#/$defs/stringList"},
+        "acceptance_criteria": {"$ref": "#/$defs/nonEmptyStringList"}
+      }
+    },
+    "stringList": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "nonEmptyStringList": {
+      "allOf": [{"$ref": "#/$defs/stringList"}, {"minItems": 1}]
+    },
+    "sourceChange": {
+      "type": "object",
+      "description": "Kind is inferred from its enclosing slice. The remaining typed fields are validated by Feature Authoring; no raw Python source field exists.",
+      "required": ["target", "action"],
+      "properties": {
+        "target": {"type": "string", "pattern": "^entrypoint:"},
+        "action": {"type": "string", "minLength": 1}
+      },
+      "not": {"required": ["kind"]}
+    },
+    "beat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "purpose"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,119}$"},
+        "title": {"type": "string", "minLength": 1},
+        "purpose": {"type": "string", "minLength": 1},
+        "entrypoint": {"type": "string", "pattern": "^entrypoint:"},
+        "description": {"type": "string"},
+        "phase": {"type": "string"}
+      }
+    },
+    "timelineStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "description"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,119}$"},
+        "title": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "entrypoint": {"type": "string", "pattern": "^entrypoint:"},
+        "phase": {"type": "string"}
+      }
+    },
+    "aiContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "intent", "entrypoint", "required_markers", "description"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,119}$"},
+        "intent": {"enum": ["stationary_camp", "patrol_radius", "escort_attachment", "raid_return", "despawn"]},
+        "entrypoint": {"type": "string", "pattern": "^entrypoint:"},
+        "required_markers": {"$ref": "#/$defs/nonEmptyStringList"},
+        "description": {"type": "string", "minLength": 1},
+        "state_contract_id": {"type": "string"},
+        "party_template": {"type": "string", "pattern": "^pt_"},
+        "party_selector": {"type": "string"},
+        "additional_scope_scripts": {"$ref": "#/$defs/stringList"},
+        "expected_behavior": {"type": "string"},
+        "forbidden_behaviors": {"$ref": "#/$defs/stringList"},
+        "allowed_when": {"type": "string"},
+        "minimum_radius": {"type": "integer", "minimum": 0},
+        "maximum_radius": {"type": "integer", "minimum": 0},
+        "attach_to": {"type": "string"},
+        "require_detach": {"type": "boolean"},
+        "return_behavior": {"type": "string"},
+        "return_target": {"type": "string"},
+        "return_when": {"type": "string"},
+        "despawn_when": {"type": "string"}
+      }
+    },
+    "troopItemRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "entity_kind", "entity_id", "changes", "rationale"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,119}$"},
+        "entity_kind": {"enum": ["item", "troop"]},
+        "entity_id": {"type": "string"},
+        "changes": {"type": "object", "minProperties": 1},
+        "rationale": {"type": "string", "minLength": 1}
+      }
+    },
+    "newPresentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["anchor", "id"],
+      "properties": {
+        "anchor": {"type": "string", "pattern": "^entrypoint:"},
+        "id": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"},
+        "flags": {},
+        "mesh": {},
+        "triggers": {"type": "array", "maxItems": 100, "items": {"type": "object"}},
+        "description": {"type": "string"}
+      }
+    },
+    "screen": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "description", "entrypoint"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,119}$"},
+        "title": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "entrypoint": {"type": "string", "pattern": "^entrypoint:"},
+        "phase": {"type": "string"}
+      }
+    },
+    "slices": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "dialogue": {
+          "type": "object", "additionalProperties": false,
+          "properties": {"changes": {"type": "array", "items": {"$ref": "#/$defs/sourceChange"}}, "beats": {"type": "array", "items": {"$ref": "#/$defs/beat"}}}
+        },
+        "quest_event": {
+          "type": "object", "additionalProperties": false,
+          "properties": {"changes": {"type": "array", "items": {"$ref": "#/$defs/sourceChange"}}, "timeline": {"type": "array", "items": {"$ref": "#/$defs/timelineStep"}}}
+        },
+        "campaign_ai": {
+          "type": "object", "additionalProperties": false,
+          "properties": {"changes": {"type": "array", "items": {"$ref": "#/$defs/sourceChange"}}, "contracts": {"type": "array", "items": {"$ref": "#/$defs/aiContract"}}, "scenarios": {"$ref": "#/$defs/stringList"}}
+        },
+        "troop_item": {
+          "type": "object", "additionalProperties": false,
+          "properties": {"records": {"type": "array", "items": {"$ref": "#/$defs/troopItemRecord"}}}
+        },
+        "presentation": {
+          "type": "object", "additionalProperties": false,
+          "properties": {"changes": {"type": "array", "items": {"$ref": "#/$defs/sourceChange"}}, "new_presentations": {"type": "array", "items": {"$ref": "#/$defs/newPresentation"}}, "screens": {"type": "array", "items": {"$ref": "#/$defs/screen"}}}
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tests", "require_blueprint"],
+      "properties": {
+        "tests": {"type": "array", "maxItems": 24, "uniqueItems": true, "items": {"type": "string", "pattern": "^build/test_[A-Za-z0-9_]+\\.py$"}},
+        "require_blueprint": {"type": "boolean"},
+        "scenarios": {"$ref": "#/$defs/stringList"}
+      }
+    }
+  }
+}

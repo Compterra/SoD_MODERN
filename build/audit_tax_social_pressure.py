@@ -16,7 +16,7 @@ CHECKS = (
     ("Castle noble obligations", "src/scripts/ZY_helper_scripts/sod_castle_support_profile.py", "noble_obligation_pressure"),
     ("Faith clergy support", "src/scripts/ZY_helper_scripts/sod_faith_system.py", "clergy_faith_support_pressure"),
     ("Law report", "src/scripts/ZZ_common_array_processing/sod_law_reports.py", "Tax social pressure"),
-    ("Recon report", "src/scripts/ZD_centers/update_center_recon_notes.py", "Local tax burden"),
+    ("Regional economy report", "src/menus/economy/regional_economy_flow_report.py", "tax extraction"),
 )
 
 

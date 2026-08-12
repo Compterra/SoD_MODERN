@@ -28,8 +28,10 @@ def main() -> int:
     shrine_chapel = read("src/triggers/ST04_weekly/entry_0090.py")
     monastery = read("src/triggers/ST04_weekly/entry_0091.py")
     reports_menu = read("src/menus/0000_hardcoded_mb1011/reports.py")
+    realm_reports = read("src/menus/reports/report_submenus.py")
     faith_menu = read("src/menus/reports/faith_world_report.py")
     recon = read("src/scripts/ZD_centers/update_center_recon_notes.py")
+    recon_brief = read("src/scripts/ZY_helper_scripts/sod_store_center_recon_brief_to_s68.py")
 
     for token in (
         "slot_center_sod_faith_1_support",
@@ -87,10 +89,14 @@ def main() -> int:
     ):
         assert_contains(report, token)
 
-    assert_contains(reports_menu, "mnu_faith_world_report")
+    assert_contains(reports_menu, "mnu_realm_reports")
+    assert_contains(realm_reports, "view_faith_world_report")
+    assert_contains(realm_reports, "Read faith and institution report.")
+    assert_contains(realm_reports, "mnu_faith_world_report")
     assert_contains(faith_menu, "script_sod_describe_faith_world_report")
-    assert_contains(recon, "Faith: dominant")
-    assert_contains(recon, "player-faith support")
+    assert_contains(recon, "script_sod_store_center_recon_brief_to_s68")
+    assert_contains(recon_brief, "script_sod_get_center_faith_profile")
+    assert_contains(recon_brief, "Religious tension is worsening.")
     assert_contains(doctrine, "Ascension-ready seats")
     assert_contains(doctrine, "manageable local faith tension")
 

@@ -245,6 +245,39 @@ def test_deterministic_dialogue_creation_and_presentation_addition_plan() -> Non
         assert presentation_plan["state"] == "ready_for_review", presentation_plan
         assert "create_text_overlay" in presentation_plan["change_plans"][0]["change_router_plan"]["unified_diff"]
 
+        new_presentation_intent = {
+            "schema": compiler.FEATURE_INTENT_SCHEMA,
+            "id": "fixture-presentation-create",
+            "title": "Fixture presentation creation",
+            "status": "draft",
+            "description": "Append a wholly new typed presentation at a known presentation source anchor.",
+            "entrypoints": ["entrypoint:presentation:feature_presentation"],
+            "changes": [
+                {
+                    "kind": "module",
+                    "target": "entrypoint:presentation:feature_presentation",
+                    "action": "add_presentation",
+                    "new_item": {
+                        "id": "feature_created_presentation",
+                        "flags": 0,
+                        "mesh": {"symbol": "mesh_load_window"},
+                        "triggers": [
+                            {
+                                "event": {"symbol": "ti_on_presentation_load"},
+                                "operations": [
+                                    {"op": "assign", "args": [{"global": "feature_created_presentation_loaded"}, 1]}
+                                ],
+                            }
+                        ],
+                    },
+                }
+            ],
+            "verification": {"tests": ["build/test_fixture_feature.py"], "require_blueprint": False},
+        }
+        new_presentation_plan = compiler.feature_plan(index, intent_value=new_presentation_intent)
+        assert new_presentation_plan["state"] == "ready_for_review", new_presentation_plan
+        assert "feature_created_presentation" in new_presentation_plan["change_plans"][0]["change_router_plan"]["unified_diff"]
+
 
 def test_typed_ir_rejects_raw_python_and_renders_safe_operations() -> None:
     assert compiler.render_operation({"op": "call_script", "args": [{"reference": "script_feature_anchor"}]}) == '(call_script, "script_feature_anchor")'

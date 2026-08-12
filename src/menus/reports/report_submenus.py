@@ -19,10 +19,7 @@ MENUS = [
     [(set_background_mesh, "mesh_pic_report_screen")],
     [
       ("realm_reports_resume", [], "Resume travelling.", [(change_screen_return)]),
-      ("view_faith_world_report", [
-        (this_or_next|eq, "$cheat_mode", 1),
-        (eq, "$g_sod_cheat_mode", 1),
-      ], "Debug faith and institution ledgers.", [(jump_to_menu, "mnu_faith_world_report")]),
+      ("view_faith_world_report", [], "Read faith and institution report.", [(jump_to_menu, "mnu_faith_world_report")]),
       ("view_realm_law_report", [], "Read realm laws and foreign edicts.", [(jump_to_menu, "mnu_realm_law_report")]),
       ("view_noble_houses_report", [], "Read noble house ledgers.", [(jump_to_menu, "mnu_noble_houses_report")]),
       ("view_sod_diplomacy_report", [], "Open the diplomatic dispatches.", [(jump_to_menu, "mnu_sod_diplomacy_report")]),

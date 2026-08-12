@@ -77,18 +77,13 @@ def main() -> int:
     ):
         assert_contains(population, token)
 
-    for token in (
-        "Tax extraction",
-        "migration retention",
-        "liquidity",
-        "recovery",
-    ):
-        assert_contains(recon, token)
+    assert_contains(recon, "script_sod_store_center_recon_brief_to_s68")
 
     assert_contains(laws, "Tax social pressure")
     assert_contains(laws, "High extraction raises immediate rents")
     assert_contains(town_report, "high extraction raises immediate revenue")
     assert_contains(regional_report, "tax extraction can fund rulers now")
+    assert_contains(regional_report, "liquidity, retention, and recovery later")
     assert_contains(notes, "Tax Extraction Pressure Audit")
     assert_contains(notes, "Immediate revenue")
     assert_contains(notes, "Long-term pressure")

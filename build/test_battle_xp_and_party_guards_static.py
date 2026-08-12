@@ -130,10 +130,30 @@ def test_stale_lord_party_ids_are_guarded_before_party_ops() -> None:
     )
 
 
+def test_engine_simulated_battles_reject_stale_root_parties() -> None:
+    simulated = read("src/scripts/ZA_hardcoded_game_scripts/game_event_simulate_battle.py")
+
+    assert_before(
+        simulated,
+        '(party_is_active, ":root_defender_party")',
+        '(store_faction_of_party, ":defender_faction", ":root_defender_party")',
+        "before reading the defender faction",
+    )
+    assert_before(
+        simulated,
+        '(party_is_active, ":root_attacker_party")',
+        '(store_faction_of_party, ":attacker_faction", ":root_attacker_party")',
+        "before reading the attacker faction",
+    )
+    assert '(eq, ":root_parties_active", 1)' in simulated
+    assert "A removed root party cannot be simulated." in simulated
+
+
 def main() -> None:
     test_battle_xp_messages_are_aggregated_and_restored()
     test_battle_templates_keep_xp_suppression_active_until_debrief()
     test_stale_lord_party_ids_are_guarded_before_party_ops()
+    test_engine_simulated_battles_reject_stale_root_parties()
     print("battle XP aggregation and party guard static checks passed")
 
 
