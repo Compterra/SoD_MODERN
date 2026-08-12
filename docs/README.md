@@ -14,3 +14,6 @@ Top-level documentation is grouped by working area:
 - `settlements/` - village, health, raid, and garrison design notes.
 - `systems/` - realm/system-level designs such as diplomacy and strategy advisor planning.
 - `tooling/` - setup and module-system modernization notes.
+
+#Latest Beta Release
+https://forums.taleworlds.com/index.php?threads/active-progress-list-updated-08-12-2026-beta-022-posted.221851/
